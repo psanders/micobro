@@ -5,6 +5,7 @@ import { createRealCustomerRepo } from "./customerRepo";
 import { createRealLoanRepo } from "./loanRepo";
 import { createRealPaymentRepo } from "./paymentRepo";
 import { createRealSyncRepo } from "./syncRepo";
+import { createRealProfileRepo } from "./profileRepo";
 import type { Database } from "../../db/client";
 import type { Repos } from "../types";
 
@@ -13,6 +14,7 @@ export function createRealRepos({ db }: { db: Database }): Repos {
     customers: createRealCustomerRepo({ db }),
     loans: createRealLoanRepo({ db }),
     payments: createRealPaymentRepo({ db }),
-    sync: createRealSyncRepo({ db })
+    sync: createRealSyncRepo({ db }),
+    profile: createRealProfileRepo()
   };
 }

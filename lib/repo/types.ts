@@ -44,9 +44,25 @@ export interface SyncRepo {
   pushNow(): Promise<PushResult>;
 }
 
+/**
+ * The lender's own display identity, used for greeting personalization
+ * (e.g. "Hola, Carlos." on the unlock screen). `avatarKey` is a semantic
+ * key mapped to a bundled asset at the component layer — the repo layer
+ * stays UI-free. Null when no profile has been captured yet.
+ */
+export interface Profile {
+  name: string;
+  avatarKey: string | null;
+}
+
+export interface ProfileRepo {
+  get(): Promise<Profile | null>;
+}
+
 export interface Repos {
   customers: CustomerRepo;
   loans: LoanRepo;
   payments: PaymentRepo;
   sync: SyncRepo;
+  profile: ProfileRepo;
 }

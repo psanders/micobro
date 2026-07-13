@@ -20,3 +20,4 @@ export const useCustomerRepo = () => useRepos().customers;
 export const useLoanRepo = () => useRepos().loans;
 export const usePaymentRepo = () => useRepos().payments;
 export const useSyncRepo = () => useRepos().sync;
+export const useProfileRepo = () => useRepos().profile;

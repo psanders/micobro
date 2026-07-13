@@ -100,6 +100,9 @@ export function createMockRepos(): Repos {
       listByLoan: async (loanId) => payments.filter((payment) => payment.loanId === loanId),
       create: createPayment
     },
-    sync: createMockSyncRepo()
+    sync: createMockSyncRepo(),
+    profile: {
+      get: async () => ({ name: "Carlos", avatarKey: "male4" })
+    }
   };
 }

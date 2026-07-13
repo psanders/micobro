@@ -1,7 +1,11 @@
 /**
  * Copyright (C) 2026 by Pedro Sanders. MIT License.
+ *
+ * Numeric keypad from the auth designs in pencil.pen (`EYzn2`/`Jy3HY`):
+ * 4×3 grid of 56-high keys; digits on `bg`-tinted keys, backspace on white.
  */
 import { View, Text, Pressable, StyleSheet } from "react-native";
+import { colors, fonts } from "../lib/ui/theme";
 
 interface PinKeypadProps {
   onPress: (key: string) => void;
@@ -24,6 +28,7 @@ export function PinKeypad({ onPress }: PinKeypadProps) {
               key={key || `empty-${ki}`}
               style={({ pressed }) => [
                 styles.key,
+                key === "delete" && styles.keyBack,
                 key === "" && styles.keyHidden,
                 pressed && key !== "" && styles.keyPressed
               ]}
@@ -46,11 +51,12 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 56,
     borderRadius: 14,
-    backgroundColor: "#F5F7FB",
+    backgroundColor: colors.bg,
     alignItems: "center",
     justifyContent: "center"
   },
+  keyBack: { backgroundColor: colors.white },
   keyHidden: { backgroundColor: "transparent" },
-  keyPressed: { backgroundColor: "#E3E8F2" },
-  keyText: { fontSize: 22, fontWeight: "600", color: "#1A2B4C" }
+  keyPressed: { backgroundColor: colors.mist },
+  keyText: { fontSize: 22, fontFamily: fonts.semiBold, color: colors.ink }
 });

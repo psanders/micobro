@@ -4,6 +4,13 @@
 import { Stack } from "expo-router";
 import { ActivityIndicator, Text, View } from "react-native";
 import Constants from "expo-constants";
+import {
+  useFonts,
+  PlusJakartaSans_400Regular,
+  PlusJakartaSans_500Medium,
+  PlusJakartaSans_600SemiBold,
+  PlusJakartaSans_700Bold
+} from "@expo-google-fonts/plus-jakarta-sans";
 import { useDatabaseMigrations } from "../lib/db/migrate";
 import { db } from "../lib/db/client";
 import { createRealRepos } from "../lib/repo/real";
@@ -39,10 +46,7 @@ function Gate() {
 
       <Stack.Protected guard={onboardingComplete && unlocked}>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen
-          name="conectar"
-          options={{ title: "Conectar con Google", presentation: "modal" }}
-        />
+        <Stack.Screen name="conectar" options={{ headerShown: false, presentation: "modal" }} />
         <Stack.Screen name="customers/new" options={{ title: "Nuevo cliente" }} />
         <Stack.Screen name="customers/[id]" options={{ title: "Cliente" }} />
         <Stack.Screen name="loans/new" options={{ title: "Nuevo préstamo" }} />
@@ -55,6 +59,12 @@ function Gate() {
 
 export default function RootLayout() {
   const { success, error } = useDatabaseMigrations();
+  const [fontsLoaded, fontsError] = useFonts({
+    PlusJakartaSans_400Regular,
+    PlusJakartaSans_500Medium,
+    PlusJakartaSans_600SemiBold,
+    PlusJakartaSans_700Bold
+  });
 
   if (error) {
     return (
@@ -64,7 +74,8 @@ export default function RootLayout() {
     );
   }
 
-  if (!success) {
+  // fontsError still renders the app (fallback fonts beat a dead screen).
+  if (!success || (!fontsLoaded && !fontsError)) {
     return (
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
         <ActivityIndicator />
