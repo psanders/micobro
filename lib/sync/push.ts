@@ -6,13 +6,14 @@
  * follow-up — this establishes the push half of the loop end to end.
  */
 import { eq, and, lt } from "drizzle-orm";
-import { pendingMutations } from "../db/schema";
+import { pendingMutations, syncMeta } from "../db/schema";
 import { appendRow } from "./sheetsClient";
 import { getSheetId } from "./config";
 import { logger } from "../logger";
 import type { Database } from "../db/client";
 
 const MAX_RETRIES = 5;
+export const LAST_PUSHED_AT_KEY = "lastPushedAt";
 
 const ENTITY_RANGES: Record<string, string> = {
   customer: "Clientes!A:F"
@@ -69,6 +70,11 @@ export async function pushPendingMutations(db: Database): Promise<PushResult> {
       failed += 1;
     }
   }
+
+  await db
+    .insert(syncMeta)
+    .values({ key: LAST_PUSHED_AT_KEY, value: String(Date.now()) })
+    .onConflictDoUpdate({ target: syncMeta.key, set: { value: String(Date.now()) } });
 
   logger.info("push complete", { pushed, failed });
   return { pushed, failed };

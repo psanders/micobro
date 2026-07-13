@@ -33,9 +33,8 @@ npm run android       # expo run:android
 
 - **Maestro CLI** (E2E, not an npm dependency):
   `curl -fsSL https://get.maestro.mobile.dev | bash`, then
-  `npm run test:e2e` (needs a running emulator/device and `-e APP_ID=do_.micobro.app`
-  passed to the underlying `maestro test` invocation on Android — "do" is a
-  Java keyword, so Expo prebuild sanitizes the package's first segment).
+  `npm run test:e2e` (needs a running emulator/device and `-e APP_ID=com.micobro.app`
+  passed to the underlying `maestro test` invocation on Android).
 - **Google OAuth client ID** for Sheets sign-in: create an OAuth client
   (Android or Web application type) in Google Cloud Console with the
   `https://www.googleapis.com/auth/spreadsheets` scope, then set
@@ -43,29 +42,58 @@ npm run android       # expo run:android
 - App icon/splash assets aren't set up yet — `assets/avatars/` has placeholder
   customer avatar images only. Add `icon.png` / adaptive icon assets before
   running a real build.
+- **Web preview isn't available yet.** `react-native-web` isn't a listed
+  dependency, so `expo start --web` starts a dev server but fails to bundle
+  (`Unable to resolve module react-native-web/dist/index`). Use an
+  Android emulator/device (`npm run android`) to see the running app.
 
 ## Scripts
 
-| Script | Purpose |
-| :--- | :--- |
-| `npm run lint` / `lint:fix` | eslint |
-| `npm run typecheck` | `tsc --noEmit` |
-| `npm test` | Jest unit tests |
-| `npm run test:e2e` | Maestro flows under `.maestro/` |
-| `npm run db:generate` | Regenerate drizzle migrations from the schema |
-| `npm run start:storybook:native` | Component dev in Storybook |
+| Script                           | Purpose                                       |
+| :------------------------------- | :-------------------------------------------- |
+| `npm run lint` / `lint:fix`      | eslint                                        |
+| `npm run typecheck`              | `tsc --noEmit`                                |
+| `npm test`                       | Jest unit tests                               |
+| `npm run test:e2e`               | Maestro flows under `.maestro/`               |
+| `npm run db:generate`            | Regenerate drizzle migrations from the schema |
+| `npm run start:storybook:native` | Component dev in Storybook                    |
 
 ## What's here vs. what's next
 
-This bootstrap wires one vertical slice end to end — `lib/customers/createCustomer.ts`
-inserts locally and enqueues a `pending_mutations` row, and `lib/sync/push.ts`
-replays that queue to the lender's Sheet. Deliberately not built yet:
+The data layer now covers all three domains — customers, loans, and payments —
+plus sync and local security, each as validated-function factories with Jest
+coverage:
 
-- **Loans and payments domains** (schema tables aren't defined — only `customers`,
-  `pending_mutations`, `sync_meta`).
-- **Pull sync** (reading changes made directly in the Sheet back into SQLite)
-  and conflict resolution.
-- **Auto-sync orchestration** (network-status-aware background push/pull),
-  the way Mikro's `SyncProvider` does it.
+- **`lib/customers/`** — create, get, list.
+- **`lib/loans/`** — create, get detail, list (all loans, and by customer).
+- **`lib/payments/`** — create, list by loan.
+- **`lib/repo/`** — a `Repos` abstraction (`CustomerRepo`, `LoanRepo`,
+  `PaymentRepo`, `SyncRepo`) with a real (SQLite-backed) implementation under
+  `real/` and a mock implementation with fixtures under `mock/`, wired
+  through a `RepoProvider` React context — the seam screens will consume
+  once they exist.
+- **`lib/sync/`** — Google Sign-In (OAuth + PKCE), a Sheets API v4 client,
+  and `pushPendingMutations` to replay the local mutation queue. Pull sync
+  (reading changes made directly in the Sheet back into SQLite) and conflict
+  resolution are still not built.
+- **`lib/security/pin.ts`** — local app-unlock PIN, stored in
+  `expo-secure-store`, independent of Google Sign-In.
 
-Propose these as OpenSpec changes (`/openspec:propose`) before building them.
+The DB schema (`lib/db/schema.ts`) now has `customers`, `loans`, `payments`,
+`pending_mutations`, and `sync_meta` tables.
+
+**Only two screens exist today**, both under `app/`:
+
+- `app/index.tsx` — a bare home screen with a link to add a customer.
+- `app/customers/new.tsx` — a form that calls `createCreateCustomer` to
+  insert a customer.
+
+Everything else the data layer already supports — a dashboard, customer
+list/detail, loan and payment screens, the Google-connect flow, PIN unlock —
+is implemented in `lib/` but **not yet wired to any UI**. Don't expect to
+find these in the running app yet; they're available to build against, not
+to use. `components/` (shared UI + Storybook stories) is still empty.
+
+No OpenSpec proposals have been archived yet (`openspec/specs/` and
+`openspec/changes/` are empty save for `changes/archive/`); propose new
+screens/behavior with `/openspec:propose` before building them.

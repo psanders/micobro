@@ -15,7 +15,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     policy: "fingerprint"
   },
   android: {
-    package: "do.micobro.app",
+    package: "com.micobro.app",
     adaptiveIcon: {
       backgroundColor: "#0F5132"
     },
@@ -24,6 +24,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   plugins: ["expo-router", "expo-secure-store", "expo-sqlite"],
   extra: {
     googleOAuthClientId: process.env.EXPO_PUBLIC_GOOGLE_OAUTH_CLIENT_ID ?? "",
-    storybookEnabled: process.env.STORYBOOK_ENABLED === "true"
+    storybookEnabled: process.env.STORYBOOK_ENABLED === "true",
+    useMockRepos: process.env.EXPO_PUBLIC_USE_MOCK_REPOS === "true"
   }
 });

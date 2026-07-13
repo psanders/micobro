@@ -1,9 +1,7 @@
-# Minimal smoke flow: a clean install boots to the home screen.
-# APP_ID must be passed explicitly (-e APP_ID=do_.micobro.app on Android —
-# "do" is a Java keyword, so Expo prebuild sanitizes the first package segment).
+# Minimal smoke flow: a clean install boots to PIN onboarding (no PIN set yet).
+# APP_ID must be passed explicitly (-e APP_ID=com.micobro.app on Android).
 appId: ${APP_ID}
 ---
 - launchApp:
     clearState: true
-- assertVisible: "Micobro"
-- assertVisible: "Agregar cliente"
+- assertVisible: "Crea tu PIN"
