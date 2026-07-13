@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/banner.png" alt="micobro — Clientes, préstamos y cobros, todo en tu teléfono, sin internet" />
+</p>
+
 # Micobro
 
 Offline-first Android app for independent, informal lenders (prestamistas) in the
@@ -5,6 +9,20 @@ Dominican Republic to track customers, loans, and payments. There's no backend
 server: a local SQLite database is the source of truth on-device, and each
 lender's data syncs to a Google Sheet they own — adding a customer directly in
 the sheet is a supported editing path, not just an export.
+
+## Product design
+
+The product design lives in `pencil.pen` (edited with [Pencil](https://pencil.dev));
+`assets/screens/` holds exports of the key flows. Onboarding is PIN-first — Google
+is optional backup, never a login wall:
+
+<p align="center">
+  <img src="assets/screens/02-configura-pin.png" width="19%" alt="Configura tu PIN" />
+  <img src="assets/screens/04-home.png" width="19%" alt="Inicio" />
+  <img src="assets/screens/05-cliente-detalle.png" width="19%" alt="Detalle de cliente" />
+  <img src="assets/screens/07-cobrar-pago.png" width="19%" alt="Registrar cobro" />
+  <img src="assets/screens/08-pago-confirmado.png" width="19%" alt="Pago confirmado" />
+</p>
 
 ## Stack
 
@@ -42,9 +60,10 @@ npm run android       # expo run:android
   `EXPO_PUBLIC_GOOGLE_OAUTH_CLIENT_ID` in a local `.env` (gitignored).
   Without it, the "Continuar con Google" button is disabled with an inline
   note; "Ahora no" / staying local still works fully offline.
-- App icon/splash assets aren't set up yet — `assets/avatars/` has placeholder
-  customer avatar images only. Add `icon.png` / adaptive icon assets before
-  running a real build.
+- App icon/splash assets aren't set up yet — `assets/` has the README banner,
+  design-screen exports (`assets/screens/`), and placeholder customer avatars
+  (`assets/avatars/`) only. Add `icon.png` / adaptive icon assets before
+  running a real build (the "App Icons" frame in `pencil.pen` has the artwork).
 - **Web preview isn't available yet.** `react-native-web` isn't a listed
   dependency, so `expo start --web` starts a dev server but fails to bundle
   (`Unable to resolve module react-native-web/dist/index`). Use an
