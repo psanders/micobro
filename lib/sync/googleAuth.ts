@@ -3,15 +3,17 @@
  *
  * Google Sign-In for on-device Sheets access. Each lender authorizes the app
  * against their own Google account (PKCE, no client secret shipped in the
- * APK) and grants the `spreadsheets` scope. Tokens are cached in
- * expo-secure-store; getValidAccessToken() refreshes silently when expired.
+ * APK) and grants the least-privilege `drive.file` scope — access only to
+ * spreadsheets this app creates (or the user explicitly opens), not the
+ * lender's whole Drive/Sheets. Tokens are cached in expo-secure-store;
+ * getValidAccessToken() refreshes silently when expired.
  */
 import * as SecureStore from "expo-secure-store";
 import Constants from "expo-constants";
 
 const TOKEN_ENDPOINT = "https://oauth2.googleapis.com/token";
 const SECURE_STORE_KEY = "micobro.google.tokens";
-const SHEETS_SCOPE = "https://www.googleapis.com/auth/spreadsheets";
+const SHEETS_SCOPE = "https://www.googleapis.com/auth/drive.file";
 
 export const googleDiscovery = {
   authorizationEndpoint: "https://accounts.google.com/o/oauth2/v2/auth",
