@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+
+# Expo
+.expo/
+dist/
+web-build/
+
+# Native build output
+android/
+ios/
+
+# TypeScript incremental build cache
+*.tsbuildinfo
+
+# OS files
+.DS_Store
+
+# Environment / secrets (Google OAuth client id, sheet ids)
+.env
+.env.local
+.env.*.local
+
+# SQLite databases — runtime/dev artifacts, never tracked
+*.db
+*.db-journal
+*.db-wal
+
+# Storybook build output
+storybook-static/
+
+# Maestro
+.maestro/screenshots/
+
+# Logs
+*.log

@@ -1,0 +1,28 @@
+schema: spec-driven
+
+context: |
+  Micobro: an offline-first Android app (Expo/React Native) for independent,
+  informal lenders (prestamistas) in the Dominican Republic to track customers,
+  loans, and payments.
+
+  No separate backend. Local SQLite (expo-sqlite + drizzle-orm) is the source
+  of truth on-device; each lender's data syncs to a Google Sheet they own via
+  Sheets API v4 REST calls authorized through their own Google Sign-In (OAuth
+  + PKCE, no service-account secret shipped in the app). Adding a customer
+  directly in the sheet is a supported editing path, not just an export.
+
+  Conventions: TypeScript strict, Zod (zod/v4) validated-function pattern
+  (factory + injected deps + withErrorHandlingAndValidation), Jest (not
+  mocha) because Expo/RN requires the jest-expo preset, conventional commits,
+  eslint flat config + prettier + husky/lint-staged. Single package, no
+  monorepo (mobile is the only surface).
+
+# Per-artifact rules (optional)
+# Add custom rules for specific artifacts.
+# Example:
+#   rules:
+#     proposal:
+#       - Keep proposals under 500 words
+#       - Always include a "Non-goals" section
+#     tasks:
+#       - Break tasks into chunks of max 2 hours
