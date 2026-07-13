@@ -6,10 +6,21 @@ import type { Loan, LoanWithCustomer, LoanDetail, CreateLoanInput } from "../loa
 import type { Payment, CreatePaymentInput } from "../payments/payment.schema";
 import type { PushResult } from "../sync/push";
 
+/** Row shape for the Buscar screen: status line + navigation target. */
+export interface CustomerSearchResult {
+  id: string;
+  name: string;
+  avatarKey: string | null;
+  inMora: boolean;
+  loanCount: number;
+}
+
 export interface CustomerRepo {
   list(): Promise<Customer[]>;
   get(id: string): Promise<Customer | null>;
   create(input: CreateCustomerInput): Promise<Customer>;
+  /** Name/phone substring match, case-insensitive. Empty query = all customers. */
+  search(query: string): Promise<CustomerSearchResult[]>;
 }
 
 export interface LoanRepo {
@@ -59,10 +70,51 @@ export interface ProfileRepo {
   get(): Promise<Profile | null>;
 }
 
+export type RouteVisitStatus = "pending" | "overdue" | "done" | "promise";
+
+/**
+ * One stop on today's collection route. Labels ("3 días atraso",
+ * "Cobrado · 9:14 AM") are computed in the UI from these structured fields.
+ */
+export interface RouteVisit {
+  id: string;
+  customerId: string;
+  name: string;
+  business: string | null;
+  address: string;
+  avatarKey: string | null;
+  amountCents: number;
+  hasMora: boolean;
+  status: RouteVisitStatus;
+  overdueDays?: number;
+  paidAt?: Date;
+  promiseNote?: string;
+  installmentLabel?: string;
+}
+
+export interface RouteDay {
+  date: Date;
+  goalCents: number;
+  collectedCents: number;
+  clientCount: number;
+  pendingCount: number;
+  visits: RouteVisit[];
+}
+
+/**
+ * Today's collection route. No visits/route domain exists in the local DB
+ * yet, so the real implementation returns an empty zeroed day; the mock
+ * seeds the design dataset.
+ */
+export interface RouteRepo {
+  getToday(): Promise<RouteDay>;
+}
+
 export interface Repos {
   customers: CustomerRepo;
   loans: LoanRepo;
   payments: PaymentRepo;
   sync: SyncRepo;
   profile: ProfileRepo;
+  route: RouteRepo;
 }

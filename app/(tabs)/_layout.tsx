@@ -1,15 +1,19 @@
 /**
  * Copyright (C) 2026 by Pedro Sanders. MIT License.
+ *
+ * Collector tab shell per pencil.pen `m/tabbar`: Hoy / Ruta / Buscar /
+ * Cuadre. Screens own their headers.
  */
 import { Tabs } from "expo-router";
 import { ColorValue } from "react-native";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
+import { colors, fonts } from "../../lib/ui/theme";
 
-type IconName = keyof typeof MaterialCommunityIcons.glyphMap;
+type FeatherName = keyof typeof Feather.glyphMap;
 
-function tabIcon(name: IconName) {
+function featherIcon(name: FeatherName) {
   return ({ color, size }: { color: ColorValue; size: number }) => (
-    <MaterialCommunityIcons name={name} color={color} size={size} />
+    <Feather name={name} color={color} size={size} />
   );
 }
 
@@ -17,25 +21,24 @@ export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: "#1A2B4C",
-        tabBarInactiveTintColor: "#697A93"
+        headerShown: false,
+        tabBarActiveTintColor: colors.brandDeep,
+        tabBarInactiveTintColor: colors.slate,
+        tabBarLabelStyle: { fontSize: 11, fontFamily: fonts.medium },
+        tabBarStyle: { borderTopColor: colors.actionBarBorder }
       }}
     >
+      <Tabs.Screen name="index" options={{ title: "Hoy", tabBarIcon: featherIcon("home") }} />
+      <Tabs.Screen name="ruta" options={{ title: "Ruta", tabBarIcon: featherIcon("map") }} />
+      <Tabs.Screen name="buscar" options={{ title: "Buscar", tabBarIcon: featherIcon("search") }} />
       <Tabs.Screen
-        name="index"
-        options={{ title: "Inicio", tabBarIcon: tabIcon("home-variant-outline") }}
-      />
-      <Tabs.Screen
-        name="customers"
-        options={{ title: "Clientes", tabBarIcon: tabIcon("account-group-outline") }}
-      />
-      <Tabs.Screen
-        name="loans"
-        options={{ title: "Préstamos", tabBarIcon: tabIcon("cash-multiple") }}
-      />
-      <Tabs.Screen
-        name="settings"
-        options={{ title: "Ajustes", tabBarIcon: tabIcon("cog-outline") }}
+        name="cuadre"
+        options={{
+          title: "Cuadre",
+          tabBarIcon: ({ color, size }: { color: ColorValue; size: number }) => (
+            <MaterialCommunityIcons name="calculator-variant-outline" color={color} size={size} />
+          )
+        }}
       />
     </Tabs>
   );

@@ -17,6 +17,8 @@ import {
 } from "../../loans/loan.schema";
 import { createPaymentSchema, type Payment } from "../../payments/payment.schema";
 import { customerFixtures, loanFixtures, paymentFixtures } from "./fixtures";
+import { routeDayFixture } from "./routeFixtures";
+import { normalizeText } from "../../utils/text";
 import { createMockSyncRepo } from "./syncRepo.mock";
 import type { Repos } from "../types";
 
@@ -73,11 +75,35 @@ export function createMockRepos(): Repos {
     return payment;
   }, createPaymentSchema);
 
+  const mockAvatarKeys = ["female2", "male3", "female1", "male5", "male1"];
+
   return {
     customers: {
       list: async () => customers,
       get: async (id) => customers.find((c) => c.id === id) ?? null,
-      create: createCustomer
+      create: createCustomer,
+      search: async (query) => {
+        const needle = normalizeText(query.trim());
+        const matches = needle
+          ? customers.filter(
+              (c) => normalizeText(c.name).includes(needle) || c.phone.includes(needle)
+            )
+          : customers;
+        return matches.map((c, i) => {
+          const activeLoans = loans.filter(
+            (l) => l.customerId === c.id && l.status === "active"
+          ).length;
+          return {
+            id: c.id,
+            name: c.name,
+            avatarKey: mockAvatarKeys[i % mockAvatarKeys.length],
+            inMora: routeDayFixture.visits.some(
+              (v) => v.customerId === c.id && v.status === "overdue"
+            ),
+            loanCount: activeLoans
+          };
+        });
+      }
     },
     loans: {
       list: async (): Promise<LoanWithCustomer[]> =>
@@ -103,6 +129,9 @@ export function createMockRepos(): Repos {
     sync: createMockSyncRepo(),
     profile: {
       get: async () => ({ name: "Carlos", avatarKey: "male4" })
+    },
+    route: {
+      getToday: async () => routeDayFixture
     }
   };
 }
