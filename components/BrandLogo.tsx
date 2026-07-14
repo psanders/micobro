@@ -28,7 +28,7 @@ export function BrandLogo({ markSize = 40, wordSize = 28 }: BrandLogoProps) {
           m
         </Text>
       </View>
-      <Text style={[styles.word, { fontSize: wordSize }]}>micobro</Text>
+      <Text style={[styles.word, { fontSize: wordSize, lineHeight: wordSize }]}>micobro</Text>
     </View>
   );
 }
@@ -45,5 +45,11 @@ const styles = StyleSheet.create({
     color: colors.white,
     transform: [{ rotate: "-0.27deg" }]
   },
-  word: { fontFamily: fonts.logo, color: colors.brandDeep, letterSpacing: -0.5 }
+  word: {
+    fontFamily: fonts.logo,
+    color: colors.brandDeep,
+    letterSpacing: -0.5,
+    includeFontPadding: false,
+    textAlignVertical: "center"
+  }
 });
