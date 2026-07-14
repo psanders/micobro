@@ -5,6 +5,14 @@ export { createCreateLoan } from "./createLoan";
 export { createListLoans } from "./listLoans";
 export { createListLoansByCustomer } from "./listLoansByCustomer";
 export { createGetLoanDetail } from "./getLoanDetail";
+export { createGetLoanDetailView } from "./getLoanDetailView";
+export {
+  buildLoanDetailView,
+  buildCustomerLoanSummary,
+  loanCode,
+  installmentDueDate,
+  MORA_NOTE
+} from "./loanViews";
 export { createLoanSchema, loanFrequencies, loanStatuses } from "./loan.schema";
 export type {
   CreateLoanInput,

@@ -62,6 +62,13 @@ const styles = StyleSheet.create({
   },
   chipSelected: { backgroundColor: colors.brandDeep, borderColor: colors.brandDeep },
   dot: { width: 6, height: 6, borderRadius: 3 },
-  label: { fontSize: 12, fontFamily: fonts.medium, color: colors.ink },
+  label: {
+    fontSize: 12,
+    lineHeight: 16,
+    fontFamily: fonts.medium,
+    color: colors.ink,
+    includeFontPadding: false,
+    textAlignVertical: "center"
+  },
   labelSelected: { color: colors.white, fontFamily: fonts.semiBold }
 });

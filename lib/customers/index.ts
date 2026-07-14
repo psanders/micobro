@@ -5,6 +5,7 @@ export { createCreateCustomer } from "./createCustomer";
 export { createListCustomers } from "./listCustomers";
 export { createGetCustomer } from "./getCustomer";
 export { createSearchCustomers } from "./searchCustomers";
+export { createGetCustomerDetail } from "./getCustomerDetail";
 export { createCustomerSchema } from "./customer.schema";
 export type { CreateCustomerInput, Customer } from "./customer.schema";
 export type { GetCustomerInput } from "./getCustomer";

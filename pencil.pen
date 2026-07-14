@@ -16474,6 +16474,187 @@
           ]
         }
       ]
+    },
+    {
+      "type": "frame",
+      "id": "FWJxl",
+      "x": -589,
+      "y": 8827,
+      "name": "EXPORT-readme-banner",
+      "clip": true,
+      "width": 1280,
+      "height": 400,
+      "fill": {
+        "type": "gradient",
+        "gradientType": "linear",
+        "enabled": true,
+        "rotation": 150,
+        "size": {
+          "height": 1
+        },
+        "colors": [
+          {
+            "color": "#1F9C82",
+            "position": 0
+          },
+          {
+            "color": "#0B4F4A",
+            "position": 1
+          }
+        ]
+      },
+      "layout": "none",
+      "children": [
+        {
+          "type": "text",
+          "id": "e1cXX5",
+          "x": 930,
+          "y": -110,
+          "name": "ghostM",
+          "rotation": 0.27,
+          "fill": "#FFFFFF1A",
+          "content": "m",
+          "lineHeight": 1,
+          "fontFamily": "$font-family",
+          "fontSize": 620,
+          "fontWeight": "700"
+        },
+        {
+          "type": "frame",
+          "id": "DqQFt",
+          "x": 80,
+          "y": 0,
+          "name": "content",
+          "width": 900,
+          "height": 400,
+          "layout": "vertical",
+          "gap": 24,
+          "justifyContent": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "W8RVwx",
+              "name": "logoRow",
+              "gap": 18,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "f9n4f",
+                  "name": "logoMark",
+                  "width": 68,
+                  "height": 68,
+                  "fill": "$brand.white",
+                  "cornerRadius": 18,
+                  "layout": "vertical",
+                  "padding": [
+                    0,
+                    0,
+                    7,
+                    0
+                  ],
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "LNufP",
+                      "name": "markM",
+                      "rotation": 0.27,
+                      "fill": "$brand.blue.deep",
+                      "content": "m",
+                      "lineHeight": 1,
+                      "textAlign": "center",
+                      "textAlignVertical": "middle",
+                      "fontFamily": "$font-family",
+                      "fontSize": 42,
+                      "fontWeight": "700"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "XSjhf",
+                  "name": "wordmark",
+                  "fill": "$brand.white",
+                  "content": "micobro",
+                  "fontFamily": "$font-family",
+                  "fontSize": 58,
+                  "fontWeight": "700",
+                  "letterSpacing": -1
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "krzWG",
+              "name": "tagline",
+              "fill": "#E8F7F2",
+              "textGrowth": "fixed-width",
+              "width": 640,
+              "content": "Clientes, préstamos y cobros — todo en tu teléfono, sin internet.",
+              "lineHeight": 1.35,
+              "fontFamily": "$font-family",
+              "fontSize": 23,
+              "fontWeight": "500"
+            },
+            {
+              "type": "frame",
+              "id": "R0BxO",
+              "name": "pills",
+              "gap": 12,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "PbQsd",
+                  "name": "pillA",
+                  "fill": "$brand.orange.deep",
+                  "cornerRadius": "$radius.pill",
+                  "padding": [
+                    10,
+                    18
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "bDtrO",
+                      "name": "pillAText",
+                      "fill": "$brand.white",
+                      "content": "100% fuera de línea",
+                      "fontFamily": "$font-family",
+                      "fontSize": 15,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "E7PpY",
+                  "name": "pillB",
+                  "fill": "#0B4F4A",
+                  "cornerRadius": "$radius.pill",
+                  "padding": [
+                    10,
+                    18
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "kAH1h",
+                      "name": "pillBText",
+                      "fill": "$brand.white",
+                      "content": "Respaldo en tu Google Sheet",
+                      "fontFamily": "$font-family",
+                      "fontSize": 15,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "variables": {

@@ -230,7 +230,7 @@ const styles = StyleSheet.create({
     color: "#9FE6D2",
     letterSpacing: 1.5
   },
-  heroRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end" },
+  heroRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   heroAmount: { fontSize: 32, fontFamily: fonts.bold, color: colors.white, letterSpacing: -1 },
   heroSub: { fontSize: 13, fontFamily: fonts.medium, color: "#9FE6D2" },
   heroPill: {
@@ -239,7 +239,14 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 12
   },
-  heroPillText: { fontSize: 13, fontFamily: fonts.bold, color: colors.brandDeep },
+  heroPillText: {
+    fontSize: 13,
+    lineHeight: 16,
+    fontFamily: fonts.bold,
+    color: colors.brandDeep,
+    includeFontPadding: false,
+    textAlignVertical: "center"
+  },
   heroMeta: { flexDirection: "row", justifyContent: "space-between" },
   heroMetaStrong: { fontSize: 13, fontFamily: fonts.semiBold, color: colors.white },
   quickRow: { flexDirection: "row", gap: 10 },

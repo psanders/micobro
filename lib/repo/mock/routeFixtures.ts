@@ -76,7 +76,7 @@ export const routeVisitFixtures: RouteVisit[] = [
   },
   {
     id: "visit-6",
-    customerId: "customer-3",
+    customerId: "customer-6",
     name: "Ana Figueroa",
     business: "Salón La Bella · El Sol",
     address: "Calle El Sol 5",
@@ -88,7 +88,7 @@ export const routeVisitFixtures: RouteVisit[] = [
   },
   {
     id: "visit-7",
-    customerId: "customer-4",
+    customerId: "customer-7",
     name: "Ramón Ortiz",
     business: "Tienda de ropa · Calle El Sol",
     address: "Calle El Sol 5",

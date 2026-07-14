@@ -1,10 +1,10 @@
 /**
  * Copyright (C) 2026 by Pedro Sanders. MIT License.
  *
- * A single factory (rather than four independent ones) so customers, loans,
- * and payments share one set of in-memory arrays — LoanRepo.list() needs the
- * customer name and LoanRepo.get() needs a loan's payments, so the mock data
- * has to be cross-referenceable exactly like the real drizzle tables are.
+ * A single factory (rather than independent ones) so customers, loans,
+ * payments, and mora share one set of in-memory structures — the detail
+ * views cross-reference exactly like the real drizzle tables do, and a
+ * collect() is immediately visible on the next getDetailView().
  */
 import * as Crypto from "expo-crypto";
 import { withErrorHandlingAndValidation } from "../../utils/withErrorHandlingAndValidation";
@@ -16,16 +16,48 @@ import {
   type LoanDetail
 } from "../../loans/loan.schema";
 import { createPaymentSchema, type Payment } from "../../payments/payment.schema";
-import { customerFixtures, loanFixtures, paymentFixtures } from "./fixtures";
+import {
+  buildCustomerLoanSummary,
+  buildLoanDetailView,
+  loanCode,
+  MORA_NOTE
+} from "../../loans/loanViews";
+import { formatCurrency } from "../../utils/money";
+import {
+  customerFixtures,
+  customerMetaFixtures,
+  loanFixtures,
+  moraFixtures,
+  paymentFixtures
+} from "./fixtures";
 import { routeDayFixture } from "./routeFixtures";
 import { normalizeText } from "../../utils/text";
 import { createMockSyncRepo } from "./syncRepo.mock";
-import type { Repos } from "../types";
+import type { CustomerActivityItem, LoanDetailView, Repos } from "../types";
 
 export function createMockRepos(): Repos {
   const customers: Customer[] = customerFixtures.map((c) => ({ ...c }));
   const loans: Loan[] = loanFixtures.map((l) => ({ ...l }));
   const payments: Payment[] = paymentFixtures.map((p) => ({ ...p }));
+  const mora = new Map(Object.entries(moraFixtures).map(([id, m]) => [id, { ...m }]));
+
+  const metaOf = (customerId: string) => customerMetaFixtures[customerId] ?? null;
+  const moraOf = (loanId: string) => mora.get(loanId) ?? { moraCents: 0, moraDays: 0 };
+  const customerInMora = (customerId: string) =>
+    loans.some((l) => l.customerId === customerId && moraOf(l.id).moraCents > 0);
+
+  const viewOf = (loan: Loan): LoanDetailView => {
+    const customer = customers.find((c) => c.id === loan.customerId);
+    const state = moraOf(loan.id);
+    return buildLoanDetailView({
+      loan,
+      customerName: customer?.name ?? "Cliente",
+      business: metaOf(loan.customerId)?.business ?? null,
+      payments: payments.filter((p) => p.loanId === loan.id),
+      moraCents: state.moraCents,
+      moraDays: state.moraDays
+    });
+  };
 
   const createCustomer = withErrorHandlingAndValidation(async (params): Promise<Customer> => {
     const now = new Date();
@@ -75,8 +107,6 @@ export function createMockRepos(): Repos {
     return payment;
   }, createPaymentSchema);
 
-  const mockAvatarKeys = ["female2", "male3", "female1", "male5", "male1"];
-
   return {
     customers: {
       list: async () => customers,
@@ -89,20 +119,55 @@ export function createMockRepos(): Repos {
               (c) => normalizeText(c.name).includes(needle) || c.phone.includes(needle)
             )
           : customers;
-        return matches.map((c, i) => {
-          const activeLoans = loans.filter(
-            (l) => l.customerId === c.id && l.status === "active"
-          ).length;
-          return {
-            id: c.id,
-            name: c.name,
-            avatarKey: mockAvatarKeys[i % mockAvatarKeys.length],
-            inMora: routeDayFixture.visits.some(
-              (v) => v.customerId === c.id && v.status === "overdue"
-            ),
-            loanCount: activeLoans
-          };
-        });
+        return matches.map((c) => ({
+          id: c.id,
+          name: c.name,
+          avatarKey: metaOf(c.id)?.avatarKey ?? null,
+          inMora: customerInMora(c.id),
+          loanCount: loans.filter((l) => l.customerId === c.id && l.status === "active").length
+        }));
+      },
+      getDetail: async (id) => {
+        const customer = customers.find((c) => c.id === id);
+        if (!customer) return null;
+        const meta = metaOf(id);
+
+        const customerLoans = loans.filter((l) => l.customerId === id);
+        const activeLoans = customerLoans
+          .filter((l) => l.status === "active")
+          .map((l) => buildCustomerLoanSummary(viewOf(l), l));
+
+        const activity: CustomerActivityItem[] = [];
+        for (const loan of customerLoans) {
+          let cuotaNumber = 0;
+          for (const payment of payments
+            .filter((p) => p.loanId === loan.id)
+            .sort((a, b) => a.paidAt.getTime() - b.paidAt.getTime())) {
+            const isMora = payment.notes === MORA_NOTE;
+            if (!isMora) cuotaNumber += 1;
+            activity.push({
+              id: payment.id,
+              description: isMora
+                ? `Pago de mora · ${formatCurrency(payment.amountCents)}`
+                : `Pago cuota ${cuotaNumber} · ${formatCurrency(payment.amountCents)}`,
+              at: payment.paidAt
+            });
+          }
+        }
+        activity.sort((a, b) => b.at.getTime() - a.at.getTime());
+
+        return {
+          id: customer.id,
+          name: customer.name,
+          avatarKey: meta?.avatarKey ?? null,
+          phone: customer.phone,
+          address: customer.address,
+          cedula: meta?.cedula ?? null,
+          sinceYear: customer.createdAt.getFullYear(),
+          standing: customerInMora(id) ? "mora" : "al_dia",
+          activeLoans,
+          recentActivity: activity.slice(0, 5)
+        };
       }
     },
     loans: {
@@ -120,11 +185,89 @@ export function createMockRepos(): Repos {
           loan.principalCents - loanPayments.reduce((sum, payment) => sum + payment.amountCents, 0);
         return { ...loan, payments: loanPayments, balanceCents };
       },
-      create: createLoan
+      create: createLoan,
+      getDetailView: async (id) => {
+        const loan = loans.find((l) => l.id === id);
+        return loan ? viewOf(loan) : null;
+      }
     },
     payments: {
       listByLoan: async (loanId) => payments.filter((payment) => payment.loanId === loanId),
-      create: createPayment
+      create: createPayment,
+      getCollectContext: async (loanId) => {
+        const loan = loans.find((l) => l.id === loanId);
+        if (!loan) return null;
+        const view = viewOf(loan);
+        const state = moraOf(loanId);
+        const baseCuota = Math.floor(loan.principalCents / loan.termCount);
+        return {
+          loanId: loan.id,
+          loanCode: loanCode(loan.id),
+          customerId: loan.customerId,
+          customerName: view.customerName,
+          customerAvatarKey: metaOf(loan.customerId)?.avatarKey ?? null,
+          business: view.business,
+          cuotaCents: Math.min(baseCuota, view.balanceCents),
+          currentInstallmentNumber: Math.min(view.installmentsPaid + 1, view.installmentsTotal),
+          moraCents: state.moraCents,
+          moraDays: state.moraDays,
+          remainingInstallments: view.installmentsTotal - view.installmentsPaid,
+          remainingBalanceCents: view.balanceCents
+        };
+      },
+      collect: async (input) => {
+        const loan = loans.find((l) => l.id === input.loanId);
+        const customer = loan ? customers.find((c) => c.id === loan.customerId) : undefined;
+        const paidAt = new Date();
+        const receiptNumber = `R-${String(payments.length + 1).padStart(5, "0")}`;
+
+        const moraCents = Math.min(input.moraCents, input.amountCents);
+        const installmentCents = input.amountCents - moraCents;
+
+        let paymentId = "";
+        if (moraCents > 0) {
+          const row: Payment = {
+            id: Crypto.randomUUID(),
+            loanId: input.loanId,
+            amountCents: moraCents,
+            paidAt,
+            method: input.method,
+            notes: MORA_NOTE,
+            createdAt: paidAt
+          };
+          payments.push(row);
+          paymentId = row.id;
+          const state = moraOf(input.loanId);
+          const remaining = Math.max(0, state.moraCents - moraCents);
+          mora.set(input.loanId, {
+            moraCents: remaining,
+            moraDays: remaining > 0 ? state.moraDays : 0
+          });
+        }
+        if (installmentCents > 0) {
+          const row: Payment = {
+            id: Crypto.randomUUID(),
+            loanId: input.loanId,
+            amountCents: installmentCents,
+            paidAt,
+            method: input.method,
+            notes: null,
+            createdAt: paidAt
+          };
+          payments.push(row);
+          paymentId = row.id;
+        }
+
+        return {
+          paymentId,
+          receiptNumber,
+          paidAt,
+          totalCents: input.amountCents,
+          method: input.method,
+          customerName: customer?.name ?? "Cliente",
+          lines: input.lines
+        };
+      }
     },
     sync: createMockSyncRepo(),
     profile: {

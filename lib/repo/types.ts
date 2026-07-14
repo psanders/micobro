@@ -2,8 +2,14 @@
  * Copyright (C) 2026 by Pedro Sanders. MIT License.
  */
 import type { Customer, CreateCustomerInput } from "../customers/customer.schema";
-import type { Loan, LoanWithCustomer, LoanDetail, CreateLoanInput } from "../loans/loan.schema";
-import type { Payment, CreatePaymentInput } from "../payments/payment.schema";
+import type {
+  Loan,
+  LoanWithCustomer,
+  LoanDetail,
+  CreateLoanInput,
+  LoanFrequency
+} from "../loans/loan.schema";
+import type { Payment, CreatePaymentInput, PaymentMethod } from "../payments/payment.schema";
 import type { PushResult } from "../sync/push";
 
 /** Row shape for the Buscar screen: status line + navigation target. */
@@ -15,12 +21,99 @@ export interface CustomerSearchResult {
   loanCount: number;
 }
 
+export type CustomerStanding = "al_dia" | "mora";
+
+/** One active loan as summarized on the Cliente Detalle screen. */
+export interface CustomerLoanSummary {
+  loanId: string;
+  code: string;
+  principalCents: number;
+  frequency: LoanFrequency;
+  installmentsPaid: number;
+  installmentsTotal: number;
+  nextDueDate: Date | null;
+  nextAmountCents: number;
+}
+
+/** A recent-history entry ("Pago cuota 3 · RD$2,400"). */
+export interface CustomerActivityItem {
+  id: string;
+  description: string;
+  at: Date;
+}
+
+/**
+ * Everything the Cliente Detalle screen renders. `cedula`/`sinceYear` are
+ * null when unknown (the real client has no cédula column yet), and
+ * `standing` is "al_dia" in real mode until a mora domain exists.
+ */
+export interface CustomerDetailView {
+  id: string;
+  name: string;
+  avatarKey: string | null;
+  phone: string;
+  address: string | null;
+  cedula: string | null;
+  sinceYear: number | null;
+  standing: CustomerStanding;
+  activeLoans: CustomerLoanSummary[];
+  recentActivity: CustomerActivityItem[];
+}
+
 export interface CustomerRepo {
   list(): Promise<Customer[]>;
   get(id: string): Promise<Customer | null>;
   create(input: CreateCustomerInput): Promise<Customer>;
   /** Name/phone substring match, case-insensitive. Empty query = all customers. */
   search(query: string): Promise<CustomerSearchResult[]>;
+  getDetail(id: string): Promise<CustomerDetailView | null>;
+}
+
+export type CuotaStatus = "paid" | "overdue" | "upcoming";
+
+/** One row of the Plan de pagos. Labels are computed in the UI. */
+export interface LoanScheduleItem {
+  number: number;
+  dueDate: Date;
+  /** Includes the accrued mora on the first overdue cuota. */
+  amountCents: number;
+  status: CuotaStatus;
+}
+
+/** One line of the "Total a pagar hoy" breakdown. */
+export interface DueTodayLine {
+  kind: "installment" | "mora";
+  installmentNumber?: number;
+  dueDate?: Date;
+  moraDays?: number;
+  amountCents: number;
+}
+
+/**
+ * Everything the Préstamo Detalle screen renders. Mora comes back zero in
+ * real mode until a mora domain exists; the mock stages the design's
+ * overdue exemplar.
+ */
+export interface LoanDetailView {
+  id: string;
+  code: string;
+  customerId: string;
+  customerName: string;
+  business: string | null;
+  frequency: LoanFrequency;
+  termCount: number;
+  startDate: Date;
+  endDate: Date | null;
+  balanceCents: number;
+  paidCents: number;
+  installmentsPaid: number;
+  installmentsTotal: number;
+  nextDueDate: Date | null;
+  moraCents: number;
+  moraDays: number;
+  dueTodayCents: number;
+  dueTodayLines: DueTodayLine[];
+  schedule: LoanScheduleItem[];
 }
 
 export interface LoanRepo {
@@ -28,11 +121,56 @@ export interface LoanRepo {
   listByCustomer(customerId: string): Promise<Loan[]>;
   get(id: string): Promise<LoanDetail | null>;
   create(input: CreateLoanInput): Promise<Loan>;
+  getDetailView(id: string): Promise<LoanDetailView | null>;
+}
+
+/** What the Registrar cobro screen needs to build its options. */
+export interface CollectContext {
+  loanId: string;
+  loanCode: string;
+  customerId: string;
+  customerName: string;
+  customerAvatarKey: string | null;
+  business: string | null;
+  /** The current cuota, capped at the remaining balance. */
+  cuotaCents: number;
+  currentInstallmentNumber: number;
+  moraCents: number;
+  moraDays: number;
+  remainingInstallments: number;
+  remainingBalanceCents: number;
+}
+
+export interface ReceiptLine {
+  label: string;
+  amountCents: number;
+}
+
+export interface CollectInput {
+  loanId: string;
+  amountCents: number;
+  method: PaymentMethod;
+  /** Mora-first split, as previewed on screen. */
+  moraCents: number;
+  lines: ReceiptLine[];
+}
+
+export interface PaymentReceipt {
+  paymentId: string;
+  receiptNumber: string;
+  paidAt: Date;
+  totalCents: number;
+  method: PaymentMethod;
+  customerName: string;
+  lines: ReceiptLine[];
 }
 
 export interface PaymentRepo {
   listByLoan(loanId: string): Promise<Payment[]>;
   create(input: CreatePaymentInput): Promise<Payment>;
+  getCollectContext(loanId: string): Promise<CollectContext | null>;
+  /** Records the cobro (mora and cuota as separate rows) and returns the receipt. */
+  collect(input: CollectInput): Promise<PaymentReceipt>;
 }
 
 export interface SyncStatus {
