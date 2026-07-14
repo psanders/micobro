@@ -11,6 +11,7 @@ import {
   PlusJakartaSans_600SemiBold,
   PlusJakartaSans_700Bold
 } from "@expo-google-fonts/plus-jakarta-sans";
+import { Sora_700Bold } from "@expo-google-fonts/sora";
 import { useDatabaseMigrations } from "../lib/db/migrate";
 import { db } from "../lib/db/client";
 import { createRealRepos } from "../lib/repo/real";
@@ -68,7 +69,8 @@ export default function RootLayout() {
     PlusJakartaSans_400Regular,
     PlusJakartaSans_500Medium,
     PlusJakartaSans_600SemiBold,
-    PlusJakartaSans_700Bold
+    PlusJakartaSans_700Bold,
+    Sora_700Bold
   });
 
   if (error) {

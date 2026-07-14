@@ -4,7 +4,8 @@
  * On-device mirror of the design tokens in `pencil.pen` (get_variables).
  * The design file is the source of truth — when a token changes there,
  * update it here. Font families map to @expo-google-fonts/plus-jakarta-sans
- * exports loaded in app/_layout.tsx.
+ * exports loaded in app/_layout.tsx. `$font-logo` (Sora, brand wordmark
+ * only — never body text) maps to @expo-google-fonts/sora, same file.
  *
  *   pencil.pen variable        → theme key
  *   brand.blue.deep   #0B4F4A  → colors.brandDeep
@@ -67,5 +68,7 @@ export const fonts = {
   regular: "PlusJakartaSans_400Regular",
   medium: "PlusJakartaSans_500Medium",
   semiBold: "PlusJakartaSans_600SemiBold",
-  bold: "PlusJakartaSans_700Bold"
+  bold: "PlusJakartaSans_700Bold",
+  /** Logo-only typeface ($font-logo in pencil.pen) — never used for body text. */
+  logo: "Sora_700Bold"
 } as const;

@@ -69,12 +69,6 @@
                       "fill": "$brand.white",
                       "cornerRadius": 14,
                       "layout": "vertical",
-                      "padding": [
-                        0,
-                        0,
-                        5,
-                        0
-                      ],
                       "justifyContent": "center",
                       "alignItems": "center",
                       "children": [
@@ -88,7 +82,7 @@
                           "lineHeight": 1,
                           "textAlign": "center",
                           "textAlignVertical": "middle",
-                          "fontFamily": "$font-family",
+                          "fontFamily": "$font-logo",
                           "fontSize": 32,
                           "fontWeight": "700"
                         }
@@ -100,10 +94,10 @@
                       "name": "logoWord",
                       "fill": "$brand.white",
                       "content": "micobro",
-                      "fontFamily": "$font-family",
+                      "fontFamily": "$font-logo",
                       "fontSize": 42,
                       "fontWeight": "700",
-                      "letterSpacing": -0.5
+                      "letterSpacing": -1
                     }
                   ]
                 },
@@ -882,12 +876,6 @@
                           "fill": "$brand.blue.deep",
                           "cornerRadius": 10,
                           "layout": "vertical",
-                          "padding": [
-                            0,
-                            0,
-                            4,
-                            0
-                          ],
                           "justifyContent": "center",
                           "alignItems": "center",
                           "children": [
@@ -901,7 +889,7 @@
                               "lineHeight": 1,
                               "textAlign": "center",
                               "textAlignVertical": "middle",
-                              "fontFamily": "$font-family",
+                              "fontFamily": "$font-logo",
                               "fontSize": 24,
                               "fontWeight": "700"
                             }
@@ -913,10 +901,10 @@
                           "name": "logoWord",
                           "fill": "$brand.blue.deep",
                           "content": "micobro",
-                          "fontFamily": "$font-family",
+                          "fontFamily": "$font-logo",
                           "fontSize": 32,
                           "fontWeight": "700",
-                          "letterSpacing": -0.5
+                          "letterSpacing": -0.8
                         }
                       ]
                     }
@@ -7619,12 +7607,6 @@
                                   "fill": "$brand.blue.deep",
                                   "cornerRadius": 10,
                                   "layout": "vertical",
-                                  "padding": [
-                                    0,
-                                    0,
-                                    4,
-                                    0
-                                  ],
                                   "justifyContent": "center",
                                   "alignItems": "center",
                                   "children": [
@@ -7638,7 +7620,7 @@
                                       "lineHeight": 1,
                                       "textAlign": "center",
                                       "textAlignVertical": "middle",
-                                      "fontFamily": "$font-family",
+                                      "fontFamily": "$font-logo",
                                       "fontSize": 24,
                                       "fontWeight": "700"
                                     }
@@ -7650,10 +7632,10 @@
                                   "name": "logoWord",
                                   "fill": "$brand.blue.deep",
                                   "content": "micobro",
-                                  "fontFamily": "$font-family",
+                                  "fontFamily": "$font-logo",
                                   "fontSize": 28,
                                   "fontWeight": "700",
-                                  "letterSpacing": -0.5
+                                  "letterSpacing": -0.7
                                 }
                               ]
                             },
@@ -7834,12 +7816,6 @@
                                   "fill": "$brand.blue.deep",
                                   "cornerRadius": 10,
                                   "layout": "vertical",
-                                  "padding": [
-                                    0,
-                                    0,
-                                    4,
-                                    0
-                                  ],
                                   "justifyContent": "center",
                                   "alignItems": "center",
                                   "children": [
@@ -7853,7 +7829,7 @@
                                       "lineHeight": 1,
                                       "textAlign": "center",
                                       "textAlignVertical": "middle",
-                                      "fontFamily": "$font-family",
+                                      "fontFamily": "$font-logo",
                                       "fontSize": 24,
                                       "fontWeight": "700"
                                     }
@@ -7865,10 +7841,10 @@
                                   "name": "logoWord",
                                   "fill": "$brand.blue.deep",
                                   "content": "micobro",
-                                  "fontFamily": "$font-family",
+                                  "fontFamily": "$font-logo",
                                   "fontSize": 28,
                                   "fontWeight": "700",
-                                  "letterSpacing": -0.5
+                                  "letterSpacing": -0.7
                                 }
                               ]
                             },
@@ -8425,12 +8401,6 @@
                                       "fill": "$brand.blue.deep",
                                       "cornerRadius": 10,
                                       "layout": "vertical",
-                                      "padding": [
-                                        0,
-                                        0,
-                                        4,
-                                        0
-                                      ],
                                       "justifyContent": "center",
                                       "alignItems": "center",
                                       "children": [
@@ -8444,7 +8414,7 @@
                                           "lineHeight": 1,
                                           "textAlign": "center",
                                           "textAlignVertical": "middle",
-                                          "fontFamily": "$font-family",
+                                          "fontFamily": "$font-logo",
                                           "fontSize": 24,
                                           "fontWeight": "700"
                                         }
@@ -8456,10 +8426,10 @@
                                       "name": "logoWord",
                                       "fill": "$brand.blue.deep",
                                       "content": "micobro",
-                                      "fontFamily": "$font-family",
+                                      "fontFamily": "$font-logo",
                                       "fontSize": 28,
                                       "fontWeight": "700",
-                                      "letterSpacing": -0.5
+                                      "letterSpacing": -0.7
                                     }
                                   ]
                                 },
@@ -16109,7 +16079,7 @@
                       "fill": "#FFFFFF",
                       "content": "m",
                       "lineHeight": 1,
-                      "fontFamily": "$font-family",
+                      "fontFamily": "$font-logo",
                       "fontSize": 320,
                       "fontWeight": "700"
                     }
@@ -16165,7 +16135,7 @@
                       "fill": "#0B4F4A",
                       "content": "m",
                       "lineHeight": 0.9,
-                      "fontFamily": "$font-family",
+                      "fontFamily": "$font-logo",
                       "fontSize": 260,
                       "fontWeight": "700"
                     }
@@ -16273,7 +16243,7 @@
                       "fill": "#FFFFFF",
                       "content": "m",
                       "lineHeight": 0.9,
-                      "fontFamily": "$font-family",
+                      "fontFamily": "$font-logo",
                       "fontSize": 260,
                       "fontWeight": "700"
                     }
@@ -16547,12 +16517,6 @@
                   "fill": "$brand.white",
                   "cornerRadius": 18,
                   "layout": "vertical",
-                  "padding": [
-                    0,
-                    0,
-                    7,
-                    0
-                  ],
                   "justifyContent": "center",
                   "alignItems": "center",
                   "children": [
@@ -16566,7 +16530,7 @@
                       "lineHeight": 1,
                       "textAlign": "center",
                       "textAlignVertical": "middle",
-                      "fontFamily": "$font-family",
+                      "fontFamily": "$font-logo",
                       "fontSize": 42,
                       "fontWeight": "700"
                     }
@@ -16578,10 +16542,10 @@
                   "name": "wordmark",
                   "fill": "$brand.white",
                   "content": "micobro",
-                  "fontFamily": "$font-family",
+                  "fontFamily": "$font-logo",
                   "fontSize": 58,
                   "fontWeight": "700",
-                  "letterSpacing": -1
+                  "letterSpacing": -1.5
                 }
               ]
             },
@@ -16769,6 +16733,10 @@
     "font-family": {
       "type": "string",
       "value": "Plus Jakarta Sans"
+    },
+    "font-logo": {
+      "type": "string",
+      "value": "Sora"
     }
   },
   "fileToken": "bf912349-b660-43f9-ab01-ca00f7b59336"

@@ -2,8 +2,13 @@
  * Copyright (C) 2026 by Pedro Sanders. MIT License.
  *
  * The micobro logo lockup from pencil.pen (`component/logo`): rounded-square
- * mark with the slightly rotated "m" plus the wordmark. Sizes default to the
- * auth-screen variant (40px mark / 28px word).
+ * mark with the slightly rotated "m" plus the wordmark, set in Sora
+ * ($font-logo — the brand typeface, distinct from the Plus Jakarta Sans
+ * body font). Sizes default to the auth-screen variant (40px mark / 28px
+ * word). No extra padding on the mark box — Sora's "m" centers correctly
+ * under plain `justifyContent: "center"` (the old Plus-Jakarta-Sans-tuned
+ * bottom-padding offset sat the glyph too low once the font changed; fixed
+ * in pencil.pen across every logo instance and mirrored here).
  */
 import { View, Text, StyleSheet } from "react-native";
 import { colors, fonts } from "../lib/ui/theme";
@@ -33,13 +38,12 @@ const styles = StyleSheet.create({
   mark: {
     backgroundColor: colors.brandDeep,
     alignItems: "center",
-    justifyContent: "center",
-    paddingBottom: 4
+    justifyContent: "center"
   },
   markM: {
-    fontFamily: fonts.bold,
+    fontFamily: fonts.logo,
     color: colors.white,
     transform: [{ rotate: "-0.27deg" }]
   },
-  word: { fontFamily: fonts.bold, color: colors.brandDeep, letterSpacing: -0.5 }
+  word: { fontFamily: fonts.logo, color: colors.brandDeep, letterSpacing: -0.5 }
 });
