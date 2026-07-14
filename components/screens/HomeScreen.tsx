@@ -92,7 +92,7 @@ export function HomeScreen() {
           </View>
           <Text style={styles.greeting}>{name ? `Hola, ${name}.` : "Hola."}</Text>
         </View>
-        <Pressable style={styles.avatarButton} onPress={() => router.push("/ajustes")}>
+        <Pressable style={styles.avatarButton} onPress={() => router.push("/perfil")}>
           {name ? (
             <Text style={styles.avatarInitials}>{initialsOf(name)}</Text>
           ) : (
@@ -222,7 +222,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center"
   },
-  avatarInitials: { fontSize: 14, fontFamily: fonts.bold, color: colors.yellowAccent },
+  avatarInitials: {
+    fontSize: 14,
+    lineHeight: 14,
+    fontFamily: fonts.bold,
+    color: colors.yellowAccent,
+    includeFontPadding: false,
+    textAlignVertical: "center"
+  },
   hero: { backgroundColor: colors.brandDeep, borderRadius: 18, padding: 20, gap: 14 },
   heroLabel: {
     fontSize: 11,

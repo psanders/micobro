@@ -4,12 +4,14 @@
 import { eq } from "drizzle-orm";
 import { z } from "zod/v4";
 import { withErrorHandlingAndValidation } from "../utils/withErrorHandlingAndValidation";
-import { customers, loans, payments } from "../db/schema";
+import { customers, loans, payments, visits } from "../db/schema";
 import { buildLoanDetailView, buildCustomerLoanSummary, MORA_NOTE } from "../loans/loanViews";
 import { formatCurrency } from "../utils/money";
+import { visitDescription } from "../visits/visitDescription";
 import type { Customer } from "./customer.schema";
 import type { Loan } from "../loans/loan.schema";
 import type { Payment } from "../payments/payment.schema";
+import type { Visit } from "../visits/visit.schema";
 import type { CustomerDetailView } from "../repo/types";
 import type { Database } from "../db/client";
 
@@ -68,6 +70,14 @@ export function createGetCustomerDetail({ db }: GetCustomerDetailDeps) {
           at: payment.paidAt
         });
       }
+    }
+
+    const customerVisits = (await db
+      .select()
+      .from(visits)
+      .where(eq(visits.customerId, id))) as Visit[];
+    for (const visit of customerVisits) {
+      activity.push({ id: visit.id, description: visitDescription(visit), at: visit.createdAt });
     }
 
     activity.sort((a, b) => b.at.getTime() - a.at.getTime());

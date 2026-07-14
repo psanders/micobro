@@ -11,6 +11,7 @@ import type {
 } from "../loans/loan.schema";
 import type { Payment, CreatePaymentInput, PaymentMethod } from "../payments/payment.schema";
 import type { PushResult } from "../sync/push";
+import type { CreateVisitInput, Visit } from "../visits/visit.schema";
 
 /** Row shape for the Buscar screen: status line + navigation target. */
 export interface CustomerSearchResult {
@@ -116,12 +117,32 @@ export interface LoanDetailView {
   schedule: LoanScheduleItem[];
 }
 
+/** One row of the Histórico de Pagos list. */
+export interface PaymentHistoryEntry {
+  id: string;
+  date: Date;
+  label: string;
+  subLabel: string;
+  amountCents: number;
+}
+
+/** Everything the Histórico de Pagos screen renders for one loan. */
+export interface PaymentHistoryView {
+  totalCollectedCents: number;
+  installmentsPaid: number;
+  installmentsTotal: number;
+  moraPaidCents: number;
+  lastPaymentAt: Date | null;
+  entries: PaymentHistoryEntry[];
+}
+
 export interface LoanRepo {
   list(): Promise<LoanWithCustomer[]>;
   listByCustomer(customerId: string): Promise<Loan[]>;
   get(id: string): Promise<LoanDetail | null>;
   create(input: CreateLoanInput): Promise<Loan>;
   getDetailView(id: string): Promise<LoanDetailView | null>;
+  getPaymentHistory(id: string): Promise<PaymentHistoryView | null>;
 }
 
 /** What the Registrar cobro screen needs to build its options. */
@@ -171,6 +192,8 @@ export interface PaymentRepo {
   getCollectContext(loanId: string): Promise<CollectContext | null>;
   /** Records the cobro (mora and cuota as separate rows) and returns the receipt. */
   collect(input: CollectInput): Promise<PaymentReceipt>;
+  /** Every payment (any loan) paid today — feeds Cuadre General's desglose. */
+  listToday(): Promise<Payment[]>;
 }
 
 export interface SyncStatus {
@@ -248,6 +271,26 @@ export interface RouteRepo {
   getToday(): Promise<RouteDay>;
 }
 
+export interface VisitRepo {
+  record(input: CreateVisitInput): Promise<Visit>;
+}
+
+/** What the feedback-recording flow hands off to be filed. */
+export interface FeedbackSubmission {
+  videoUri: string;
+  title: string;
+}
+
+/**
+ * Files a recorded feedback video. Both the mock and real implementations
+ * are a no-op stub until a per-lender GitHub auth approach is chosen — see
+ * the `feedback-report` capability's design notes. No shared secret ships
+ * in the app.
+ */
+export interface FeedbackRepo {
+  submit(input: FeedbackSubmission): Promise<{ ok: true }>;
+}
+
 export interface Repos {
   customers: CustomerRepo;
   loans: LoanRepo;
@@ -255,4 +298,6 @@ export interface Repos {
   sync: SyncRepo;
   profile: ProfileRepo;
   route: RouteRepo;
+  visits: VisitRepo;
+  feedback: FeedbackRepo;
 }

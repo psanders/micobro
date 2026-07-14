@@ -33,7 +33,9 @@ export function Avatar({ avatarKey, name, size = 42 }: AvatarProps) {
 
   return (
     <View style={[styles.fallback, { width: size, height: size, borderRadius: radius }]}>
-      <Text style={[styles.initials, { fontSize: size / 3 }]}>{initialsOf(name)}</Text>
+      <Text style={[styles.initials, { fontSize: size / 3, lineHeight: size / 3 }]}>
+        {initialsOf(name)}
+      </Text>
     </View>
   );
 }
@@ -44,5 +46,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center"
   },
-  initials: { fontFamily: fonts.bold, color: colors.brandDeep }
+  initials: {
+    fontFamily: fonts.bold,
+    color: colors.brandDeep,
+    includeFontPadding: false,
+    textAlignVertical: "center"
+  }
 });

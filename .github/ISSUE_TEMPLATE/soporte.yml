@@ -1,0 +1,21 @@
+name: Soporte
+description: Solicita ayuda o reporta un problema con la app.
+title: "[Soporte]: "
+labels: ["soporte"]
+body:
+  - type: input
+    id: version
+    attributes:
+      label: Versión de la app
+      description: Se completa automáticamente desde Mi cuenta → Ayuda y soporte.
+      placeholder: "0.1.0"
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: "¿En qué te podemos ayudar?"
+      description: Cuéntanos qué necesitas o qué problema tuviste.
+      placeholder: "Ej: no puedo conectar mi cuenta de Google..."
+    validations:
+      required: true

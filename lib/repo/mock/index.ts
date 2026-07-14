@@ -19,16 +19,20 @@ import { createPaymentSchema, type Payment } from "../../payments/payment.schema
 import {
   buildCustomerLoanSummary,
   buildLoanDetailView,
+  buildPaymentHistoryView,
   loanCode,
   MORA_NOTE
 } from "../../loans/loanViews";
 import { formatCurrency } from "../../utils/money";
+import { createVisitSchema, type Visit } from "../../visits/visit.schema";
+import { visitDescription } from "../../visits/visitDescription";
 import {
   customerFixtures,
   customerMetaFixtures,
   loanFixtures,
   moraFixtures,
-  paymentFixtures
+  paymentFixtures,
+  visitFixtures
 } from "./fixtures";
 import { routeDayFixture } from "./routeFixtures";
 import { normalizeText } from "../../utils/text";
@@ -39,6 +43,7 @@ export function createMockRepos(): Repos {
   const customers: Customer[] = customerFixtures.map((c) => ({ ...c }));
   const loans: Loan[] = loanFixtures.map((l) => ({ ...l }));
   const payments: Payment[] = paymentFixtures.map((p) => ({ ...p }));
+  const visitLog: Visit[] = visitFixtures.map((v) => ({ ...v }));
   const mora = new Map(Object.entries(moraFixtures).map(([id, m]) => [id, { ...m }]));
 
   const metaOf = (customerId: string) => customerMetaFixtures[customerId] ?? null;
@@ -107,6 +112,22 @@ export function createMockRepos(): Repos {
     return payment;
   }, createPaymentSchema);
 
+  const createVisit = withErrorHandlingAndValidation(async (params): Promise<Visit> => {
+    const now = new Date();
+    const visit: Visit = {
+      id: Crypto.randomUUID(),
+      customerId: params.customerId,
+      loanId: params.loanId ?? null,
+      outcome: params.outcome,
+      promiseDate: params.promiseDate ?? null,
+      promiseAmountCents: params.promiseAmount ?? null,
+      note: params.note ?? null,
+      createdAt: now
+    };
+    visitLog.push(visit);
+    return visit;
+  }, createVisitSchema);
+
   return {
     customers: {
       list: async () => customers,
@@ -154,6 +175,13 @@ export function createMockRepos(): Repos {
             });
           }
         }
+        for (const visit of visitLog.filter((v) => v.customerId === id)) {
+          activity.push({
+            id: visit.id,
+            description: visitDescription(visit),
+            at: visit.createdAt
+          });
+        }
         activity.sort((a, b) => b.at.getTime() - a.at.getTime());
 
         return {
@@ -189,10 +217,23 @@ export function createMockRepos(): Repos {
       getDetailView: async (id) => {
         const loan = loans.find((l) => l.id === id);
         return loan ? viewOf(loan) : null;
+      },
+      getPaymentHistory: async (id) => {
+        const loan = loans.find((l) => l.id === id);
+        return loan ? buildPaymentHistoryView(loan, payments) : null;
       }
     },
     payments: {
       listByLoan: async (loanId) => payments.filter((payment) => payment.loanId === loanId),
+      listToday: async () => {
+        const now = new Date();
+        return payments.filter(
+          (p) =>
+            p.paidAt.getFullYear() === now.getFullYear() &&
+            p.paidAt.getMonth() === now.getMonth() &&
+            p.paidAt.getDate() === now.getDate()
+        );
+      },
       create: createPayment,
       getCollectContext: async (loanId) => {
         const loan = loans.find((l) => l.id === loanId);
@@ -275,6 +316,12 @@ export function createMockRepos(): Repos {
     },
     route: {
       getToday: async () => routeDayFixture
+    },
+    visits: {
+      record: createVisit
+    },
+    feedback: {
+      submit: async () => ({ ok: true })
     }
   };
 }

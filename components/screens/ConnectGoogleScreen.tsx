@@ -33,7 +33,22 @@ export function ConnectGoogleScreen({ onDone }: ConnectGoogleScreenProps) {
   const useMockRepos = Boolean(Constants.expoConfig?.extra?.useMockRepos);
   const clientId = Constants.expoConfig?.extra?.googleOAuthClientId as string | undefined;
   const googleConfigured = useMockRepos || Boolean(clientId);
-  const redirectUri = AuthSession.makeRedirectUri();
+  // Explicit `scheme`, not `native` — `makeRedirectUri`'s `native` override
+  // only takes effect when `Constants.executionEnvironment` is `Standalone`
+  // or `Bare` (see expo-auth-session's `AuthSession.js`); this dev-client
+  // build doesn't qualify, so it was silently falling back to
+  // `Linking.createURL()`'s default scheme (confirmed empirically — Google
+  // echoed back `micobro://oauthredirect` even with `native` set). Passing
+  // `scheme` goes straight to `Linking.createURL()` unconditionally. Google's
+  // Android OAuth client type requires the redirect scheme to equal the
+  // app's package name, since that's the only scheme claim tied to this
+  // specific signed APK (package name + SHA-1) — matching Expo's own Google
+  // provider's `${applicationId}:/oauthredirect` convention. Registered as
+  // an extra scheme in app.config.ts's `scheme` array (needs a native rebuild).
+  const redirectUri = AuthSession.makeRedirectUri({
+    scheme: "com.micobro.app",
+    path: "oauthredirect"
+  });
 
   const [request, response, promptAsync] = AuthSession.useAuthRequest(
     {

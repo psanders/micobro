@@ -6,8 +6,10 @@ export { createListLoans } from "./listLoans";
 export { createListLoansByCustomer } from "./listLoansByCustomer";
 export { createGetLoanDetail } from "./getLoanDetail";
 export { createGetLoanDetailView } from "./getLoanDetailView";
+export { createGetPaymentHistory } from "./getPaymentHistory";
 export {
   buildLoanDetailView,
+  buildPaymentHistoryView,
   buildCustomerLoanSummary,
   loanCode,
   installmentDueDate,

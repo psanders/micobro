@@ -7,6 +7,8 @@ import { createRealPaymentRepo } from "./paymentRepo";
 import { createRealSyncRepo } from "./syncRepo";
 import { createRealProfileRepo } from "./profileRepo";
 import { createRealRouteRepo } from "./routeRepo";
+import { createRealVisitRepo } from "./visitRepo";
+import { createRealFeedbackRepo } from "./feedbackRepo";
 import type { Database } from "../../db/client";
 import type { Repos } from "../types";
 
@@ -17,6 +19,8 @@ export function createRealRepos({ db }: { db: Database }): Repos {
     payments: createRealPaymentRepo({ db }),
     sync: createRealSyncRepo({ db }),
     profile: createRealProfileRepo(),
-    route: createRealRouteRepo()
+    route: createRealRouteRepo(),
+    visits: createRealVisitRepo({ db }),
+    feedback: createRealFeedbackRepo()
   };
 }

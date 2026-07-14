@@ -22,3 +22,5 @@ export const usePaymentRepo = () => useRepos().payments;
 export const useSyncRepo = () => useRepos().sync;
 export const useProfileRepo = () => useRepos().profile;
 export const useRouteRepo = () => useRepos().route;
+export const useVisitRepo = () => useRepos().visits;
+export const useFeedbackRepo = () => useRepos().feedback;

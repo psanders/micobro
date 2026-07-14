@@ -14,18 +14,26 @@ type FeatherIconName = ComponentProps<typeof Feather>["name"];
 interface ListTileProps {
   icon: FeatherIconName;
   label: string;
+  iconColor?: string;
   trailingIcon?: FeatherIconName;
   onPress?: () => void;
   onTrailingPress?: () => void;
 }
 
-export function ListTile({ icon, label, trailingIcon, onPress, onTrailingPress }: ListTileProps) {
+export function ListTile({
+  icon,
+  label,
+  iconColor = colors.slate,
+  trailingIcon,
+  onPress,
+  onTrailingPress
+}: ListTileProps) {
   return (
     <Pressable
       onPress={onPress}
       style={({ pressed }) => [styles.tile, pressed && onPress ? { opacity: 0.7 } : null]}
     >
-      <Feather name={icon} size={18} color={colors.slate} />
+      <Feather name={icon} size={18} color={iconColor} />
       <Text style={styles.label}>{label}</Text>
       {trailingIcon ? (
         <Pressable onPress={onTrailingPress} hitSlop={10} disabled={!onTrailingPress}>

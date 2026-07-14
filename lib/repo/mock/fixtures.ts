@@ -10,6 +10,7 @@
 import type { Customer } from "../../customers/customer.schema";
 import type { Loan } from "../../loans/loan.schema";
 import type { Payment } from "../../payments/payment.schema";
+import type { Visit } from "../../visits/visit.schema";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const daysAgo = (days: number) => new Date(Date.now() - days * DAY_MS);
@@ -303,4 +304,23 @@ export const paymentFixtures: Payment[] = [
   payment("payment-27", "loan-10", 195000, daysAgo(21)),
   payment("payment-28", "loan-10", 195000, daysAgo(14)),
   payment("payment-29", "loan-10", 195000, daysAgo(7))
+];
+
+/** Ana Figueroa's route-day promise ("Mañana 3pm") already recorded as a visit. */
+export const visitFixtures: Visit[] = [
+  {
+    id: "visit-log-1",
+    customerId: "customer-6",
+    loanId: "loan-9",
+    outcome: "promise",
+    promiseDate: (() => {
+      const d = new Date();
+      d.setDate(d.getDate() + 1);
+      d.setHours(15, 0, 0, 0);
+      return d;
+    })(),
+    promiseAmountCents: 210000,
+    note: "Cliente confirmó pago para mañana en su negocio.",
+    createdAt: daysAgo(0)
+  }
 ];

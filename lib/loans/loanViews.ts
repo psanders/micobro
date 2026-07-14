@@ -6,13 +6,16 @@
  * detail/summary views the collection screens render. Mora rows
  * (payments flagged `notes: "mora"`) never count toward principal.
  */
+import { methodLabels } from "../payments/labels";
 import type { Loan } from "./loan.schema";
 import type { Payment } from "../payments/payment.schema";
 import type {
   CustomerLoanSummary,
   DueTodayLine,
   LoanDetailView,
-  LoanScheduleItem
+  LoanScheduleItem,
+  PaymentHistoryEntry,
+  PaymentHistoryView
 } from "../repo/types";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -138,6 +141,64 @@ export function buildLoanDetailView({
     dueTodayCents: dueTodayLines.reduce((sum, line) => sum + line.amountCents, 0),
     dueTodayLines,
     schedule
+  };
+}
+
+/**
+ * Histórico de Pagos for one loan. `allPayments` is the whole payments
+ * table (not just this loan's) because receipt numbers are assigned by
+ * creation order across every loan, matching how `collectPayment` mints
+ * them (`R-${index in the whole table}`).
+ */
+export function buildPaymentHistoryView(loan: Loan, allPayments: Payment[]): PaymentHistoryView {
+  const baseCuota = Math.floor(loan.principalCents / loan.termCount);
+  const byCreatedAt = [...allPayments].sort(
+    (a, b) => a.createdAt.getTime() - b.createdAt.getTime()
+  );
+  const receiptIndex = new Map(byCreatedAt.map((p, i) => [p.id, i]));
+  const receiptNumberOf = (id: string) =>
+    `R-${String((receiptIndex.get(id) ?? 0) + 1).padStart(5, "0")}`;
+
+  const loanPayments = allPayments.filter((p) => p.loanId === loan.id);
+  const chronological = [...loanPayments].sort((a, b) => a.paidAt.getTime() - b.paidAt.getTime());
+
+  let cuotaNumber = 0;
+  let moraPaidCents = 0;
+  const entries: PaymentHistoryEntry[] = [];
+  for (const payment of chronological) {
+    const isMora = payment.notes === MORA_NOTE;
+    if (isMora) {
+      moraPaidCents += payment.amountCents;
+      entries.push({
+        id: payment.id,
+        date: payment.paidAt,
+        label: "Pago de mora",
+        subLabel: `${methodLabels[payment.method ?? "cash"]} · Recibo #${receiptNumberOf(payment.id)}`,
+        amountCents: payment.amountCents
+      });
+      continue;
+    }
+    const isFullCuota = payment.amountCents >= baseCuota;
+    if (isFullCuota) cuotaNumber += 1;
+    entries.push({
+      id: payment.id,
+      date: payment.paidAt,
+      label: isFullCuota ? `Cuota ${cuotaNumber}` : "Abono a cuenta",
+      subLabel: isFullCuota
+        ? `Pago completo · ${methodLabels[payment.method ?? "cash"]} · Recibo #${receiptNumberOf(payment.id)} · sin mora`
+        : `Anticipo del cliente · Recibo #${receiptNumberOf(payment.id)}`,
+      amountCents: payment.amountCents
+    });
+  }
+  entries.reverse();
+
+  return {
+    totalCollectedCents: loanPayments.reduce((sum, p) => sum + p.amountCents, 0),
+    installmentsPaid: cuotaNumber,
+    installmentsTotal: loan.termCount,
+    moraPaidCents,
+    lastPaymentAt: chronological.length ? chronological[chronological.length - 1]!.paidAt : null,
+    entries
   };
 }
 

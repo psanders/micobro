@@ -56,3 +56,16 @@ export const payments = sqliteTable("payments", {
   notes: text("notes"),
   createdAt: integer("created_at", { mode: "timestamp" }).notNull()
 });
+
+export const visits = sqliteTable("visits", {
+  id: text("id").primaryKey(),
+  customerId: text("customer_id")
+    .notNull()
+    .references(() => customers.id),
+  loanId: text("loan_id").references(() => loans.id),
+  outcome: text("outcome").notNull(),
+  promiseDate: integer("promise_date", { mode: "timestamp" }),
+  promiseAmountCents: integer("promise_amount_cents"),
+  note: text("note"),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull()
+});

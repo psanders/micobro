@@ -18,6 +18,9 @@ import { createRealRepos } from "../lib/repo/real";
 import { createMockRepos } from "../lib/repo/mock";
 import { RepoProvider } from "../lib/repo/RepoProvider";
 import { AuthGateProvider, useAuthGate } from "../lib/security/AuthGateProvider";
+import { FeedbackProvider } from "../lib/feedback/FeedbackContext";
+import { RecordingPill } from "../components/feedback/RecordingPill";
+import { FeedbackStatusModal } from "../components/feedback/FeedbackStatusModal";
 
 const repos = Constants.expoConfig?.extra?.useMockRepos
   ? createMockRepos()
@@ -57,7 +60,17 @@ function Gate() {
           name="loans/[id]/cobrar"
           options={{ headerShown: false, presentation: "modal" }}
         />
+        <Stack.Screen
+          name="loans/[id]/visita"
+          options={{ headerShown: false, presentation: "modal" }}
+        />
+        <Stack.Screen name="loans/[id]/historial" options={{ headerShown: false }} />
         <Stack.Screen name="pago-confirmado" options={{ headerShown: false }} />
+        <Stack.Screen name="perfil" options={{ headerShown: false }} />
+        <Stack.Screen
+          name="feedback/consentimiento"
+          options={{ headerShown: false, presentation: "modal" }}
+        />
       </Stack.Protected>
     </Stack>
   );
@@ -93,7 +106,11 @@ export default function RootLayout() {
   return (
     <RepoProvider repos={repos}>
       <AuthGateProvider>
-        <Gate />
+        <FeedbackProvider>
+          <Gate />
+          <RecordingPill />
+          <FeedbackStatusModal />
+        </FeedbackProvider>
       </AuthGateProvider>
     </RepoProvider>
   );

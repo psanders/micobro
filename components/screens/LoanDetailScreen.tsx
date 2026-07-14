@@ -170,12 +170,7 @@ export function LoanDetailScreen({ loanId }: { loanId: string }) {
 
             <View style={styles.planHead}>
               <SectionLabel>PLAN DE PAGOS</SectionLabel>
-              <Pressable
-                hitSlop={8}
-                onPress={() =>
-                  Alert.alert("Muy pronto", "El histórico de pagos estará disponible pronto.")
-                }
-              >
+              <Pressable hitSlop={8} onPress={() => router.push(`/loans/${loan.id}/historial`)}>
                 <Text style={styles.planLink}>Ver historial ›</Text>
               </Pressable>
             </View>
@@ -200,7 +195,7 @@ export function LoanDetailScreen({ loanId }: { loanId: string }) {
           <View style={[styles.actionBar, { paddingBottom: 14 + insets.bottom }]}>
             <Pressable
               style={styles.actionSecondary}
-              onPress={() => Alert.alert("Muy pronto", "Anotar visitas estará disponible pronto.")}
+              onPress={() => router.push(`/loans/${loan.id}/visita`)}
             >
               <MaterialCommunityIcons
                 name="notebook-edit-outline"

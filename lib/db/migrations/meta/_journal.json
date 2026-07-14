@@ -15,6 +15,13 @@
       "when": 1783962574761,
       "tag": "0001_rainy_obadiah_stane",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1784038422375,
+      "tag": "0002_overconfident_lizard",
+      "breakpoints": true
     }
   ]
 }
