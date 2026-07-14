@@ -2,8 +2,6 @@
   <img src="assets/banner.png" alt="micobro — Clientes, préstamos y cobros, todo en tu teléfono, sin internet" />
 </p>
 
-# Micobro
-
 Offline-first Android app for independent, informal lenders (prestamistas) in the
 Dominican Republic to track customers, loans, and payments. There's no backend
 server: a local SQLite database is the source of truth on-device, and each
