@@ -3,6 +3,10 @@
  */
 import { ExpoConfig, ConfigContext } from "expo/config";
 
+// Mirrors colors.brandDeep in lib/ui/theme.ts — not imported directly since
+// app.config.ts's loader can't resolve project TS modules the way Metro can.
+const BRAND_DEEP = "#0B4F4A";
+
 // Props for react-native-nitro-screen-recorder's plugin. Micobro is
 // Android-only, so only `startGlobalRecording`/`stopGlobalRecording` are
 // ever called (MediaProjection has no in-app-only mode) — the iOS side of
@@ -21,6 +25,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   slug: "micobro",
   version: "0.1.0",
   orientation: "portrait",
+  // Matches components/BrandLogo.tsx's mark: white Sora Bold "m" on
+  // colors.brandDeep (#0B4F4A), same recipe Mikro uses for its icon.
+  icon: "./assets/icon.png",
   // "com.micobro.app" is registered alongside the app's normal deep-link
   // scheme solely so Google's OAuth redirect (which must equal the package
   // name for Android-type clients) has an intent filter to land on.
@@ -42,7 +49,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   android: {
     package: "com.micobro.app",
     adaptiveIcon: {
-      backgroundColor: "#0F5132"
+      backgroundColor: BRAND_DEEP,
+      foregroundImage: "./assets/android-icon-foreground.png",
+      monochromeImage: "./assets/android-icon-monochrome.png"
     },
     permissions: [
       "android.permission.INTERNET",
