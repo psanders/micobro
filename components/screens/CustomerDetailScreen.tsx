@@ -80,12 +80,20 @@ export function CustomerDetailScreen({ customerId }: { customerId: string }) {
         onBack={() => router.back()}
         right={
           customer ? (
-            <Pressable
-              hitSlop={10}
-              onPress={() => openLink(`tel:${phoneDigits}`, "Revisa el número del cliente.")}
-            >
-              <Feather name="phone" size={22} color={colors.brandDeep} />
-            </Pressable>
+            <View style={styles.headerActions}>
+              <Pressable
+                hitSlop={10}
+                onPress={() => router.push(`/customers/${customerId}/editar`)}
+              >
+                <Feather name="edit-2" size={20} color={colors.brandDeep} />
+              </Pressable>
+              <Pressable
+                hitSlop={10}
+                onPress={() => openLink(`tel:${phoneDigits}`, "Revisa el número del cliente.")}
+              >
+                <Feather name="phone" size={22} color={colors.brandDeep} />
+              </Pressable>
+            </View>
           ) : undefined
         }
       />
@@ -163,7 +171,15 @@ export function CustomerDetailScreen({ customerId }: { customerId: string }) {
             </View>
           </View>
 
-          <SectionLabel>PRÉSTAMOS ACTIVOS</SectionLabel>
+          <View style={styles.sectionHeaderRow}>
+            <SectionLabel>PRÉSTAMOS ACTIVOS</SectionLabel>
+            <Pressable
+              hitSlop={10}
+              onPress={() => router.push({ pathname: "/loans/new", params: { customerId } })}
+            >
+              <Feather name="plus" size={20} color={colors.brandDeep} />
+            </Pressable>
+          </View>
           {customer.activeLoans.length === 0 ? (
             <Text style={styles.empty}>No tiene préstamos activos.</Text>
           ) : (
@@ -229,6 +245,12 @@ export function CustomerDetailScreen({ customerId }: { customerId: string }) {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
+  headerActions: { flexDirection: "row", alignItems: "center", gap: 18 },
+  sectionHeaderRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between"
+  },
   loading: { marginTop: 40 },
   content: { paddingHorizontal: 20, paddingTop: 8, paddingBottom: 32, gap: 16 },
   notFound: {

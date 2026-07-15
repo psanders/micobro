@@ -15,6 +15,13 @@ export {
   installmentDueDate,
   MORA_NOTE
 } from "./loanViews";
+export {
+  computeAccruedMora,
+  computeLoanMora,
+  oldestOverdueInstallment,
+  DEFAULT_MORA_POLICY
+} from "./mora";
+export type { MoraPolicy, AccruedMora } from "./mora";
 export { createLoanSchema, loanFrequencies, loanStatuses } from "./loan.schema";
 export type {
   CreateLoanInput,

@@ -8,7 +8,11 @@
  */
 import * as Crypto from "expo-crypto";
 import { withErrorHandlingAndValidation } from "../../utils/withErrorHandlingAndValidation";
-import { createCustomerSchema, type Customer } from "../../customers/customer.schema";
+import {
+  createCustomerSchema,
+  updateCustomerSchema,
+  type Customer
+} from "../../customers/customer.schema";
 import {
   createLoanSchema,
   type Loan,
@@ -78,6 +82,20 @@ export function createMockRepos(): Repos {
     return customer;
   }, createCustomerSchema);
 
+  const updateCustomer = withErrorHandlingAndValidation(async (params): Promise<Customer> => {
+    const idx = customers.findIndex((c) => c.id === params.id);
+    if (idx === -1) throw new Error(`Customer not found: ${params.id}`);
+    const updated: Customer = {
+      ...customers[idx],
+      name: params.name,
+      phone: params.phone,
+      address: params.address ?? null,
+      updatedAt: new Date()
+    };
+    customers[idx] = updated;
+    return updated;
+  }, updateCustomerSchema);
+
   const createLoan = withErrorHandlingAndValidation(async (params): Promise<Loan> => {
     const now = new Date();
     const loan: Loan = {
@@ -133,6 +151,7 @@ export function createMockRepos(): Repos {
       list: async () => customers,
       get: async (id) => customers.find((c) => c.id === id) ?? null,
       create: createCustomer,
+      update: (id, input) => updateCustomer({ id, ...input }),
       search: async (query) => {
         const needle = normalizeText(query.trim());
         const matches = needle

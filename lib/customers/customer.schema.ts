@@ -17,6 +17,21 @@ export const createCustomerSchema = z.object({
 
 export type CreateCustomerInput = z.infer<typeof createCustomerSchema>;
 
+export const updateCustomerSchema = z.object({
+  id: z.string().min(1, "El id es obligatorio"),
+  name: z
+    .string()
+    .min(1, "El nombre es obligatorio")
+    .transform((v) => v.trim()),
+  phone: z
+    .string()
+    .min(1, "El teléfono es obligatorio")
+    .transform((v) => v.trim()),
+  address: z.string().optional()
+});
+
+export type UpdateCustomerInput = z.infer<typeof updateCustomerSchema>;
+
 export interface Customer {
   id: string;
   name: string;

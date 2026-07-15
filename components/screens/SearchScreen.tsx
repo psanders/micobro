@@ -5,7 +5,7 @@
  * (device-local, max 5), and the MIS CLIENTES list with status lines.
  */
 import { useCallback, useEffect, useState } from "react";
-import { View, Text, ScrollView, ActivityIndicator, StyleSheet } from "react-native";
+import { View, Text, Pressable, ScrollView, ActivityIndicator, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
@@ -119,6 +119,14 @@ export function SearchScreen() {
           )}
         </View>
       </ScrollView>
+
+      <Pressable
+        style={[styles.fab, { bottom: 24 + insets.bottom }]}
+        onPress={() => router.push("/customers/new")}
+        hitSlop={8}
+      >
+        <Feather name="plus" size={28} color={colors.white} />
+      </Pressable>
     </View>
   );
 }
@@ -137,5 +145,20 @@ const styles = StyleSheet.create({
     color: colors.slate,
     textAlign: "center",
     marginTop: 16
+  },
+  fab: {
+    position: "absolute",
+    right: 20,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: colors.brandPrimary,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: colors.brandDeep,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.2,
+    shadowRadius: 16,
+    elevation: 6
   }
 });

@@ -56,6 +56,12 @@ export async function pushPendingMutations(db: Database): Promise<PushResult> {
     const range = ENTITY_RANGES[mutation.entity];
     if (!range) continue;
 
+    // appendRow only adds rows; there's no update-by-id support in
+    // sheetsClient yet, so pushing an "update" mutation would append a
+    // duplicate row instead of correcting the existing one. Leave it
+    // queued (not failed) until update-row support ships.
+    if (mutation.operation !== "create") continue;
+
     try {
       const payload = JSON.parse(mutation.payload);
       const values = mutation.entity === "customer" ? customerRowValues(payload) : [];

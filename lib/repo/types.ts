@@ -65,6 +65,7 @@ export interface CustomerRepo {
   list(): Promise<Customer[]>;
   get(id: string): Promise<Customer | null>;
   create(input: CreateCustomerInput): Promise<Customer>;
+  update(id: string, input: CreateCustomerInput): Promise<Customer>;
   /** Name/phone substring match, case-insensitive. Empty query = all customers. */
   search(query: string): Promise<CustomerSearchResult[]>;
   getDetail(id: string): Promise<CustomerDetailView | null>;

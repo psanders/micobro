@@ -6,6 +6,7 @@ import { z } from "zod/v4";
 import { withErrorHandlingAndValidation } from "../utils/withErrorHandlingAndValidation";
 import { customers, loans, payments } from "../db/schema";
 import { buildLoanDetailView } from "./loanViews";
+import { computeLoanMora } from "./mora";
 import type { Customer } from "../customers/customer.schema";
 import type { Loan } from "./loan.schema";
 import type { Payment } from "../payments/payment.schema";
@@ -23,9 +24,8 @@ const getLoanDetailViewSchema = z.object({
 export type GetLoanDetailViewInput = z.infer<typeof getLoanDetailViewSchema>;
 
 /**
- * The Préstamo Detalle view over the real tables. Mora is always zero
- * until a mora domain exists — the schedule still derives paid/overdue
- * states from payments and due dates.
+ * The Préstamo Detalle view over the real tables — mora is accrued via
+ * `computeLoanMora` (see lib/loans/mora.ts).
  */
 export function createGetLoanDetailView({ db }: GetLoanDetailViewDeps) {
   const fn = async ({ id }: GetLoanDetailViewInput): Promise<LoanDetailView | null> => {
@@ -41,11 +41,15 @@ export function createGetLoanDetailView({ db }: GetLoanDetailViewDeps) {
       .from(payments)
       .where(eq(payments.loanId, id))) as Payment[];
 
+    const { moraCents, moraDays } = computeLoanMora(loan, loanPayments);
+
     return buildLoanDetailView({
       loan,
       customerName: customer?.name ?? "Cliente",
       business: null,
-      payments: loanPayments
+      payments: loanPayments,
+      moraCents,
+      moraDays
     });
   };
 

@@ -54,6 +54,10 @@ function Gate() {
         <Stack.Screen name="conectar" options={{ headerShown: false, presentation: "modal" }} />
         <Stack.Screen name="customers/new" options={{ title: "Nuevo cliente" }} />
         <Stack.Screen name="customers/[id]" options={{ headerShown: false }} />
+        <Stack.Screen
+          name="customers/[id]/editar"
+          options={{ headerShown: false, presentation: "modal" }}
+        />
         <Stack.Screen name="loans/new" options={{ title: "Nuevo préstamo" }} />
         <Stack.Screen name="loans/[id]" options={{ headerShown: false }} />
         <Stack.Screen

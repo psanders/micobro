@@ -6,6 +6,7 @@ import { z } from "zod/v4";
 import { withErrorHandlingAndValidation } from "../utils/withErrorHandlingAndValidation";
 import { customers, loans, payments, visits } from "../db/schema";
 import { buildLoanDetailView, buildCustomerLoanSummary, MORA_NOTE } from "../loans/loanViews";
+import { computeLoanMora } from "../loans/mora";
 import { formatCurrency } from "../utils/money";
 import { visitDescription } from "../visits/visitDescription";
 import type { Customer } from "./customer.schema";
@@ -27,8 +28,8 @@ export type GetCustomerDetailInput = z.infer<typeof getCustomerDetailSchema>;
 
 /**
  * Composes the Cliente Detalle view from the customers/loans/payments
- * tables. No cédula column or mora domain exists yet, so `cedula` is null
- * and `standing` is always "al_dia" in real mode.
+ * tables. No cédula column exists yet, so `cedula` is null; `standing`
+ * reflects real accrued mora (see lib/loans/mora.ts) across active loans.
  */
 export function createGetCustomerDetail({ db }: GetCustomerDetailDeps) {
   const fn = async ({ id }: GetCustomerDetailInput): Promise<CustomerDetailView | null> => {
@@ -40,6 +41,7 @@ export function createGetCustomerDetail({ db }: GetCustomerDetailDeps) {
 
     const activeLoans = [];
     const activity: CustomerDetailView["recentActivity"] = [];
+    let inMora = false;
     for (const loan of customerLoans) {
       const loanPayments = (await db
         .select()
@@ -47,11 +49,15 @@ export function createGetCustomerDetail({ db }: GetCustomerDetailDeps) {
         .where(eq(payments.loanId, loan.id))) as Payment[];
 
       if (loan.status === "active") {
+        const { moraCents, moraDays } = computeLoanMora(loan, loanPayments);
+        if (moraCents > 0) inMora = true;
         const view = buildLoanDetailView({
           loan,
           customerName: customer.name,
           business: null,
-          payments: loanPayments
+          payments: loanPayments,
+          moraCents,
+          moraDays
         });
         activeLoans.push(buildCustomerLoanSummary(view, loan));
       }
@@ -90,7 +96,7 @@ export function createGetCustomerDetail({ db }: GetCustomerDetailDeps) {
       address: customer.address,
       cedula: null,
       sinceYear: customer.createdAt.getFullYear(),
-      standing: "al_dia",
+      standing: inMora ? "mora" : "al_dia",
       activeLoans,
       recentActivity: activity.slice(0, 5)
     };

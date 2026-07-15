@@ -6,6 +6,7 @@ import { z } from "zod/v4";
 import { withErrorHandlingAndValidation } from "../utils/withErrorHandlingAndValidation";
 import { customers, loans, payments } from "../db/schema";
 import { buildLoanDetailView, loanCode } from "../loans/loanViews";
+import { computeLoanMora } from "../loans/mora";
 import type { Customer } from "../customers/customer.schema";
 import type { Loan } from "../loans/loan.schema";
 import type { Payment } from "./payment.schema";
@@ -23,9 +24,9 @@ const getCollectContextSchema = z.object({
 export type GetCollectContextInput = z.infer<typeof getCollectContextSchema>;
 
 /**
- * What the Registrar cobro screen needs, over the real tables. Mora is
- * zero until a mora domain exists; the cuota never exceeds the remaining
- * balance (mirrors mikro's `cuotaDue` guard).
+ * What the Registrar cobro screen needs, over the real tables. Mora comes
+ * from `computeLoanMora`; the cuota never exceeds the remaining balance
+ * (mirrors mikro's `cuotaDue` guard).
  */
 export function createGetCollectContext({ db }: GetCollectContextDeps) {
   const fn = async ({ loanId }: GetCollectContextInput): Promise<CollectContext | null> => {
@@ -41,11 +42,15 @@ export function createGetCollectContext({ db }: GetCollectContextDeps) {
       .from(payments)
       .where(eq(payments.loanId, loanId))) as Payment[];
 
+    const { moraCents, moraDays } = computeLoanMora(loan, loanPayments);
+
     const view = buildLoanDetailView({
       loan,
       customerName: customer?.name ?? "Cliente",
       business: null,
-      payments: loanPayments
+      payments: loanPayments,
+      moraCents,
+      moraDays
     });
 
     const baseCuota = Math.floor(loan.principalCents / loan.termCount);
@@ -58,8 +63,8 @@ export function createGetCollectContext({ db }: GetCollectContextDeps) {
       business: null,
       cuotaCents: Math.min(baseCuota, view.balanceCents),
       currentInstallmentNumber: Math.min(view.installmentsPaid + 1, view.installmentsTotal),
-      moraCents: 0,
-      moraDays: 0,
+      moraCents,
+      moraDays,
       remainingInstallments: view.installmentsTotal - view.installmentsPaid,
       remainingBalanceCents: view.balanceCents
     };
