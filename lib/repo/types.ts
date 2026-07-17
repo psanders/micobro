@@ -12,6 +12,7 @@ import type {
 import type { Payment, CreatePaymentInput, PaymentMethod } from "../payments/payment.schema";
 import type { PushResult } from "../sync/push";
 import type { CreateVisitInput, Visit } from "../visits/visit.schema";
+import type { Profile, SetProfileInput } from "../profile/profile.schema";
 
 /** Row shape for the Buscar screen: status line + navigation target. */
 export interface CustomerSearchResult {
@@ -106,6 +107,12 @@ export interface LoanDetailView {
   termCount: number;
   startDate: Date;
   endDate: Date | null;
+  /** Principal only — the amount disbursed, before interest. */
+  principalCents: number;
+  /** Flat add-on interest over the life of the loan (see `lib/loans/loanMath.ts`). */
+  totalInterestCents: number;
+  /** Principal + totalInterestCents — the full amount the loan will collect ("Total a pagar"). */
+  totalRepayCents: number;
   balanceCents: number;
   paidCents: number;
   installmentsPaid: number;
@@ -217,19 +224,11 @@ export interface SyncRepo {
   pushNow(): Promise<PushResult>;
 }
 
-/**
- * The lender's own display identity, used for greeting personalization
- * (e.g. "Hola, Carlos." on the unlock screen). `avatarKey` is a semantic
- * key mapped to a bundled asset at the component layer — the repo layer
- * stays UI-free. Null when no profile has been captured yet.
- */
-export interface Profile {
-  name: string;
-  avatarKey: string | null;
-}
-
 export interface ProfileRepo {
+  /** Null only when the lender hasn't completed "Editar perfil" yet. */
   get(): Promise<Profile | null>;
+  /** Creates or replaces the single profile row (see `lib/profile/setProfile.ts`). */
+  set(input: SetProfileInput): Promise<Profile>;
 }
 
 export type RouteVisitStatus = "pending" | "overdue" | "done" | "promise";
@@ -264,9 +263,10 @@ export interface RouteDay {
 }
 
 /**
- * Today's collection route. No visits/route domain exists in the local DB
- * yet, so the real implementation returns an empty zeroed day; the mock
- * seeds the design dataset.
+ * Today's collection route. The real implementation composes it from the
+ * customers/loans/payments tables (`lib/route/composeRouteDay.ts`): one
+ * visit per active loan with an installment due today or overdue, ordered
+ * oldest-due-first; the mock seeds the design dataset.
  */
 export interface RouteRepo {
   getToday(): Promise<RouteDay>;

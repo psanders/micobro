@@ -15,7 +15,9 @@ import { useRouter } from "expo-router";
 import { useCustomerRepo, useLoanRepo } from "../../lib/repo/RepoProvider";
 import { useAsync } from "../../lib/hooks/useAsync";
 import { loanFrequencies, type LoanFrequency } from "../../lib/loans/loan.schema";
+import { loanCostSummary } from "../../lib/loans/loanMath";
 import { ValidationError } from "../../lib/errors/ValidationError";
+import { formatCurrency, toCents } from "../../lib/utils/money";
 
 export function NewLoanFormScreen({ customerId: initialCustomerId }: { customerId?: string }) {
   const router = useRouter();
@@ -30,6 +32,18 @@ export function NewLoanFormScreen({ customerId: initialCustomerId }: { customerI
   const [frequency, setFrequency] = useState<LoanFrequency>("weekly");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  const principalValue = Number(principal);
+  const interestRateValue = Number(interestRate);
+  const termCountValue = Number(termCount);
+  const costPreview =
+    principalValue > 0 && termCountValue > 0 && Number.isInteger(termCountValue)
+      ? loanCostSummary({
+          principalCents: toCents(principalValue),
+          interestRateBps: Math.round((interestRateValue || 0) * 100),
+          termCount: termCountValue
+        })
+      : null;
 
   async function handleSubmit() {
     setError(null);
@@ -131,6 +145,27 @@ export function NewLoanFormScreen({ customerId: initialCustomerId }: { customerI
         </View>
       </View>
 
+      {costPreview && (
+        <View style={styles.preview}>
+          <View style={styles.previewRow}>
+            <Text style={styles.previewLabel}>Cuota estimada</Text>
+            <Text style={styles.previewValue}>{formatCurrency(costPreview.cuotaCents)}</Text>
+          </View>
+          <View style={styles.previewRow}>
+            <Text style={styles.previewLabel}>Interés total</Text>
+            <Text style={styles.previewValue}>
+              {formatCurrency(costPreview.totalInterestCents)}
+            </Text>
+          </View>
+          <View style={styles.previewRow}>
+            <Text style={styles.previewLabelStrong}>Total a pagar</Text>
+            <Text style={styles.previewValueStrong}>
+              {formatCurrency(costPreview.totalRepayCents)}
+            </Text>
+          </View>
+        </View>
+      )}
+
       {error && <Text style={styles.error}>{error}</Text>}
 
       <Pressable style={styles.submitButton} onPress={handleSubmit} disabled={submitting}>
@@ -166,6 +201,17 @@ const styles = StyleSheet.create({
   chipActive: { backgroundColor: "#1A2B4C" },
   chipText: { fontSize: 13, color: "#1A2B4C" },
   chipTextActive: { color: "#FFFFFF" },
+  preview: {
+    backgroundColor: "#F5F7FB",
+    borderRadius: 14,
+    padding: 14,
+    gap: 8
+  },
+  previewRow: { flexDirection: "row", justifyContent: "space-between" },
+  previewLabel: { fontSize: 13, color: "#5B6B8C" },
+  previewValue: { fontSize: 13, fontWeight: "600", color: "#1A2B4C" },
+  previewLabelStrong: { fontSize: 14, fontWeight: "700", color: "#1A2B4C" },
+  previewValueStrong: { fontSize: 16, fontWeight: "700", color: "#1A2B4C" },
   error: { color: "#D64545", fontSize: 13 },
   submitButton: {
     backgroundColor: "#1A2B4C",

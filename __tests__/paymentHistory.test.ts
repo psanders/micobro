@@ -42,17 +42,19 @@ const payment = (
   createdAt: paidAt
 });
 
+// 265000 = the interest-inclusive cuota for principal 2880000 @ 1000 bps / 12
+// (see lib/loans/loanMath.ts).
 describe("buildPaymentHistoryView", () => {
   it("totals collections, numbers full cuotas, and lists newest first", () => {
     const payments = [
-      payment("payment-1", 240000, daysAgo(21)),
-      payment("payment-2", 240000, daysAgo(14)),
-      payment("payment-3", 240000, daysAgo(7))
+      payment("payment-1", 265000, daysAgo(21)),
+      payment("payment-2", 265000, daysAgo(14)),
+      payment("payment-3", 265000, daysAgo(7))
     ];
 
     const view = buildPaymentHistoryView(loan, payments);
 
-    expect(view.totalCollectedCents).toBe(720000);
+    expect(view.totalCollectedCents).toBe(795000);
     expect(view.installmentsPaid).toBe(3);
     expect(view.installmentsTotal).toBe(12);
     expect(view.moraPaidCents).toBe(0);
@@ -64,9 +66,9 @@ describe("buildPaymentHistoryView", () => {
 
   it("labels a partial amount as an abono and a mora row separately", () => {
     const payments = [
-      payment("payment-1", 240000, daysAgo(21)),
+      payment("payment-1", 265000, daysAgo(21)),
       payment("payment-2", 5000, daysAgo(15)),
-      payment("payment-3", 240000, daysAgo(14)),
+      payment("payment-3", 265000, daysAgo(14)),
       payment("payment-4", 7500, daysAgo(14), "mora")
     ];
 

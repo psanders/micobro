@@ -13,7 +13,10 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useCustomerRepo } from "../../lib/repo/RepoProvider";
 import { useAsync } from "../../lib/hooks/useAsync";
 import { ValidationError } from "../../lib/errors/ValidationError";
+import { formatCedula, normalizeCedula } from "../../lib/utils/cedula";
 import { ScreenHeader } from "../ScreenHeader";
+import { AvatarPicker } from "../AvatarPicker";
+import type { AvatarKey } from "../avatars";
 import { colors, fonts, radius } from "../../lib/ui/theme";
 
 export function EditCustomerFormScreen({ customerId }: { customerId: string }) {
@@ -27,6 +30,8 @@ export function EditCustomerFormScreen({ customerId }: { customerId: string }) {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
+  const [cedula, setCedula] = useState("");
+  const [avatarKey, setAvatarKey] = useState<AvatarKey | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -35,13 +40,21 @@ export function EditCustomerFormScreen({ customerId }: { customerId: string }) {
     setName(customer.name);
     setPhone(customer.phone);
     setAddress(customer.address ?? "");
+    setCedula(formatCedula(customer.cedula));
+    setAvatarKey((customer.avatarKey as AvatarKey | null) ?? null);
   }, [customer]);
 
   async function handleSubmit() {
     setError(null);
     setSubmitting(true);
     try {
-      await customerRepo.update(customerId, { name, phone, address: address || undefined });
+      await customerRepo.update(customerId, {
+        name,
+        phone,
+        address: address || undefined,
+        cedula: cedula || undefined,
+        avatarKey: avatarKey ?? undefined
+      });
       router.back();
     } catch (err) {
       setError(err instanceof ValidationError ? err.message : "No se pudo guardar el cliente");
@@ -85,6 +98,23 @@ export function EditCustomerFormScreen({ customerId }: { customerId: string }) {
           <View style={styles.field}>
             <Text style={styles.label}>Dirección (opcional)</Text>
             <TextInput style={styles.input} value={address} onChangeText={setAddress} />
+          </View>
+
+          <View style={styles.field}>
+            <Text style={styles.label}>Cédula (opcional)</Text>
+            <TextInput
+              style={styles.input}
+              keyboardType="number-pad"
+              placeholder="000-0000000-0"
+              maxLength={13}
+              value={cedula}
+              onChangeText={(v) => setCedula(formatCedula(normalizeCedula(v)) || v)}
+            />
+          </View>
+
+          <View style={styles.field}>
+            <Text style={styles.label}>Avatar (opcional)</Text>
+            <AvatarPicker name={name || "Cliente"} value={avatarKey} onChange={setAvatarKey} />
           </View>
 
           {error && <Text style={styles.error}>{error}</Text>}

@@ -8,6 +8,12 @@ export const customers = sqliteTable("customers", {
   name: text("name").notNull(),
   phone: text("phone").notNull(),
   address: text("address"),
+  // Dominican cédula, stored normalized (digits only, 11 chars). Display
+  // formatting ("XXX-XXXXXXX-X") is the UI's job — see lib/utils/cedula.ts.
+  cedula: text("cedula"),
+  // Semantic key into a curated set (see lib/customers/avatarKeys.ts /
+  // components/avatars.ts) — not a photo, no camera/storage permissions.
+  avatarKey: text("avatar_key"),
   createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
   updatedAt: integer("updated_at", { mode: "timestamp" }).notNull()
 });
@@ -27,6 +33,20 @@ export const pendingMutations = sqliteTable("pending_mutations", {
 export const syncMeta = sqliteTable("sync_meta", {
   key: text("key").primaryKey(),
   value: text("value").notNull()
+});
+
+/**
+ * One row per install (the lender's own identity), keyed by a fixed
+ * singleton id — see `PROFILE_ID` in `lib/profile/profile.schema.ts`.
+ */
+export const profile = sqliteTable("profile", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  avatarKey: text("avatar_key"),
+  businessName: text("business_name"),
+  phone: text("phone"),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).notNull()
 });
 
 export const loans = sqliteTable("loans", {

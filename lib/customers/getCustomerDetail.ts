@@ -28,8 +28,9 @@ export type GetCustomerDetailInput = z.infer<typeof getCustomerDetailSchema>;
 
 /**
  * Composes the Cliente Detalle view from the customers/loans/payments
- * tables. No cédula column exists yet, so `cedula` is null; `standing`
- * reflects real accrued mora (see lib/loans/mora.ts) across active loans.
+ * tables. `cedula`/`avatarKey` come straight off the customers row (null
+ * when the lender never captured them); `standing` reflects real accrued
+ * mora (see lib/loans/mora.ts) across active loans.
  */
 export function createGetCustomerDetail({ db }: GetCustomerDetailDeps) {
   const fn = async ({ id }: GetCustomerDetailInput): Promise<CustomerDetailView | null> => {
@@ -91,10 +92,10 @@ export function createGetCustomerDetail({ db }: GetCustomerDetailDeps) {
     return {
       id: customer.id,
       name: customer.name,
-      avatarKey: null,
+      avatarKey: customer.avatarKey,
       phone: customer.phone,
       address: customer.address,
-      cedula: null,
+      cedula: customer.cedula,
       sinceYear: customer.createdAt.getFullYear(),
       standing: inMora ? "mora" : "al_dia",
       activeLoans,
