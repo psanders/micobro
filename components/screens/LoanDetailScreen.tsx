@@ -82,9 +82,7 @@ export function LoanDetailScreen({ loanId }: { loanId: string }) {
         right={
           <Pressable
             hitSlop={10}
-            onPress={() =>
-              Alert.alert("Muy pronto", "Más opciones del préstamo estarán disponibles pronto.")
-            }
+            onPress={() => Alert.alert("Muy pronto", "Esta función todavía no está disponible.")}
           >
             <MaterialCommunityIcons name="dots-vertical" size={22} color={colors.brandDeep} />
           </Pressable>

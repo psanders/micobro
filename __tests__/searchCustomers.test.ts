@@ -11,8 +11,8 @@ import { customers } from "../lib/db/schema";
 import type { Database } from "../lib/db/client";
 
 const customerRows = [
-  { id: "c1", name: "María Rosa Peralta", phone: "8091234567" },
-  { id: "c2", name: "José Núñez", phone: "8295550143" }
+  { id: "c1", name: "María Rosa Peralta", phone: "8091234567", avatarKey: "female2" },
+  { id: "c2", name: "José Núñez", phone: "8295550143", avatarKey: null }
 ];
 
 const loanRows = [
@@ -45,6 +45,13 @@ describe("searchCustomers", () => {
     const rows = await search({ query: "maría" });
     expect(rows.map((r) => r.id)).toEqual(["c1"]);
     expect(rows[0]!.loanCount).toBe(1);
+  });
+
+  it("carries the customer's avatarKey through, null when unset", async () => {
+    const search = createSearchCustomers({ db: makeDbStub() });
+    const rows = await search({ query: "" });
+    expect(rows.find((r) => r.id === "c1")?.avatarKey).toBe("female2");
+    expect(rows.find((r) => r.id === "c2")?.avatarKey).toBeNull();
   });
 
   it("matches accent-insensitively", async () => {

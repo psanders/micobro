@@ -20,6 +20,7 @@ import {
   type LoanDetail
 } from "../../loans/loan.schema";
 import { createPaymentSchema, type Payment } from "../../payments/payment.schema";
+import { setProfileSchema, type Profile } from "../../profile/profile.schema";
 import {
   buildCustomerLoanSummary,
   buildLoanDetailView,
@@ -50,6 +51,12 @@ export function createMockRepos(): Repos {
   const payments: Payment[] = paymentFixtures.map((p) => ({ ...p }));
   const visitLog: Visit[] = visitFixtures.map((v) => ({ ...v }));
   const mora = new Map(Object.entries(moraFixtures).map(([id, m]) => [id, { ...m }]));
+  let profileState: Profile | null = {
+    name: "Carlos",
+    avatarKey: "male4",
+    businessName: null,
+    phone: null
+  };
 
   const metaOf = (customerId: string) => customerMetaFixtures[customerId] ?? null;
   const moraOf = (loanId: string) => mora.get(loanId) ?? { moraCents: 0, moraDays: 0 };
@@ -76,6 +83,8 @@ export function createMockRepos(): Repos {
       name: params.name,
       phone: params.phone,
       address: params.address ?? null,
+      cedula: params.cedula ?? null,
+      avatarKey: params.avatarKey ?? null,
       createdAt: now,
       updatedAt: now
     };
@@ -91,6 +100,8 @@ export function createMockRepos(): Repos {
       name: params.name,
       phone: params.phone,
       address: params.address ?? null,
+      cedula: params.cedula ?? null,
+      avatarKey: params.avatarKey ?? null,
       updatedAt: new Date()
     };
     customers[idx] = updated;
@@ -147,6 +158,16 @@ export function createMockRepos(): Repos {
     return visit;
   }, createVisitSchema);
 
+  const setProfile = withErrorHandlingAndValidation(async (params): Promise<Profile> => {
+    profileState = {
+      name: params.name,
+      avatarKey: params.avatarKey ?? null,
+      businessName: params.businessName ?? null,
+      phone: params.phone ?? null
+    };
+    return profileState;
+  }, setProfileSchema);
+
   return {
     customers: {
       list: async () => customers,
@@ -163,7 +184,7 @@ export function createMockRepos(): Repos {
         return matches.map((c) => ({
           id: c.id,
           name: c.name,
-          avatarKey: metaOf(c.id)?.avatarKey ?? null,
+          avatarKey: metaOf(c.id)?.avatarKey ?? c.avatarKey,
           inMora: customerInMora(c.id),
           loanCount: loans.filter((l) => l.customerId === c.id && l.status === "active").length
         }));
@@ -207,10 +228,10 @@ export function createMockRepos(): Repos {
         return {
           id: customer.id,
           name: customer.name,
-          avatarKey: meta?.avatarKey ?? null,
+          avatarKey: meta?.avatarKey ?? customer.avatarKey,
           phone: customer.phone,
           address: customer.address,
-          cedula: meta?.cedula ?? null,
+          cedula: meta?.cedula ?? customer.cedula,
           sinceYear: customer.createdAt.getFullYear(),
           standing: customerInMora(id) ? "mora" : "al_dia",
           activeLoans,
@@ -335,7 +356,8 @@ export function createMockRepos(): Repos {
     },
     sync: createMockSyncRepo(),
     profile: {
-      get: async () => ({ name: "Carlos", avatarKey: "male4" })
+      get: async () => profileState,
+      set: setProfile
     },
     route: {
       getToday: async () => routeDayFixture
