@@ -36,6 +36,8 @@ export function createUpdateCustomer({ db }: UpdateCustomerDeps) {
       name: params.name,
       phone: params.phone,
       address: params.address ?? null,
+      cedula: params.cedula ?? null,
+      avatarKey: params.avatarKey ?? null,
       updatedAt: now
     };
 

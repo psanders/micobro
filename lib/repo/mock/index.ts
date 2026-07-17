@@ -75,6 +75,8 @@ export function createMockRepos(): Repos {
       name: params.name,
       phone: params.phone,
       address: params.address ?? null,
+      cedula: params.cedula ?? null,
+      avatarKey: params.avatarKey ?? null,
       createdAt: now,
       updatedAt: now
     };
@@ -90,6 +92,8 @@ export function createMockRepos(): Repos {
       name: params.name,
       phone: params.phone,
       address: params.address ?? null,
+      cedula: params.cedula ?? null,
+      avatarKey: params.avatarKey ?? null,
       updatedAt: new Date()
     };
     customers[idx] = updated;
@@ -162,7 +166,7 @@ export function createMockRepos(): Repos {
         return matches.map((c) => ({
           id: c.id,
           name: c.name,
-          avatarKey: metaOf(c.id)?.avatarKey ?? null,
+          avatarKey: metaOf(c.id)?.avatarKey ?? c.avatarKey,
           inMora: customerInMora(c.id),
           loanCount: loans.filter((l) => l.customerId === c.id && l.status === "active").length
         }));
@@ -206,10 +210,10 @@ export function createMockRepos(): Repos {
         return {
           id: customer.id,
           name: customer.name,
-          avatarKey: meta?.avatarKey ?? null,
+          avatarKey: meta?.avatarKey ?? customer.avatarKey,
           phone: customer.phone,
           address: customer.address,
-          cedula: meta?.cedula ?? null,
+          cedula: meta?.cedula ?? customer.cedula,
           sinceYear: customer.createdAt.getFullYear(),
           standing: customerInMora(id) ? "mora" : "al_dia",
           activeLoans,

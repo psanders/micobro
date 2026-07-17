@@ -8,6 +8,12 @@ export const customers = sqliteTable("customers", {
   name: text("name").notNull(),
   phone: text("phone").notNull(),
   address: text("address"),
+  // Dominican cédula, stored normalized (digits only, 11 chars). Display
+  // formatting ("XXX-XXXXXXX-X") is the UI's job — see lib/utils/cedula.ts.
+  cedula: text("cedula"),
+  // Semantic key into a curated set (see lib/customers/avatarKeys.ts /
+  // components/avatars.ts) — not a photo, no camera/storage permissions.
+  avatarKey: text("avatar_key"),
   createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
   updatedAt: integer("updated_at", { mode: "timestamp" }).notNull()
 });

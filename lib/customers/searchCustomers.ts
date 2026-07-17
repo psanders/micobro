@@ -3,8 +3,9 @@
  *
  * Powers the Buscar screen: case-insensitive name/phone substring match
  * (empty query returns everyone) with an active-loan count per customer.
- * `inMora` stays false on the real client until overdue tracking exists —
- * the mora domain hasn't been modeled in the local DB yet.
+ * `avatarKey` comes off the customers row. `inMora` stays false on the
+ * real client until overdue tracking exists — the mora domain hasn't been
+ * modeled in the local DB yet.
  */
 import { z } from "zod/v4";
 import { eq } from "drizzle-orm";
@@ -49,7 +50,7 @@ export function createSearchCustomers({ db }: SearchCustomersDeps) {
       rows.push({
         id: customer.id,
         name: customer.name,
-        avatarKey: null,
+        avatarKey: customer.avatarKey,
         inMora: false,
         loanCount: activeCount
       });
