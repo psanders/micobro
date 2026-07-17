@@ -22,6 +22,8 @@ function customer(overrides: Partial<Customer>): Customer {
     name: "Cliente",
     phone: "8091234567",
     address: "Calle 1",
+    cedula: null,
+    avatarKey: null,
     createdAt: daysBeforeToday(100),
     updatedAt: daysBeforeToday(100),
     ...overrides
@@ -113,15 +115,15 @@ describe("composeRouteDay", () => {
     expect(day.visits[0]!.status).toBe("overdue");
     expect(day.visits[0]!.overdueDays).toBe(3);
     expect(day.visits[0]!.hasMora).toBe(true);
-    // cuota RD$100 + mora (0.1 * 3/30 * 10000 = 100) = RD$101 = 10100 cents
-    expect(day.visits[0]!.amountCents).toBe(10100);
+    // cuota RD$150 (flat add-on interest) + mora (0.1 * 3/30 * 15000 = 150 cents) = 15150 cents
+    expect(day.visits[0]!.amountCents).toBe(15150);
 
     expect(day.visits[1]!.status).toBe("pending");
     expect(day.visits[1]!.hasMora).toBe(false);
     expect(day.visits[1]!.installmentLabel).toBe("Cuota 1/4");
-    expect(day.visits[1]!.amountCents).toBe(10000);
+    expect(day.visits[1]!.amountCents).toBe(15000);
 
-    expect(day.goalCents).toBe(20100);
+    expect(day.goalCents).toBe(30150);
     expect(day.collectedCents).toBe(0);
     expect(day.clientCount).toBe(2);
     expect(day.pendingCount).toBe(2);
@@ -157,7 +159,7 @@ describe("composeRouteDay", () => {
     expect(overdue.status).toBe("overdue");
 
     // goal stays the expected total; collected reflects only today's payments
-    expect(day.goalCents).toBe(20100);
+    expect(day.goalCents).toBe(30150);
     expect(day.collectedCents).toBe(10000);
     expect(day.pendingCount).toBe(1);
     expect(day.clientCount).toBe(2);
