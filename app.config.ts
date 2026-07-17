@@ -58,14 +58,17 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       "android.permission.RECORD_AUDIO",
       "android.permission.FOREGROUND_SERVICE",
       "android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION",
-      "android.permission.POST_NOTIFICATIONS"
+      "android.permission.POST_NOTIFICATIONS",
+      "android.permission.BLUETOOTH_CONNECT",
+      "android.permission.BLUETOOTH_SCAN"
     ]
   },
   plugins: [
     "expo-router",
     "expo-secure-store",
     "expo-sqlite",
-    ["react-native-nitro-screen-recorder", screenRecorderPluginProps]
+    ["react-native-nitro-screen-recorder", screenRecorderPluginProps],
+    ["react-native-ble-plx", { isBackgroundEnabled: false, neverForLocation: true }]
   ],
   extra: {
     googleOAuthClientId: process.env.EXPO_PUBLIC_GOOGLE_OAUTH_CLIENT_ID ?? "",
