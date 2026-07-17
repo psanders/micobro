@@ -22,6 +22,7 @@ import { Feather } from "@expo/vector-icons";
 import { useCustomerRepo } from "../../lib/repo/RepoProvider";
 import { useAsync } from "../../lib/hooks/useAsync";
 import { formatCurrency } from "../../lib/utils/money";
+import { formatCedula } from "../../lib/utils/cedula";
 import { formatPhone } from "../../lib/utils/text";
 import { formatShortDate, formatTime, isToday } from "../../lib/utils/dates";
 import { frequencyLabels } from "../../lib/loans/labels";
@@ -82,6 +83,7 @@ export function CustomerDetailScreen({ customerId }: { customerId: string }) {
           customer ? (
             <View style={styles.headerActions}>
               <Pressable
+                testID="customer-detail-edit-button"
                 hitSlop={10}
                 onPress={() => router.push(`/customers/${customerId}/editar`)}
               >
@@ -134,7 +136,7 @@ export function CustomerDetailScreen({ customerId }: { customerId: string }) {
               {customer.cedula ? (
                 <InfoRow
                   icon={<Feather name="credit-card" size={16} color={colors.brandPrimary} />}
-                  text={`Cédula ${customer.cedula}`}
+                  text={`Cédula ${formatCedula(customer.cedula)}`}
                 />
               ) : null}
             </View>
@@ -174,6 +176,7 @@ export function CustomerDetailScreen({ customerId }: { customerId: string }) {
           <View style={styles.sectionHeaderRow}>
             <SectionLabel>PRÉSTAMOS ACTIVOS</SectionLabel>
             <Pressable
+              testID="customer-detail-new-loan-button"
               hitSlop={10}
               onPress={() => router.push({ pathname: "/loans/new", params: { customerId } })}
             >

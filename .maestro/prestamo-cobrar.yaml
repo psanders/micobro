@@ -1,0 +1,88 @@
+# Covers: Préstamo Detalle -> Cobrar -> confirm payment.
+#
+# Requires a mock-repo build (EXPO_PUBLIC_USE_MOCK_REPOS=true) — see the
+# comment in pin-unlock.yaml. Uses María Rosa Peralta's loan-1
+# (lib/repo/mock/fixtures.ts): principal 2,880,000 cents / 12 weekly terms,
+# 3 cuotas already paid, no mora, so `loanCode("loan-1")` -> "L-00001" and
+# CollectPaymentScreen's default option is a plain "Cobrar cuota" (RD$2,400,
+# > 0) — the "Confirmar y cobrar" CTA is enabled without touching the
+# option list or the custom-amount field.
+appId: ${APP_ID}
+---
+- launchApp:
+    clearState: true
+- runFlow:
+    when:
+      true: ${DEV_URL}
+    commands:
+      - extendedWaitUntil:
+          visible: "Development Build"
+          timeout: 20000
+      - openLink: ${DEV_URL}
+      - extendedWaitUntil:
+          visible: "Continue"
+          timeout: 45000
+      - back
+- extendedWaitUntil:
+    visible: "Crea tu PIN"
+    timeout: 30000
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- extendedWaitUntil:
+    visible: "Confirma tu PIN"
+    timeout: 10000
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- extendedWaitUntil:
+    visible: "Ahora no, tal vez después"
+    timeout: 15000
+- tapOn: "Ahora no, tal vez después"
+- extendedWaitUntil:
+    visible: "Hola, Carlos."
+    timeout: 15000
+
+- tapOn:
+    id: "tab-buscar"
+- extendedWaitUntil:
+    visible: "Buscar cliente"
+    timeout: 15000
+- tapOn: "Nombre, teléfono o cédula…"
+- inputText: "Maria"
+- extendedWaitUntil:
+    visible: "María Rosa Peralta"
+    timeout: 15000
+- tapOn: "María Rosa Peralta"
+- extendedWaitUntil:
+    visible: "PRÉSTAMOS ACTIVOS"
+    timeout: 15000
+
+# Her only active loan card (components/screens/CustomerDetailScreen.tsx
+# loanTitle: "Préstamo #<code>").
+- tapOn: "Préstamo #L-00001"
+
+# LoanDetailScreen (components/screens/LoanDetailScreen.tsx).
+- extendedWaitUntil:
+    visible: "TOTAL A PAGAR HOY"
+    timeout: 15000
+- tapOn: "Cobrar"
+
+# CollectPaymentScreen (components/screens/CollectPaymentScreen.tsx).
+- extendedWaitUntil:
+    visible: "Registrar cobro"
+    timeout: 15000
+- tapOn: "Confirmar y cobrar"
+
+# PaymentConfirmedScreen (components/screens/PaymentConfirmedScreen.tsx),
+# reached via router.replace so its "Listo" button's router.back() returns
+# to the loan detail screen underneath it.
+- extendedWaitUntil:
+    visible: "¡Pago registrado!"
+    timeout: 15000
+- tapOn: "Listo"
+- extendedWaitUntil:
+    visible: "TOTAL A PAGAR HOY"
+    timeout: 15000

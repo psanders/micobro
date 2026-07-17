@@ -17,8 +17,8 @@ function makeDbStub(loanRows: unknown[], paymentRows: unknown[]) {
 
 describe("createGetLoanDetail", () => {
   it("returns the loan with its payments and computed balance", async () => {
-    // Arrange
-    const loan = { id: "loan-1", principalCents: 500000 };
+    // Arrange — no interest, so balance is still bare principal minus paid.
+    const loan = { id: "loan-1", principalCents: 500000, interestRateBps: 0 };
     const payments = [{ id: "payment-1", amountCents: 100000 }];
     const db = makeDbStub([loan], payments);
     const getLoanDetail = createGetLoanDetail({ db: db as unknown as Database });
@@ -29,6 +29,20 @@ describe("createGetLoanDetail", () => {
     // Assert
     expect(result?.balanceCents).toBe(400000);
     expect(result?.payments).toBe(payments);
+  });
+
+  it("adds flat interest into the balance when the loan carries a rate", async () => {
+    // Arrange — 500000 principal @ 1000 bps → 50000 interest, 550000 total repay.
+    const loan = { id: "loan-1", principalCents: 500000, interestRateBps: 1000 };
+    const payments = [{ id: "payment-1", amountCents: 100000 }];
+    const db = makeDbStub([loan], payments);
+    const getLoanDetail = createGetLoanDetail({ db: db as unknown as Database });
+
+    // Act
+    const result = await getLoanDetail({ id: "loan-1" });
+
+    // Assert
+    expect(result?.balanceCents).toBe(450000);
   });
 
   it("returns null when no loan matches", async () => {

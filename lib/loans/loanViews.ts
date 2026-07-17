@@ -4,9 +4,13 @@
  * Pure builders shared by the mock and real repos: given a loan, its
  * payments, and (optionally) accrued mora, derive the schedule and the
  * detail/summary views the collection screens render. Mora rows
- * (payments flagged `notes: "mora"`) never count toward principal.
+ * (payments flagged `notes: "mora"`) never count toward principal. The
+ * cuota is interest-inclusive (flat add-on, see `./loanMath`) and the
+ * balance is against the full principal-plus-interest repay amount, not
+ * bare principal.
  */
 import { methodLabels } from "../payments/labels";
+import { cuotaCents, totalInterestCents, totalRepayCents } from "./loanMath";
 import type { Loan } from "./loan.schema";
 import type { Payment } from "../payments/payment.schema";
 import type {
@@ -65,7 +69,8 @@ export function buildLoanDetailView({
   moraDays = 0,
   today = new Date()
 }: LoanViewInput): LoanDetailView {
-  const baseCuota = Math.floor(loan.principalCents / loan.termCount);
+  const cuota = cuotaCents(loan.principalCents, loan.interestRateBps, loan.termCount);
+  const repayCents = totalRepayCents(loan.principalCents, loan.interestRateBps);
   const paidCents = principalPaidCents(payments);
   const startOfToday = new Date(today);
   startOfToday.setHours(0, 0, 0, 0);
@@ -74,11 +79,11 @@ export function buildLoanDetailView({
   let cumulative = 0;
   let moraAttached = false;
   for (let number = 1; number <= loan.termCount; number++) {
-    // The last cuota absorbs the integer-division remainder.
+    // The last cuota absorbs the rounding remainder (never below zero —
+    // a small loan with a coarse rounding increment can otherwise "finish"
+    // before its nominal last installment).
     const amountCents =
-      number === loan.termCount
-        ? loan.principalCents - baseCuota * (loan.termCount - 1)
-        : baseCuota;
+      number === loan.termCount ? Math.max(0, repayCents - cuota * (loan.termCount - 1)) : cuota;
     cumulative += amountCents;
     const dueDate = installmentDueDate(loan, number);
     const status: LoanScheduleItem["status"] =
@@ -131,7 +136,10 @@ export function buildLoanDetailView({
     termCount: loan.termCount,
     startDate: loan.startDate,
     endDate: schedule.length > 0 ? schedule[schedule.length - 1]!.dueDate : null,
-    balanceCents: Math.max(0, loan.principalCents - paidCents),
+    principalCents: loan.principalCents,
+    totalInterestCents: totalInterestCents(loan.principalCents, loan.interestRateBps),
+    totalRepayCents: repayCents,
+    balanceCents: Math.max(0, repayCents - paidCents),
     paidCents,
     installmentsPaid: schedule.filter((item) => item.status === "paid").length,
     installmentsTotal: loan.termCount,
@@ -151,7 +159,7 @@ export function buildLoanDetailView({
  * them (`R-${index in the whole table}`).
  */
 export function buildPaymentHistoryView(loan: Loan, allPayments: Payment[]): PaymentHistoryView {
-  const baseCuota = Math.floor(loan.principalCents / loan.termCount);
+  const cuota = cuotaCents(loan.principalCents, loan.interestRateBps, loan.termCount);
   const byCreatedAt = [...allPayments].sort(
     (a, b) => a.createdAt.getTime() - b.createdAt.getTime()
   );
@@ -178,7 +186,7 @@ export function buildPaymentHistoryView(loan: Loan, allPayments: Payment[]): Pay
       });
       continue;
     }
-    const isFullCuota = payment.amountCents >= baseCuota;
+    const isFullCuota = payment.amountCents >= cuota;
     if (isFullCuota) cuotaNumber += 1;
     entries.push({
       id: payment.id,

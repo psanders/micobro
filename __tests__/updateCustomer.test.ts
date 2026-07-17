@@ -15,6 +15,8 @@ const existingCustomer = {
   name: "Juana Pérez",
   phone: "8091234567",
   address: "Calle Duarte 12",
+  cedula: null,
+  avatarKey: null,
   createdAt: new Date("2026-01-01T00:00:00Z"),
   updatedAt: new Date("2026-01-01T00:00:00Z")
 };
@@ -100,6 +102,94 @@ describe("createUpdateCustomer", () => {
       await expect(
         updateCustomer({ id: "missing", name: "Juana Pérez", phone: "8091234567" })
       ).rejects.toThrow("Customer not found");
+      expect((db as unknown as Record<string, jest.Mock>).update).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("cédula", () => {
+    it("stores a valid 11-digit cédula (dashed input) normalized to digits only", async () => {
+      // Arrange
+      const db = makeDbStub();
+      const updateCustomer = createUpdateCustomer({ db: db as unknown as Database });
+
+      // Act
+      const result = await updateCustomer({
+        id: "customer-1",
+        name: "Juana Pérez",
+        phone: "8091234567",
+        cedula: "001-1234567-8"
+      });
+
+      // Assert
+      expect(result.cedula).toBe("00112345678");
+    });
+
+    it("clears the cédula when omitted", async () => {
+      // Arrange
+      const db = makeDbStub();
+      const updateCustomer = createUpdateCustomer({ db: db as unknown as Database });
+
+      // Act
+      const result = await updateCustomer({
+        id: "customer-1",
+        name: "Juana Pérez",
+        phone: "8091234567"
+      });
+
+      // Assert
+      expect(result.cedula).toBeNull();
+    });
+
+    it("rejects a cédula that isn't 11 digits", async () => {
+      // Arrange
+      const db = makeDbStub();
+      const updateCustomer = createUpdateCustomer({ db: db as unknown as Database });
+
+      // Act + Assert
+      await expect(
+        updateCustomer({
+          id: "customer-1",
+          name: "Juana Pérez",
+          phone: "8091234567",
+          cedula: "12345"
+        })
+      ).rejects.toBeInstanceOf(ValidationError);
+      expect((db as unknown as Record<string, jest.Mock>).update).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("avatarKey", () => {
+    it("accepts a key from the curated set", async () => {
+      // Arrange
+      const db = makeDbStub();
+      const updateCustomer = createUpdateCustomer({ db: db as unknown as Database });
+
+      // Act
+      const result = await updateCustomer({
+        id: "customer-1",
+        name: "Juana Pérez",
+        phone: "8091234567",
+        avatarKey: "male4"
+      });
+
+      // Assert
+      expect(result.avatarKey).toBe("male4");
+    });
+
+    it("rejects a key outside the curated set", async () => {
+      // Arrange
+      const db = makeDbStub();
+      const updateCustomer = createUpdateCustomer({ db: db as unknown as Database });
+
+      // Act + Assert
+      await expect(
+        updateCustomer({
+          id: "customer-1",
+          name: "Juana Pérez",
+          phone: "8091234567",
+          avatarKey: "robot9"
+        })
+      ).rejects.toBeInstanceOf(ValidationError);
       expect((db as unknown as Record<string, jest.Mock>).update).not.toHaveBeenCalled();
     });
   });

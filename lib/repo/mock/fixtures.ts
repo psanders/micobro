@@ -15,12 +15,21 @@ import type { Visit } from "../../visits/visit.schema";
 const DAY_MS = 24 * 60 * 60 * 1000;
 const daysAgo = (days: number) => new Date(Date.now() - days * DAY_MS);
 
+/**
+ * `cedula`/`avatarKey` stay null here — the design dataset's per-customer
+ * values live in `customerMetaFixtures` below (`metaOf` wins over these
+ * columns in the mock repo) so the curated demo look doesn't depend on
+ * this array. New customers created in mock mode set these columns
+ * directly, same as real mode.
+ */
 export const customerFixtures: Customer[] = [
   {
     id: "customer-1",
     name: "María Rosa Peralta",
     phone: "8295550143",
     address: "Calle Duarte 24, Santo Domingo",
+    cedula: null,
+    avatarKey: null,
     createdAt: new Date("2024-04-12T10:00:00"),
     updatedAt: new Date("2024-04-12T10:00:00")
   },
@@ -29,6 +38,8 @@ export const customerFixtures: Customer[] = [
     name: "José Núñez",
     phone: "8092345678",
     address: "Av. Independencia 78, Santo Domingo",
+    cedula: null,
+    avatarKey: null,
     createdAt: new Date("2025-02-20T10:00:00"),
     updatedAt: new Date("2025-02-20T10:00:00")
   },
@@ -37,6 +48,8 @@ export const customerFixtures: Customer[] = [
     name: "Felipe Taveras",
     phone: "8093456789",
     address: "Av. Las Carreras 45, Santiago",
+    cedula: null,
+    avatarKey: null,
     createdAt: new Date("2025-06-05T10:00:00"),
     updatedAt: new Date("2025-06-05T10:00:00")
   },
@@ -45,6 +58,8 @@ export const customerFixtures: Customer[] = [
     name: "Pedro Cabrera",
     phone: "8494567890",
     address: "Calle El Sol 22, Santiago",
+    cedula: null,
+    avatarKey: null,
     createdAt: new Date("2025-09-18T10:00:00"),
     updatedAt: new Date("2025-09-18T10:00:00")
   },
@@ -53,6 +68,8 @@ export const customerFixtures: Customer[] = [
     name: "Luis Pérez",
     phone: "8095678901",
     address: "Calle Sánchez 12, Santo Domingo",
+    cedula: null,
+    avatarKey: null,
     createdAt: new Date("2025-11-02T10:00:00"),
     updatedAt: new Date("2025-11-02T10:00:00")
   },
@@ -61,6 +78,8 @@ export const customerFixtures: Customer[] = [
     name: "Ana Figueroa",
     phone: "8296789012",
     address: "Calle El Sol 5, Santiago",
+    cedula: null,
+    avatarKey: null,
     createdAt: new Date("2026-01-15T10:00:00"),
     updatedAt: new Date("2026-01-15T10:00:00")
   },
@@ -69,6 +88,8 @@ export const customerFixtures: Customer[] = [
     name: "Ramón Ortiz",
     phone: "8097890123",
     address: "Calle El Sol 5, Santiago",
+    cedula: null,
+    avatarKey: null,
     createdAt: new Date("2026-03-08T10:00:00"),
     updatedAt: new Date("2026-03-08T10:00:00")
   }
@@ -280,10 +301,11 @@ export const paymentFixtures: Payment[] = [
   payment("payment-9", "loan-2", 65000, daysAgo(110)),
   payment("payment-10", "loan-2", 65000, daysAgo(95)),
   payment("payment-11", "loan-2", 45000, daysAgo(30), "transfer"),
-  // loan-3 (José Núñez): cuotas 1–3.
-  payment("payment-12", "loan-3", 240000, daysAgo(24)),
-  payment("payment-13", "loan-3", 240000, daysAgo(17)),
-  payment("payment-14", "loan-3", 240000, daysAgo(10)),
+  // loan-3 (José Núñez): cuotas 1–3. 270000 = the interest-inclusive cuota
+  // for principal 2880000 @ 1200 bps / 12 (see lib/loans/loanMath.ts).
+  payment("payment-12", "loan-3", 270000, daysAgo(24)),
+  payment("payment-13", "loan-3", 270000, daysAgo(17)),
+  payment("payment-14", "loan-3", 270000, daysAgo(10)),
   // loan-4 (Felipe Taveras): cuota 1.
   payment("payment-15", "loan-4", 360000, daysAgo(13)),
   // loan-5 (Pedro Cabrera): cuotas 1–2 + this morning's cobro.

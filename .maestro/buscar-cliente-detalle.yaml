@@ -1,0 +1,70 @@
+# Covers: Buscar -> open a customer -> Cliente Detalle renders.
+#
+# Requires a mock-repo build (EXPO_PUBLIC_USE_MOCK_REPOS=true) — see the
+# comment in pin-unlock.yaml. "María Rosa Peralta" (lib/repo/mock/fixtures.ts
+# customer-1) is the fixture used: her only active loan (loan-1) has no
+# accrued mora, so CustomerDetailScreen renders the "Al día" standing pill
+# rather than "En mora".
+#
+# Self-contained (fresh install -> PIN -> skip Google -> Home) for the same
+# reason given in pin-unlock.yaml: flows in this directory can't safely
+# depend on execution order.
+appId: ${APP_ID}
+---
+- launchApp:
+    clearState: true
+- runFlow:
+    when:
+      true: ${DEV_URL}
+    commands:
+      - extendedWaitUntil:
+          visible: "Development Build"
+          timeout: 20000
+      - openLink: ${DEV_URL}
+      - extendedWaitUntil:
+          visible: "Continue"
+          timeout: 45000
+      - back
+- extendedWaitUntil:
+    visible: "Crea tu PIN"
+    timeout: 30000
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- extendedWaitUntil:
+    visible: "Confirma tu PIN"
+    timeout: 10000
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- extendedWaitUntil:
+    visible: "Ahora no, tal vez después"
+    timeout: 15000
+- tapOn: "Ahora no, tal vez después"
+- extendedWaitUntil:
+    visible: "Hola, Carlos."
+    timeout: 15000
+
+# Home's "Mi ruta / Buscar / Cuadre" quick actions repeat the tab bar's own
+# labels, so "Buscar" alone is ambiguous — tab-buscar is the testID added
+# to app/(tabs)/_layout.tsx's Tabs.Screen for this.
+- tapOn:
+    id: "tab-buscar"
+- extendedWaitUntil:
+    visible: "Buscar cliente"
+    timeout: 15000
+- tapOn: "Nombre, teléfono o cédula…"
+- inputText: "Maria"
+- extendedWaitUntil:
+    visible: "María Rosa Peralta"
+    timeout: 15000
+- tapOn: "María Rosa Peralta"
+
+# CustomerDetailScreen (components/screens/CustomerDetailScreen.tsx).
+- extendedWaitUntil:
+    visible: "PRÉSTAMOS ACTIVOS"
+    timeout: 15000
+- assertVisible: "María Rosa Peralta"
+- assertVisible: "Al día"

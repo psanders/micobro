@@ -1,0 +1,82 @@
+# Covers: PIN unlock -> Home (Hoy).
+#
+# Runs against a build with EXPO_PUBLIC_USE_MOCK_REPOS=true baked in (see
+# app.config.ts's `extra.useMockRepos` / README's `npm run start:demo`) —
+# the mock ProfileRepo always returns { name: "Carlos" }, which is what
+# "Hola, Carlos." below asserts. That flag is inlined by Metro at bundle
+# time, so it must be set when the tested build was created, not passed to
+# `maestro test`.
+#
+# Self-contained rather than a runFlow subflow: `maestro test .maestro`
+# treats every .yaml file in the directory as its own entry flow, so a
+# shared "onboarding" helper living alongside these would either run (and
+# fail, having no assertions of its own) or need excluding via config we
+# have no way to verify without a Maestro install. Every flow below repeats
+# the same "fresh install -> PIN -> skip Google -> Home" preamble as
+# launch.yaml's DEV_URL branch, for the same reason.
+#
+# There's no in-app action that re-locks without a full relaunch except the
+# "Cerrar sesión" button on Perfil (components/screens/ProfileScreen.tsx),
+# which calls the same AuthGateProvider#lock() a process restart would
+# trigger — so this flow reaches the PIN-unlock screen via that button
+# rather than a second launchApp.
+appId: ${APP_ID}
+---
+- launchApp:
+    clearState: true
+- runFlow:
+    when:
+      true: ${DEV_URL}
+    commands:
+      - extendedWaitUntil:
+          visible: "Development Build"
+          timeout: 20000
+      - openLink: ${DEV_URL}
+      - extendedWaitUntil:
+          visible: "Continue"
+          timeout: 45000
+      - back
+- extendedWaitUntil:
+    visible: "Crea tu PIN"
+    timeout: 30000
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- extendedWaitUntil:
+    visible: "Confirma tu PIN"
+    timeout: 10000
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- extendedWaitUntil:
+    visible: "Ahora no, tal vez después"
+    timeout: 15000
+- tapOn: "Ahora no, tal vez después"
+- extendedWaitUntil:
+    visible: "Hola, Carlos."
+    timeout: 15000
+
+# Lock the app (ProfileScreen's "Cerrar sesión") to reach the PIN-unlock
+# screen without needing a second launchApp/clearState round trip.
+- tapOn:
+    id: "home-avatar-button"
+- extendedWaitUntil:
+    visible: "Cerrar sesión"
+    timeout: 15000
+- tapOn: "Cerrar sesión"
+
+# UnlockScreen (app/desbloquear.tsx): same PIN keypad, "Ingresa tu PIN para
+# continuar" subtitle (components/screens/UnlockScreen.tsx) confirms we
+# landed on the lock screen and not still on Perfil.
+- extendedWaitUntil:
+    visible: "Ingresa tu PIN para continuar"
+    timeout: 15000
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- extendedWaitUntil:
+    visible: "Hola, Carlos."
+    timeout: 15000

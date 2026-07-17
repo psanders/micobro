@@ -27,7 +27,9 @@ const loan: Loan = {
   updatedAt: daysAgo(31)
 };
 
-const cuotaPayment = (id: string, paidAt: Date, amountCents = 240000): Payment => ({
+// 270000 = the interest-inclusive cuota for principal 2880000 @ 1200 bps / 12
+// (see lib/loans/loanMath.ts).
+const cuotaPayment = (id: string, paidAt: Date, amountCents = 270000): Payment => ({
   id,
   loanId: "loan-3",
   amountCents,
@@ -57,10 +59,11 @@ describe("buildLoanDetailView", () => {
 
     expect(view.schedule.slice(0, 3).every((c) => c.status === "paid")).toBe(true);
     expect(view.schedule[3]!.status).toBe("overdue");
-    expect(view.schedule[3]!.amountCents).toBe(315000);
+    expect(view.schedule[3]!.amountCents).toBe(345000);
     expect(view.schedule[4]!.status).toBe("upcoming");
     expect(view.installmentsPaid).toBe(3);
-    expect(view.balanceCents).toBe(2880000 - 720000);
+    // totalRepayCents (3225600 = 2880000 principal + 345600 flat interest) - paidCents (810000).
+    expect(view.balanceCents).toBe(3225600 - 810000);
   });
 
   it("breaks down due-today as overdue cuota + mora line", () => {
@@ -74,12 +77,12 @@ describe("buildLoanDetailView", () => {
       today
     });
 
-    expect(view.dueTodayCents).toBe(315000);
+    expect(view.dueTodayCents).toBe(345000);
     expect(view.dueTodayLines).toHaveLength(2);
     expect(view.dueTodayLines[0]).toMatchObject({
       kind: "installment",
       installmentNumber: 4,
-      amountCents: 240000
+      amountCents: 270000
     });
     expect(view.dueTodayLines[1]).toMatchObject({ kind: "mora", moraDays: 3, amountCents: 75000 });
   });
@@ -107,7 +110,7 @@ describe("buildLoanDetailView", () => {
       payments: [...threePaid, { ...cuotaPayment("p-mora", daysAgo(1), 75000), notes: "mora" }],
       today
     });
-    expect(view.paidCents).toBe(720000);
+    expect(view.paidCents).toBe(810000);
   });
 
   it("loanCode derives a stable 5-digit code", () => {
