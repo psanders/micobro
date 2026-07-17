@@ -27,6 +27,8 @@ export function createCreateCustomer({ db }: CreateCustomerDeps) {
       name: params.name,
       phone: params.phone,
       address: params.address ?? null,
+      cedula: params.cedula ?? null,
+      avatarKey: params.avatarKey ?? null,
       createdAt: now,
       updatedAt: now
     };
