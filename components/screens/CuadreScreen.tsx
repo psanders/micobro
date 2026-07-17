@@ -124,9 +124,7 @@ export function CuadreScreen() {
                 {closing ? "Sincronizando..." : "Cerrar día y sincronizar"}
               </Text>
             </Pressable>
-            <Text style={styles.footerNote}>
-              Al cerrar, se envían todos los cobros y se bloquea la edición.
-            </Text>
+            <Text style={styles.footerNote}>Al cerrar, se envían todos los cobros del día.</Text>
           </View>
         </>
       )}

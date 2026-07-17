@@ -127,9 +127,7 @@ export function ProfileScreen() {
             icon="bell"
             iconColor={colors.brandPrimary}
             label="Notificaciones"
-            onPress={() =>
-              Alert.alert("Muy pronto", "Las notificaciones estarán disponibles pronto.")
-            }
+            onPress={() => Alert.alert("Muy pronto", "Esta función todavía no está disponible.")}
           />
           <ListTile
             icon="shield"
