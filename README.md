@@ -97,7 +97,7 @@ npm run android       # expo run:android
   between them with `EXPO_PUBLIC_USE_MOCK_REPOS=true` (`npm run start:demo`)
   — no screen code changes needed.
 - **Screens** (`app/` + `components/screens/`): onboarding (PIN + Google/stay-local
-  choice), PIN unlock, a tabbed shell (Inicio/Clientes/Préstamos/Ajustes),
+  choice), PIN unlock, a tabbed shell (Hoy/Ruta/Buscar/Cuadre),
   customer list/detail + new-customer form, loan list/detail + new-loan form,
   record-a-payment, and sync settings (status, push now, disconnect, manual
   lock) — all gated through Expo Router's `Stack.Protected`.
@@ -120,5 +120,6 @@ balance math (loan balance today is a simple principal-minus-payments
 placeholder), pushing loan/payment rows to Sheets (`lib/sync/push.ts`'s
 `ENTITY_RANGES` only maps `customer` today), and app icon/splash assets.
 
-No OpenSpec proposals have been archived yet (`openspec/specs/` and
-`openspec/changes/` are empty save for `changes/archive/`).
+Several OpenSpec proposals have already been archived (`openspec/changes/archive/`
+has multiple dated entries) and `openspec/specs/` now has populated spec files
+for every shipped capability.
