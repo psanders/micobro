@@ -263,9 +263,10 @@ export interface RouteDay {
 }
 
 /**
- * Today's collection route. No visits/route domain exists in the local DB
- * yet, so the real implementation returns an empty zeroed day; the mock
- * seeds the design dataset.
+ * Today's collection route. The real implementation composes it from the
+ * customers/loans/payments tables (`lib/route/composeRouteDay.ts`): one
+ * visit per active loan with an installment due today or overdue, ordered
+ * oldest-due-first; the mock seeds the design dataset.
  */
 export interface RouteRepo {
   getToday(): Promise<RouteDay>;

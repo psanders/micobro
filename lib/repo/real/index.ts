@@ -19,7 +19,7 @@ export function createRealRepos({ db }: { db: Database }): Repos {
     payments: createRealPaymentRepo({ db }),
     sync: createRealSyncRepo({ db }),
     profile: createRealProfileRepo({ db }),
-    route: createRealRouteRepo(),
+    route: createRealRouteRepo({ db }),
     visits: createRealVisitRepo({ db }),
     feedback: createRealFeedbackRepo()
   };
