@@ -3,3 +3,9 @@ node_modules/
 *.d.ts
 package-lock.json
 .expo/
+
+# psstack plugin files — not our source
+.claude/
+
+# drizzle-generated — CLAUDE.md says never hand-edit these
+lib/db/migrations/
