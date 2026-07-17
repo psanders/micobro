@@ -15,8 +15,14 @@ import type { Database } from "../db/client";
 const MAX_RETRIES = 5;
 export const LAST_PUSHED_AT_KEY = "lastPushedAt";
 
+// Assumes the lender's Google Sheet has tabs named "Clientes", "Préstamos",
+// "Pagos", and "Visitas" with columns in the order the row-value mappers
+// below emit them.
 const ENTITY_RANGES: Record<string, string> = {
-  customer: "Clientes!A:F"
+  customer: "Clientes!A:F",
+  loan: "Préstamos!A:K",
+  payment: "Pagos!A:G",
+  visit: "Visitas!A:H"
 };
 
 function customerRowValues(payload: Record<string, unknown>): (string | number | null)[] {
@@ -29,6 +35,60 @@ function customerRowValues(payload: Record<string, unknown>): (string | number |
     payload.updatedAt as string
   ];
 }
+
+// Column order mirrors the `loans` table in lib/db/schema.ts.
+function loanRowValues(payload: Record<string, unknown>): (string | number | null)[] {
+  return [
+    payload.id as string,
+    payload.customerId as string,
+    payload.principalCents as number,
+    payload.interestRateBps as number,
+    payload.termCount as number,
+    payload.frequency as string,
+    payload.startDate as string,
+    payload.status as string,
+    (payload.notes as string) ?? "",
+    payload.createdAt as string,
+    payload.updatedAt as string
+  ];
+}
+
+// Column order mirrors the `payments` table in lib/db/schema.ts.
+function paymentRowValues(payload: Record<string, unknown>): (string | number | null)[] {
+  return [
+    payload.id as string,
+    payload.loanId as string,
+    payload.amountCents as number,
+    payload.paidAt as string,
+    (payload.method as string) ?? "",
+    (payload.notes as string) ?? "",
+    payload.createdAt as string
+  ];
+}
+
+// Column order mirrors the `visits` table in lib/db/schema.ts.
+function visitRowValues(payload: Record<string, unknown>): (string | number | null)[] {
+  return [
+    payload.id as string,
+    payload.customerId as string,
+    (payload.loanId as string) ?? "",
+    payload.outcome as string,
+    (payload.promiseDate as string) ?? "",
+    (payload.promiseAmountCents as number) ?? "",
+    (payload.note as string) ?? "",
+    payload.createdAt as string
+  ];
+}
+
+const ROW_MAPPERS: Record<
+  string,
+  (payload: Record<string, unknown>) => (string | number | null)[]
+> = {
+  customer: customerRowValues,
+  loan: loanRowValues,
+  payment: paymentRowValues,
+  visit: visitRowValues
+};
 
 export interface PushResult {
   pushed: number;
@@ -64,7 +124,8 @@ export async function pushPendingMutations(db: Database): Promise<PushResult> {
 
     try {
       const payload = JSON.parse(mutation.payload);
-      const values = mutation.entity === "customer" ? customerRowValues(payload) : [];
+      const mapRow = ROW_MAPPERS[mutation.entity];
+      const values = mapRow ? mapRow(payload) : [];
       await appendRow(sheetId, range, values);
       await db.delete(pendingMutations).where(eq(pendingMutations.id, mutation.id));
       pushed += 1;
