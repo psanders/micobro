@@ -35,6 +35,20 @@ export const syncMeta = sqliteTable("sync_meta", {
   value: text("value").notNull()
 });
 
+/**
+ * One row per install (the lender's own identity), keyed by a fixed
+ * singleton id — see `PROFILE_ID` in `lib/profile/profile.schema.ts`.
+ */
+export const profile = sqliteTable("profile", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  avatarKey: text("avatar_key"),
+  businessName: text("business_name"),
+  phone: text("phone"),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).notNull()
+});
+
 export const loans = sqliteTable("loans", {
   id: text("id").primaryKey(),
   customerId: text("customer_id")

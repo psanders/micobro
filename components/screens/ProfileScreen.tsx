@@ -81,16 +81,38 @@ export function ProfileScreen() {
       <ScreenHeader title="Mi cuenta" onBack={() => router.back()} />
 
       <ScrollView contentContainerStyle={styles.content}>
-        <View style={styles.profileCard}>
-          <Avatar avatarKey={profile.data?.avatarKey} name={name} size={60} />
-          <View style={styles.profileText}>
-            <Text style={styles.name}>{name}</Text>
-            <Text style={styles.role}>Prestamista independiente</Text>
-            <View style={styles.idPill}>
-              <Text style={styles.idPillText}>{syncPillText(syncStatus.data)}</Text>
+        {profile.data ? (
+          <View style={styles.profileCard}>
+            <Avatar avatarKey={profile.data.avatarKey} name={name} size={60} />
+            <View style={styles.profileText}>
+              <Text style={styles.name}>{name}</Text>
+              <Text style={styles.role}>Prestamista independiente</Text>
+              <View style={styles.idPill}>
+                <Text style={styles.idPillText}>{syncPillText(syncStatus.data)}</Text>
+              </View>
             </View>
+            <Pressable
+              onPress={() => router.push("/perfil/editar")}
+              hitSlop={10}
+              style={styles.editBtn}
+            >
+              <Feather name="edit-2" size={16} color={colors.white} />
+            </Pressable>
           </View>
-        </View>
+        ) : !profile.loading ? (
+          <Pressable style={styles.setupCard} onPress={() => router.push("/perfil/editar")}>
+            <View style={styles.setupIconWrap}>
+              <Feather name="user-plus" size={22} color={colors.white} />
+            </View>
+            <View style={styles.profileText}>
+              <Text style={styles.name}>Configura tu perfil</Text>
+              <Text style={styles.role}>Agrega tu nombre y avatar para personalizar la app.</Text>
+            </View>
+            <Feather name="chevron-right" size={20} color={colors.white} />
+          </Pressable>
+        ) : (
+          <View style={styles.profileCard} />
+        )}
 
         <SectionLabel>Hoy</SectionLabel>
         <View style={styles.statsRow}>
@@ -164,6 +186,30 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8
   },
   idPillText: { fontSize: 10, fontFamily: fonts.bold, color: colors.white },
+  editBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "#FFFFFF20",
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  setupCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+    backgroundColor: colors.brandDeep,
+    borderRadius: 18,
+    padding: 18
+  },
+  setupIconWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "#FFFFFF20",
+    alignItems: "center",
+    justifyContent: "center"
+  },
   statsRow: { flexDirection: "row", gap: 10 },
   settingsList: { gap: 8 },
   logoutBtn: {
