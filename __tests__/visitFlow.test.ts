@@ -27,7 +27,7 @@ describe("mock visit + payment history", () => {
     const history = await repos.loans.getPaymentHistory("loan-3");
 
     expect(history).not.toBeNull();
-    expect(history!.totalCollectedCents).toBe(720000);
+    expect(history!.totalCollectedCents).toBe(810000);
     expect(history!.installmentsPaid).toBe(3);
     expect(history!.moraPaidCents).toBe(0);
     expect(history!.entries[0]!.label).toBe("Cuota 3");

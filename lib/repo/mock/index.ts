@@ -27,6 +27,7 @@ import {
   loanCode,
   MORA_NOTE
 } from "../../loans/loanViews";
+import { cuotaCents, totalRepayCents } from "../../loans/loanMath";
 import { formatCurrency } from "../../utils/money";
 import { createVisitSchema, type Visit } from "../../visits/visit.schema";
 import { visitDescription } from "../../visits/visitDescription";
@@ -228,8 +229,11 @@ export function createMockRepos(): Repos {
         const loan = loans.find((l) => l.id === id);
         if (!loan) return null;
         const loanPayments = payments.filter((payment) => payment.loanId === id);
-        const balanceCents =
-          loan.principalCents - loanPayments.reduce((sum, payment) => sum + payment.amountCents, 0);
+        const paidCents = loanPayments.reduce((sum, payment) => sum + payment.amountCents, 0);
+        const balanceCents = Math.max(
+          0,
+          totalRepayCents(loan.principalCents, loan.interestRateBps) - paidCents
+        );
         return { ...loan, payments: loanPayments, balanceCents };
       },
       create: createLoan,
@@ -259,7 +263,7 @@ export function createMockRepos(): Repos {
         if (!loan) return null;
         const view = viewOf(loan);
         const state = moraOf(loanId);
-        const baseCuota = Math.floor(loan.principalCents / loan.termCount);
+        const cuota = cuotaCents(loan.principalCents, loan.interestRateBps, loan.termCount);
         return {
           loanId: loan.id,
           loanCode: loanCode(loan.id),
@@ -267,7 +271,7 @@ export function createMockRepos(): Repos {
           customerName: view.customerName,
           customerAvatarKey: metaOf(loan.customerId)?.avatarKey ?? null,
           business: view.business,
-          cuotaCents: Math.min(baseCuota, view.balanceCents),
+          cuotaCents: Math.min(cuota, view.balanceCents),
           currentInstallmentNumber: Math.min(view.installmentsPaid + 1, view.installmentsTotal),
           moraCents: state.moraCents,
           moraDays: state.moraDays,

@@ -280,10 +280,11 @@ export const paymentFixtures: Payment[] = [
   payment("payment-9", "loan-2", 65000, daysAgo(110)),
   payment("payment-10", "loan-2", 65000, daysAgo(95)),
   payment("payment-11", "loan-2", 45000, daysAgo(30), "transfer"),
-  // loan-3 (José Núñez): cuotas 1–3.
-  payment("payment-12", "loan-3", 240000, daysAgo(24)),
-  payment("payment-13", "loan-3", 240000, daysAgo(17)),
-  payment("payment-14", "loan-3", 240000, daysAgo(10)),
+  // loan-3 (José Núñez): cuotas 1–3. 270000 = the interest-inclusive cuota
+  // for principal 2880000 @ 1200 bps / 12 (see lib/loans/loanMath.ts).
+  payment("payment-12", "loan-3", 270000, daysAgo(24)),
+  payment("payment-13", "loan-3", 270000, daysAgo(17)),
+  payment("payment-14", "loan-3", 270000, daysAgo(10)),
   // loan-4 (Felipe Taveras): cuota 1.
   payment("payment-15", "loan-4", 360000, daysAgo(13)),
   // loan-5 (Pedro Cabrera): cuotas 1–2 + this morning's cobro.

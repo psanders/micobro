@@ -106,6 +106,12 @@ export interface LoanDetailView {
   termCount: number;
   startDate: Date;
   endDate: Date | null;
+  /** Principal only — the amount disbursed, before interest. */
+  principalCents: number;
+  /** Flat add-on interest over the life of the loan (see `lib/loans/loanMath.ts`). */
+  totalInterestCents: number;
+  /** Principal + totalInterestCents — the full amount the loan will collect ("Total a pagar"). */
+  totalRepayCents: number;
   balanceCents: number;
   paidCents: number;
   installmentsPaid: number;
