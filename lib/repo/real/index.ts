@@ -18,7 +18,7 @@ export function createRealRepos({ db }: { db: Database }): Repos {
     loans: createRealLoanRepo({ db }),
     payments: createRealPaymentRepo({ db }),
     sync: createRealSyncRepo({ db }),
-    profile: createRealProfileRepo(),
+    profile: createRealProfileRepo({ db }),
     route: createRealRouteRepo({ db }),
     visits: createRealVisitRepo({ db }),
     feedback: createRealFeedbackRepo()

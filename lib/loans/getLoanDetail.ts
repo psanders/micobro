@@ -5,6 +5,7 @@ import { eq } from "drizzle-orm";
 import { z } from "zod/v4";
 import { withErrorHandlingAndValidation } from "../utils/withErrorHandlingAndValidation";
 import { loans, payments } from "../db/schema";
+import { totalRepayCents } from "./loanMath";
 import type { Loan, LoanDetail } from "./loan.schema";
 import type { Payment } from "../payments/payment.schema";
 import type { Database } from "../db/client";
@@ -30,8 +31,11 @@ export function createGetLoanDetail({ db }: GetLoanDetailDeps) {
       .from(payments)
       .where(eq(payments.loanId, id))) as Payment[];
 
-    const balanceCents =
-      loan.principalCents - loanPayments.reduce((sum, payment) => sum + payment.amountCents, 0);
+    const paidCents = loanPayments.reduce((sum, payment) => sum + payment.amountCents, 0);
+    const balanceCents = Math.max(
+      0,
+      totalRepayCents(loan.principalCents, loan.interestRateBps) - paidCents
+    );
 
     return { ...loan, payments: loanPayments, balanceCents };
   };

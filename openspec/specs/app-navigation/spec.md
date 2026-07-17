@@ -3,8 +3,7 @@
 ## Purpose
 
 The main navigation shell of the app: the collector tab bar
-(Hoy / Ruta / Buscar / Cuadre) and the transitional destinations that keep
-every link alive while later screen groups are built.
+(Hoy / Ruta / Buscar / Cuadre) and the stack destinations reachable from it.
 
 ## Requirements
 
@@ -20,23 +19,19 @@ exist.
 - **WHEN** the user unlocks the app (or completes onboarding)
 - **THEN** the tab bar shows Hoy, Ruta, Buscar, Cuadre with Hoy selected
 
-### Requirement: Transitional Cuadre destination
+### Requirement: Profile reachable from Home
 
-Until the Cuadre screen group ships, the Cuadre tab SHALL show a designed
-placeholder state (title "Cuadre" and a "disponible pronto" message) rather
-than a blank or broken screen.
+The Perfil (Yo) screen SHALL be reachable from the Home screen's avatar
+button as a stack screen. The existing sync/lock screen (connect status,
+push, manual lock) SHALL be reachable from Perfil's "Seguridad y PIN" row
+rather than directly from the avatar button.
 
-#### Scenario: Cuadre placeholder
-
-- **WHEN** the user taps the Cuadre tab
-- **THEN** a styled placeholder screen is shown and the app does not crash or dead-end
-
-### Requirement: Settings reachable from Home
-
-The settings screen (sync status, connect/disconnect, manual lock) SHALL be
-reachable from the Home screen's avatar button as a stack screen.
-
-#### Scenario: Avatar opens settings
+#### Scenario: Avatar opens profile
 
 - **WHEN** the user taps the avatar/initials button on Hoy
-- **THEN** the settings screen opens and back returns to Hoy
+- **THEN** the Perfil (Yo) screen opens and back returns to Hoy
+
+#### Scenario: Security settings from profile
+
+- **WHEN** the user taps Seguridad y PIN on Perfil
+- **THEN** the existing sync/lock screen opens

@@ -6,6 +6,7 @@ import { z } from "zod/v4";
 import { withErrorHandlingAndValidation } from "../utils/withErrorHandlingAndValidation";
 import { customers, loans, payments } from "../db/schema";
 import { buildLoanDetailView, loanCode } from "../loans/loanViews";
+import { cuotaCents } from "../loans/loanMath";
 import { computeLoanMora } from "../loans/mora";
 import type { Customer } from "../customers/customer.schema";
 import type { Loan } from "../loans/loan.schema";
@@ -53,7 +54,7 @@ export function createGetCollectContext({ db }: GetCollectContextDeps) {
       moraDays
     });
 
-    const baseCuota = Math.floor(loan.principalCents / loan.termCount);
+    const cuota = cuotaCents(loan.principalCents, loan.interestRateBps, loan.termCount);
     return {
       loanId: loan.id,
       loanCode: loanCode(loan.id),
@@ -61,7 +62,7 @@ export function createGetCollectContext({ db }: GetCollectContextDeps) {
       customerName: view.customerName,
       customerAvatarKey: null,
       business: null,
-      cuotaCents: Math.min(baseCuota, view.balanceCents),
+      cuotaCents: Math.min(cuota, view.balanceCents),
       currentInstallmentNumber: Math.min(view.installmentsPaid + 1, view.installmentsTotal),
       moraCents,
       moraDays,

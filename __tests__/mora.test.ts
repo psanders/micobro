@@ -115,24 +115,26 @@ describe("computeAccruedMora", () => {
 
 describe("oldestOverdueInstallment", () => {
   it("returns the first unpaid cuota once its due date has passed", () => {
-    // Act — weekly ×12, cuota1 due 21 days ago, still unpaid
+    // Act — weekly ×12, cuota1 due 21 days ago, still unpaid. 15000 = the
+    // interest-inclusive cuota for principal 120000 @ 1000 bps / 12
+    // (see lib/loans/loanMath.ts).
     const result = oldestOverdueInstallment(baseLoan, []);
 
     // Assert
     expect(result).not.toBeNull();
-    expect(result?.amountCents).toBe(10000);
+    expect(result?.amountCents).toBe(15000);
   });
 
   it("skips paid cuotas and returns the next overdue one", () => {
-    // Arrange — cuota1 (RD$100) paid off
-    const payments = [payment({ amountCents: 10000, paidAt: daysAgo(25) })];
+    // Arrange — cuota1 (RD$150) paid off
+    const payments = [payment({ amountCents: 15000, paidAt: daysAgo(25) })];
 
     // Act
     const result = oldestOverdueInstallment(baseLoan, payments);
 
     // Assert — cuota2 was due 14 days ago
     expect(result).not.toBeNull();
-    expect(result?.amountCents).toBe(10000);
+    expect(result?.amountCents).toBe(15000);
     expect(result?.dueDate.getTime()).toBeGreaterThan(daysAgo(28).getTime());
   });
 

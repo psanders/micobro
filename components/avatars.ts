@@ -6,6 +6,7 @@
  * hence the explicit table.
  */
 import type { ImageSourcePropType } from "react-native";
+import { AVATAR_KEYS, type AvatarKey } from "../lib/customers/avatarKeys";
 import female1 from "../assets/avatars/female1.png";
 import female2 from "../assets/avatars/female2.png";
 import male1 from "../assets/avatars/male1.png";
@@ -16,7 +17,8 @@ import male5 from "../assets/avatars/male5.png";
 import male6 from "../assets/avatars/male6.png";
 import male7 from "../assets/avatars/male7.png";
 
-const AVATARS: Record<string, ImageSourcePropType> = {
+// Record<AvatarKey, ...> keeps this exhaustive against lib/customers/avatarKeys.ts.
+const AVATARS: Record<AvatarKey, ImageSourcePropType> = {
   female1,
   female2,
   male1,
@@ -28,7 +30,10 @@ const AVATARS: Record<string, ImageSourcePropType> = {
   male7
 };
 
+export { AVATAR_KEYS };
+export type { AvatarKey };
+
 export function avatarSource(key: string | null | undefined): ImageSourcePropType | null {
   if (!key) return null;
-  return AVATARS[key] ?? null;
+  return AVATARS[key as AvatarKey] ?? null;
 }
