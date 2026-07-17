@@ -20,6 +20,7 @@ import {
   type LoanDetail
 } from "../../loans/loan.schema";
 import { createPaymentSchema, type Payment } from "../../payments/payment.schema";
+import { setProfileSchema, type Profile } from "../../profile/profile.schema";
 import {
   buildCustomerLoanSummary,
   buildLoanDetailView,
@@ -49,6 +50,12 @@ export function createMockRepos(): Repos {
   const payments: Payment[] = paymentFixtures.map((p) => ({ ...p }));
   const visitLog: Visit[] = visitFixtures.map((v) => ({ ...v }));
   const mora = new Map(Object.entries(moraFixtures).map(([id, m]) => [id, { ...m }]));
+  let profileState: Profile | null = {
+    name: "Carlos",
+    avatarKey: "male4",
+    businessName: null,
+    phone: null
+  };
 
   const metaOf = (customerId: string) => customerMetaFixtures[customerId] ?? null;
   const moraOf = (loanId: string) => mora.get(loanId) ?? { moraCents: 0, moraDays: 0 };
@@ -149,6 +156,16 @@ export function createMockRepos(): Repos {
     visitLog.push(visit);
     return visit;
   }, createVisitSchema);
+
+  const setProfile = withErrorHandlingAndValidation(async (params): Promise<Profile> => {
+    profileState = {
+      name: params.name,
+      avatarKey: params.avatarKey ?? null,
+      businessName: params.businessName ?? null,
+      phone: params.phone ?? null
+    };
+    return profileState;
+  }, setProfileSchema);
 
   return {
     customers: {
@@ -335,7 +352,8 @@ export function createMockRepos(): Repos {
     },
     sync: createMockSyncRepo(),
     profile: {
-      get: async () => ({ name: "Carlos", avatarKey: "male4" })
+      get: async () => profileState,
+      set: setProfile
     },
     route: {
       getToday: async () => routeDayFixture
