@@ -121,6 +121,7 @@ export function SearchScreen() {
       </ScrollView>
 
       <Pressable
+        testID="search-fab-new-customer"
         style={[styles.fab, { bottom: 24 + insets.bottom }]}
         onPress={() => router.push("/customers/new")}
         hitSlop={8}

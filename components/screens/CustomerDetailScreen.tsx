@@ -82,6 +82,7 @@ export function CustomerDetailScreen({ customerId }: { customerId: string }) {
           customer ? (
             <View style={styles.headerActions}>
               <Pressable
+                testID="customer-detail-edit-button"
                 hitSlop={10}
                 onPress={() => router.push(`/customers/${customerId}/editar`)}
               >
@@ -174,6 +175,7 @@ export function CustomerDetailScreen({ customerId }: { customerId: string }) {
           <View style={styles.sectionHeaderRow}>
             <SectionLabel>PRÉSTAMOS ACTIVOS</SectionLabel>
             <Pressable
+              testID="customer-detail-new-loan-button"
               hitSlop={10}
               onPress={() => router.push({ pathname: "/loans/new", params: { customerId } })}
             >

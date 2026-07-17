@@ -1,0 +1,78 @@
+# Covers: Nuevo Cliente (FAB on Buscar) end-to-end save.
+#
+# Requires a mock-repo build (EXPO_PUBLIC_USE_MOCK_REPOS=true) — see the
+# comment in pin-unlock.yaml.
+#
+# Only fills the two required fields (Nombre completo, Teléfono) —
+# createCustomerSchema (lib/customers/customer.schema.ts) only requires
+# those; "Dirección" is already optional. Deliberately not touching
+# anything beyond name/phone: two parallel branches (#5 avatar picker, #2
+# cédula) are adding optional fields to this form, and this flow should
+# stay valid without changes once they land. It will likely still need a
+# one-off selector pass afterward if either branch reflows the existing
+# fields — see the PR description.
+appId: ${APP_ID}
+---
+- launchApp:
+    clearState: true
+- runFlow:
+    when:
+      true: ${DEV_URL}
+    commands:
+      - extendedWaitUntil:
+          visible: "Development Build"
+          timeout: 20000
+      - openLink: ${DEV_URL}
+      - extendedWaitUntil:
+          visible: "Continue"
+          timeout: 45000
+      - back
+- extendedWaitUntil:
+    visible: "Crea tu PIN"
+    timeout: 30000
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- extendedWaitUntil:
+    visible: "Confirma tu PIN"
+    timeout: 10000
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- extendedWaitUntil:
+    visible: "Ahora no, tal vez después"
+    timeout: 15000
+- tapOn: "Ahora no, tal vez después"
+- extendedWaitUntil:
+    visible: "Hola, Carlos."
+    timeout: 15000
+
+- tapOn:
+    id: "tab-buscar"
+- extendedWaitUntil:
+    visible: "Buscar cliente"
+    timeout: 15000
+- tapOn:
+    id: "search-fab-new-customer"
+
+# NewCustomerFormScreen (components/screens/NewCustomerFormScreen.tsx),
+# reached via app/customers/new.tsx's Stack.Screen title "Nuevo cliente".
+# Its TextInputs have no placeholder/testID, so fields are targeted
+# relative to their (stable, visible) Spanish labels.
+- extendedWaitUntil:
+    visible: "Nuevo cliente"
+    timeout: 15000
+- tapOn:
+    below: "Nombre completo"
+- inputText: "Yolanda Beltran"
+- tapOn:
+    below: "Teléfono"
+- inputText: "8095550199"
+- tapOn: "Guardar cliente"
+
+# router.back() on save returns to Buscar.
+- extendedWaitUntil:
+    visible: "Buscar cliente"
+    timeout: 15000

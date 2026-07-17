@@ -30,7 +30,17 @@ export default function TabsLayout() {
     >
       <Tabs.Screen name="index" options={{ title: "Hoy", tabBarIcon: featherIcon("home") }} />
       <Tabs.Screen name="ruta" options={{ title: "Ruta", tabBarIcon: featherIcon("map") }} />
-      <Tabs.Screen name="buscar" options={{ title: "Buscar", tabBarIcon: featherIcon("search") }} />
+      <Tabs.Screen
+        name="buscar"
+        options={{
+          title: "Buscar",
+          tabBarIcon: featherIcon("search"),
+          // Home's "Mi ruta / Buscar / Cuadre" quick actions repeat the same
+          // tab labels, so Maestro flows can't disambiguate the tab bar
+          // button by text alone — this testID gives them a stable target.
+          tabBarButtonTestID: "tab-buscar"
+        }}
+      />
       <Tabs.Screen
         name="cuadre"
         options={{

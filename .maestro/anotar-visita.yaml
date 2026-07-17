@@ -1,0 +1,82 @@
+# Covers: Anotar Visita (one outcome path).
+#
+# Requires a mock-repo build (EXPO_PUBLIC_USE_MOCK_REPOS=true) — see the
+# comment in pin-unlock.yaml. Uses José Núñez's loan-3
+# (lib/repo/mock/fixtures.ts, `loanCode("loan-3")` -> "L-00003").
+#
+# Outcome path chosen: "No quiere pagar" (VisitOutcomeScreen's `refused`
+# option). The default outcome is "Promesa de pago", which reveals extra
+# date/time-cycling and amount fields (components/screens/
+# VisitOutcomeScreen.tsx `DATE_PRESETS`/`TIME_PRESETS`) that have no stable
+# text to assert against before they're tapped once; "No quiere pagar" and
+# "Sin contacto"/"Reagendar" skip straight to the comment field and are the
+# simplest outcomes to save end-to-end.
+appId: ${APP_ID}
+---
+- launchApp:
+    clearState: true
+- runFlow:
+    when:
+      true: ${DEV_URL}
+    commands:
+      - extendedWaitUntil:
+          visible: "Development Build"
+          timeout: 20000
+      - openLink: ${DEV_URL}
+      - extendedWaitUntil:
+          visible: "Continue"
+          timeout: 45000
+      - back
+- extendedWaitUntil:
+    visible: "Crea tu PIN"
+    timeout: 30000
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- extendedWaitUntil:
+    visible: "Confirma tu PIN"
+    timeout: 10000
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- extendedWaitUntil:
+    visible: "Ahora no, tal vez después"
+    timeout: 15000
+- tapOn: "Ahora no, tal vez después"
+- extendedWaitUntil:
+    visible: "Hola, Carlos."
+    timeout: 15000
+
+- tapOn:
+    id: "tab-buscar"
+- extendedWaitUntil:
+    visible: "Buscar cliente"
+    timeout: 15000
+- tapOn: "Nombre, teléfono o cédula…"
+- inputText: "Jose"
+- extendedWaitUntil:
+    visible: "José Núñez"
+    timeout: 15000
+- tapOn: "José Núñez"
+- extendedWaitUntil:
+    visible: "PRÉSTAMOS ACTIVOS"
+    timeout: 15000
+- tapOn: "Préstamo #L-00003"
+- extendedWaitUntil:
+    visible: "TOTAL A PAGAR HOY"
+    timeout: 15000
+- tapOn: "Anotar visita"
+
+# VisitOutcomeScreen (components/screens/VisitOutcomeScreen.tsx).
+- extendedWaitUntil:
+    visible: "Resultado de la visita"
+    timeout: 15000
+- tapOn: "No quiere pagar"
+- tapOn: "Guardar visita"
+
+# router.back() on save returns to the loan detail screen.
+- extendedWaitUntil:
+    visible: "TOTAL A PAGAR HOY"
+    timeout: 15000

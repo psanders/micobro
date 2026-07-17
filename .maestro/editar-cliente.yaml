@@ -1,0 +1,91 @@
+# Covers: Editar Cliente -> save -> verify the change reflects on Cliente
+# Detalle.
+#
+# Requires a mock-repo build (EXPO_PUBLIC_USE_MOCK_REPOS=true) — see the
+# comment in pin-unlock.yaml. Uses Pedro Cabrera (lib/repo/mock/
+# fixtures.ts customer-4, the one fixture customer with no cédula on file)
+# so this flow doesn't collide with the cédula field branch (#2) touching
+# the same form.
+#
+# Only edits the name — the one required field this flow needs to prove
+# changed. Same rationale as nuevo-cliente.yaml: two parallel branches (#5
+# avatar picker, #2 cédula) are adding optional fields to this form, so
+# staying on name/phone keeps this flow valid once they merge (it may still
+# need a one-off selector pass — see the PR description).
+appId: ${APP_ID}
+---
+- launchApp:
+    clearState: true
+- runFlow:
+    when:
+      true: ${DEV_URL}
+    commands:
+      - extendedWaitUntil:
+          visible: "Development Build"
+          timeout: 20000
+      - openLink: ${DEV_URL}
+      - extendedWaitUntil:
+          visible: "Continue"
+          timeout: 45000
+      - back
+- extendedWaitUntil:
+    visible: "Crea tu PIN"
+    timeout: 30000
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- extendedWaitUntil:
+    visible: "Confirma tu PIN"
+    timeout: 10000
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- extendedWaitUntil:
+    visible: "Ahora no, tal vez después"
+    timeout: 15000
+- tapOn: "Ahora no, tal vez después"
+- extendedWaitUntil:
+    visible: "Hola, Carlos."
+    timeout: 15000
+
+- tapOn:
+    id: "tab-buscar"
+- extendedWaitUntil:
+    visible: "Buscar cliente"
+    timeout: 15000
+- tapOn: "Nombre, teléfono o cédula…"
+- inputText: "Pedro"
+- extendedWaitUntil:
+    visible: "Pedro Cabrera"
+    timeout: 15000
+- tapOn: "Pedro Cabrera"
+- extendedWaitUntil:
+    visible: "PRÉSTAMOS ACTIVOS"
+    timeout: 15000
+
+# Icon-only edit button in the header
+# (components/screens/CustomerDetailScreen.tsx).
+- tapOn:
+    id: "customer-detail-edit-button"
+
+# EditCustomerFormScreen (components/screens/EditCustomerFormScreen.tsx),
+# prefilled from the customer's current detail once it loads.
+- extendedWaitUntil:
+    visible: "Editar cliente"
+    timeout: 15000
+- extendedWaitUntil:
+    visible: "Nombre completo"
+    timeout: 15000
+- tapOn:
+    below: "Nombre completo"
+- eraseText
+- inputText: "Pedro Cabrera Actualizado"
+- tapOn: "Guardar cambios"
+
+# router.back() on save returns to Cliente Detalle, whose useFocusEffect
+# reloads the customer — the new name should be visible again.
+- extendedWaitUntil:
+    visible: "Pedro Cabrera Actualizado"
+    timeout: 15000
