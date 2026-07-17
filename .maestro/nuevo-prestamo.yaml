@@ -1,0 +1,93 @@
+# Covers: Nuevo Préstamo (from Cliente Detalle) end-to-end save.
+#
+# Requires a mock-repo build (EXPO_PUBLIC_USE_MOCK_REPOS=true) — see the
+# comment in pin-unlock.yaml. Uses Felipe Taveras (lib/repo/mock/
+# fixtures.ts customer-3) purely as an existing customer to attach a
+# second loan to.
+#
+# Navigating from Cliente Detalle passes customerId as a route param, which
+# NewLoanFormScreen (components/screens/NewLoanFormScreen.tsx) uses to hide
+# the customer chip picker — so this flow only fills the loan's own fields
+# (Monto, Tasa de interés, Cantidad de pagos, Frecuencia), all required by
+# createLoanSchema (lib/loans/loan.schema.ts).
+appId: ${APP_ID}
+---
+- launchApp:
+    clearState: true
+- runFlow:
+    when:
+      true: ${DEV_URL}
+    commands:
+      - extendedWaitUntil:
+          visible: "Development Build"
+          timeout: 20000
+      - openLink: ${DEV_URL}
+      - extendedWaitUntil:
+          visible: "Continue"
+          timeout: 45000
+      - back
+- extendedWaitUntil:
+    visible: "Crea tu PIN"
+    timeout: 30000
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- extendedWaitUntil:
+    visible: "Confirma tu PIN"
+    timeout: 10000
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- extendedWaitUntil:
+    visible: "Ahora no, tal vez después"
+    timeout: 15000
+- tapOn: "Ahora no, tal vez después"
+- extendedWaitUntil:
+    visible: "Hola, Carlos."
+    timeout: 15000
+
+- tapOn:
+    id: "tab-buscar"
+- extendedWaitUntil:
+    visible: "Buscar cliente"
+    timeout: 15000
+- tapOn: "Nombre, teléfono o cédula…"
+- inputText: "Felipe"
+- extendedWaitUntil:
+    visible: "Felipe Taveras"
+    timeout: 15000
+- tapOn: "Felipe Taveras"
+- extendedWaitUntil:
+    visible: "PRÉSTAMOS ACTIVOS"
+    timeout: 15000
+
+# Icon-only "+" next to PRÉSTAMOS ACTIVOS
+# (components/screens/CustomerDetailScreen.tsx).
+- tapOn:
+    id: "customer-detail-new-loan-button"
+
+# NewLoanFormScreen, reached via app/loans/new.tsx's Stack.Screen title
+# "Nuevo préstamo".
+- extendedWaitUntil:
+    visible: "Nuevo préstamo"
+    timeout: 15000
+- tapOn:
+    below: "Monto (RD$)"
+- inputText: "20000"
+- tapOn:
+    below: "Tasa de interés (%)"
+- inputText: "10"
+- tapOn:
+    below: "Cantidad de pagos"
+- inputText: "12"
+# Anchored regex — "weekly" alone would also match the "biweekly" chip,
+# since Maestro's text selector does a substring/regex search.
+- tapOn: "^weekly$"
+- tapOn: "Crear préstamo"
+
+# router.back() on save returns to Cliente Detalle.
+- extendedWaitUntil:
+    visible: "Felipe Taveras"
+    timeout: 15000

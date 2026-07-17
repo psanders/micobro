@@ -92,7 +92,11 @@ export function HomeScreen() {
           </View>
           <Text style={styles.greeting}>{name ? `Hola, ${name}.` : "Hola."}</Text>
         </View>
-        <Pressable style={styles.avatarButton} onPress={() => router.push("/perfil")}>
+        <Pressable
+          testID="home-avatar-button"
+          style={styles.avatarButton}
+          onPress={() => router.push("/perfil")}
+        >
           {name ? (
             <Text style={styles.avatarInitials}>{initialsOf(name)}</Text>
           ) : (
