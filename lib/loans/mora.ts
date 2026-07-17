@@ -10,6 +10,7 @@
  * grace, cap at 1 cuota, no floor) match mikro's `defaultLoansConfig`.
  */
 import { MORA_NOTE, installmentDueDate, principalPaidCents } from "./loanViews";
+import { cuotaCents as computeCuotaCents, totalRepayCents } from "./loanMath";
 import type { Loan } from "./loan.schema";
 import type { Payment } from "../payments/payment.schema";
 
@@ -66,14 +67,16 @@ export function computeAccruedMora(
 /**
  * The oldest unpaid installment, if its due date has already passed.
  * Mirrors the "first unpaid cuota" walk in `buildLoanDetailView`'s
- * schedule, kept separate since mora needs it before the view is built.
+ * schedule (interest-inclusive cuota via `./loanMath`), kept separate
+ * since mora needs it before the view is built.
  */
 export function oldestOverdueInstallment(
   loan: Loan,
   payments: Payment[],
   today: Date = new Date()
 ): { dueDate: Date; amountCents: number } | null {
-  const baseCuota = Math.floor(loan.principalCents / loan.termCount);
+  const cuota = computeCuotaCents(loan.principalCents, loan.interestRateBps, loan.termCount);
+  const repayCents = totalRepayCents(loan.principalCents, loan.interestRateBps);
   const paidCents = principalPaidCents(payments);
   const startOfToday = new Date(today);
   startOfToday.setHours(0, 0, 0, 0);
@@ -81,9 +84,7 @@ export function oldestOverdueInstallment(
   let cumulative = 0;
   for (let number = 1; number <= loan.termCount; number++) {
     const amountCents =
-      number === loan.termCount
-        ? loan.principalCents - baseCuota * (loan.termCount - 1)
-        : baseCuota;
+      number === loan.termCount ? Math.max(0, repayCents - cuota * (loan.termCount - 1)) : cuota;
     cumulative += amountCents;
     if (paidCents >= cumulative) continue;
 

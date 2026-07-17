@@ -53,16 +53,17 @@ describe("createGetLoanDetailView", () => {
     // Act
     const result = await getLoanDetailView({ id: "loan-1" });
 
-    // Assert — cuota1 (RD$100) is 21 days overdue: 0.1 * (21/30) * 10000 = 700
-    expect(result?.moraCents).toBe(700);
+    // Assert — cuota1 (interest-inclusive: RD$150, see lib/loans/loanMath.ts)
+    // is 21 days overdue: 0.1 * (21/30) * 15000 = 1050
+    expect(result?.moraCents).toBe(1050);
     expect(result?.moraDays).toBe(21);
     expect(result?.dueTodayCents).toBeGreaterThan(0);
   });
 
   it("returns zero mora once every overdue cuota is paid", async () => {
-    // Arrange — clears every cuota due so far (cuotas 1–3, RD$300 total)
+    // Arrange — clears every cuota due so far (cuotas 1–3, RD$450 total)
     const db = makeDbStub([
-      { id: "p1", loanId: "loan-1", amountCents: 30000, paidAt: daysAgo(25) }
+      { id: "p1", loanId: "loan-1", amountCents: 45000, paidAt: daysAgo(25) }
     ]);
     const getLoanDetailView = createGetLoanDetailView({ db });
 

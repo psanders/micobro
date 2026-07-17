@@ -105,6 +105,12 @@ export function LoanDetailScreen({ loanId }: { loanId: string }) {
             <View style={styles.summary}>
               <Text style={styles.summaryLabel}>BALANCE PENDIENTE</Text>
               <Text style={styles.summaryAmount}>{formatCurrency(loan.balanceCents)}</Text>
+              <Text style={styles.summaryCaption}>
+                Total a pagar {formatCurrency(loan.totalRepayCents)}
+                {loan.totalInterestCents > 0
+                  ? ` · Interés ${formatCurrency(loan.totalInterestCents)}`
+                  : ""}
+              </Text>
               <ProgressBar
                 progress={
                   loan.paidCents + loan.balanceCents > 0
@@ -240,6 +246,11 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bold,
     color: colors.white,
     letterSpacing: -1
+  },
+  summaryCaption: {
+    fontSize: 12,
+    fontFamily: fonts.medium,
+    color: "#9FE6D2"
   },
   summaryGrid: { flexDirection: "row", justifyContent: "space-between" },
   summaryCellLabel: { fontSize: 11, fontFamily: fonts.medium, color: "#9FE6D2" },
