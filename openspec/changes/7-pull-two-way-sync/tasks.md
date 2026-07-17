@@ -7,14 +7,14 @@ by writing it down here.
 
 ## 0. Decision gate (owner sign-off required — nothing past this point is authorized)
 
-- [ ] 0.1 Owner reviews `design.md` §1–7 and either approves the
-      recommendations as-is (manual-trigger-chained-after-push;
-      remote-wins-with-guard conflict resolution; no deletion inference
-      in phase 1; `customers` before `loans` before deferred
-      payments/visits) or returns specific revisions
-- [ ] 0.2 If revised, this change's `proposal.md`/`design.md` are updated
-      to match before any phase A work begins (use
-      `openspec-update-change` or hand-edit, not a fresh proposal)
+- [x] 0.1 Owner reviewed `design.md` §1–7 (2026-07-17): **approved
+      remote-wins-with-guard** conflict resolution, no deletion inference in
+      phase 1, and `customers` → `loans` → deferred payments/visits ordering;
+      **amended the trigger** to add guarded app-open auto-pull alongside the
+      manual+chained path (see §1)
+- [x] 0.2 `proposal.md`/`design.md` updated to match the owner's decision
+      (app-open trigger folded into §1, proposal status banner) before any
+      phase A work begins
 - [ ] 0.3 Once approved, write the `pull-two-way-sync` capability delta
       spec (`specs/pull-two-way-sync/spec.md`, SHALL/scenario form) — this
       change intentionally ships without one (see `proposal.md`'s note on
@@ -40,8 +40,10 @@ by writing it down here.
 - [ ] 1.4 `SyncRepo.pullNow()` (or a combined `syncNow()` — see 0.4) added
       to `lib/repo/types.ts`, wired in `lib/repo/real/syncRepo.ts` and
       `lib/repo/mock/syncRepo.mock.ts`; chained after a successful
-      `pushNow()` per `design.md` §1, still fired only from the existing
-      manual "Sincronizar ahora" / "Cerrar día y sincronizar" actions
+      `pushNow()` per `design.md` §1, fired from the existing manual
+      "Sincronizar ahora" / "Cerrar día y sincronizar" actions AND
+      automatically on app-open behind the §1 connectivity+debounce guard
+      (non-blocking, silent on failure)
 - [ ] 1.5 Jest tests: row mapper (valid + malformed input), upsert logic
       (insert path, overwrite path) against a stubbed `db`, no real
       SQLite — same pattern as `__tests__/` for `lib/customers/`

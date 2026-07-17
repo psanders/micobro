@@ -1,9 +1,10 @@
 # Proposal: 7-pull-two-way-sync
 
-> **Status: design only, pending owner sign-off.** Nothing in this change is
-> authorized to build yet. `tasks.md` phase 0 is a decision gate — no
-> implementation task starts until the recommendations below are approved or
-> revised by the owner. See GitHub issue #7.
+> **Status: direction approved by owner (2026-07-17).** Conflict resolution =
+> remote-wins-with-guard (as recommended); trigger = manual + chained-after-push
+> **plus guarded app-open auto-pull** (an owner amendment to §1 — see `design.md`
+> §1 and `tasks.md` phase 0). Implementation is now authorized to proceed in the
+> phased order in `tasks.md`, starting Phase A. See GitHub issue #7.
 
 ## Why
 
@@ -38,8 +39,10 @@ This is a design document, not an implementation. It proposes:
 - **User-visible sync status** for partial/failed/stuck state, building on
   the existing `SyncStatus.pendingCount`.
 
-Recommended, pending sign-off: pull triggered on manual "Sincronizar" plus
-opportunistically after a successful push; remote-wins-with-guard conflict
+**Approved direction (owner, 2026-07-17):** pull triggered on manual
+"Sincronizar" plus opportunistically after a successful push **and
+automatically on app-open** (connectivity-gated, debounced ~15 min,
+non-blocking — see `design.md` §1); remote-wins-with-guard conflict
 resolution (Sheet is authoritative for a field the lender edited there,
 _except_ a field with an unpushed local mutation still queued, which always
 wins over a stale pull) as the primary strategy, with a conflict-queue as a

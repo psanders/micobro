@@ -121,9 +121,19 @@ unit, still fired only by the existing "Sincronizar ahora" /
 connectivity is opportunistic, not assumed — and avoids inventing a
 background-sync permission story for an app whose users open it precisely
 because they're standing in front of a customer, not because they want to
-poll a spreadsheet. App-open auto-pull is worth revisiting later as a
-low-risk _additional_ trigger (not a replacement) once the manual path is
-proven, but isn't in phase 1.
+poll a spreadsheet.
+
+**Owner decision (2026-07-17): app-open auto-pull IS included in phase 1** as
+a low-risk _additional_ trigger (not a replacement for the manual path),
+overriding this section's original "defer it to later" stance. To neutralize
+the wasteful-calls concern raised in the table above, app-open pull is guarded
+three ways: **connectivity-gated** (attempt only when the device reports a
+network); **debounced** (skip if a successful sync completed within the last
+~15 minutes, so reopening the app repeatedly along a route doesn't re-fire);
+and **non-blocking / silent-on-failure** (runs in the background with no
+spinner and fails quietly when offline — a foreground in a dead-zone route is a
+no-op, not a spin). App-open calls the same `syncNow()` (push-then-pull) as the
+manual button, behind that connectivity+debounce guard.
 
 ## 2. Read mechanism
 
