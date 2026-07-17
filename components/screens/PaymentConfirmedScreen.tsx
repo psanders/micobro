@@ -5,14 +5,27 @@
  * the receipt card and Imprimir / WhatsApp / Listo actions. Reached via
  * router.replace from the collect screen, so back lands on the loan.
  */
-import { View, Text, Pressable, ScrollView, Alert, Linking, StyleSheet } from "react-native";
+import { useMemo, useRef, useState } from "react";
+import {
+  View,
+  Text,
+  Pressable,
+  ScrollView,
+  Alert,
+  ActivityIndicator,
+  StyleSheet
+} from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
+import { captureRef } from "react-native-view-shot";
+import * as Sharing from "expo-sharing";
 import { formatCurrency } from "../../lib/utils/money";
 import { KvRow } from "../KvRow";
 import { colors, fonts } from "../../lib/ui/theme";
 import type { ReceiptLine } from "../../lib/repo/types";
+import { printReceiptWithUI } from "../../lib/printer";
+import { ReceiptView, type ReceiptViewData } from "../ReceiptView";
 
 export interface PaymentConfirmedParams {
   customerName: string;
@@ -34,15 +47,55 @@ export function PaymentConfirmedScreen({
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const methodLabel = method === "transfer" ? "Transferencia" : "Efectivo";
+  const [printing, setPrinting] = useState(false);
+  const [sharing, setSharing] = useState(false);
+  const receiptRef = useRef<View>(null);
 
-  const shareWhatsApp = async () => {
-    const text =
-      `Recibo #${receiptNumber} — Cobro de ${formatCurrency(totalCents)} ` +
-      `a ${customerName} (${methodLabel}), ${paidAtLabel}. ¡Gracias por su pago!`;
+  const receiptViewData = useMemo<ReceiptViewData>(
+    () => ({
+      receiptNumber,
+      customerName,
+      paidAtLabel,
+      method: methodLabel,
+      lines,
+      totalCents
+    }),
+    [receiptNumber, customerName, paidAtLabel, methodLabel, lines, totalCents]
+  );
+
+  const handlePrint = async () => {
+    setPrinting(true);
     try {
-      await Linking.openURL(`https://wa.me/?text=${encodeURIComponent(text)}`);
-    } catch {
-      Alert.alert("No se pudo abrir", "WhatsApp no está disponible en este teléfono.");
+      await printReceiptWithUI({
+        receiptNumber,
+        customerName,
+        date: paidAtLabel,
+        method: methodLabel,
+        lines,
+        totalCents
+      });
+    } finally {
+      setPrinting(false);
+    }
+  };
+
+  const handleShare = async () => {
+    setSharing(true);
+    try {
+      const fileUri = await captureRef(receiptRef, {
+        format: "png",
+        quality: 1,
+        result: "tmpfile"
+      });
+      await Sharing.shareAsync(fileUri, {
+        mimeType: "image/png",
+        dialogTitle: "Enviar recibo"
+      });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      Alert.alert("Error", `No se pudo generar el recibo: ${msg}`);
+    } finally {
+      setSharing(false);
     }
   };
 
@@ -79,22 +132,37 @@ export function PaymentConfirmedScreen({
       <View style={[styles.actions, { paddingBottom: 28 + insets.bottom }]}>
         <View style={styles.actionRow}>
           <Pressable
-            style={styles.actionBtn}
-            onPress={() =>
-              Alert.alert("Muy pronto", "La impresión de recibos estará disponible pronto.")
-            }
+            style={[styles.actionBtn, printing && styles.actionBtnDisabled]}
+            onPress={handlePrint}
+            disabled={printing}
           >
-            <Feather name="printer" size={18} color={colors.white} />
+            {printing ? (
+              <ActivityIndicator size="small" color={colors.white} />
+            ) : (
+              <Feather name="printer" size={18} color={colors.white} />
+            )}
             <Text style={styles.actionText}>Imprimir</Text>
           </Pressable>
-          <Pressable style={styles.actionBtn} onPress={shareWhatsApp}>
-            <Feather name="message-circle" size={18} color={colors.white} />
+          <Pressable
+            style={[styles.actionBtn, sharing && styles.actionBtnDisabled]}
+            onPress={handleShare}
+            disabled={sharing}
+          >
+            {sharing ? (
+              <ActivityIndicator size="small" color={colors.white} />
+            ) : (
+              <Feather name="message-circle" size={18} color={colors.white} />
+            )}
             <Text style={styles.actionText}>WhatsApp</Text>
           </Pressable>
         </View>
         <Pressable style={styles.doneBtn} onPress={() => router.back()}>
           <Text style={styles.doneText}>Listo</Text>
         </Pressable>
+      </View>
+
+      <View style={styles.offscreen}>
+        <ReceiptView ref={receiptRef} data={receiptViewData} />
       </View>
     </View>
   );
@@ -150,6 +218,7 @@ const styles = StyleSheet.create({
     padding: 14
   },
   actionText: { fontSize: 14, fontFamily: fonts.semiBold, color: colors.white },
+  actionBtnDisabled: { opacity: 0.6 },
   doneBtn: {
     alignItems: "center",
     justifyContent: "center",
@@ -157,5 +226,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 14
   },
-  doneText: { fontSize: 15, fontFamily: fonts.bold, color: colors.brandDeep }
+  doneText: { fontSize: 15, fontFamily: fonts.bold, color: colors.brandDeep },
+  offscreen: { position: "absolute", left: -9999, top: 0 }
 });
