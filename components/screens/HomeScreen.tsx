@@ -8,14 +8,35 @@ import { View, Text, Pressable, ScrollView, ActivityIndicator, StyleSheet } from
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
-import { useProfileRepo, useRouteRepo, useSyncRepo } from "../../lib/repo/RepoProvider";
+import { useProfileRepo, useRouteRepo } from "../../lib/repo/RepoProvider";
 import { useAsync } from "../../lib/hooks/useAsync";
 import { formatCurrency } from "../../lib/utils/money";
+import { useSyncContext } from "../../lib/sync/SyncProvider";
+import { computeSyncStatusLabel, type SyncStatusLabel } from "../../lib/sync/syncStatusLabel";
 import { QuickAction } from "../QuickAction";
 import { ProgressBar } from "../ProgressBar";
 import { ClientRow } from "../ClientRow";
 import { colors, fonts } from "../../lib/ui/theme";
 import type { RouteVisit } from "../../lib/repo/types";
+
+const STATUS_COPY: Record<SyncStatusLabel, string> = {
+  synced: "Sincronizado",
+  pending: "Pendiente de sincronizar",
+  needs_attention: "Necesita atención",
+  not_connected: "No conectado"
+};
+
+const STATUS_STYLE: Record<
+  SyncStatusLabel,
+  { icon: "check-circle" | "clock" | "alert-circle" | "cloud-off"; color: string; bg: string }
+> = {
+  // Preserves the original "Conectado" pill's exact look (brandPrimary text/icon
+  // over its existing #D6F3E5 background) so the common case doesn't shift color.
+  synced: { icon: "check-circle", color: colors.brandPrimary, bg: "#D6F3E5" },
+  pending: { icon: "clock", color: colors.amber, bg: colors.amberBg },
+  needs_attention: { icon: "alert-circle", color: colors.red, bg: colors.redBg },
+  not_connected: { icon: "cloud-off", color: colors.slate, bg: colors.subtle }
+};
 
 function formatDayLabel(date: Date): string {
   const label = date.toLocaleDateString("es-DO", {
@@ -58,14 +79,18 @@ export function HomeScreen() {
   const insets = useSafeAreaInsets();
   const profileRepo = useProfileRepo();
   const routeRepo = useRouteRepo();
-  const syncRepo = useSyncRepo();
+  const { isOnline, status } = useSyncContext();
 
   const profile = useAsync(() => profileRepo.get(), []);
   const route = useAsync(() => routeRepo.getToday(), []);
-  const syncStatus = useAsync(() => syncRepo.getStatus(), []);
 
   const day = route.data;
-  const connected = syncStatus.data?.connected ?? false;
+  const syncLabel = computeSyncStatusLabel({
+    isSignedIn: status.connected,
+    isOnline,
+    pendingCount: status.pendingCount,
+    stuckCount: status.stuckCount
+  });
   const name = profile.data?.name;
   const percent = day && day.goalCents > 0 ? day.collectedCents / day.goalCents : 0;
   const upcoming = day?.visits.filter((v) => v.status !== "done").slice(0, 4) ?? [];
@@ -79,14 +104,14 @@ export function HomeScreen() {
         <View style={styles.headerLeft}>
           <View style={styles.headerTopRow}>
             <Text style={styles.date}>{formatDayLabel(new Date())}</Text>
-            <View style={[styles.connPill, !connected && styles.connPillOff]}>
+            <View style={[styles.connPill, { backgroundColor: STATUS_STYLE[syncLabel].bg }]}>
               <Feather
-                name={connected ? "check-circle" : "cloud-off"}
+                name={STATUS_STYLE[syncLabel].icon}
                 size={10}
-                color={connected ? colors.brandPrimary : colors.slate}
+                color={STATUS_STYLE[syncLabel].color}
               />
-              <Text style={[styles.connText, !connected && styles.connTextOff]}>
-                {connected ? "Conectado" : "Sin conexión"}
+              <Text style={[styles.connText, { color: STATUS_STYLE[syncLabel].color }]}>
+                {STATUS_COPY[syncLabel]}
               </Text>
             </View>
           </View>

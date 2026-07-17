@@ -17,6 +17,7 @@ import { db } from "../lib/db/client";
 import { createRealRepos } from "../lib/repo/real";
 import { createMockRepos } from "../lib/repo/mock";
 import { RepoProvider } from "../lib/repo/RepoProvider";
+import { SyncProvider } from "../lib/sync/SyncProvider";
 import { AuthGateProvider, useAuthGate } from "../lib/security/AuthGateProvider";
 import { FeedbackProvider } from "../lib/feedback/FeedbackContext";
 import { RecordingPill } from "../components/feedback/RecordingPill";
@@ -109,13 +110,15 @@ export default function RootLayout() {
 
   return (
     <RepoProvider repos={repos}>
-      <AuthGateProvider>
-        <FeedbackProvider>
-          <Gate />
-          <RecordingPill />
-          <FeedbackStatusModal />
-        </FeedbackProvider>
-      </AuthGateProvider>
+      <SyncProvider>
+        <AuthGateProvider>
+          <FeedbackProvider>
+            <Gate />
+            <RecordingPill />
+            <FeedbackStatusModal />
+          </FeedbackProvider>
+        </AuthGateProvider>
+      </SyncProvider>
     </RepoProvider>
   );
 }

@@ -108,6 +108,27 @@ describe("pushPendingMutations", () => {
     expect(result).toEqual({ pushed: 1, failed: 0 });
   });
 
+  it("retries a failed mutation below the retry cap instead of leaving it stuck", async () => {
+    // Arrange: a row that failed once already, but hasn't exhausted MAX_RETRIES
+    const mutation = {
+      id: "m-retry",
+      entity: "customer",
+      entityId: "customer-1",
+      operation: "create",
+      payload: basePayload,
+      status: "failed",
+      retryCount: 1
+    };
+    const db = makeDbStub([mutation]);
+
+    // Act
+    const result = await pushPendingMutations(db);
+
+    // Assert: the retryable failed row is retried, not silently skipped
+    expect(appendRowMock).toHaveBeenCalledTimes(1);
+    expect(result).toEqual({ pushed: 1, failed: 0 });
+  });
+
   it("skips update mutations instead of appending a duplicate row", async () => {
     // Arrange
     const mutation = {

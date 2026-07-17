@@ -7,6 +7,7 @@ import { createListCustomers } from "../../customers/listCustomers";
 import { createGetCustomer } from "../../customers/getCustomer";
 import { createSearchCustomers } from "../../customers/searchCustomers";
 import { createGetCustomerDetail } from "../../customers/getCustomerDetail";
+import { notifyMutationQueued } from "../../sync/syncEvents";
 import type { Database } from "../../db/client";
 import type { CustomerRepo } from "../types";
 
@@ -21,7 +22,11 @@ export function createRealCustomerRepo({ db }: { db: Database }): CustomerRepo {
   return {
     list: () => listCustomers({}),
     get: (id) => getCustomer({ id }),
-    create: (input) => createCustomer(input),
+    create: async (input) => {
+      const customer = await createCustomer(input);
+      notifyMutationQueued();
+      return customer;
+    },
     update: (id, input) => updateCustomer({ id, ...input }),
     search: (query) => searchCustomers({ query }),
     getDetail: (id) => getCustomerDetail({ id })

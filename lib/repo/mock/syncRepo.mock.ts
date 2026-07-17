@@ -8,7 +8,8 @@ export function createMockSyncRepo(): SyncRepo {
     connected: false,
     sheetId: null,
     lastPushedAt: null,
-    pendingCount: 3
+    pendingCount: 3,
+    stuckCount: 0
   };
 
   return {

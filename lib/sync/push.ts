@@ -5,20 +5,24 @@
  * Sheet. Pull/two-way sync and conflict resolution are a deliberate
  * follow-up — this establishes the push half of the loop end to end.
  */
-import { eq, and, lt } from "drizzle-orm";
+import { eq, and, or, lt } from "drizzle-orm";
 import { pendingMutations, syncMeta } from "../db/schema";
 import { appendRow } from "./sheetsClient";
 import { getSheetId } from "./config";
 import { logger } from "../logger";
 import type { Database } from "../db/client";
 
-const MAX_RETRIES = 5;
+// Exported so syncRepo.getStatus() can compute pendingCount/stuckCount against
+// the exact same cap this query retries against.
+export const MAX_RETRIES = 5;
 export const LAST_PUSHED_AT_KEY = "lastPushedAt";
 
 // Assumes the lender's Google Sheet has tabs named "Clientes", "Préstamos",
 // "Pagos", and "Visitas" with columns in the order the row-value mappers
 // below emit them.
-const ENTITY_RANGES: Record<string, string> = {
+// Exported so provisioning (lib/sync/provisionSheet.ts) creates tabs whose
+// names and column widths match exactly what push writes here.
+export const ENTITY_RANGES: Record<string, string> = {
   customer: "Clientes!A:F",
   loan: "Préstamos!A:K",
   payment: "Pagos!A:G",
@@ -102,11 +106,17 @@ export async function pushPendingMutations(db: Database): Promise<PushResult> {
     return { pushed: 0, failed: 0 };
   }
 
+  // "failed" rows below the retry cap must stay eligible, or a single
+  // transient failure (e.g. a push attempted while offline) makes that
+  // mutation permanently invisible to every future push — silent data loss.
   const pending = await db
     .select()
     .from(pendingMutations)
     .where(
-      and(eq(pendingMutations.status, "pending"), lt(pendingMutations.retryCount, MAX_RETRIES))
+      and(
+        or(eq(pendingMutations.status, "pending"), eq(pendingMutations.status, "failed")),
+        lt(pendingMutations.retryCount, MAX_RETRIES)
+      )
     );
 
   let pushed = 0;

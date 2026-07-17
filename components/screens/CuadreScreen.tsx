@@ -10,9 +10,10 @@ import { useMemo, useState } from "react";
 import { View, Text, Pressable, ScrollView, ActivityIndicator, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
-import { usePaymentRepo, useRouteRepo, useSyncRepo } from "../../lib/repo/RepoProvider";
+import { usePaymentRepo, useRouteRepo } from "../../lib/repo/RepoProvider";
 import { useAsync } from "../../lib/hooks/useAsync";
 import { formatCurrency } from "../../lib/utils/money";
+import { useSyncContext } from "../../lib/sync/SyncProvider";
 import { AmountInputCard } from "../AmountInputCard";
 import { KvRow } from "../KvRow";
 import { colors, fonts } from "../../lib/ui/theme";
@@ -21,7 +22,7 @@ export function CuadreScreen() {
   const insets = useSafeAreaInsets();
   const routeRepo = useRouteRepo();
   const paymentRepo = usePaymentRepo();
-  const syncRepo = useSyncRepo();
+  const { push } = useSyncContext();
 
   const route = useAsync(() => routeRepo.getToday(), []);
   const today = useAsync(() => paymentRepo.listToday(), []);
@@ -50,7 +51,7 @@ export function CuadreScreen() {
     if (closing) return;
     setClosing(true);
     try {
-      await syncRepo.pushNow();
+      await push();
     } finally {
       setClosing(false);
     }

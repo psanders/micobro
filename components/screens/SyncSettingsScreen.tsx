@@ -5,48 +5,57 @@ import { View, Text, Pressable, ActivityIndicator, StyleSheet } from "react-nati
 import { useRouter } from "expo-router";
 import { useSyncRepo } from "../../lib/repo/RepoProvider";
 import { useAuthGate } from "../../lib/security/AuthGateProvider";
-import { useAsync } from "../../lib/hooks/useAsync";
+import { useSyncContext } from "../../lib/sync/SyncProvider";
+import { computeSyncStatusLabel, type SyncStatusLabel } from "../../lib/sync/syncStatusLabel";
+
+const STATUS_COPY: Record<SyncStatusLabel, string> = {
+  synced: "Sincronizado",
+  pending: "Pendiente de sincronizar",
+  needs_attention: "Necesita atención",
+  not_connected: "No conectado"
+};
 
 export function SyncSettingsScreen() {
   const router = useRouter();
   const syncRepo = useSyncRepo();
   const { lock } = useAuthGate();
-  const { data: status, loading, reload } = useAsync(() => syncRepo.getStatus(), []);
+  const { status, isOnline, isPushing, push, refreshStatus } = useSyncContext();
 
-  async function handlePushNow() {
-    await syncRepo.pushNow();
-    reload();
-  }
+  const syncLabel = computeSyncStatusLabel({
+    isSignedIn: status.connected,
+    isOnline,
+    pendingCount: status.pendingCount,
+    stuckCount: status.stuckCount
+  });
 
   async function handleDisconnect() {
     await syncRepo.disconnect();
-    reload();
-  }
-
-  if (loading || !status) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator />
-      </View>
-    );
+    await refreshStatus();
   }
 
   return (
     <View style={styles.screen}>
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Sincronización con Google Sheets</Text>
-        <Text style={styles.statusText}>{status.connected ? "Conectado" : "No conectado"}</Text>
+        <Text style={styles.statusText}>{STATUS_COPY[syncLabel]}</Text>
         {status.lastPushedAt && (
           <Text style={styles.metaText}>
             Último respaldo: {status.lastPushedAt.toLocaleString("es-DO")}
           </Text>
         )}
         <Text style={styles.metaText}>Pendientes por respaldar: {status.pendingCount}</Text>
+        {status.stuckCount > 0 && (
+          <Text style={styles.stuckText}>Necesita atención: {status.stuckCount}</Text>
+        )}
 
         {status.connected ? (
           <>
-            <Pressable style={styles.button} onPress={handlePushNow}>
-              <Text style={styles.buttonText}>Sincronizar ahora</Text>
+            <Pressable style={styles.button} onPress={push} disabled={isPushing}>
+              {isPushing ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <Text style={styles.buttonText}>Sincronizar ahora</Text>
+              )}
             </Pressable>
             <Pressable style={styles.secondaryButton} onPress={handleDisconnect}>
               <Text style={styles.secondaryButtonText}>Desconectar</Text>
@@ -71,11 +80,12 @@ export function SyncSettingsScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: "#FFFFFF", padding: 16, gap: 24 },
-  center: { flex: 1, alignItems: "center", justifyContent: "center" },
   section: { gap: 10 },
   sectionTitle: { fontSize: 15, fontWeight: "600", color: "#1A2B4C" },
   statusText: { fontSize: 14, color: "#1A2B4C" },
   metaText: { fontSize: 13, color: "#5B6B8C" },
+  // #DC2626 matches the design system's ds.red (lib/ui/theme.ts colors.red).
+  stuckText: { fontSize: 13, color: "#DC2626", fontWeight: "600" },
   button: {
     backgroundColor: "#1A2B4C",
     borderRadius: 14,

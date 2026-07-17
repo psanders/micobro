@@ -7,6 +7,7 @@ import { createListLoansByCustomer } from "../../loans/listLoansByCustomer";
 import { createGetLoanDetail } from "../../loans/getLoanDetail";
 import { createGetLoanDetailView } from "../../loans/getLoanDetailView";
 import { createGetPaymentHistory } from "../../loans/getPaymentHistory";
+import { notifyMutationQueued } from "../../sync/syncEvents";
 import type { Database } from "../../db/client";
 import type { LoanRepo } from "../types";
 
@@ -22,7 +23,11 @@ export function createRealLoanRepo({ db }: { db: Database }): LoanRepo {
     list: () => listLoans({}),
     listByCustomer: (customerId) => listLoansByCustomer({ customerId }),
     get: (id) => getLoanDetail({ id }),
-    create: (input) => createLoan(input),
+    create: async (input) => {
+      const loan = await createLoan(input);
+      notifyMutationQueued();
+      return loan;
+    },
     getDetailView: (id) => getLoanDetailView({ id }),
     getPaymentHistory: (id) => getPaymentHistory({ id })
   };

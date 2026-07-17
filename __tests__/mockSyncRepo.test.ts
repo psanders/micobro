@@ -17,7 +17,7 @@ describe("mock sync repo", () => {
 
   it("connect flips status to connected with a sheet id", async () => {
     const repo = createMockSyncRepo();
-    const status = await repo.connect({ code: "mock", codeVerifier: "mock", redirectUri: "mock" });
+    const status = await repo.connect();
     expect(status.connected).toBe(true);
     expect(status.sheetId).toBe("mock-sheet-id");
     expect((await repo.getStatus()).connected).toBe(true);
@@ -25,7 +25,7 @@ describe("mock sync repo", () => {
 
   it("disconnect resets the connection", async () => {
     const repo = createMockSyncRepo();
-    await repo.connect({ code: "mock", codeVerifier: "mock", redirectUri: "mock" });
+    await repo.connect();
     await repo.disconnect();
     const status = await repo.getStatus();
     expect(status.connected).toBe(false);

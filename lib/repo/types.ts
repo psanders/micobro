@@ -209,17 +209,14 @@ export interface SyncStatus {
   sheetId: string | null;
   lastPushedAt: Date | null;
   pendingCount: number;
-}
-
-export interface ConnectGoogleParams {
-  code: string;
-  codeVerifier: string;
-  redirectUri: string;
+  /** Mutations that exhausted their retry cap — need the lender's attention. */
+  stuckCount: number;
 }
 
 export interface SyncRepo {
   getStatus(): Promise<SyncStatus>;
-  connect(params: ConnectGoogleParams): Promise<SyncStatus>;
+  /** Runs the native Google sign-in and returns the resulting status. */
+  connect(): Promise<SyncStatus>;
   disconnect(): Promise<void>;
   pushNow(): Promise<PushResult>;
 }

@@ -6,6 +6,7 @@ import { createListPaymentsByLoan } from "../../payments/listPaymentsByLoan";
 import { createListPaymentsToday } from "../../payments/listPaymentsToday";
 import { createGetCollectContext } from "../../payments/getCollectContext";
 import { createCollectPayment } from "../../payments/collectPayment";
+import { notifyMutationQueued } from "../../sync/syncEvents";
 import type { Database } from "../../db/client";
 import type { PaymentRepo } from "../types";
 
@@ -18,9 +19,17 @@ export function createRealPaymentRepo({ db }: { db: Database }): PaymentRepo {
 
   return {
     listByLoan: (loanId) => listPaymentsByLoan({ loanId }),
-    create: (input) => createPayment(input),
+    create: async (input) => {
+      const payment = await createPayment(input);
+      notifyMutationQueued();
+      return payment;
+    },
     getCollectContext: (loanId) => getCollectContext({ loanId }),
-    collect: (input) => collectPayment(input),
+    collect: async (input) => {
+      const receipt = await collectPayment(input);
+      notifyMutationQueued();
+      return receipt;
+    },
     listToday: () => listPaymentsToday({})
   };
 }
