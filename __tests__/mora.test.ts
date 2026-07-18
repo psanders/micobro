@@ -9,7 +9,9 @@ import {
   computeAccruedMora,
   oldestOverdueInstallment,
   computeLoanMora,
-  DEFAULT_MORA_POLICY
+  DEFAULT_MORA_POLICY,
+  effectiveGraceDays,
+  loanMoraPolicy
 } from "../lib/loans/mora";
 import { MORA_NOTE } from "../lib/loans/loanViews";
 import type { Loan } from "../lib/loans/loan.schema";
@@ -33,6 +35,7 @@ const baseLoan: Loan = {
   startDate: daysAgo(28),
   status: "active",
   notes: null,
+  graceDays: null,
   createdAt: daysAgo(28),
   updatedAt: daysAgo(28)
 };
@@ -196,5 +199,62 @@ describe("computeLoanMora", () => {
 
     // Assert
     expect(result.moraCents).toBe(0);
+  });
+});
+
+describe("effectiveGraceDays", () => {
+  it("defaults an unset loan to 7 days", () => {
+    // Act + Assert
+    expect(effectiveGraceDays({ ...baseLoan, graceDays: null })).toBe(7);
+  });
+
+  it("uses the loan's configured grace period when set", () => {
+    // Act + Assert
+    expect(effectiveGraceDays({ ...baseLoan, graceDays: 3 })).toBe(3);
+  });
+
+  it("honors an explicit zero grace period (not the same as unset)", () => {
+    // Act + Assert
+    expect(effectiveGraceDays({ ...baseLoan, graceDays: 0 })).toBe(0);
+  });
+});
+
+describe("loanMoraPolicy", () => {
+  it("carries the loan's grace period, otherwise matching DEFAULT_MORA_POLICY", () => {
+    // Act
+    const policy = loanMoraPolicy({ ...baseLoan, graceDays: 3 });
+
+    // Assert
+    expect(policy).toEqual({ ...DEFAULT_MORA_POLICY, graceDays: 3 });
+  });
+
+  it("resolves to the 7-day default for a loan that never set graceDays", () => {
+    // Act
+    const policy = loanMoraPolicy({ ...baseLoan, graceDays: null });
+
+    // Assert
+    expect(policy.graceDays).toBe(7);
+  });
+});
+
+describe("computeLoanMora wired to a loan's own grace period", () => {
+  it("accrues no mora while still inside the loan's grace period", () => {
+    // Arrange — cuota1 due 21 days ago on baseLoan, well inside a 30-day grace
+    const generousLoan: Loan = { ...baseLoan, graceDays: 30 };
+
+    // Act
+    const result = computeLoanMora(generousLoan, [], new Date(), loanMoraPolicy(generousLoan));
+
+    // Assert
+    expect(result.moraCents).toBe(0);
+  });
+
+  it("accrues mora once days late exceeds the default 7-day grace", () => {
+    // Arrange — baseLoan.graceDays is unset (defaults to 7); cuota1 is 21 days late
+    // Act
+    const result = computeLoanMora(baseLoan, [], new Date(), loanMoraPolicy(baseLoan));
+
+    // Assert
+    expect(result.moraCents).toBeGreaterThan(0);
   });
 });

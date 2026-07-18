@@ -6,7 +6,7 @@ import { z } from "zod/v4";
 import { withErrorHandlingAndValidation } from "../utils/withErrorHandlingAndValidation";
 import { customers, loans, payments, visits } from "../db/schema";
 import { buildLoanDetailView, buildCustomerLoanSummary, MORA_NOTE } from "../loans/loanViews";
-import { computeLoanMora } from "../loans/mora";
+import { computeLoanMora, loanMoraPolicy } from "../loans/mora";
 import { formatCurrency } from "../utils/money";
 import { visitDescription } from "../visits/visitDescription";
 import type { Customer } from "./customer.schema";
@@ -50,7 +50,12 @@ export function createGetCustomerDetail({ db }: GetCustomerDetailDeps) {
         .where(eq(payments.loanId, loan.id))) as Payment[];
 
       if (loan.status === "active") {
-        const { moraCents, moraDays } = computeLoanMora(loan, loanPayments);
+        const { moraCents, moraDays } = computeLoanMora(
+          loan,
+          loanPayments,
+          new Date(),
+          loanMoraPolicy(loan)
+        );
         if (moraCents > 0) inMora = true;
         const view = buildLoanDetailView({
           loan,

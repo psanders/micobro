@@ -61,6 +61,11 @@ export const loans = sqliteTable("loans", {
   startDate: integer("start_date", { mode: "timestamp" }).notNull(),
   status: text("status").notNull().default("active"),
   notes: text("notes"),
+  // Days past due before mora (late fee) starts accruing. Nullable rather
+  // than backfilled so existing loans need no data migration — null is
+  // treated as the 7-day default at read time (see
+  // `lib/loans/loan.schema.ts`'s `DEFAULT_GRACE_DAYS`).
+  graceDays: integer("grace_days"),
   createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
   updatedAt: integer("updated_at", { mode: "timestamp" }).notNull()
 });

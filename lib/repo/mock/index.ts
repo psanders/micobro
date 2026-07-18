@@ -131,6 +131,7 @@ export function createMockRepos(): Repos {
       startDate: params.startDate ?? now,
       status: "active",
       notes: params.notes ?? null,
+      graceDays: params.graceDays ?? null,
       createdAt: now,
       updatedAt: now
     };

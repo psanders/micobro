@@ -21,10 +21,12 @@ export {
   computeAccruedMora,
   computeLoanMora,
   oldestOverdueInstallment,
-  DEFAULT_MORA_POLICY
+  DEFAULT_MORA_POLICY,
+  effectiveGraceDays,
+  loanMoraPolicy
 } from "./mora";
 export type { MoraPolicy, AccruedMora } from "./mora";
-export { createLoanSchema, loanFrequencies, loanStatuses } from "./loan.schema";
+export { createLoanSchema, loanFrequencies, loanStatuses, DEFAULT_GRACE_DAYS } from "./loan.schema";
 export type {
   CreateLoanInput,
   Loan,

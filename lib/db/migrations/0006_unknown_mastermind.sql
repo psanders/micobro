@@ -1,0 +1,1 @@
+ALTER TABLE `loans` ADD `grace_days` integer;

@@ -7,7 +7,7 @@ import { withErrorHandlingAndValidation } from "../utils/withErrorHandlingAndVal
 import { customers, loans, payments } from "../db/schema";
 import { buildLoanDetailView, loanCode } from "../loans/loanViews";
 import { cuotaCents } from "../loans/loanMath";
-import { computeLoanMora } from "../loans/mora";
+import { computeLoanMora, loanMoraPolicy } from "../loans/mora";
 import type { Customer } from "../customers/customer.schema";
 import type { Loan } from "../loans/loan.schema";
 import type { Payment } from "./payment.schema";
@@ -43,7 +43,12 @@ export function createGetCollectContext({ db }: GetCollectContextDeps) {
       .from(payments)
       .where(eq(payments.loanId, loanId))) as Payment[];
 
-    const { moraCents, moraDays } = computeLoanMora(loan, loanPayments);
+    const { moraCents, moraDays } = computeLoanMora(
+      loan,
+      loanPayments,
+      new Date(),
+      loanMoraPolicy(loan)
+    );
 
     const view = buildLoanDetailView({
       loan,

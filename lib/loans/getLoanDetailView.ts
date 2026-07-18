@@ -6,7 +6,7 @@ import { z } from "zod/v4";
 import { withErrorHandlingAndValidation } from "../utils/withErrorHandlingAndValidation";
 import { customers, loans, payments } from "../db/schema";
 import { buildLoanDetailView } from "./loanViews";
-import { computeLoanMora } from "./mora";
+import { computeLoanMora, loanMoraPolicy } from "./mora";
 import type { Customer } from "../customers/customer.schema";
 import type { Loan } from "./loan.schema";
 import type { Payment } from "../payments/payment.schema";
@@ -41,7 +41,12 @@ export function createGetLoanDetailView({ db }: GetLoanDetailViewDeps) {
       .from(payments)
       .where(eq(payments.loanId, id))) as Payment[];
 
-    const { moraCents, moraDays } = computeLoanMora(loan, loanPayments);
+    const { moraCents, moraDays } = computeLoanMora(
+      loan,
+      loanPayments,
+      new Date(),
+      loanMoraPolicy(loan)
+    );
 
     return buildLoanDetailView({
       loan,

@@ -78,6 +78,7 @@ function rowToLoan(row: string[]): Loan | null {
     startDateRaw,
     status,
     notes,
+    graceDaysRaw,
     createdAtRaw,
     updatedAtRaw
   ] = row;
@@ -85,6 +86,7 @@ function rowToLoan(row: string[]): Loan | null {
   const interestRateBps = interestRateBpsRaw ? parseNumber(interestRateBpsRaw) : null;
   const termCount = termCountRaw ? parseNumber(termCountRaw) : null;
   const startDate = startDateRaw ? parseDate(startDateRaw) : null;
+  const graceDays = graceDaysRaw ? parseNumber(graceDaysRaw) : null;
   const createdAt = createdAtRaw ? parseDate(createdAtRaw) : null;
   const updatedAt = updatedAtRaw ? parseDate(updatedAtRaw) : null;
   if (
@@ -111,6 +113,7 @@ function rowToLoan(row: string[]): Loan | null {
     startDate,
     status: status as LoanStatus,
     notes: notes || null,
+    graceDays,
     createdAt,
     updatedAt
   };

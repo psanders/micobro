@@ -41,6 +41,7 @@ function loan(overrides: Partial<Loan>): Loan {
     startDate: daysBeforeToday(10),
     status: "active",
     notes: null,
+    graceDays: null,
     createdAt: daysBeforeToday(10),
     updatedAt: daysBeforeToday(10),
     ...overrides
@@ -92,12 +93,16 @@ describe("composeRouteDay", () => {
   });
 
   it("orders overdue before today's-due and sums the aggregates", () => {
-    // Arrange — loan A: weekly cuota1 due 3 days ago (overdue), no payments
+    // Arrange — loan A: weekly cuota1 due 3 days ago (overdue), no payments.
+    // graceDays: 0 keeps this test's mora numbers exactly as before grace
+    // was wired in — its own default-grace behavior is covered separately
+    // below ("flags a cuota overdue immediately, but withholds mora...").
     const customerA = customer({ id: "customer-a", name: "Ana Overdue", address: "Calle A" });
     const loanA = loan({
       id: "loan-a",
       customerId: "customer-a",
-      startDate: daysBeforeToday(10)
+      startDate: daysBeforeToday(10),
+      graceDays: 0
     });
     // Arrange — loan B: weekly cuota1 due exactly today, no payments
     const customerB = customer({ id: "customer-b", name: "Beto Hoy", address: "Calle B" });
@@ -136,10 +141,54 @@ describe("composeRouteDay", () => {
     expect(day.upcomingCustomers).toEqual([]);
   });
 
+  it("flags a cuota overdue immediately, but withholds mora until the grace period elapses", () => {
+    // Arrange — loan A: weekly cuota1 due 3 days ago, still inside the
+    // default 7-day grace — the visit is "overdue" (needs a collection
+    // visit today) but no late fee has accrued yet.
+    const loanA = loan({ id: "loan-a", startDate: daysBeforeToday(10) });
+
+    // Act
+    const day = composeRouteDay({
+      customers: [customer({})],
+      loans: [loanA],
+      payments: [],
+      today: TODAY
+    });
+
+    // Assert
+    expect(day.visits[0]!.status).toBe("overdue");
+    expect(day.visits[0]!.overdueDays).toBe(3);
+    expect(day.visits[0]!.hasMora).toBe(false);
+    expect(day.visits[0]!.amountCents).toBe(15000);
+  });
+
+  it("respects a loan's own grace-period override", () => {
+    // Arrange — same 3-days-overdue loan, but this lender configured a
+    // zero-day grace for it, so mora accrues right away.
+    const loanA = loan({ id: "loan-a", startDate: daysBeforeToday(10), graceDays: 0 });
+
+    // Act
+    const day = composeRouteDay({
+      customers: [customer({})],
+      loans: [loanA],
+      payments: [],
+      today: TODAY
+    });
+
+    // Assert — mora (0.1 * 3/30 * 15000 = 150 cents) on top of the cuota
+    expect(day.visits[0]!.hasMora).toBe(true);
+    expect(day.visits[0]!.amountCents).toBe(15150);
+  });
+
   it("marks a visit done and moves it out of pendingCount once collected today", () => {
     // Arrange — same two loans as above, but loan B's cuota is paid today
     const customerA = customer({ id: "customer-a", name: "Ana Overdue" });
-    const loanA = loan({ id: "loan-a", customerId: "customer-a", startDate: daysBeforeToday(10) });
+    const loanA = loan({
+      id: "loan-a",
+      customerId: "customer-a",
+      startDate: daysBeforeToday(10),
+      graceDays: 0
+    });
     const customerB = customer({ id: "customer-b", name: "Beto Hoy" });
     const loanB = loan({ id: "loan-b", customerId: "customer-b", startDate: daysBeforeToday(7) });
     const todaysPayment = payment({
