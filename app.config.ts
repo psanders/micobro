@@ -2,6 +2,7 @@
  * Copyright (C) 2026 by Pedro Sanders. MIT License.
  */
 import { ExpoConfig, ConfigContext } from "expo/config";
+import pkg from "./package.json";
 
 // Mirrors colors.brandDeep in lib/ui/theme.ts — not imported directly since
 // app.config.ts's loader can't resolve project TS modules the way Metro can.
@@ -23,7 +24,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: "Micobro",
   slug: "micobro",
-  version: "0.1.0",
+  // The release workflow bumps package.json's version and tags a release
+  // from it — this stays in sync automatically rather than needing its own bump.
+  version: pkg.version,
   orientation: "portrait",
   // Matches components/BrandLogo.tsx's mark: white Sora Bold "m" on
   // colors.brandDeep (#0B4F4A), same recipe Mikro uses for its icon.

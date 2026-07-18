@@ -89,6 +89,23 @@ npm run android       # expo run:android
 | `npm run start:storybook:native` | Component dev in Storybook                                            |
 | `npm run start:demo`             | App with in-memory mock data, no real device DB or Google auth needed |
 
+## Releasing an APK
+
+`.github/workflows/release.yml` is a manual, on-demand release: trigger it
+from the Actions tab (or `gh workflow run release.yml -f version=0.2.0`) with
+a version number, and it lints/typechecks/tests, builds a standalone release
+APK (`expo prebuild` + `gradlew assembleRelease`, signed with Expo's
+template debug keystore — fine for direct-install distribution, not Play
+Store), then — only once that build has actually succeeded — bumps
+`package.json`'s version, tags `vX.Y.Z`, and publishes a GitHub Release with
+the APK attached. The release page is the one link to send/download from;
+the build also uploads a 30-day workflow-artifact copy as a fallback.
+
+Set the `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` repo secret for release builds to
+ship with Google Sign-In enabled — without it, the APK still builds fine, it
+just disables "Continuar con Google" the same way a missing local `.env`
+does.
+
 ## How the app is put together
 
 - **No username/password, ever.** The only local "auth" is a 4-digit PIN
