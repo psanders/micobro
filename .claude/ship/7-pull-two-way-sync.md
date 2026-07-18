@@ -1,7 +1,7 @@
 # Ship checkpoint — 7-pull-two-way-sync
 
 Started: 2026-07-18
-Current stage: 5 — Sync (gate)
+Current stage: 6 — Archive (done)
 
 **Scope:** Implement pull/two-way sync per the already-approved design
 (owner sign-off 2026-07-17): remote-wins-with-guard conflict resolution,
@@ -20,14 +20,22 @@ yes, but Maestro (`.maestro/*.yaml`), not Playwright.
 | 2 | Spec reconcile | done | Wrote `specs/pull-two-way-sync/spec.md` (8 requirements); `openspec validate` green |
 | 3 | Build | done | pull.ts, updateRow/findRowNumber in push.ts, syncNow() in SyncProvider+SyncRepo, autoSyncPolicy.ts, lastPulledAt in SyncStatus. Phase E (deletion detection, conflict queue) deliberately deferred per design.md §7 |
 | 4 | Test | done | tsc/eslint/jest all green (68 suites, 278 tests). Live on-device walk against the real connected Datos sheet: found and fixed a real bug (concurrent `GoogleSignin.getTokens()` crash from `Promise.all`-ing the two entity pulls — now sequential). Maestro E2E addition skipped: a scripted flow can't meaningfully cover connectivity toggling + external Sheet edits, and the manual walk already exercised the real native auth path more thoroughly than mock-repo Maestro flow would |
-| 5 | Sync | in-progress | Awaiting user confirmation to promote `pull-two-way-sync` delta into `openspec/specs/` |
-| 6 | Archive | pending | |
+| 5 | Sync | done | Created `openspec/specs/pull-two-way-sync/spec.md` (new capability, 8 requirements); `openspec validate --specs` green |
+| 6 | Archive | done | Moved to `openspec/changes/archive/2026-07-18-7-pull-two-way-sync/` |
 
 Status values: `pending` · `in-progress` · `done` · `skipped` (with reason).
 
 ## Decision log
 
 Newest first. One line per meaningful decision or stage transition.
+
+- 2026-07-18 — Stages 5 and 6 done, user-confirmed at both gates. `openspec
+  status --change` rejected this change's numeric-prefixed id ("must start
+  with a letter" — a stricter check than when the change was created, or
+  than `validate`/`list` enforce); worked around it by reading/writing the
+  delta and main specs directly rather than via that CLI subcommand.
+  Archived to `openspec/changes/archive/2026-07-18-7-pull-two-way-sync/`.
+  Ship run complete — closes GitHub issue #28.
 
 - 2026-07-18 — Stage 4 (Test) done. Live on-device walk surfaced and fixed a
   real concurrency bug (`pull.ts`'s `Promise.all` over two entity pulls both

@@ -144,7 +144,7 @@ by writing it down here.
 ## 6. Gates (applies to whichever phases actually ship)
 
 - [x] 6.1 lint/typecheck/test green for every phase's PR. Green: `tsc
-    --noEmit` clean, `eslint` clean on all touched files, 277/277 Jest
+  --noEmit` clean, `eslint` clean on all touched files, 277/277 Jest
       tests passing.
 - [x] 6.2 `openspec validate 7-pull-two-way-sync` (or its successor
       change id per 0.4) green once the capability delta spec (0.3)
