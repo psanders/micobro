@@ -21,6 +21,12 @@
 import Constants from "expo-constants";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 
+// Re-exported so friendlySyncError.ts (and anything else translating a
+// Google error for the lender) never has to import the native package
+// directly — this file is the one seam for it, matching how googleAuth is
+// mocked wholesale in tests instead of the package itself.
+export { isErrorWithCode, statusCodes } from "@react-native-google-signin/google-signin";
+
 const SHEETS_SCOPE = "https://www.googleapis.com/auth/drive.file";
 
 let configured = false;

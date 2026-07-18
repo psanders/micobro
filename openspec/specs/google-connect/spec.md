@@ -157,3 +157,31 @@ remains optional and non-blocking.
 - **WHEN** provisioning fails (e.g. a Drive/Sheets API error or lost network)
 - **THEN** the app surfaces the error, leaves local SQLite untouched, and a
   later connect attempt can retry provisioning
+
+### Requirement: Connection errors are shown in friendly Spanish
+
+Any error surfaced from the Google Drive connection path — native sign-in
+failure or cancellation, an expired/revoked token, a Sheets/Drive API
+rejection, or lost network — SHALL be translated to a Spanish, lender-facing
+message before display, never the raw technical error (an English exception
+message, an HTTP status code, or a raw API response body). This applies both
+on the Conectar con Google screen and to the manual "Sincronizar ahora" flow.
+
+#### Scenario: Network failure during connect or sync
+
+- **WHEN** the device has no connectivity while connecting or syncing
+- **THEN** a friendly Spanish message about the connection is shown, not a raw
+  network error
+
+#### Scenario: Google sign-in fails or is cancelled
+
+- **WHEN** the native Google sign-in fails (e.g. outdated Play Services) or the
+  lender cancels it
+- **THEN** a friendly Spanish message describing what happened is shown
+
+#### Scenario: Sheets/Drive API rejects the request
+
+- **WHEN** a Sheets or Drive API call fails (expired token, missing
+  spreadsheet, rate limiting, or a server error)
+- **THEN** a friendly Spanish message is shown instead of the raw HTTP status
+  and response body

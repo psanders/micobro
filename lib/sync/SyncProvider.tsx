@@ -34,6 +34,7 @@ import { useSyncRepo } from "../repo/RepoProvider";
 import { onMutationQueued } from "./syncEvents";
 import { shouldAutoPush } from "./autoPushPolicy";
 import { shouldAutoSync } from "./autoSyncPolicy";
+import { friendlySyncErrorMessage } from "./friendlySyncError";
 import { logger } from "../logger";
 import type { SyncStatus } from "../repo/types";
 import type { PushResult } from "./push";
@@ -86,7 +87,8 @@ export function SyncProvider({ children }: { children: ReactNode }) {
         if (silent) {
           logger.warn("auto sync failed", { message });
         } else {
-          Alert.alert("Error de sincronización", `No se pudo sincronizar: ${message}`);
+          logger.warn("sync failed", { message });
+          Alert.alert("Error de sincronización", friendlySyncErrorMessage(err));
         }
         return null;
       } finally {
