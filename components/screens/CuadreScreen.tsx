@@ -6,8 +6,9 @@
  * match badge, the recibos/transferencias desglose, and "Cerrar día y
  * sincronizar". Replaces CuadrePlaceholderScreen.
  */
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { View, Text, Pressable, ScrollView, ActivityIndicator, StyleSheet } from "react-native";
+import { useFocusEffect } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { usePaymentRepo, useRouteRepo } from "../../lib/repo/RepoProvider";
@@ -26,6 +27,14 @@ export function CuadreScreen() {
 
   const route = useAsync(() => routeRepo.getToday(), []);
   const today = useAsync(() => paymentRepo.listToday(), []);
+  const { reload: reloadRoute } = route;
+  const { reload: reloadToday } = today;
+  useFocusEffect(
+    useCallback(() => {
+      reloadRoute();
+      reloadToday();
+    }, [reloadRoute, reloadToday])
+  );
   const [countedText, setCountedText] = useState("");
   const [closing, setClosing] = useState(false);
 

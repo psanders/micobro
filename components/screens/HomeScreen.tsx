@@ -4,8 +4,9 @@
  * 02 Home "Hoy" per pencil.pen `cuW2F`: date + connection pill, greeting,
  * meta-de-hoy hero card, quick actions, and próximas visitas.
  */
+import { useCallback } from "react";
 import { View, Text, Pressable, ScrollView, ActivityIndicator, StyleSheet } from "react-native";
-import { useRouter } from "expo-router";
+import { useRouter, useFocusEffect } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useProfileRepo, useRouteRepo } from "../../lib/repo/RepoProvider";
@@ -83,6 +84,14 @@ export function HomeScreen() {
 
   const profile = useAsync(() => profileRepo.get(), []);
   const route = useAsync(() => routeRepo.getToday(), []);
+  const { reload: reloadProfile } = profile;
+  const { reload: reloadRoute } = route;
+  useFocusEffect(
+    useCallback(() => {
+      reloadProfile();
+      reloadRoute();
+    }, [reloadProfile, reloadRoute])
+  );
 
   const day = route.data;
   const syncLabel = computeSyncStatusLabel({
