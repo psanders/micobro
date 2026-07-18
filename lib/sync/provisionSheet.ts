@@ -6,11 +6,14 @@
  * `Datos` spreadsheet with the tabs push.ts writes to — records its id,
  * and backfills queued local data.
  *
- * Idempotent: a stored sheet id short-circuits; otherwise we look the folder
- * and spreadsheet up by name (the `drive.file` scope keeps app-created files
- * visible across reinstalls) and reuse them rather than duplicating.
+ * Idempotent: a stored sheet id skips folder/spreadsheet creation; otherwise
+ * we look the folder and spreadsheet up by name (the `drive.file` scope keeps
+ * app-created files visible across reinstalls) and reuse them rather than
+ * duplicating. Every call — including the stored-id path — still ensures each
+ * entity tab exists, additively, so a lender who connected before a given
+ * entity shipped gets it backfilled (see issue #31).
  */
-import { findDriveFiles, createDriveFile, addSheetTabs, writeHeaderRow } from "./sheetsClient";
+import { findDriveFiles, createDriveFile, ensureSheetTab } from "./sheetsClient";
 import { getSheetId, setSheetId } from "./config";
 import { ENTITY_RANGES, pushPendingMutations } from "./push";
 import { logger } from "../logger";
@@ -57,11 +60,14 @@ function tabTitle(range: string): string {
   return range.split("!")[0];
 }
 
-async function provisionTabs(spreadsheetId: string): Promise<void> {
-  const titles = Object.values(ENTITY_RANGES).map(tabTitle);
-  await addSheetTabs(spreadsheetId, titles);
+/**
+ * Additively ensures every entity in ENTITY_RANGES has its tab — never
+ * deletes or alters an existing one. Safe to call on every provisionSheet()
+ * run, whether or not the spreadsheet is brand new.
+ */
+async function ensureAllTabs(spreadsheetId: string): Promise<void> {
   for (const [entity, range] of Object.entries(ENTITY_RANGES)) {
-    await writeHeaderRow(spreadsheetId, `${tabTitle(range)}!A1`, TAB_HEADERS[entity]);
+    await ensureSheetTab(spreadsheetId, tabTitle(range), TAB_HEADERS[entity]);
   }
 }
 
@@ -72,7 +78,10 @@ async function provisionTabs(spreadsheetId: string): Promise<void> {
 export async function provisionSheet(db: Database): Promise<string> {
   const storedId = await getSheetId();
   if (storedId) {
-    logger.info("sheet already provisioned, reusing", { spreadsheetId: storedId });
+    logger.info("sheet already provisioned, ensuring tabs are backfilled", {
+      spreadsheetId: storedId
+    });
+    await ensureAllTabs(storedId);
     return storedId;
   }
 
@@ -95,10 +104,10 @@ export async function provisionSheet(db: Database): Promise<string> {
       mimeType: SPREADSHEET_MIME,
       parents: [folderId]
     });
-    await provisionTabs(spreadsheetId);
     logger.info("provisioned new Datos spreadsheet", { spreadsheetId, folderId });
   }
 
+  await ensureAllTabs(spreadsheetId);
   await setSheetId(spreadsheetId);
   await pushPendingMutations(db);
   return spreadsheetId;

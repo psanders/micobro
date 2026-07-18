@@ -121,37 +121,41 @@ export async function createDriveFile(params: {
   return json.id as string;
 }
 
-/**
- * Replaces the spreadsheet's sheets with tabs named `titles` (in order):
- * adds the new tabs, then removes whatever sheets the spreadsheet was created
- * with (e.g. the default "Sheet1"). Runs on a freshly created spreadsheet.
- */
-export async function addSheetTabs(spreadsheetId: string, titles: string[]): Promise<void> {
-  const metaUrl = `${SHEETS_API_BASE}/${spreadsheetId}?fields=${encodeURIComponent("sheets.properties(sheetId,title)")}`;
+async function getSheetTitles(spreadsheetId: string): Promise<string[]> {
+  const metaUrl = `${SHEETS_API_BASE}/${spreadsheetId}?fields=${encodeURIComponent("sheets.properties(title)")}`;
   const metaResponse = await authorizedFetch(metaUrl, { method: "GET" });
   if (!metaResponse.ok) {
     const body = await metaResponse.text();
     throw new Error(`Sheets read metadata failed (${metaResponse.status}): ${body}`);
   }
   const meta = await metaResponse.json();
-  const existing: { sheetId: number }[] = (meta.sheets ?? []).map(
-    (s: { properties: { sheetId: number } }) => s.properties
-  );
+  return (meta.sheets ?? []).map((s: { properties: { title: string } }) => s.properties.title);
+}
 
-  // Add ours first (so at least one sheet always remains), then drop the originals.
-  const requests = [
-    ...titles.map((title) => ({ addSheet: { properties: { title } } })),
-    ...existing.map((s) => ({ deleteSheet: { sheetId: s.sheetId } }))
-  ];
+/**
+ * Additive-only: creates `title` as a new tab with `headers` as its first row
+ * if it doesn't already exist; no-ops otherwise. Never deletes or modifies any
+ * other tab — safe to call on a spreadsheet that already holds real synced
+ * data, unlike a delete-and-replace approach would be.
+ */
+export async function ensureSheetTab(
+  spreadsheetId: string,
+  title: string,
+  headers: string[]
+): Promise<void> {
+  const titles = await getSheetTitles(spreadsheetId);
+  if (titles.includes(title)) return;
 
   const response = await authorizedFetch(`${SHEETS_API_BASE}/${spreadsheetId}:batchUpdate`, {
     method: "POST",
-    body: JSON.stringify({ requests })
+    body: JSON.stringify({ requests: [{ addSheet: { properties: { title } } }] })
   });
   if (!response.ok) {
     const body = await response.text();
     throw new Error(`Sheets batchUpdate failed (${response.status}): ${body}`);
   }
+
+  await writeHeaderRow(spreadsheetId, `${title}!A1`, headers);
 }
 
 /** Writes a single header row at `range` (e.g. "Clientes!A1"). */

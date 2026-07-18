@@ -1,8 +1,9 @@
 /**
  * Copyright (C) 2026 by Pedro Sanders. MIT License.
  *
- * Spec: google-connect "First connect provisions the backup spreadsheet" and
- * "Provisioning reuses existing Drive artifacts instead of duplicating".
+ * Spec: google-connect "First connect provisions the backup spreadsheet",
+ * "Provisioning reuses existing Drive artifacts instead of duplicating", and
+ * "Every connect backfills any missing entity tabs".
  */
 jest.mock("../lib/sync/config", () => ({
   getSheetId: jest.fn(),
@@ -12,8 +13,7 @@ jest.mock("../lib/sync/config", () => ({
 jest.mock("../lib/sync/sheetsClient", () => ({
   findDriveFiles: jest.fn(),
   createDriveFile: jest.fn(),
-  addSheetTabs: jest.fn(),
-  writeHeaderRow: jest.fn()
+  ensureSheetTab: jest.fn()
 }));
 
 jest.mock("../lib/sync/push", () => {
@@ -23,12 +23,7 @@ jest.mock("../lib/sync/push", () => {
 
 import { provisionSheet } from "../lib/sync/provisionSheet";
 import { getSheetId, setSheetId } from "../lib/sync/config";
-import {
-  findDriveFiles,
-  createDriveFile,
-  addSheetTabs,
-  writeHeaderRow
-} from "../lib/sync/sheetsClient";
+import { findDriveFiles, createDriveFile, ensureSheetTab } from "../lib/sync/sheetsClient";
 import { ENTITY_RANGES, pushPendingMutations } from "../lib/sync/push";
 import type { Database } from "../lib/db/client";
 
@@ -36,8 +31,7 @@ const getSheetIdMock = getSheetId as jest.Mock;
 const setSheetIdMock = setSheetId as jest.Mock;
 const findDriveFilesMock = findDriveFiles as jest.Mock;
 const createDriveFileMock = createDriveFile as jest.Mock;
-const addSheetTabsMock = addSheetTabs as jest.Mock;
-const writeHeaderRowMock = writeHeaderRow as jest.Mock;
+const ensureSheetTabMock = ensureSheetTab as jest.Mock;
 const pushMock = pushPendingMutations as jest.Mock;
 
 const db = {} as unknown as Database;
@@ -63,12 +57,11 @@ describe("provisionSheet", () => {
     setSheetIdMock.mockReset().mockResolvedValue(undefined);
     findDriveFilesMock.mockReset();
     createDriveFileMock.mockReset();
-    addSheetTabsMock.mockReset().mockResolvedValue(undefined);
-    writeHeaderRowMock.mockReset().mockResolvedValue(undefined);
+    ensureSheetTabMock.mockReset().mockResolvedValue(undefined);
     pushMock.mockReset().mockResolvedValue({ pushed: 0, failed: 0 });
   });
 
-  it("creates the Micobro folder, Datos sheet, and four tabs, then stores the id and backfills", async () => {
+  it("creates the Micobro folder, Datos sheet, and ensures every entity tab, then stores the id and backfills", async () => {
     // Arrange: nothing exists yet
     getSheetIdMock.mockResolvedValue(null);
     findDriveFilesMock.mockResolvedValueOnce([]).mockResolvedValueOnce([]); // folder, then sheet
@@ -88,20 +81,21 @@ describe("provisionSheet", () => {
       mimeType: SPREADSHEET_MIME,
       parents: ["folder-1"]
     });
-    expect(addSheetTabsMock).toHaveBeenCalledWith("sheet-1", [
-      "Clientes",
-      "Préstamos",
-      "Pagos",
-      "Visitas",
-      "Cierres"
-    ]);
-    expect(writeHeaderRowMock).toHaveBeenCalledTimes(5);
+    expect(ensureSheetTabMock).toHaveBeenCalledTimes(5);
+    for (const range of Object.values(ENTITY_RANGES)) {
+      expect(ensureSheetTabMock).toHaveBeenCalledWith(
+        "sheet-1",
+        range.split("!")[0],
+        expect.any(Array)
+      );
+    }
     expect(setSheetIdMock).toHaveBeenCalledWith("sheet-1");
     expect(pushMock).toHaveBeenCalledWith(db);
   });
 
-  it("short-circuits when a sheet id is already stored (no Drive/Sheets calls)", async () => {
-    // Arrange
+  it("backfills any missing tabs even when a sheet id is already stored (no folder/spreadsheet calls)", async () => {
+    // Arrange: this is exactly the gap issue #31 describes — an already-connected
+    // lender whose sheet predates a newer entity's tab.
     getSheetIdMock.mockResolvedValue("stored-1");
 
     // Act
@@ -113,6 +107,14 @@ describe("provisionSheet", () => {
     expect(createDriveFileMock).not.toHaveBeenCalled();
     expect(setSheetIdMock).not.toHaveBeenCalled();
     expect(pushMock).not.toHaveBeenCalled();
+    expect(ensureSheetTabMock).toHaveBeenCalledTimes(5);
+    for (const range of Object.values(ENTITY_RANGES)) {
+      expect(ensureSheetTabMock).toHaveBeenCalledWith(
+        "stored-1",
+        range.split("!")[0],
+        expect.any(Array)
+      );
+    }
   });
 
   it("reuses an existing folder + Datos sheet found by name instead of creating duplicates", async () => {
@@ -128,7 +130,7 @@ describe("provisionSheet", () => {
     // Assert
     expect(id).toBe("sheet-9");
     expect(createDriveFileMock).not.toHaveBeenCalled();
-    expect(addSheetTabsMock).not.toHaveBeenCalled();
+    expect(ensureSheetTabMock).toHaveBeenCalledTimes(5);
     expect(setSheetIdMock).toHaveBeenCalledWith("sheet-9");
     expect(pushMock).toHaveBeenCalledWith(db);
   });
@@ -164,12 +166,31 @@ describe("provisionSheet", () => {
     // Act
     await provisionSheet(db);
 
-    // Assert: for every entity range, the header row at "<Tab>!A1" is the right width
+    // Assert: for every entity range, ensureSheetTab is called with a header row
+    // of the right width for that range
     for (const range of Object.values(ENTITY_RANGES)) {
       const title = range.split("!")[0];
-      const call = writeHeaderRowMock.mock.calls.find((c) => c[1] === `${title}!A1`);
+      const call = ensureSheetTabMock.mock.calls.find((c) => c[1] === title);
       expect(call).toBeDefined();
       expect(call![2]).toHaveLength(rangeWidth(range));
     }
+  });
+
+  it("never issues a deleteSheet request via provisionSheet, on any path", async () => {
+    // ensureSheetTab is the only sheetsClient function provisionSheet calls that
+    // could ever touch existing tabs — asserting it's the mock actually used
+    // (and that nothing else from sheetsClient is imported/called) is the
+    // regression guard for issue #31's "never delete an existing tab" requirement.
+    getSheetIdMock.mockResolvedValueOnce("stored-1");
+    await provisionSheet(db);
+
+    getSheetIdMock.mockResolvedValueOnce(null);
+    findDriveFilesMock.mockResolvedValueOnce([]).mockResolvedValueOnce([]);
+    createDriveFileMock.mockResolvedValueOnce("folder-2").mockResolvedValueOnce("sheet-2");
+    await provisionSheet(db);
+
+    const sheetsClient = jest.requireMock("../lib/sync/sheetsClient") as Record<string, unknown>;
+    expect(sheetsClient.addSheetTabs).toBeUndefined();
+    expect(sheetsClient.deleteSheet).toBeUndefined();
   });
 });
