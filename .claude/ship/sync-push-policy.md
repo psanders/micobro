@@ -1,7 +1,7 @@
 # Ship checkpoint — sync-push-policy
 
 Started: 2026-07-17
-Current stage: 4 — Test (build + unit tests done, on-device verify pending)
+Current stage: 6 — Archive (done)
 
 **Scope:** Push queued mutations immediately after each create/collect, and
 automatically on regaining connectivity (NetInfo), through one shared in-flight
@@ -25,9 +25,9 @@ Library.
 | 1 | Design (Pencil) | done | Renamed live pill (HxJ5m: Conectado→Sincronizado, kept brandPrimary/#D6F3E5 look); added m/sync-status-pill reference card (4 states) to Mobile Component Library (zoSWf/JMPkz). Verified via snapshot_layout (no clipping/collapse) + direct screenshot of the live pill |
 | 2 | Spec reconcile | done | Delta specs (sync-engine new capability + home-dashboard MODIFIED) already matched the Pencil work — no drift |
 | 3 | Build | done | Bug fix (push.ts/syncRepo.ts retry query + stuckCount); syncEvents.ts; autoPushPolicy.ts; syncStatusLabel.ts; SyncProvider.tsx; wired into 4 real repos + app/_layout.tsx; HomeScreen/SyncSettingsScreen/CuadreScreen updated; netinfo promoted to direct dep |
-| 4 | Test | in-progress | 5 new test files (autoPushPolicy, syncStatusLabel, syncEvents, realSyncRepo, push.ts retry case) — 264 total pass, typecheck clean, lint clean. On-device verify (task 9.2/9.3) not yet done |
-| 5 | Sync | pending | |
-| 6 | Archive | pending | |
+| 4 | Test | done | 5 new test files (autoPushPolicy, syncStatusLabel, syncEvents, realSyncRepo, push.ts retry case) — 278 total pass, typecheck clean, lint clean. On-device verify (9.2/9.3) done 2026-07-18: queued a customer offline, confirmed the pill flipped to "Pendiente de sincronizar" immediately (NetInfo event-driven), then reconnected and confirmed the queued mutation auto-pushed with no manual action (Sincronización's "Último respaldo" timestamp matched the reconnect moment, 0 pendientes) |
+| 5 | Sync | done | Created `openspec/specs/sync-engine/spec.md` (new capability, 5 requirements); updated `home-dashboard`'s "Hoy header" requirement to the 4-state pill. `openspec validate --specs` green (16/16) |
+| 6 | Archive | done | Moved to `openspec/changes/archive/2026-07-18-sync-push-policy/` |
 
 ## Notes / open items
 
@@ -48,6 +48,15 @@ Library.
 
 Newest first.
 
+- 2026-07-18 — Resumed via `/ps:ship` with no argument, which surfaces
+  in-progress checkpoints first. Found this one stuck at Stage 4 despite the
+  code being fully built and committed (17a0f4d) — the ship workflow's own
+  bookkeeping had simply fallen behind, not the actual work. Verified all 29
+  tasks.md items against the real code (all done), then completed the
+  on-device walk (9.2/9.3) live: queued a customer offline, confirmed the
+  pill flipped to "Pendiente de sincronizar", reconnected, confirmed
+  auto-push fired with no manual action. Synced sync-engine (new capability)
+  + home-dashboard (4-state pill) into main specs, then archived.
 - 2026-07-17 — Full gate green (264 tests, typecheck, lint) after fixing 3 prettier nits. At Test stage, on-device check remains.
 - 2026-07-17 — Wrote 5 test files covering the bug fix, both pure functions, and the event bus.
 - 2026-07-17 — Wired SyncSettingsScreen + CuadreScreen through the shared push() guard; SyncSettingsScreen now shows "Necesita atención" line.
