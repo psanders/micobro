@@ -2,9 +2,10 @@
  * Copyright (C) 2026 by Pedro Sanders. MIT License.
  *
  * "Conectar con Google" per pencil.pen `S2oEG8` — optional cloud backup,
- * shown after PIN setup and reachable later from Ajustes. Connecting runs the
- * native Google sign-in through the sync repo (see lib/sync/googleAuth.ts); on
- * the mock client it simulates a successful connection instead.
+ * shown after PIN setup and reachable later from Sincronización con Google
+ * (Perfil → Ajustes) whenever the lender isn't connected yet. Connecting runs
+ * the native Google sign-in through the sync repo (see lib/sync/googleAuth.ts);
+ * on the mock client it simulates a successful connection instead.
  */
 import { useState } from "react";
 import { View, Text, Pressable, StyleSheet, ActivityIndicator } from "react-native";

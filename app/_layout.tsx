@@ -51,7 +51,8 @@ function Gate() {
 
       <Stack.Protected guard={onboardingComplete && unlocked}>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="ajustes" options={{ title: "Ajustes" }} />
+        <Stack.Screen name="sincronizar" options={{ title: "Sincronización con Google" }} />
+        <Stack.Screen name="cambiar-pin" options={{ title: "Cambiar PIN" }} />
         <Stack.Screen name="conectar" options={{ headerShown: false, presentation: "modal" }} />
         <Stack.Screen name="customers/new" options={{ title: "Nuevo cliente" }} />
         <Stack.Screen name="customers/[id]" options={{ headerShown: false }} />

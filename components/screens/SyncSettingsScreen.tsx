@@ -1,12 +1,18 @@
 /**
  * Copyright (C) 2026 by Pedro Sanders. MIT License.
+ *
+ * "Sincronización con Google" per pencil.pen `qAQ0l` — reachable from Perfil,
+ * shows live backup status and lets the lender push on demand or disconnect.
+ * When not connected, offers to connect instead (see ConnectGoogleScreen,
+ * pencil.pen `S2oEG8` — the only path into that screen, so it never needs to
+ * show an "already connected" state).
  */
 import { View, Text, Pressable, ActivityIndicator, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import { useSyncRepo } from "../../lib/repo/RepoProvider";
-import { useAuthGate } from "../../lib/security/AuthGateProvider";
 import { useSyncContext } from "../../lib/sync/SyncProvider";
 import { computeSyncStatusLabel, type SyncStatusLabel } from "../../lib/sync/syncStatusLabel";
+import { colors, fonts } from "../../lib/ui/theme";
 
 const STATUS_COPY: Record<SyncStatusLabel, string> = {
   synced: "Sincronizado",
@@ -18,7 +24,6 @@ const STATUS_COPY: Record<SyncStatusLabel, string> = {
 export function SyncSettingsScreen() {
   const router = useRouter();
   const syncRepo = useSyncRepo();
-  const { lock } = useAuthGate();
   const { status, isOnline, isPushing, push, refreshStatus } = useSyncContext();
 
   const syncLabel = computeSyncStatusLabel({
@@ -36,7 +41,6 @@ export function SyncSettingsScreen() {
   return (
     <View style={styles.screen}>
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Sincronización con Google Sheets</Text>
         <Text style={styles.statusText}>{STATUS_COPY[syncLabel]}</Text>
         {status.lastPushedAt && (
           <Text style={styles.metaText}>
@@ -67,38 +71,29 @@ export function SyncSettingsScreen() {
           </Pressable>
         )}
       </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Seguridad</Text>
-        <Pressable style={styles.secondaryButton} onPress={lock}>
-          <Text style={styles.secondaryButtonText}>Bloquear ahora</Text>
-        </Pressable>
-      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: "#FFFFFF", padding: 16, gap: 24 },
+  screen: { flex: 1, backgroundColor: colors.white, padding: 16, gap: 24 },
   section: { gap: 10 },
-  sectionTitle: { fontSize: 15, fontWeight: "600", color: "#1A2B4C" },
-  statusText: { fontSize: 14, color: "#1A2B4C" },
-  metaText: { fontSize: 13, color: "#5B6B8C" },
-  // #DC2626 matches the design system's ds.red (lib/ui/theme.ts colors.red).
-  stuckText: { fontSize: 13, color: "#DC2626", fontWeight: "600" },
+  statusText: { fontSize: 14, fontFamily: fonts.medium, color: colors.brandDeep },
+  metaText: { fontSize: 13, fontFamily: fonts.medium, color: colors.muted },
+  stuckText: { fontSize: 13, fontFamily: fonts.semiBold, color: colors.red },
   button: {
-    backgroundColor: "#1A2B4C",
+    backgroundColor: colors.brandDeep,
     borderRadius: 14,
     paddingVertical: 14,
     alignItems: "center",
     marginTop: 8
   },
-  buttonText: { color: "#FFFFFF", fontSize: 15, fontWeight: "600" },
+  buttonText: { color: colors.white, fontSize: 15, fontFamily: fonts.semiBold },
   secondaryButton: {
-    backgroundColor: "#F5F7FB",
+    backgroundColor: colors.subtle,
     borderRadius: 14,
     paddingVertical: 14,
     alignItems: "center"
   },
-  secondaryButtonText: { color: "#1A2B4C", fontSize: 15, fontWeight: "600" }
+  secondaryButtonText: { color: colors.brandDeep, fontSize: 15, fontFamily: fonts.semiBold }
 });

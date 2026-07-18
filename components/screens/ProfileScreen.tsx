@@ -133,7 +133,13 @@ export function ProfileScreen() {
             icon="shield"
             iconColor={colors.brandPrimary}
             label="Seguridad y PIN"
-            onPress={() => router.push("/ajustes")}
+            onPress={() => router.push("/cambiar-pin")}
+          />
+          <ListTile
+            icon="cloud"
+            iconColor={colors.brandPrimary}
+            label="Sincronización con Google"
+            onPress={() => router.push("/sincronizar")}
           />
           <ListTile
             icon="life-buoy"
