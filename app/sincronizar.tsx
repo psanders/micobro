@@ -3,6 +3,6 @@
  */
 import { SyncSettingsScreen } from "../components/screens/SyncSettingsScreen";
 
-export default function AjustesRoute() {
+export default function SincronizarRoute() {
   return <SyncSettingsScreen />;
 }

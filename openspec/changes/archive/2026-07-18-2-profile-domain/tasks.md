@@ -43,6 +43,12 @@
       metadata/unrelated `.claude/` docs, not introduced by this change;
       every file this change adds or edits is individually
       Prettier-clean)
-- [ ] 3.3 On-device verification (dev-client rebuild not performed in this
+- [x] 3.3 On-device verification (dev-client rebuild not performed in this
       pass — no native module changed, so a Metro reload should suffice,
-      but this wasn't walked live; flagged for the captain/next pass)
+      but this wasn't walked live; flagged for the captain/next pass).
+      Done 2026-07-18: Mi cuenta shows the real profile ("Pedro Sanders",
+      correct avatar, live "Respaldo activo · hace 6 min" pill) instead of
+      the anonymous fallback — confirms `getProfile()` works in real mode.
+      Opened Editar Perfil, confirmed it's pre-filled with the existing
+      name/avatar, edited "Nombre del negocio" and saved — returned to Mi
+      cuenta with no error, confirming `setProfile()`'s upsert path works.

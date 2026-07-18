@@ -71,6 +71,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     ["react-native-ble-plx", { isBackgroundEnabled: false, neverForLocation: true }]
   ],
   extra: {
+    // Web OAuth client id, passed to @react-native-google-signin as
+    // `webClientId`. The Android OAuth client (package + SHA-1) is matched by
+    // Play Services at runtime and needs no id here. `googleOAuthClientId` (the
+    // Android client id) is retained only for reference by the old flow.
+    googleWebClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? "",
     googleOAuthClientId: process.env.EXPO_PUBLIC_GOOGLE_OAUTH_CLIENT_ID ?? "",
     storybookEnabled: process.env.STORYBOOK_ENABLED === "true",
     useMockRepos: process.env.EXPO_PUBLIC_USE_MOCK_REPOS === "true"

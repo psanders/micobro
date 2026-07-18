@@ -17,6 +17,7 @@ import { db } from "../lib/db/client";
 import { createRealRepos } from "../lib/repo/real";
 import { createMockRepos } from "../lib/repo/mock";
 import { RepoProvider } from "../lib/repo/RepoProvider";
+import { SyncProvider } from "../lib/sync/SyncProvider";
 import { AuthGateProvider, useAuthGate } from "../lib/security/AuthGateProvider";
 import { FeedbackProvider } from "../lib/feedback/FeedbackContext";
 import { RecordingPill } from "../components/feedback/RecordingPill";
@@ -50,7 +51,8 @@ function Gate() {
 
       <Stack.Protected guard={onboardingComplete && unlocked}>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="ajustes" options={{ title: "Ajustes" }} />
+        <Stack.Screen name="sincronizar" options={{ title: "Sincronización con Google" }} />
+        <Stack.Screen name="cambiar-pin" options={{ title: "Cambiar PIN" }} />
         <Stack.Screen name="conectar" options={{ headerShown: false, presentation: "modal" }} />
         <Stack.Screen name="customers/new" options={{ title: "Nuevo cliente" }} />
         <Stack.Screen name="customers/[id]" options={{ headerShown: false }} />
@@ -109,13 +111,15 @@ export default function RootLayout() {
 
   return (
     <RepoProvider repos={repos}>
-      <AuthGateProvider>
-        <FeedbackProvider>
-          <Gate />
-          <RecordingPill />
-          <FeedbackStatusModal />
-        </FeedbackProvider>
-      </AuthGateProvider>
+      <SyncProvider>
+        <AuthGateProvider>
+          <FeedbackProvider>
+            <Gate />
+            <RecordingPill />
+            <FeedbackStatusModal />
+          </FeedbackProvider>
+        </AuthGateProvider>
+      </SyncProvider>
     </RepoProvider>
   );
 }

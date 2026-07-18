@@ -17,7 +17,7 @@ describe("mock sync repo", () => {
 
   it("connect flips status to connected with a sheet id", async () => {
     const repo = createMockSyncRepo();
-    const status = await repo.connect({ code: "mock", codeVerifier: "mock", redirectUri: "mock" });
+    const status = await repo.connect();
     expect(status.connected).toBe(true);
     expect(status.sheetId).toBe("mock-sheet-id");
     expect((await repo.getStatus()).connected).toBe(true);
@@ -25,10 +25,20 @@ describe("mock sync repo", () => {
 
   it("disconnect resets the connection", async () => {
     const repo = createMockSyncRepo();
-    await repo.connect({ code: "mock", codeVerifier: "mock", redirectUri: "mock" });
+    await repo.connect();
     await repo.disconnect();
     const status = await repo.getStatus();
     expect(status.connected).toBe(false);
     expect(status.sheetId).toBeNull();
+  });
+
+  it("syncNow pushes then records a pull timestamp", async () => {
+    const repo = createMockSyncRepo();
+    const result = await repo.syncNow();
+    expect(result.push.pushed).toBeGreaterThan(0);
+    expect(result.pull).toEqual({ pulled: 0, skipped: 0, malformed: 0 });
+    const status = await repo.getStatus();
+    expect(status.lastPushedAt).toBeInstanceOf(Date);
+    expect(status.lastPulledAt).toBeInstanceOf(Date);
   });
 });

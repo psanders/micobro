@@ -2,22 +2,19 @@
  * Copyright (C) 2026 by Pedro Sanders. MIT License.
  *
  * "Conectar con Google" per pencil.pen `S2oEG8` — optional cloud backup,
- * shown after PIN setup and reachable later from Ajustes. On the mock
- * client, "Continuar con Google" skips real OAuth and simulates a
- * successful connection through the mock sync repo.
+ * shown after PIN setup and reachable later from Sincronización con Google
+ * (Perfil → Ajustes) whenever the lender isn't connected yet. Connecting runs
+ * the native Google sign-in through the sync repo (see lib/sync/googleAuth.ts);
+ * on the mock client it simulates a successful connection instead.
  */
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { View, Text, Pressable, StyleSheet, ActivityIndicator } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import * as AuthSession from "expo-auth-session";
-import * as WebBrowser from "expo-web-browser";
 import Constants from "expo-constants";
 import { Feather } from "@expo/vector-icons";
-import { googleDiscovery, googleAuthScopes } from "../../lib/sync/googleAuth";
 import { useSyncRepo } from "../../lib/repo/RepoProvider";
+import { useSyncContext } from "../../lib/sync/SyncProvider";
 import { colors, fonts } from "../../lib/ui/theme";
-
-WebBrowser.maybeCompleteAuthSession();
 
 interface ConnectGoogleScreenProps {
   /** Called on connect success and on skip/close. */
@@ -27,61 +24,36 @@ interface ConnectGoogleScreenProps {
 export function ConnectGoogleScreen({ onDone }: ConnectGoogleScreenProps) {
   const insets = useSafeAreaInsets();
   const syncRepo = useSyncRepo();
+  const { refreshStatus } = useSyncContext();
   const [connecting, setConnecting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const useMockRepos = Boolean(Constants.expoConfig?.extra?.useMockRepos);
-  const clientId = Constants.expoConfig?.extra?.googleOAuthClientId as string | undefined;
-  const googleConfigured = useMockRepos || Boolean(clientId);
-  // Explicit `scheme`, not `native` — `makeRedirectUri`'s `native` override
-  // only takes effect when `Constants.executionEnvironment` is `Standalone`
-  // or `Bare` (see expo-auth-session's `AuthSession.js`); this dev-client
-  // build doesn't qualify, so it was silently falling back to
-  // `Linking.createURL()`'s default scheme (confirmed empirically — Google
-  // echoed back `micobro://oauthredirect` even with `native` set). Passing
-  // `scheme` goes straight to `Linking.createURL()` unconditionally. Google's
-  // Android OAuth client type requires the redirect scheme to equal the
-  // app's package name, since that's the only scheme claim tied to this
-  // specific signed APK (package name + SHA-1) — matching Expo's own Google
-  // provider's `${applicationId}:/oauthredirect` convention. Registered as
-  // an extra scheme in app.config.ts's `scheme` array (needs a native rebuild).
-  const redirectUri = AuthSession.makeRedirectUri({
-    scheme: "com.micobro.app",
-    path: "oauthredirect"
-  });
+  const webClientId = Constants.expoConfig?.extra?.googleWebClientId as string | undefined;
+  const googleConfigured = useMockRepos || Boolean(webClientId);
 
-  const [request, response, promptAsync] = AuthSession.useAuthRequest(
-    {
-      clientId: clientId || "unconfigured",
-      scopes: googleAuthScopes,
-      redirectUri,
-      responseType: AuthSession.ResponseType.Code,
-      usePKCE: true
-    },
-    googleDiscovery
-  );
-
-  function connect(params: { code: string; codeVerifier: string; redirectUri: string }) {
+  // Both mock and real sync repos run their own connect flow: the real one
+  // triggers the native Google sign-in (@react-native-google-signin), the mock
+  // simulates success. We only leave the screen once the resulting status
+  // reports connected, so a cancelled sign-in keeps the user here.
+  //
+  // syncRepo.connect() is called directly (not through SyncProvider), so its
+  // result never reaches the shared status SyncProvider exposes elsewhere
+  // (Home's pill, Ajustes) unless we explicitly refresh it here — otherwise
+  // the app would show "No conectado" right after a successful connect.
+  function handleConnectPress() {
     setConnecting(true);
     setErrorMessage(null);
     syncRepo
-      .connect(params)
-      .then(() => onDone())
+      .connect()
+      .then(async (status) => {
+        if (status.connected) {
+          await refreshStatus();
+          onDone();
+        }
+      })
       .catch((err) => setErrorMessage(err instanceof Error ? err.message : String(err)))
       .finally(() => setConnecting(false));
-  }
-
-  useEffect(() => {
-    if (response?.type !== "success" || !request?.codeVerifier) return;
-    connect({ code: response.params.code, codeVerifier: request.codeVerifier, redirectUri });
-  }, [response]);
-
-  function handleConnectPress() {
-    if (useMockRepos) {
-      connect({ code: "mock", codeVerifier: "mock", redirectUri: "mock" });
-      return;
-    }
-    promptAsync();
   }
 
   return (
@@ -110,7 +82,7 @@ export function ConnectGoogleScreen({ onDone }: ConnectGoogleScreenProps) {
 
         {!googleConfigured && (
           <Text style={styles.note}>
-            Falta configurar EXPO_PUBLIC_GOOGLE_OAUTH_CLIENT_ID para habilitar esta opción.
+            Falta configurar EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID para habilitar esta opción.
           </Text>
         )}
         {errorMessage && <Text style={styles.error}>{errorMessage}</Text>}
@@ -123,7 +95,7 @@ export function ConnectGoogleScreen({ onDone }: ConnectGoogleScreenProps) {
           <>
             <Pressable
               style={[styles.ctaButton, !googleConfigured && styles.ctaButtonDisabled]}
-              disabled={(!useMockRepos && !request) || !googleConfigured}
+              disabled={!googleConfigured}
               onPress={handleConnectPress}
             >
               <Text style={styles.ctaText}>Continuar con Google</Text>

@@ -8,8 +8,17 @@ export function createMockSyncRepo(): SyncRepo {
     connected: false,
     sheetId: null,
     lastPushedAt: null,
-    pendingCount: 3
+    lastPulledAt: null,
+    pendingCount: 3,
+    stuckCount: 0
   };
+
+  async function pushNow() {
+    state.lastPushedAt = new Date();
+    const pushed = state.pendingCount;
+    state.pendingCount = 0;
+    return { pushed, failed: 0 };
+  }
 
   return {
     async getStatus() {
@@ -24,11 +33,11 @@ export function createMockSyncRepo(): SyncRepo {
       state.connected = false;
       state.sheetId = null;
     },
-    async pushNow() {
-      state.lastPushedAt = new Date();
-      const pushed = state.pendingCount;
-      state.pendingCount = 0;
-      return { pushed, failed: 0 };
+    pushNow,
+    async syncNow() {
+      const push = await pushNow();
+      state.lastPulledAt = new Date();
+      return { push, pull: { pulled: 0, skipped: 0, malformed: 0 } };
     }
   };
 }
