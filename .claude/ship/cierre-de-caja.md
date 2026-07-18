@@ -1,7 +1,7 @@
 # Ship checkpoint — cierre-de-caja
 
 Started: 2026-07-18
-Current stage: 3 — Build
+Current stage: 5 — Sync (gate)
 
 **Scope (revised after design iteration — see decision log):** Rolling
 "Cierre de caja" (issue #27), reframed entirely around "since the last
@@ -30,8 +30,8 @@ branch-per-change convention, confirmed against merged history).
 | 1 | Design (Pencil) | done | First pass (small "Caja" card) rejected by user as confusing — redesigned from scratch per user's own explained concept (see decision log). Final: `h48VL` retitled "Cuadre de caja", period subtitle, "COBRADO SEGÚN EL SISTEMA" hero (today-scoped stat row dropped), "TOTAL VERIFICADO" replacing Efectivo Contado, Desglose note removed, footer → "Cerrar caja" with match-gate copy. User: "That's perfect." |
 | 2 | Spec reconcile | done | Rewrote proposal.md, design.md, and both delta specs to match the redesigned concept (all payment methods, match-gated close, period-range ledger). `daily-reconciliation` delta now REMOVEs 3 old requirements (Efectivo esperado summary, Efectivo contado input, Cerrar día y sincronizar) and ADDs their replacements, plus MODIFIEs Desglose. `openspec validate` green |
 | 3 | Build | done | `cash_closes` table + migration; `lib/cashClose/` (getCashSummary derived-sum, closeCash match-gated); `listPaymentsSinceLastClose` replacing `listToday`; `CashCloseRepo` wired into real+mock+RepoProvider; `ENTITY_RANGES.cashClose`/`Cierres` tab in push.ts+provisionSheet.ts; `CuadreScreen.tsx` fully rewritten around the since-last-close period with the match-gated "Cerrar caja" action. Also fixed unrelated Pencil housekeeping mid-build (user request): `m/avatar-picker` was an orphan root frame showing all 9 cells as the same wrong image — fixed, expanded to 12 avatars, flattened to a horizontal row, relocated into the Mobile Component Library |
-| 4 | Test | in-progress | tsc/eslint/jest all green (71 suites, 288 tests). Found and fixed real fixture flakiness while testing (`payment-18`'s `todayAt(9,14)` can be wall-clock-future). On-device walk (7.3) not yet done |
-| 5 | Sync | pending | |
+| 4 | Test | done | tsc/eslint/jest all green (71 suites, 288 tests). Found and fixed real fixture flakiness (`payment-18`'s `todayAt(9,14)` can be wall-clock-future). On-device walk (7.3) done against the real connected Datos sheet: full flow verified (system total, mismatch/match indicator, close, reset, sync). Along the way found a real **pre-existing** gap — `provisionSheet.ts` never backfills new tabs for already-connected lenders — worked around it for this test account by manually adding the "Cierres" tab via browser, then confirmed the push succeeded and the row is correct. Filed issue #31 to track the underlying gap (not fixed here — `addSheetTabs()` is destructive on a populated sheet, needs a careful additive-only fix as its own change) |
+| 5 | Sync | in-progress | Awaiting user confirmation to promote deltas into `openspec/specs/` |
 | 6 | Archive | pending | |
 
 Status values: `pending` · `in-progress` · `done` · `skipped` (with reason).
@@ -39,6 +39,20 @@ Status values: `pending` · `in-progress` · `done` · `skipped` (with reason).
 ## Decision log
 
 Newest first. One line per meaningful decision or stage transition.
+
+- 2026-07-18 — Test stage done. On-device walk against the real connected
+  Datos sheet caught a genuine bug: closing the caja queued correctly but
+  the push to Sheets failed silently (`{"pushed":0,"failed":1}`) because
+  this lender's sheet predates the "Cierres" tab and `provisionSheet.ts`
+  only ever creates tabs once, at first-ever connect — never backfills for
+  already-connected lenders. Same gap already silently affected every past
+  entity-tab addition (loan/payment/visit). Declined to fix it live —
+  `addSheetTabs()` deletes all existing tabs when called, which would wipe
+  real synced data on a populated sheet; a correct fix needs a new
+  additive-only "ensure tab exists" function, out of scope here. Per user's
+  choice, manually added the "Cierres" tab (correct headers) to the test
+  sheet via browser to complete verification, and filed issue #31 to track
+  the real gap as its own follow-up.
 
 - 2026-07-18 — Build complete. Chose plain `Error` (not `ValidationError`)
   for closeCash's business-rule rejections (zero total, mismatch), matching
