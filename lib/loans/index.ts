@@ -13,6 +13,8 @@ export {
   buildCustomerLoanSummary,
   loanCode,
   installmentDueDate,
+  addFrequencyInterval,
+  defaultFirstPaymentDate,
   MORA_NOTE
 } from "./loanViews";
 export {
