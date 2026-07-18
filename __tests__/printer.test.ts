@@ -11,6 +11,7 @@ const ESC = 0x1b;
 const INIT_SEQUENCE = [ESC, 0x40];
 
 const sampleReceipt: PrintReceiptData = {
+  lenderName: "Colmado Pérez",
   receiptNumber: "R-00042",
   customerName: "Juana Pérez",
   date: "17/07/2026",
@@ -34,10 +35,10 @@ describe("buildReceiptBytes", () => {
     expect(Array.from(bytes.slice(0, INIT_SEQUENCE.length))).toEqual(INIT_SEQUENCE);
   });
 
-  it("encodes the MICOBRO wordmark", () => {
+  it("encodes the lender name as the wordmark", () => {
     const bytes = buildReceiptBytes(sampleReceipt);
     const text = new TextDecoder().decode(bytes);
-    expect(text).toContain("MICOBRO");
+    expect(text).toContain("Colmado Pérez");
   });
 
   it("encodes the TOTAL line", () => {

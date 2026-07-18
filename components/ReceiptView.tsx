@@ -13,6 +13,7 @@ import { colors, fonts } from "../lib/ui/theme";
 import type { ReceiptLine } from "../lib/repo/types";
 
 export interface ReceiptViewData {
+  lenderName: string;
   receiptNumber: string;
   customerName: string;
   paidAtLabel: string;
@@ -42,7 +43,7 @@ export const ReceiptView = forwardRef<View, { data: ReceiptViewData }>(({ data }
   return (
     <View ref={ref} collapsable={false} style={s.receipt}>
       <View style={s.header}>
-        <Text style={s.brand}>MICOBRO</Text>
+        <Text style={s.brand}>{data.lenderName}</Text>
         <Text style={s.subtitle}>RECIBO DE PAGO</Text>
       </View>
 
