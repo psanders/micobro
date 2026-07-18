@@ -6,7 +6,7 @@
  */
 import { useCallback, useEffect, useState } from "react";
 import { View, Text, Pressable, ScrollView, ActivityIndicator, StyleSheet } from "react-native";
-import { useRouter } from "expo-router";
+import { useRouter, useFocusEffect } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { useCustomerRepo } from "../../lib/repo/RepoProvider";
@@ -46,6 +46,15 @@ export function SearchScreen() {
   useEffect(() => {
     runSearch(query);
   }, [query, runSearch]);
+
+  // Customers/loans created elsewhere (e.g. the "Nuevo cliente" FAB) don't
+  // change `query`, so re-run on focus too — otherwise the list goes stale
+  // until the user types something.
+  useFocusEffect(
+    useCallback(() => {
+      runSearch(query);
+    }, [query, runSearch])
+  );
 
   useEffect(() => {
     getRecentSearches().then(setRecents);
