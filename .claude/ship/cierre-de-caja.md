@@ -1,7 +1,7 @@
 # Ship checkpoint — cierre-de-caja
 
 Started: 2026-07-18
-Current stage: 5 — Sync (gate)
+Current stage: 6 — Archive (done)
 
 **Scope (revised after design iteration — see decision log):** Rolling
 "Cierre de caja" (issue #27), reframed entirely around "since the last
@@ -31,8 +31,8 @@ branch-per-change convention, confirmed against merged history).
 | 2 | Spec reconcile | done | Rewrote proposal.md, design.md, and both delta specs to match the redesigned concept (all payment methods, match-gated close, period-range ledger). `daily-reconciliation` delta now REMOVEs 3 old requirements (Efectivo esperado summary, Efectivo contado input, Cerrar día y sincronizar) and ADDs their replacements, plus MODIFIEs Desglose. `openspec validate` green |
 | 3 | Build | done | `cash_closes` table + migration; `lib/cashClose/` (getCashSummary derived-sum, closeCash match-gated); `listPaymentsSinceLastClose` replacing `listToday`; `CashCloseRepo` wired into real+mock+RepoProvider; `ENTITY_RANGES.cashClose`/`Cierres` tab in push.ts+provisionSheet.ts; `CuadreScreen.tsx` fully rewritten around the since-last-close period with the match-gated "Cerrar caja" action. Also fixed unrelated Pencil housekeeping mid-build (user request): `m/avatar-picker` was an orphan root frame showing all 9 cells as the same wrong image — fixed, expanded to 12 avatars, flattened to a horizontal row, relocated into the Mobile Component Library |
 | 4 | Test | done | tsc/eslint/jest all green (71 suites, 288 tests). Found and fixed real fixture flakiness (`payment-18`'s `todayAt(9,14)` can be wall-clock-future). On-device walk (7.3) done against the real connected Datos sheet: full flow verified (system total, mismatch/match indicator, close, reset, sync). Along the way found a real **pre-existing** gap — `provisionSheet.ts` never backfills new tabs for already-connected lenders — worked around it for this test account by manually adding the "Cierres" tab via browser, then confirmed the push succeeded and the row is correct. Filed issue #31 to track the underlying gap (not fixed here — `addSheetTabs()` is destructive on a populated sheet, needs a careful additive-only fix as its own change) |
-| 5 | Sync | in-progress | Awaiting user confirmation to promote deltas into `openspec/specs/` |
-| 6 | Archive | pending | |
+| 5 | Sync | done | Created `openspec/specs/cash-close/spec.md` (new capability, 5 requirements); rewrote `daily-reconciliation`'s main spec (REMOVEd 3 stale requirements, ADDed 3 new, MODIFIEd Desglose). `openspec validate --specs` green (17/17) |
+| 6 | Archive | done | Moved to `openspec/changes/archive/2026-07-18-cierre-de-caja/` |
 
 Status values: `pending` · `in-progress` · `done` · `skipped` (with reason).
 
