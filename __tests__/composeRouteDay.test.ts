@@ -84,6 +84,11 @@ describe("composeRouteDay", () => {
     expect(day.collectedCents).toBe(0);
     expect(day.clientCount).toBe(0);
     expect(day.pendingCount).toBe(0);
+    // The fresh loan's cuota 1 isn't due for 4 more days — it surfaces as
+    // an upcoming customer instead (see composeUpcomingCustomers.test.ts
+    // for the dedicated coverage), never as a visit.
+    expect(day.upcomingCustomers).toHaveLength(1);
+    expect(day.upcomingCustomers[0]!.customerId).toBe("customer-1");
   });
 
   it("orders overdue before today's-due and sums the aggregates", () => {
@@ -127,6 +132,8 @@ describe("composeRouteDay", () => {
     expect(day.collectedCents).toBe(0);
     expect(day.clientCount).toBe(2);
     expect(day.pendingCount).toBe(2);
+    // Both loans are due today or overdue — nothing left over as "upcoming"
+    expect(day.upcomingCustomers).toEqual([]);
   });
 
   it("marks a visit done and moves it out of pendingCount once collected today", () => {
@@ -183,5 +190,6 @@ describe("composeRouteDay", () => {
 
     // Assert
     expect(day.visits).toEqual([]);
+    expect(day.upcomingCustomers).toEqual([]);
   });
 });
