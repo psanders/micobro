@@ -249,7 +249,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6
   },
   connPillOff: { backgroundColor: colors.subtle },
-  connText: { fontSize: 10, fontFamily: fonts.semiBold, color: colors.brandPrimary },
+  connText: {
+    fontSize: 10,
+    lineHeight: 12,
+    fontFamily: fonts.semiBold,
+    color: colors.brandPrimary,
+    includeFontPadding: false,
+    textAlignVertical: "center"
+  },
   connTextOff: { color: colors.slate },
   greeting: { fontSize: 24, fontFamily: fonts.bold, color: colors.brandDeep },
   avatarButton: {
