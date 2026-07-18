@@ -263,6 +263,22 @@ export interface RouteVisit {
   installmentLabel?: string;
 }
 
+/**
+ * A customer whose next unpaid installment isn't due yet (excluded from
+ * `RouteDay.visits`, which only covers today's actionable route). Powers
+ * the Hoy screen's "Próximas visitas" card as a fallback when nothing is
+ * due today or overdue, so the card isn't just an empty state.
+ */
+export interface UpcomingCustomer {
+  customerId: string;
+  name: string;
+  avatarKey: string | null;
+  address: string;
+  business: string | null;
+  nextDueDate: Date;
+  amountCents: number;
+}
+
 export interface RouteDay {
   date: Date;
   goalCents: number;
@@ -270,6 +286,8 @@ export interface RouteDay {
   clientCount: number;
   pendingCount: number;
   visits: RouteVisit[];
+  /** Sorted soonest-due-first; one entry per customer. See `UpcomingCustomer`. */
+  upcomingCustomers: UpcomingCustomer[];
 }
 
 /**

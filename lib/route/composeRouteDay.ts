@@ -21,9 +21,18 @@
  * Ordering: ascending by the earliest unpaid due date — overdue loans
  * (due date < today) sort before today's-due loans (due date === today)
  * for free, since overdue due dates are always earlier.
+ *
+ * Alongside `visits`, this also composes `upcomingCustomers` — the
+ * customers this same loan set would visit *later* (next unpaid
+ * installment due after today), via the sibling pure builder
+ * `composeUpcomingCustomers.ts`. It's a distinct, non-overlapping set from
+ * `visits` and never affects `goalCents`/`collectedCents`/`clientCount`/
+ * `pendingCount`; it exists purely so the Hoy screen has something to show
+ * instead of an empty state when `visits` is empty. Mi Ruta ignores it.
  */
 import { buildLoanDetailView } from "../loans/loanViews";
 import { computeLoanMora } from "../loans/mora";
+import { composeUpcomingCustomers } from "./composeUpcomingCustomers";
 import type { Customer } from "../customers/customer.schema";
 import type { Loan } from "../loans/loan.schema";
 import type { Payment } from "../payments/payment.schema";
@@ -136,6 +145,7 @@ export function composeRouteDay({
     collectedCents,
     clientCount,
     pendingCount,
-    visits
+    visits,
+    upcomingCustomers: composeUpcomingCustomers({ customers, loans, payments, today })
   };
 }

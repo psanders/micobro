@@ -18,7 +18,7 @@ import { QuickAction } from "../QuickAction";
 import { ProgressBar } from "../ProgressBar";
 import { ClientRow } from "../ClientRow";
 import { colors, fonts } from "../../lib/ui/theme";
-import type { RouteVisit } from "../../lib/repo/types";
+import type { RouteVisit, UpcomingCustomer } from "../../lib/repo/types";
 
 const STATUS_COPY: Record<SyncStatusLabel, string> = {
   synced: "Sincronizado",
@@ -48,6 +48,10 @@ function formatDayLabel(date: Date): string {
   return label.charAt(0).toUpperCase() + label.slice(1);
 }
 
+function formatShortDate(date: Date): string {
+  return date.toLocaleDateString("es-DO", { day: "numeric", month: "short" });
+}
+
 function initialsOf(name: string): string {
   return name
     .split(/\s+/)
@@ -55,6 +59,10 @@ function initialsOf(name: string): string {
     .slice(0, 2)
     .map((w) => w[0]!.toUpperCase())
     .join("");
+}
+
+function upcomingCustomerMeta(customer: UpcomingCustomer): string {
+  return `${customer.address} · Próx. cuota ${formatShortDate(customer.nextDueDate)}`;
 }
 
 function visitMeta(visit: RouteVisit): { text: string; color?: string } {
@@ -103,6 +111,9 @@ export function HomeScreen() {
   const name = profile.data?.name;
   const percent = day && day.goalCents > 0 ? day.collectedCents / day.goalCents : 0;
   const upcoming = day?.visits.filter((v) => v.status !== "done").slice(0, 4) ?? [];
+  // Fallback for a day with nothing due/overdue: show customers whose next
+  // cuota is coming up soon instead of leaving the card empty (issue #41).
+  const upcomingCustomers = upcoming.length === 0 ? (day?.upcomingCustomers.slice(0, 4) ?? []) : [];
 
   return (
     <ScrollView
@@ -198,9 +209,7 @@ export function HomeScreen() {
             </Pressable>
           </View>
 
-          {upcoming.length === 0 ? (
-            <Text style={styles.empty}>No hay visitas programadas para hoy.</Text>
-          ) : (
+          {upcoming.length > 0 ? (
             <View style={styles.list}>
               {upcoming.map((visit) => {
                 const meta = visitMeta(visit);
@@ -225,6 +234,24 @@ export function HomeScreen() {
                 );
               })}
             </View>
+          ) : upcomingCustomers.length > 0 ? (
+            <View style={styles.list}>
+              <Text style={styles.fallbackNote}>
+                No tienes cobros pendientes hoy. Así van tus próximos clientes:
+              </Text>
+              {upcomingCustomers.map((customer) => (
+                <ClientRow
+                  key={customer.customerId}
+                  avatarKey={customer.avatarKey}
+                  name={customer.name}
+                  meta={upcomingCustomerMeta(customer)}
+                  amount={formatCurrency(customer.amountCents)}
+                  onPress={() => router.push(`/customers/${customer.customerId}`)}
+                />
+              ))}
+            </View>
+          ) : (
+            <Text style={styles.empty}>No hay visitas programadas para hoy.</Text>
           )}
         </>
       )}
@@ -306,5 +333,6 @@ const styles = StyleSheet.create({
   listTitle: { fontSize: 16, fontFamily: fonts.bold, color: colors.brandDeep },
   listLink: { fontSize: 13, fontFamily: fonts.semiBold, color: colors.brandPrimary },
   list: { gap: 10 },
-  empty: { fontSize: 13, fontFamily: fonts.medium, color: colors.slate, textAlign: "center" }
+  empty: { fontSize: 13, fontFamily: fonts.medium, color: colors.slate, textAlign: "center" },
+  fallbackNote: { fontSize: 12, fontFamily: fonts.medium, color: colors.slate }
 });

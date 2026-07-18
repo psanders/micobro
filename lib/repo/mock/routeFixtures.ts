@@ -5,11 +5,18 @@
  * 03 Mi Ruta): 20 cobros, RD$18,240 of RD$25,400 collected, and the seven
  * named visits with their overdue/done/promise states.
  */
-import type { RouteDay, RouteVisit } from "../types";
+import type { RouteDay, RouteVisit, UpcomingCustomer } from "../types";
 
 const at = (hour: number, minute: number) => {
   const d = new Date();
   d.setHours(hour, minute, 0, 0);
+  return d;
+};
+
+const daysFromNow = (days: number) => {
+  const d = new Date();
+  d.setDate(d.getDate() + days);
+  d.setHours(0, 0, 0, 0);
   return d;
 };
 
@@ -99,11 +106,40 @@ export const routeVisitFixtures: RouteVisit[] = [
   }
 ];
 
+/**
+ * The Hoy screen's "Próximas visitas" fallback — customers with a loan
+ * that isn't due yet. Not reachable through the curated demo day above
+ * (it always has pending/overdue visits), but exercised directly by tests
+ * and Storybook. Pedro Cabrera's second loan (`loan-8` in fixtures.ts)
+ * genuinely has an upcoming, not-yet-due cuota.
+ */
+export const upcomingCustomersFixture: UpcomingCustomer[] = [
+  {
+    customerId: "customer-4",
+    name: "Pedro Cabrera",
+    avatarKey: "male5",
+    address: "Calle El Sol 22",
+    business: "Pica pollo La Esquina · El Sol",
+    nextDueDate: daysFromNow(2),
+    amountCents: 90000
+  },
+  {
+    customerId: "customer-1",
+    name: "María Rosa Peralta",
+    avatarKey: "female2",
+    address: "Calle Duarte 24",
+    business: "Colmado La Rosa · Calle Duarte",
+    nextDueDate: daysFromNow(9),
+    amountCents: 240000
+  }
+];
+
 export const routeDayFixture: RouteDay = {
   date: new Date(),
   goalCents: 2540000,
   collectedCents: 1824000,
   clientCount: 8,
   pendingCount: 12,
-  visits: routeVisitFixtures
+  visits: routeVisitFixtures,
+  upcomingCustomers: upcomingCustomersFixture
 };

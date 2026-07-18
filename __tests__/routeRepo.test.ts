@@ -38,6 +38,7 @@ describe("route repo", () => {
     expect(day.clientCount).toBe(0);
     expect(day.pendingCount).toBe(0);
     expect(day.visits).toEqual([]);
+    expect(day.upcomingCustomers).toEqual([]);
   });
 
   it("real repo reads customers, loans, and payments to compose the day", async () => {
@@ -72,5 +73,11 @@ describe("route repo", () => {
 
     const promise = routeDayFixture.visits.find((v) => v.status === "promise")!;
     expect(promise.promiseNote).toBe("Mañana 3pm");
+  });
+
+  it("mock fixture carries the Próximas visitas fallback dataset", () => {
+    expect(routeDayFixture.upcomingCustomers.length).toBeGreaterThan(0);
+    const dueDates = routeDayFixture.upcomingCustomers.map((c) => c.nextDueDate.getTime());
+    expect(dueDates).toEqual([...dueDates].sort((a, b) => a - b));
   });
 });
