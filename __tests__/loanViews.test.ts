@@ -179,6 +179,7 @@ describe("addFrequencyInterval / defaultFirstPaymentDate", () => {
       startDate: now,
       status: "active",
       notes: null,
+      graceDays: null,
       createdAt: now,
       updatedAt: now
     };
