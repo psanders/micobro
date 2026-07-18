@@ -1,7 +1,7 @@
 /**
  * Copyright (C) 2026 by Pedro Sanders. MIT License.
  */
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -16,8 +16,10 @@ import { useCustomerRepo, useLoanRepo } from "../../lib/repo/RepoProvider";
 import { useAsync } from "../../lib/hooks/useAsync";
 import { loanFrequencies, type LoanFrequency } from "../../lib/loans/loan.schema";
 import { loanCostSummary } from "../../lib/loans/loanMath";
+import { addFrequencyInterval } from "../../lib/loans/loanViews";
 import { ValidationError } from "../../lib/errors/ValidationError";
 import { formatCurrency, toCents } from "../../lib/utils/money";
+import { formatShortDate } from "../../lib/utils/dates";
 import { colors } from "../../lib/ui/theme";
 
 const frequencyLabels: Record<LoanFrequency, string> = {
@@ -26,6 +28,28 @@ const frequencyLabels: Record<LoanFrequency, string> = {
   biweekly: "Quincenal",
   monthly: "Mensual"
 };
+
+/**
+ * Cycling presets for "primer pago" (first payment date), same pattern as
+ * VisitOutcomeScreen's DATE_PRESETS — no native date-picker dependency.
+ * Preset 0 is the healthy per-frequency default (mañana for diario, en 1
+ * semana for semanal, ...); 1 and 2 let the lender push it further out.
+ */
+const FIRST_PAYMENT_PRESET_COUNT = 3;
+
+function firstPaymentLabel(date: Date, frequency: LoanFrequency, intervalsFromNow: number): string {
+  const short = formatShortDate(date);
+  if (frequency === "daily") {
+    if (intervalsFromNow === 1) return `Mañana, ${short}`;
+    if (intervalsFromNow === 2) return `Pasado mañana, ${short}`;
+    return `En ${intervalsFromNow} días, ${short}`;
+  }
+  const unitSingular =
+    frequency === "weekly" ? "semana" : frequency === "biweekly" ? "quincena" : "mes";
+  const unit =
+    intervalsFromNow === 1 ? unitSingular : frequency === "monthly" ? "meses" : `${unitSingular}s`;
+  return `En ${intervalsFromNow} ${unit}, ${short}`;
+}
 
 export function NewLoanFormScreen({ customerId: initialCustomerId }: { customerId?: string }) {
   const router = useRouter();
@@ -38,8 +62,22 @@ export function NewLoanFormScreen({ customerId: initialCustomerId }: { customerI
   const [interestRate, setInterestRate] = useState("");
   const [termCount, setTermCount] = useState("");
   const [frequency, setFrequency] = useState<LoanFrequency>("weekly");
+  const [firstPaymentPresetIndex, setFirstPaymentPresetIndex] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  // Changing the frequency changes what "healthy default" means (mañana vs.
+  // en 1 semana), so a preset the lender picked for the old frequency isn't
+  // meaningful anymore — snap back to the default (index 0).
+  useEffect(() => {
+    setFirstPaymentPresetIndex(0);
+  }, [frequency]);
+
+  const firstPaymentIntervalsFromNow = firstPaymentPresetIndex + 1;
+  const firstPaymentDate = useMemo(
+    () => addFrequencyInterval(new Date(), frequency, firstPaymentIntervalsFromNow),
+    [frequency, firstPaymentIntervalsFromNow]
+  );
 
   const principalValue = Number(principal);
   const interestRateValue = Number(interestRate);
@@ -57,12 +95,18 @@ export function NewLoanFormScreen({ customerId: initialCustomerId }: { customerI
     setError(null);
     setSubmitting(true);
     try {
+      // `installmentDueDate` counts the first cuota as one interval after
+      // `startDate`, so the disbursement anchor we send is the chosen
+      // first-payment date minus one interval — this makes
+      // installmentDueDate(loan, 1) land exactly on what the lender picked.
+      const startDate = addFrequencyInterval(firstPaymentDate, frequency, -1);
       await loanRepo.create({
         customerId,
         principal: Number(principal),
         interestRate: Number(interestRate),
         termCount: Number(termCount),
-        frequency
+        frequency,
+        startDate
       });
       router.back();
     } catch (err) {
@@ -153,6 +197,19 @@ export function NewLoanFormScreen({ customerId: initialCustomerId }: { customerI
         </View>
       </View>
 
+      <View style={styles.field}>
+        <Text style={styles.label}>Primer pago</Text>
+        <Pressable
+          style={styles.dateInput}
+          onPress={() => setFirstPaymentPresetIndex((i) => (i + 1) % FIRST_PAYMENT_PRESET_COUNT)}
+        >
+          <Text style={styles.dateInputText}>
+            {firstPaymentLabel(firstPaymentDate, frequency, firstPaymentIntervalsFromNow)}
+          </Text>
+          <Text style={styles.dateInputHint}>Toca para cambiar</Text>
+        </Pressable>
+      </View>
+
       {costPreview && (
         <View style={styles.preview}>
           <View style={styles.previewRow}>
@@ -199,6 +256,17 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: colors.ink
   },
+  dateInput: {
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 12,
+    padding: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between"
+  },
+  dateInputText: { fontSize: 15, color: colors.ink, fontWeight: "600" },
+  dateInputHint: { fontSize: 12, color: colors.muted },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   chip: {
     paddingHorizontal: 14,

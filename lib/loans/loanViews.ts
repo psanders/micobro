@@ -11,7 +11,7 @@
  */
 import { methodLabels } from "../payments/labels";
 import { cuotaCents, totalInterestCents, totalRepayCents } from "./loanMath";
-import type { Loan } from "./loan.schema";
+import type { Loan, LoanFrequency } from "./loan.schema";
 import type { Payment } from "../payments/payment.schema";
 import type {
   CustomerLoanSummary,
@@ -35,15 +35,36 @@ export function loanCode(id: string): string {
   return `L-${String(hash).padStart(5, "0")}`;
 }
 
-export function installmentDueDate(loan: Loan, number: number): Date {
-  const start = new Date(loan.startDate);
-  if (loan.frequency === "monthly") {
-    const due = new Date(start);
-    due.setMonth(due.getMonth() + number);
+/**
+ * `date` shifted by `count` payment intervals for `frequency` (monthly
+ * shifts by calendar months, everything else by a fixed day count).
+ * `count` may be negative to shift backward. Shared by `installmentDueDate`
+ * (schedule math) and the new-loan form's "primer pago" default/override,
+ * so both agree on what "one interval" means per frequency.
+ */
+export function addFrequencyInterval(date: Date, frequency: LoanFrequency, count: number): Date {
+  if (frequency === "monthly") {
+    const due = new Date(date);
+    due.setMonth(due.getMonth() + count);
     return due;
   }
-  const days = loan.frequency === "daily" ? 1 : loan.frequency === "weekly" ? 7 : 14;
-  return new Date(start.getTime() + number * days * DAY_MS);
+  const days = frequency === "daily" ? 1 : frequency === "weekly" ? 7 : 14;
+  return new Date(date.getTime() + count * days * DAY_MS);
+}
+
+export function installmentDueDate(loan: Loan, number: number): Date {
+  return addFrequencyInterval(new Date(loan.startDate), loan.frequency, number);
+}
+
+/**
+ * Healthy per-frequency default for the first payment date, used by the
+ * new-loan form: daily → mañana, weekly → en 1 semana, biweekly → en 1
+ * quincena, monthly → en 1 mes. This is exactly `installmentDueDate(loan, 1)`
+ * for a loan whose `startDate` is `from` — i.e. the disbursement-day
+ * default the lender gets when they don't override it.
+ */
+export function defaultFirstPaymentDate(frequency: LoanFrequency, from: Date = new Date()): Date {
+  return addFrequencyInterval(from, frequency, 1);
 }
 
 export function principalPaidCents(payments: Payment[]): number {

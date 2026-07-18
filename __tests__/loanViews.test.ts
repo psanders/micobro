@@ -5,8 +5,14 @@
  * schedule derives paid/overdue/upcoming from payments and due dates, and
  * the due-today breakdown lists overdue cuotas plus mora.
  */
-import { buildLoanDetailView, loanCode } from "../lib/loans/loanViews";
-import type { Loan } from "../lib/loans/loan.schema";
+import {
+  buildLoanDetailView,
+  loanCode,
+  installmentDueDate,
+  addFrequencyInterval,
+  defaultFirstPaymentDate
+} from "../lib/loans/loanViews";
+import type { Loan, LoanFrequency } from "../lib/loans/loan.schema";
 import type { Payment } from "../lib/payments/payment.schema";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -116,5 +122,67 @@ describe("buildLoanDetailView", () => {
   it("loanCode derives a stable 5-digit code", () => {
     expect(loanCode("loan-3")).toBe("L-00003");
     expect(loanCode("8f14e45f-ceea-467f-9575-0844ab0c1b2d")).toMatch(/^L-\d{5}$/);
+  });
+});
+
+// Spec: loan-configuration "First payment date" — the healthy per-frequency
+// default and the round-trip between "first payment date" and the
+// `startDate` anchor installmentDueDate builds the schedule from.
+describe("addFrequencyInterval / defaultFirstPaymentDate", () => {
+  const now = new Date("2026-07-18T14:00:00");
+
+  it.each([
+    ["daily", 1],
+    ["weekly", 7],
+    ["biweekly", 14]
+  ] as [LoanFrequency, number][])("%s shifts by %d days per interval", (frequency, days) => {
+    const shifted = addFrequencyInterval(now, frequency, 1);
+    expect(shifted.getTime() - now.getTime()).toBe(days * DAY_MS);
+  });
+
+  it("monthly shifts by calendar months, not a fixed day count", () => {
+    const shifted = addFrequencyInterval(now, "monthly", 1);
+    expect(shifted.getMonth()).toBe((now.getMonth() + 1) % 12);
+    expect(shifted.getDate()).toBe(now.getDate());
+  });
+
+  it("supports negative counts to shift backward", () => {
+    const forward = addFrequencyInterval(now, "weekly", 1);
+    const backward = addFrequencyInterval(forward, "weekly", -1);
+    expect(backward.getTime()).toBe(now.getTime());
+  });
+
+  it("defaultFirstPaymentDate is one interval from `from` per frequency", () => {
+    (["daily", "weekly", "biweekly", "monthly"] as LoanFrequency[]).forEach((frequency) => {
+      expect(defaultFirstPaymentDate(frequency, now).getTime()).toBe(
+        addFrequencyInterval(now, frequency, 1).getTime()
+      );
+    });
+  });
+
+  it("never lands the default first payment on the same calendar day as `from`, for every frequency", () => {
+    (["daily", "weekly", "biweekly", "monthly"] as LoanFrequency[]).forEach((frequency) => {
+      const due = defaultFirstPaymentDate(frequency, now);
+      expect(due.toDateString()).not.toBe(now.toDateString());
+    });
+  });
+
+  it("installmentDueDate(loan, 1) equals startDate + one interval, matching addFrequencyInterval", () => {
+    const loan: Loan = {
+      id: "loan-x",
+      customerId: "customer-x",
+      principalCents: 100000,
+      interestRateBps: 1000,
+      termCount: 6,
+      frequency: "weekly",
+      startDate: now,
+      status: "active",
+      notes: null,
+      createdAt: now,
+      updatedAt: now
+    };
+    expect(installmentDueDate(loan, 1).getTime()).toBe(
+      addFrequencyInterval(now, "weekly", 1).getTime()
+    );
   });
 });
