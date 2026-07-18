@@ -92,9 +92,10 @@ describe("provisionSheet", () => {
       "Clientes",
       "Préstamos",
       "Pagos",
-      "Visitas"
+      "Visitas",
+      "Cierres"
     ]);
-    expect(writeHeaderRowMock).toHaveBeenCalledTimes(4);
+    expect(writeHeaderRowMock).toHaveBeenCalledTimes(5);
     expect(setSheetIdMock).toHaveBeenCalledWith("sheet-1");
     expect(pushMock).toHaveBeenCalledWith(db);
   });

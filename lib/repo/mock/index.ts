@@ -43,6 +43,7 @@ import {
 import { routeDayFixture } from "./routeFixtures";
 import { normalizeText } from "../../utils/text";
 import { createMockSyncRepo } from "./syncRepo.mock";
+import type { CashClose } from "../../cashClose/cashClose.schema";
 import type { CustomerActivityItem, LoanDetailView, Repos } from "../types";
 
 export function createMockRepos(): Repos {
@@ -50,7 +51,17 @@ export function createMockRepos(): Repos {
   const loans: Loan[] = loanFixtures.map((l) => ({ ...l }));
   const payments: Payment[] = paymentFixtures.map((p) => ({ ...p }));
   const visitLog: Visit[] = visitFixtures.map((v) => ({ ...v }));
+  const cashCloses: CashClose[] = [];
   const mora = new Map(Object.entries(moraFixtures).map(([id, m]) => [id, { ...m }]));
+
+  function cashSummary() {
+    const lastClose = cashCloses[cashCloses.length - 1];
+    const periodStart = lastClose?.closedAt ?? null;
+    const relevant = periodStart
+      ? payments.filter((p) => p.paidAt.getTime() > periodStart.getTime())
+      : payments;
+    return { totalCents: relevant.reduce((sum, p) => sum + p.amountCents, 0), periodStart };
+  }
   let profileState: Profile | null = {
     name: "Carlos",
     avatarKey: "male4",
@@ -269,14 +280,10 @@ export function createMockRepos(): Repos {
     },
     payments: {
       listByLoan: async (loanId) => payments.filter((payment) => payment.loanId === loanId),
-      listToday: async () => {
-        const now = new Date();
-        return payments.filter(
-          (p) =>
-            p.paidAt.getFullYear() === now.getFullYear() &&
-            p.paidAt.getMonth() === now.getMonth() &&
-            p.paidAt.getDate() === now.getDate()
-        );
+      listSinceLastClose: async () => {
+        const { periodStart } = cashSummary();
+        if (!periodStart) return payments;
+        return payments.filter((p) => p.paidAt.getTime() > periodStart.getTime());
       },
       create: createPayment,
       getCollectContext: async (loanId) => {
@@ -367,6 +374,28 @@ export function createMockRepos(): Repos {
     },
     feedback: {
       submit: async () => ({ ok: true })
+    },
+    cashClose: {
+      getSummary: async () => cashSummary(),
+      close: async (verifiedCents) => {
+        const summary = cashSummary();
+        if (summary.totalCents === 0) {
+          throw new Error("No hay nada que cerrar: el total es RD$0.");
+        }
+        if (verifiedCents !== summary.totalCents) {
+          throw new Error("El total verificado no coincide con el total del sistema.");
+        }
+        const now = new Date();
+        const close: CashClose = {
+          id: Crypto.randomUUID(),
+          amountCents: summary.totalCents,
+          periodStart: summary.periodStart,
+          closedAt: now,
+          createdAt: now
+        };
+        cashCloses.push(close);
+        return close;
+      }
     }
   };
 }

@@ -68,6 +68,14 @@ const visitPayload = JSON.stringify({
   createdAt: "2026-01-08T00:00:00.000Z"
 });
 
+const cashClosePayload = JSON.stringify({
+  id: "close-1",
+  amountCents: 500000,
+  periodStart: null,
+  closedAt: "2026-01-08T00:00:00.000Z",
+  createdAt: "2026-01-08T00:00:00.000Z"
+});
+
 function makeDbStub(mutations: Record<string, unknown>[]) {
   const selectWhere = jest.fn().mockResolvedValue(mutations);
   const from = jest.fn().mockReturnValue({ where: selectWhere });
@@ -302,6 +310,33 @@ describe("pushPendingMutations", () => {
       "",
       "",
       "",
+      "2026-01-08T00:00:00.000Z"
+    ]);
+    expect(result).toEqual({ pushed: 1, failed: 0 });
+  });
+
+  it("pushes a cashClose create mutation to the Cierres range in schema column order", async () => {
+    // Arrange
+    const mutation = {
+      id: "m7",
+      entity: "cashClose",
+      entityId: "close-1",
+      operation: "create",
+      payload: cashClosePayload,
+      status: "pending",
+      retryCount: 0
+    };
+    const db = makeDbStub([mutation]);
+
+    // Act
+    const result = await pushPendingMutations(db);
+
+    // Assert
+    expect(appendRowMock).toHaveBeenCalledWith("sheet-1", "Cierres!A:E", [
+      "close-1",
+      500000,
+      "",
+      "2026-01-08T00:00:00.000Z",
       "2026-01-08T00:00:00.000Z"
     ]);
     expect(result).toEqual({ pushed: 1, failed: 0 });

@@ -1,14 +1,32 @@
-# daily-reconciliation
+## REMOVED Requirements
 
-## Purpose
+### Requirement: Efectivo esperado summary
 
-The Cuadre General screen — reconciling the caja (cash-on-hand) for the
-period since the lender's last close, not "today": the system-computed
-total (all payment methods), a manually-verified total that must match it
-to unlock closing, and a desglose of recibos/transferencias for that same
-period.
+**Reason**: Replaced by a since-last-close system total covering all payment methods (see ADDED "Cuadre General shows the system-computed total since the last close") — the "today's route" framing no longer applies now that the screen reconciles the caja rather than a single day.
+**Migration**: None needed — the replacing requirement covers the same screen area.
 
-## Requirements
+### Requirement: Efectivo contado input
+
+**Reason**: Replaced by "Total verificado" (see ADDED "Cuadre General requires a matching verified total to close"), which compares against the since-last-close system total (all payment methods) instead of today's efectivo esperado, and gates the close action rather than being purely informational.
+**Migration**: None needed.
+
+### Requirement: Cerrar día y sincronizar
+
+**Reason**: Replaced by "Cerrar caja" (see ADDED), which both reconciles (gated on a matching verified total) and syncs, rather than syncing unconditionally with no reconciliation.
+**Migration**: The sync side-effect is preserved as part of the new "Cerrar caja" action.
+
+## MODIFIED Requirements
+
+### Requirement: Desglose
+
+The screen SHALL show a breakdown of the recibos (count) and transferencias (total) recorded since the last close.
+
+#### Scenario: Desglose reflects the since-last-close period
+
+- **WHEN** payments (cash and/or transfer) have been recorded since the last close
+- **THEN** the desglose shows the recibos count and the transferencias total separately, covering that period
+
+## ADDED Requirements
 
 ### Requirement: Cuadre General shows the system-computed total since the last close
 
@@ -32,15 +50,6 @@ The screen SHALL let the lender enter a verified total and SHALL show a match/mi
 
 - **WHEN** the entered verified total differs from the system-computed total
 - **THEN** a mismatch indicator shows the difference and "Cerrar caja" stays disabled
-
-### Requirement: Desglose
-
-The screen SHALL show a breakdown of the recibos (count) and transferencias (total) recorded since the last close.
-
-#### Scenario: Desglose reflects the since-last-close period
-
-- **WHEN** payments (cash and/or transfer) have been recorded since the last close
-- **THEN** the desglose shows the recibos count and the transferencias total separately, covering that period
 
 ### Requirement: Cerrar caja
 

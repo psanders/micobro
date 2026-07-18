@@ -3,7 +3,7 @@
  *
  * First-sync provisioning. On the first successful Google connect this creates
  * the lender's backup in their own Drive — a `Micobro` folder containing a
- * `Datos` spreadsheet with the four tabs push.ts writes to — records its id,
+ * `Datos` spreadsheet with the tabs push.ts writes to — records its id,
  * and backfills queued local data.
  *
  * Idempotent: a stored sheet id short-circuits; otherwise we look the folder
@@ -49,7 +49,8 @@ const TAB_HEADERS: Record<string, string[]> = {
     "Monto promesa (centavos)",
     "Nota",
     "Creado"
-  ]
+  ],
+  cashClose: ["ID", "Monto (centavos)", "Desde", "Cerrado", "Creado"]
 };
 
 function tabTitle(range: string): string {
