@@ -14,6 +14,8 @@ import Constants from "expo-constants";
 import { Feather } from "@expo/vector-icons";
 import { useSyncRepo } from "../../lib/repo/RepoProvider";
 import { useSyncContext } from "../../lib/sync/SyncProvider";
+import { friendlySyncErrorMessage } from "../../lib/sync/friendlySyncError";
+import { logger } from "../../lib/logger";
 import { colors, fonts } from "../../lib/ui/theme";
 
 interface ConnectGoogleScreenProps {
@@ -52,7 +54,12 @@ export function ConnectGoogleScreen({ onDone }: ConnectGoogleScreenProps) {
           onDone();
         }
       })
-      .catch((err) => setErrorMessage(err instanceof Error ? err.message : String(err)))
+      .catch((err) => {
+        logger.warn("google connect failed", {
+          message: err instanceof Error ? err.message : String(err)
+        });
+        setErrorMessage(friendlySyncErrorMessage(err));
+      })
       .finally(() => setConnecting(false));
   }
 
