@@ -138,42 +138,18 @@ does.
   `lib/customers/createCustomer.ts` as the reference pattern.
 - **`lib/sync/`** — native Google Sign-In (`drive.file` scope), a Sheets API
   v4 client, first-connect provisioning of the lender's own `Micobro` Drive
-  folder + `Datos` spreadsheet (`provisionSheet.ts`), and
-  `pushPendingMutations` to replay the local mutation queue for all four
-  entities (customer/loan/payment/visit). An in-progress change
-  (`openspec/changes/sync-push-policy`) is adding push-immediately-after-
-  each-mutation, auto-resync on regaining connectivity, and a real four-state
-  sync status pill — wired end to end (`SyncProvider` mounted in
-  `app/_layout.tsx`), pending final on-device verification and archiving.
-  Pull sync (reading changes made directly in the Sheet back into SQLite) and
-  conflict
-  resolution are still not built (design proposed in
-  `openspec/changes/7-pull-two-way-sync`, implementation not started).
+  folder + `Datos` spreadsheet (`provisionSheet.ts`), `pushPendingMutations`
+  to replay the local mutation queue for all four entities
+  (customer/loan/payment/visit), and pull sync (`pull.ts`) reading edits made
+  directly in the Sheet back into SQLite with remote-wins-with-guard conflict
+  resolution — triggered manually, chained after push, and guarded on
+  app-open. A four-state sync status pill (Sincronizado / Pendiente de
+  sincronizar / Necesita atención / No conectado) reflects live connectivity
+  rather than cached Google sign-in state. All wired end to end via
+  `SyncProvider` (`app/_layout.tsx`).
 
 The DB schema (`lib/db/schema.ts`) has `customers`, `loans`, `payments`,
 `visits`, `profile`, `pending_mutations`, and `sync_meta` tables.
 
-## What's next
-
-- **Finish `sync-push-policy`** (in progress, not archived): push a mutation
-  immediately after create/collect instead of waiting for connect time or a
-  manual "Sincronizar ahora"; auto-resync on regaining connectivity via
-  `@react-native-community/netinfo`; a real four-state sync status pill
-  (Sincronizado / Pendiente de sincronizar / Necesita atención / No conectado)
-  replacing the old "Conectado"/"Sin conexión" binary, which turned out to
-  reflect cached Google sign-in state rather than live connectivity. All the
-  pieces exist and are wired in (`lib/sync/SyncProvider.tsx`, `autoPushPolicy.ts`,
-  `syncEvents.ts`, `syncStatusLabel.ts`, mounted in `app/_layout.tsx`) and pass
-  unit tests; final on-device verification and archiving the change are what's
-  left — see `openspec/changes/sync-push-policy/tasks.md`.
-- **Pull/two-way sync and conflict resolution** — reading edits made directly
-  in the Sheet back into local SQLite. Design direction is approved
-  (remote-wins-with-guard, manual + chained-after-push + guarded app-open
-  auto-pull; see `openspec/changes/7-pull-two-way-sync`), but implementation
-  hasn't started.
-- Splash screen assets/config (app icon and adaptive icons are already in
-  place).
-
-Several OpenSpec proposals have already been archived (`openspec/changes/archive/`
-has multiple dated entries, including first-connect sheet provisioning) and
-`openspec/specs/` now has populated spec files for every shipped capability.
+OpenSpec proposals are archived under `openspec/changes/archive/`;
+`openspec/specs/` has a spec file for every shipped capability.
