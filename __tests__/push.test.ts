@@ -1,23 +1,28 @@
 /**
  * Copyright (C) 2026 by Pedro Sanders. MIT License.
  *
- * appendRow can only add rows, so an "update" mutation must stay queued
- * rather than being pushed as a duplicate row — see the comment in
- * lib/sync/push.ts.
+ * "update" mutations are written back to the existing Sheet row in place
+ * (findRowNumber + updateRow) rather than appended as a duplicate — see
+ * the comment in lib/sync/push.ts. If the row was never pushed (not found
+ * by id), push self-heals by appending it as if it were a create.
  */
 jest.mock("../lib/sync/config", () => ({
   getSheetId: jest.fn().mockResolvedValue("sheet-1")
 }));
 
 jest.mock("../lib/sync/sheetsClient", () => ({
-  appendRow: jest.fn().mockResolvedValue(undefined)
+  appendRow: jest.fn().mockResolvedValue(undefined),
+  updateRow: jest.fn().mockResolvedValue(undefined),
+  readRange: jest.fn().mockResolvedValue([])
 }));
 
 import { pushPendingMutations } from "../lib/sync/push";
-import { appendRow } from "../lib/sync/sheetsClient";
+import { appendRow, updateRow, readRange } from "../lib/sync/sheetsClient";
 import type { Database } from "../lib/db/client";
 
 const appendRowMock = appendRow as jest.Mock;
+const updateRowMock = updateRow as jest.Mock;
+const readRangeMock = readRange as jest.Mock;
 
 const basePayload = JSON.stringify({
   id: "customer-1",
@@ -85,6 +90,8 @@ function makeDbStub(mutations: Record<string, unknown>[]) {
 describe("pushPendingMutations", () => {
   beforeEach(() => {
     appendRowMock.mockClear();
+    updateRowMock.mockClear();
+    readRangeMock.mockReset().mockResolvedValue([]);
   });
 
   it("pushes create mutations and clears them from the queue", async () => {
@@ -129,8 +136,9 @@ describe("pushPendingMutations", () => {
     expect(result).toEqual({ pushed: 1, failed: 0 });
   });
 
-  it("skips update mutations instead of appending a duplicate row", async () => {
-    // Arrange
+  it("updates the existing Sheet row in place for an update mutation", async () => {
+    // Arrange: row "customer-1" already lives at sheet row 3 (header + 2 rows above it)
+    readRangeMock.mockResolvedValueOnce([["ID"], ["customer-0"], ["customer-1"]]);
     const mutation = {
       id: "m2",
       entity: "customer",
@@ -146,8 +154,37 @@ describe("pushPendingMutations", () => {
     const result = await pushPendingMutations(db);
 
     // Assert
+    expect(readRangeMock).toHaveBeenCalledWith("sheet-1", "Clientes!A:A");
+    expect(updateRowMock).toHaveBeenCalledWith(
+      "sheet-1",
+      "Clientes!A3:F3",
+      expect.arrayContaining(["customer-1"])
+    );
     expect(appendRowMock).not.toHaveBeenCalled();
-    expect(result).toEqual({ pushed: 0, failed: 0 });
+    expect(result).toEqual({ pushed: 1, failed: 0 });
+  });
+
+  it("self-heals by appending an update mutation whose row was never pushed", async () => {
+    // Arrange: the id column has no row matching this entity's id
+    readRangeMock.mockResolvedValueOnce([["ID"], ["customer-0"]]);
+    const mutation = {
+      id: "m2b",
+      entity: "customer",
+      entityId: "customer-1",
+      operation: "update",
+      payload: basePayload,
+      status: "pending",
+      retryCount: 0
+    };
+    const db = makeDbStub([mutation]);
+
+    // Act
+    const result = await pushPendingMutations(db);
+
+    // Assert
+    expect(updateRowMock).not.toHaveBeenCalled();
+    expect(appendRowMock).toHaveBeenCalledTimes(1);
+    expect(result).toEqual({ pushed: 1, failed: 0 });
   });
 
   it("pushes a loan create mutation to the Préstamos range in schema column order", async () => {
@@ -180,6 +217,34 @@ describe("pushPendingMutations", () => {
       "2026-01-01T00:00:00.000Z",
       "2026-01-01T00:00:00.000Z"
     ]);
+    expect(result).toEqual({ pushed: 1, failed: 0 });
+  });
+
+  it("updates the existing Préstamos row in place for a loan update mutation", async () => {
+    // Arrange: "loan-1" already lives at sheet row 2 (header + this one row)
+    readRangeMock.mockResolvedValueOnce([["ID"], ["loan-1"]]);
+    const mutation = {
+      id: "m3b",
+      entity: "loan",
+      entityId: "loan-1",
+      operation: "update",
+      payload: loanPayload,
+      status: "pending",
+      retryCount: 0
+    };
+    const db = makeDbStub([mutation]);
+
+    // Act
+    const result = await pushPendingMutations(db);
+
+    // Assert
+    expect(readRangeMock).toHaveBeenCalledWith("sheet-1", "Préstamos!A:A");
+    expect(updateRowMock).toHaveBeenCalledWith(
+      "sheet-1",
+      "Préstamos!A2:K2",
+      expect.arrayContaining(["loan-1"])
+    );
+    expect(appendRowMock).not.toHaveBeenCalled();
     expect(result).toEqual({ pushed: 1, failed: 0 });
   });
 
@@ -243,9 +308,11 @@ describe("pushPendingMutations", () => {
   });
 
   it.each(["loan", "payment", "visit"] as const)(
-    "skips %s update mutations instead of appending a duplicate row",
+    "self-heals a %s update mutation not found remotely by appending it",
     async (entity) => {
-      // Arrange
+      // Arrange: update routing isn't special-cased to "customer" — any
+      // entity's update mutation falls back to appendRow when its id isn't
+      // found in the sheet (readRange defaults to [] in beforeEach)
       const payloadByEntity = { loan: loanPayload, payment: paymentPayload, visit: visitPayload };
       const mutation = {
         id: "m6",
@@ -262,8 +329,9 @@ describe("pushPendingMutations", () => {
       const result = await pushPendingMutations(db);
 
       // Assert
-      expect(appendRowMock).not.toHaveBeenCalled();
-      expect(result).toEqual({ pushed: 0, failed: 0 });
+      expect(updateRowMock).not.toHaveBeenCalled();
+      expect(appendRowMock).toHaveBeenCalledTimes(1);
+      expect(result).toEqual({ pushed: 1, failed: 0 });
     }
   );
 });

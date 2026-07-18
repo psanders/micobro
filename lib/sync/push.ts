@@ -2,12 +2,14 @@
  * Copyright (C) 2026 by Pedro Sanders. MIT License.
  *
  * Replays queued local writes (pending_mutations) to the lender's Google
- * Sheet. Pull/two-way sync and conflict resolution are a deliberate
- * follow-up — this establishes the push half of the loop end to end.
+ * Sheet: appends "create" mutations, and corrects existing rows in place for
+ * "update" mutations (see findRowNumber/updateRow below) rather than
+ * duplicating them. Pulling the Sheet back down into local SQLite is the
+ * other half of the loop — see pull.ts, chained after this in syncNow().
  */
 import { eq, and, or, lt } from "drizzle-orm";
 import { pendingMutations, syncMeta } from "../db/schema";
-import { appendRow } from "./sheetsClient";
+import { appendRow, updateRow, readRange } from "./sheetsClient";
 import { getSheetId } from "./config";
 import { logger } from "../logger";
 import type { Database } from "../db/client";
@@ -99,6 +101,23 @@ export interface PushResult {
   failed: number;
 }
 
+/** "Clientes!A:F" -> "Clientes!A5:F5" for a specific 1-based row number. */
+function rowRangeAt(range: string, rowNumber: number): string {
+  const [tab, cols] = range.split("!");
+  const [startCol, endCol] = cols.split(":");
+  return `${tab}!${startCol}${rowNumber}:${endCol}${rowNumber}`;
+}
+
+// Sheets API v4 addresses cells by A1 range, not by key, so finding "the row
+// for entity id X" costs a values.get on the id column (always column A per
+// every row mapper above) followed by a linear scan.
+async function findRowNumber(sheetId: string, range: string, id: string): Promise<number | null> {
+  const tab = range.split("!")[0];
+  const idColumn = await readRange(sheetId, `${tab}!A:A`);
+  const index = idColumn.findIndex((row) => row[0] === id);
+  return index === -1 ? null : index + 1;
+}
+
 export async function pushPendingMutations(db: Database): Promise<PushResult> {
   const sheetId = await getSheetId();
   if (!sheetId) {
@@ -126,17 +145,27 @@ export async function pushPendingMutations(db: Database): Promise<PushResult> {
     const range = ENTITY_RANGES[mutation.entity];
     if (!range) continue;
 
-    // appendRow only adds rows; there's no update-by-id support in
-    // sheetsClient yet, so pushing an "update" mutation would append a
-    // duplicate row instead of correcting the existing one. Leave it
-    // queued (not failed) until update-row support ships.
-    if (mutation.operation !== "create") continue;
+    if (mutation.operation !== "create" && mutation.operation !== "update") continue;
 
     try {
       const payload = JSON.parse(mutation.payload);
       const mapRow = ROW_MAPPERS[mutation.entity];
       const values = mapRow ? mapRow(payload) : [];
-      await appendRow(sheetId, range, values);
+
+      if (mutation.operation === "create") {
+        await appendRow(sheetId, range, values);
+      } else {
+        // Correct the existing Sheet row in place rather than duplicating
+        // it. If the row was never pushed (e.g. created offline and still
+        // queued), self-heal by appending instead of failing the update.
+        const rowNumber = await findRowNumber(sheetId, range, mutation.entityId);
+        if (rowNumber) {
+          await updateRow(sheetId, rowRangeAt(range, rowNumber), values);
+        } else {
+          await appendRow(sheetId, range, values);
+        }
+      }
+
       await db.delete(pendingMutations).where(eq(pendingMutations.id, mutation.id));
       pushed += 1;
     } catch (err) {

@@ -24,12 +24,18 @@ import { createRealSyncRepo } from "../lib/repo/real/syncRepo";
 import { MAX_RETRIES } from "../lib/sync/push";
 import type { Database } from "../lib/db/client";
 
-function makeDbStub(pendingRows: unknown[], stuckRows: unknown[], metaRows: unknown[] = []) {
+function makeDbStub(
+  pendingRows: unknown[],
+  stuckRows: unknown[],
+  pushMetaRows: unknown[] = [],
+  pullMetaRows: unknown[] = []
+) {
   const where = jest
     .fn()
     .mockResolvedValueOnce(pendingRows)
     .mockResolvedValueOnce(stuckRows)
-    .mockResolvedValueOnce(metaRows);
+    .mockResolvedValueOnce(pushMetaRows)
+    .mockResolvedValueOnce(pullMetaRows);
   const from = jest.fn().mockReturnValue({ where });
   const select = jest.fn().mockReturnValue({ from });
   return { select } as unknown as Database;

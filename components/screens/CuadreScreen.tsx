@@ -22,7 +22,7 @@ export function CuadreScreen() {
   const insets = useSafeAreaInsets();
   const routeRepo = useRouteRepo();
   const paymentRepo = usePaymentRepo();
-  const { push } = useSyncContext();
+  const { sync } = useSyncContext();
 
   const route = useAsync(() => routeRepo.getToday(), []);
   const today = useAsync(() => paymentRepo.listToday(), []);
@@ -51,7 +51,7 @@ export function CuadreScreen() {
     if (closing) return;
     setClosing(true);
     try {
-      await push();
+      await sync();
     } finally {
       setClosing(false);
     }

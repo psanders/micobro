@@ -11,6 +11,7 @@ import type {
 } from "../loans/loan.schema";
 import type { Payment, CreatePaymentInput, PaymentMethod } from "../payments/payment.schema";
 import type { PushResult } from "../sync/push";
+import type { PullResult } from "../sync/pull";
 import type { CreateVisitInput, Visit } from "../visits/visit.schema";
 import type { Profile, SetProfileInput } from "../profile/profile.schema";
 
@@ -208,6 +209,7 @@ export interface SyncStatus {
   connected: boolean;
   sheetId: string | null;
   lastPushedAt: Date | null;
+  lastPulledAt: Date | null;
   pendingCount: number;
   /** Mutations that exhausted their retry cap — need the lender's attention. */
   stuckCount: number;
@@ -218,7 +220,10 @@ export interface SyncRepo {
   /** Runs the native Google sign-in and returns the resulting status. */
   connect(): Promise<SyncStatus>;
   disconnect(): Promise<void>;
+  /** Push only — used by the silent on-mutation/on-reconnect auto-triggers. */
   pushNow(): Promise<PushResult>;
+  /** Push then pull, as one unit — the manual "Sincronizar" action and the guarded app-open auto-sync both call this. */
+  syncNow(): Promise<{ push: PushResult; pull: PullResult }>;
 }
 
 export interface ProfileRepo {

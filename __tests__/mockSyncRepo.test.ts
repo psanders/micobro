@@ -31,4 +31,14 @@ describe("mock sync repo", () => {
     expect(status.connected).toBe(false);
     expect(status.sheetId).toBeNull();
   });
+
+  it("syncNow pushes then records a pull timestamp", async () => {
+    const repo = createMockSyncRepo();
+    const result = await repo.syncNow();
+    expect(result.push.pushed).toBeGreaterThan(0);
+    expect(result.pull).toEqual({ pulled: 0, skipped: 0, malformed: 0 });
+    const status = await repo.getStatus();
+    expect(status.lastPushedAt).toBeInstanceOf(Date);
+    expect(status.lastPulledAt).toBeInstanceOf(Date);
+  });
 });

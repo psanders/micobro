@@ -45,6 +45,25 @@ export async function appendRow(
   }
 }
 
+/** Overwrites the row(s) at `range` (e.g. "Clientes!A5:F5") in place. */
+export async function updateRow(
+  spreadsheetId: string,
+  range: string,
+  values: (string | number | null)[]
+): Promise<void> {
+  const url = `${SHEETS_API_BASE}/${spreadsheetId}/values/${encodeURIComponent(range)}?valueInputOption=USER_ENTERED`;
+
+  const response = await authorizedFetch(url, {
+    method: "PUT",
+    body: JSON.stringify({ values: [values] })
+  });
+
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`Sheets update failed (${response.status}): ${body}`);
+  }
+}
+
 /** Reads all rows in `range` (e.g. "Clientes!A2:E"). */
 export async function readRange(spreadsheetId: string, range: string): Promise<string[][]> {
   const url = `${SHEETS_API_BASE}/${spreadsheetId}/values/${encodeURIComponent(range)}`;

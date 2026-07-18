@@ -7,6 +7,7 @@ import { isSignedInToGoogle, signInWithGoogle, signOutOfGoogle } from "../../syn
 import { getSheetId } from "../../sync/config";
 import { provisionSheet } from "../../sync/provisionSheet";
 import { pushPendingMutations, LAST_PUSHED_AT_KEY, MAX_RETRIES } from "../../sync/push";
+import { pullEntities, LAST_PULLED_AT_KEY } from "../../sync/pull";
 import type { Database } from "../../db/client";
 import type { SyncRepo, SyncStatus } from "../types";
 
@@ -35,13 +36,23 @@ export function createRealSyncRepo({ db }: { db: Database }): SyncRepo {
         and(eq(pendingMutations.status, "failed"), gte(pendingMutations.retryCount, MAX_RETRIES))
       );
 
-    const metaRows = await db.select().from(syncMeta).where(eq(syncMeta.key, LAST_PUSHED_AT_KEY));
-    const lastPushedAtRaw = metaRows[0]?.value;
+    const pushMetaRows = await db
+      .select()
+      .from(syncMeta)
+      .where(eq(syncMeta.key, LAST_PUSHED_AT_KEY));
+    const lastPushedAtRaw = pushMetaRows[0]?.value;
+
+    const pullMetaRows = await db
+      .select()
+      .from(syncMeta)
+      .where(eq(syncMeta.key, LAST_PULLED_AT_KEY));
+    const lastPulledAtRaw = pullMetaRows[0]?.value;
 
     return {
       connected,
       sheetId,
       lastPushedAt: lastPushedAtRaw ? new Date(Number(lastPushedAtRaw)) : null,
+      lastPulledAt: lastPulledAtRaw ? new Date(Number(lastPulledAtRaw)) : null,
       pendingCount: pending.length,
       stuckCount: stuck.length
     };
@@ -62,6 +73,14 @@ export function createRealSyncRepo({ db }: { db: Database }): SyncRepo {
     async disconnect() {
       await signOutOfGoogle();
     },
-    pushNow: () => pushPendingMutations(db)
+    pushNow: () => pushPendingMutations(db),
+    async syncNow() {
+      // Sequential, not concurrent: pull's remote-wins-with-guard needs
+      // push to have fully drained pending_mutations first, and the two
+      // must never race over the same Sheet rows (design.md §5).
+      const push = await pushPendingMutations(db);
+      const pull = await pullEntities(db);
+      return { push, pull };
+    }
   };
 }

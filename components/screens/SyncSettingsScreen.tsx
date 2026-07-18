@@ -2,10 +2,10 @@
  * Copyright (C) 2026 by Pedro Sanders. MIT License.
  *
  * "Sincronización con Google" per pencil.pen `qAQ0l` — reachable from Perfil,
- * shows live backup status and lets the lender push on demand or disconnect.
- * When not connected, offers to connect instead (see ConnectGoogleScreen,
- * pencil.pen `S2oEG8` — the only path into that screen, so it never needs to
- * show an "already connected" state).
+ * shows live backup status and lets the lender sync (push then pull) on
+ * demand or disconnect. When not connected, offers to connect instead (see
+ * ConnectGoogleScreen, pencil.pen `S2oEG8` — the only path into that screen,
+ * so it never needs to show an "already connected" state).
  */
 import { View, Text, Pressable, ActivityIndicator, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
@@ -24,7 +24,7 @@ const STATUS_COPY: Record<SyncStatusLabel, string> = {
 export function SyncSettingsScreen() {
   const router = useRouter();
   const syncRepo = useSyncRepo();
-  const { status, isOnline, isPushing, push, refreshStatus } = useSyncContext();
+  const { status, isOnline, isSyncing, sync, refreshStatus } = useSyncContext();
 
   const syncLabel = computeSyncStatusLabel({
     isSignedIn: status.connected,
@@ -54,8 +54,8 @@ export function SyncSettingsScreen() {
 
         {status.connected ? (
           <>
-            <Pressable style={styles.button} onPress={push} disabled={isPushing}>
-              {isPushing ? (
+            <Pressable style={styles.button} onPress={sync} disabled={isSyncing}>
+              {isSyncing ? (
                 <ActivityIndicator color="#FFFFFF" />
               ) : (
                 <Text style={styles.buttonText}>Sincronizar ahora</Text>
