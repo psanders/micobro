@@ -3,7 +3,7 @@
  */
 export { createCreatePayment } from "./createPayment";
 export { createListPaymentsByLoan } from "./listPaymentsByLoan";
-export { createListPaymentsToday } from "./listPaymentsToday";
+export { createListPaymentsSinceLastClose } from "./listPaymentsSinceLastClose";
 export { createGetCollectContext } from "./getCollectContext";
 export { createCollectPayment } from "./collectPayment";
 export { computePaymentSplit } from "./paymentSplit";

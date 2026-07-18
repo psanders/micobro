@@ -89,3 +89,17 @@ export const visits = sqliteTable("visits", {
   note: text("note"),
   createdAt: integer("created_at", { mode: "timestamp" }).notNull()
 });
+
+/**
+ * A caja (cash-on-hand) close: an immutable ledger row recording the
+ * reconciled total for a period. `periodStart` is the previous close's
+ * `closedAt`, or null for the very first close (period begins at the
+ * beginning of time). Append-only — no edit flow, like payments/visits.
+ */
+export const cashCloses = sqliteTable("cash_closes", {
+  id: text("id").primaryKey(),
+  amountCents: integer("amount_cents").notNull(),
+  periodStart: integer("period_start", { mode: "timestamp" }),
+  closedAt: integer("closed_at", { mode: "timestamp" }).notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull()
+});

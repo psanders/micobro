@@ -3,7 +3,7 @@
  */
 import { createCreatePayment } from "../../payments/createPayment";
 import { createListPaymentsByLoan } from "../../payments/listPaymentsByLoan";
-import { createListPaymentsToday } from "../../payments/listPaymentsToday";
+import { createListPaymentsSinceLastClose } from "../../payments/listPaymentsSinceLastClose";
 import { createGetCollectContext } from "../../payments/getCollectContext";
 import { createCollectPayment } from "../../payments/collectPayment";
 import { notifyMutationQueued } from "../../sync/syncEvents";
@@ -12,7 +12,7 @@ import type { PaymentRepo } from "../types";
 
 export function createRealPaymentRepo({ db }: { db: Database }): PaymentRepo {
   const listPaymentsByLoan = createListPaymentsByLoan({ db });
-  const listPaymentsToday = createListPaymentsToday({ db });
+  const listPaymentsSinceLastClose = createListPaymentsSinceLastClose({ db });
   const createPayment = createCreatePayment({ db });
   const getCollectContext = createGetCollectContext({ db });
   const collectPayment = createCollectPayment({ db });
@@ -30,6 +30,6 @@ export function createRealPaymentRepo({ db }: { db: Database }): PaymentRepo {
       notifyMutationQueued();
       return receipt;
     },
-    listToday: () => listPaymentsToday({})
+    listSinceLastClose: () => listPaymentsSinceLastClose({})
   };
 }

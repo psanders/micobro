@@ -5273,6 +5273,322 @@
                   ]
                 }
               ]
+            },
+            {
+              "type": "frame",
+              "id": "Yd7Gc",
+              "name": "card-m/avatar-picker",
+              "width": "fill_container",
+              "fill": "$brand.white",
+              "cornerRadius": 16,
+              "stroke": "#E6EEFB",
+              "strokeWidth": 1,
+              "strokeAlignment": "inner",
+              "layout": "vertical",
+              "gap": 14,
+              "padding": 24,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "tmaXC",
+                  "name": "titleRow",
+                  "gap": 10,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "iXo7h",
+                      "fill": "$brand.ink",
+                      "content": "m/avatar-picker",
+                      "fontFamily": "$font-family",
+                      "fontSize": 17,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "U55wH",
+                      "fill": "$brand.mist",
+                      "cornerRadius": 9999,
+                      "padding": [
+                        3,
+                        9
+                      ],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "vVVJd",
+                          "fill": "$brand.blue.primary",
+                          "content": "picker",
+                          "fontFamily": "$font-family",
+                          "fontSize": 11,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "Dbt8b",
+                  "fill": "#7888A8",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Horizontal row of curated avatar cells; tap to select, tap again to clear back to initials.",
+                  "fontFamily": "$font-family",
+                  "fontSize": 13,
+                  "fontWeight": "500"
+                },
+                {
+                  "type": "frame",
+                  "id": "JyjBM",
+                  "name": "m/avatar-picker",
+                  "reusable": true,
+                  "width": "fit_content(804)",
+                  "height": "fit_content(56)",
+                  "gap": 12,
+                  "children": [
+                    {
+                      "id": "q9SZS2",
+                      "type": "ref",
+                      "ref": "xR1qq",
+                      "name": "male1",
+                      "stroke": "#00000000",
+                      "descendants": {
+                        "j3oMuq": {
+                          "fill": {
+                            "type": "image",
+                            "enabled": true,
+                            "url": "assets/avatars/male1.png",
+                            "mode": "fill"
+                          }
+                        },
+                        "j6ucB6": {
+                          "enabled": false
+                        }
+                      }
+                    },
+                    {
+                      "id": "Y3R3U",
+                      "type": "ref",
+                      "ref": "xR1qq",
+                      "name": "female2",
+                      "stroke": "#00000000",
+                      "descendants": {
+                        "j3oMuq": {
+                          "fill": {
+                            "type": "image",
+                            "enabled": true,
+                            "url": "assets/avatars/female2.png",
+                            "mode": "fill"
+                          }
+                        },
+                        "j6ucB6": {
+                          "enabled": false
+                        }
+                      }
+                    },
+                    {
+                      "id": "r4Mba9",
+                      "type": "ref",
+                      "ref": "xR1qq",
+                      "name": "female1",
+                      "stroke": "#00000000",
+                      "descendants": {
+                        "j3oMuq": {
+                          "fill": {
+                            "type": "image",
+                            "enabled": true,
+                            "url": "assets/avatars/female1.png",
+                            "mode": "fill"
+                          }
+                        },
+                        "j6ucB6": {
+                          "enabled": false
+                        }
+                      }
+                    },
+                    {
+                      "id": "futzP",
+                      "type": "ref",
+                      "ref": "xR1qq",
+                      "name": "male2",
+                      "stroke": "#00000000",
+                      "descendants": {
+                        "j3oMuq": {
+                          "fill": {
+                            "type": "image",
+                            "enabled": true,
+                            "url": "assets/avatars/male2.png",
+                            "mode": "fill"
+                          }
+                        },
+                        "j6ucB6": {
+                          "enabled": false
+                        }
+                      }
+                    },
+                    {
+                      "id": "f1Ov5",
+                      "type": "ref",
+                      "ref": "xR1qq",
+                      "name": "male3",
+                      "stroke": "#00000000",
+                      "descendants": {
+                        "j3oMuq": {
+                          "fill": {
+                            "type": "image",
+                            "enabled": true,
+                            "url": "assets/avatars/male3.png",
+                            "mode": "fill"
+                          }
+                        },
+                        "j6ucB6": {
+                          "enabled": false
+                        }
+                      }
+                    },
+                    {
+                      "id": "DPGaz",
+                      "type": "ref",
+                      "ref": "xR1qq",
+                      "name": "male4",
+                      "stroke": "$brand.blue.primary",
+                      "descendants": {
+                        "j3oMuq": {
+                          "fill": {
+                            "type": "image",
+                            "enabled": true,
+                            "url": "assets/avatars/male4.png",
+                            "mode": "fill"
+                          }
+                        },
+                        "j6ucB6": {
+                          "enabled": true
+                        }
+                      }
+                    },
+                    {
+                      "id": "vTx9L",
+                      "type": "ref",
+                      "ref": "xR1qq",
+                      "name": "male5",
+                      "stroke": "#00000000",
+                      "descendants": {
+                        "j3oMuq": {
+                          "fill": {
+                            "type": "image",
+                            "enabled": true,
+                            "url": "assets/avatars/male5.png",
+                            "mode": "fill"
+                          }
+                        },
+                        "j6ucB6": {
+                          "enabled": false
+                        }
+                      }
+                    },
+                    {
+                      "id": "Ev3Pz",
+                      "type": "ref",
+                      "ref": "xR1qq",
+                      "name": "male6",
+                      "stroke": "#00000000",
+                      "descendants": {
+                        "j3oMuq": {
+                          "fill": {
+                            "type": "image",
+                            "enabled": true,
+                            "url": "assets/avatars/male6.png",
+                            "mode": "fill"
+                          }
+                        },
+                        "j6ucB6": {
+                          "enabled": false
+                        }
+                      }
+                    },
+                    {
+                      "id": "zJKxD",
+                      "type": "ref",
+                      "ref": "xR1qq",
+                      "name": "male7",
+                      "stroke": "#00000000",
+                      "descendants": {
+                        "j3oMuq": {
+                          "fill": {
+                            "type": "image",
+                            "enabled": true,
+                            "url": "assets/avatars/male7.png",
+                            "mode": "fill"
+                          }
+                        },
+                        "j6ucB6": {
+                          "enabled": false
+                        }
+                      }
+                    },
+                    {
+                      "id": "n88i1X",
+                      "type": "ref",
+                      "ref": "xR1qq",
+                      "name": "female3",
+                      "stroke": "#00000000",
+                      "descendants": {
+                        "j3oMuq": {
+                          "fill": {
+                            "type": "image",
+                            "enabled": true,
+                            "url": "./images/generated-1784373500527.png",
+                            "mode": "fill"
+                          }
+                        },
+                        "j6ucB6": {
+                          "enabled": false
+                        }
+                      }
+                    },
+                    {
+                      "id": "o2ThQ",
+                      "type": "ref",
+                      "ref": "xR1qq",
+                      "name": "male8",
+                      "stroke": "#00000000",
+                      "descendants": {
+                        "j3oMuq": {
+                          "fill": {
+                            "type": "image",
+                            "enabled": true,
+                            "url": "./images/generated-1784373522743.png",
+                            "mode": "fill"
+                          }
+                        },
+                        "j6ucB6": {
+                          "enabled": false
+                        }
+                      }
+                    },
+                    {
+                      "id": "cR5hH",
+                      "type": "ref",
+                      "ref": "xR1qq",
+                      "name": "male9",
+                      "stroke": "#00000000",
+                      "descendants": {
+                        "j3oMuq": {
+                          "fill": {
+                            "type": "image",
+                            "enabled": true,
+                            "url": "./images/generated-1784373500624.png",
+                            "mode": "fill"
+                          }
+                        },
+                        "j6ucB6": {
+                          "enabled": false
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
             }
           ]
         },
@@ -7823,6 +8139,67 @@
                       ]
                     }
                   ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "xR1qq",
+          "layoutPosition": "absolute",
+          "x": 1688,
+          "y": 571,
+          "name": "m/avatar-picker-cell",
+          "reusable": true,
+          "width": 56,
+          "height": 56,
+          "cornerRadius": 28,
+          "stroke": "#00000000",
+          "strokeWidth": 2,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "j3oMuq",
+              "name": "avatar",
+              "width": 42,
+              "height": 42,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "assets/avatars/male4.png",
+                "mode": "fill"
+              },
+              "cornerRadius": 21
+            },
+            {
+              "type": "frame",
+              "id": "j6ucB6",
+              "layoutPosition": "absolute",
+              "x": 38,
+              "y": 38,
+              "name": "check",
+              "enabled": false,
+              "width": 18,
+              "height": 18,
+              "fill": "$brand.blue.primary",
+              "cornerRadius": 9,
+              "stroke": "$brand.white",
+              "strokeWidth": 2,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "k01Hk0",
+                  "name": "i",
+                  "width": 10,
+                  "height": 10,
+                  "icon": "check",
+                  "library": "lucide",
+                  "fill": "$brand.white"
                 }
               ]
             }
@@ -72688,210 +73065,6 @@
                   "fontWeight": "700"
                 }
               ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "type": "frame",
-      "id": "xR1qq",
-      "x": 8974,
-      "y": 12503,
-      "name": "m/avatar-picker-cell",
-      "reusable": true,
-      "width": 56,
-      "height": 56,
-      "cornerRadius": 28,
-      "stroke": "#00000000",
-      "strokeWidth": 2,
-      "justifyContent": "center",
-      "alignItems": "center",
-      "children": [
-        {
-          "type": "frame",
-          "id": "j3oMuq",
-          "name": "avatar",
-          "width": 42,
-          "height": 42,
-          "fill": {
-            "type": "image",
-            "enabled": true,
-            "url": "assets/avatars/male4.png",
-            "mode": "fill"
-          },
-          "cornerRadius": 21
-        },
-        {
-          "type": "frame",
-          "id": "j6ucB6",
-          "layoutPosition": "absolute",
-          "x": 38,
-          "y": 38,
-          "name": "check",
-          "enabled": false,
-          "width": 18,
-          "height": 18,
-          "fill": "$brand.blue.primary",
-          "cornerRadius": 9,
-          "stroke": "$brand.white",
-          "strokeWidth": 2,
-          "justifyContent": "center",
-          "alignItems": "center",
-          "children": [
-            {
-              "type": "icon",
-              "id": "k01Hk0",
-              "name": "i",
-              "width": 10,
-              "height": 10,
-              "icon": "check",
-              "library": "lucide",
-              "fill": "$brand.white"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "type": "frame",
-      "id": "JyjBM",
-      "x": 9081,
-      "y": 12503,
-      "name": "m/avatar-picker",
-      "reusable": true,
-      "layout": "vertical",
-      "gap": 12,
-      "children": [
-        {
-          "type": "frame",
-          "id": "elBtK",
-          "name": "row0",
-          "gap": 12,
-          "children": [
-            {
-              "id": "r4Mba9",
-              "type": "ref",
-              "ref": "xR1qq",
-              "name": "female1",
-              "stroke": "#00000000",
-              "descendants": {
-                "j6ucB6": {
-                  "enabled": false
-                }
-              }
-            },
-            {
-              "id": "Y3R3U",
-              "type": "ref",
-              "ref": "xR1qq",
-              "name": "female2",
-              "stroke": "#00000000",
-              "descendants": {
-                "j6ucB6": {
-                  "enabled": false
-                }
-              }
-            },
-            {
-              "id": "q9SZS2",
-              "type": "ref",
-              "ref": "xR1qq",
-              "name": "male1",
-              "stroke": "#00000000",
-              "descendants": {
-                "j6ucB6": {
-                  "enabled": false
-                }
-              }
-            }
-          ]
-        },
-        {
-          "type": "frame",
-          "id": "euf0b",
-          "name": "row1",
-          "gap": 12,
-          "children": [
-            {
-              "id": "futzP",
-              "type": "ref",
-              "ref": "xR1qq",
-              "name": "male2",
-              "stroke": "#00000000",
-              "descendants": {
-                "j6ucB6": {
-                  "enabled": false
-                }
-              }
-            },
-            {
-              "id": "f1Ov5",
-              "type": "ref",
-              "ref": "xR1qq",
-              "name": "male3",
-              "stroke": "#00000000",
-              "descendants": {
-                "j6ucB6": {
-                  "enabled": false
-                }
-              }
-            },
-            {
-              "id": "DPGaz",
-              "type": "ref",
-              "ref": "xR1qq",
-              "name": "male4",
-              "stroke": "$brand.blue.primary",
-              "descendants": {
-                "j6ucB6": {
-                  "enabled": true
-                }
-              }
-            }
-          ]
-        },
-        {
-          "type": "frame",
-          "id": "DnglD",
-          "name": "row2",
-          "gap": 12,
-          "children": [
-            {
-              "id": "vTx9L",
-              "type": "ref",
-              "ref": "xR1qq",
-              "name": "male5",
-              "stroke": "#00000000",
-              "descendants": {
-                "j6ucB6": {
-                  "enabled": false
-                }
-              }
-            },
-            {
-              "id": "Ev3Pz",
-              "type": "ref",
-              "ref": "xR1qq",
-              "name": "male6",
-              "stroke": "#00000000",
-              "descendants": {
-                "j6ucB6": {
-                  "enabled": false
-                }
-              }
-            },
-            {
-              "id": "zJKxD",
-              "type": "ref",
-              "ref": "xR1qq",
-              "name": "male7",
-              "stroke": "#00000000",
-              "descendants": {
-                "j6ucB6": {
-                  "enabled": false
-                }
-              }
             }
           ]
         }

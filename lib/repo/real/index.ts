@@ -9,6 +9,7 @@ import { createRealProfileRepo } from "./profileRepo";
 import { createRealRouteRepo } from "./routeRepo";
 import { createRealVisitRepo } from "./visitRepo";
 import { createRealFeedbackRepo } from "./feedbackRepo";
+import { createRealCashCloseRepo } from "./cashCloseRepo";
 import type { Database } from "../../db/client";
 import type { Repos } from "../types";
 
@@ -21,6 +22,7 @@ export function createRealRepos({ db }: { db: Database }): Repos {
     profile: createRealProfileRepo({ db }),
     route: createRealRouteRepo({ db }),
     visits: createRealVisitRepo({ db }),
-    feedback: createRealFeedbackRepo()
+    feedback: createRealFeedbackRepo(),
+    cashClose: createRealCashCloseRepo({ db })
   };
 }

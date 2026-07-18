@@ -28,7 +28,8 @@ export const ENTITY_RANGES: Record<string, string> = {
   customer: "Clientes!A:F",
   loan: "Préstamos!A:K",
   payment: "Pagos!A:G",
-  visit: "Visitas!A:H"
+  visit: "Visitas!A:H",
+  cashClose: "Cierres!A:E"
 };
 
 function customerRowValues(payload: Record<string, unknown>): (string | number | null)[] {
@@ -86,6 +87,17 @@ function visitRowValues(payload: Record<string, unknown>): (string | number | nu
   ];
 }
 
+// Column order mirrors the `cash_closes` table in lib/db/schema.ts.
+function cashCloseRowValues(payload: Record<string, unknown>): (string | number | null)[] {
+  return [
+    payload.id as string,
+    payload.amountCents as number,
+    (payload.periodStart as string) ?? "",
+    payload.closedAt as string,
+    payload.createdAt as string
+  ];
+}
+
 const ROW_MAPPERS: Record<
   string,
   (payload: Record<string, unknown>) => (string | number | null)[]
@@ -93,7 +105,8 @@ const ROW_MAPPERS: Record<
   customer: customerRowValues,
   loan: loanRowValues,
   payment: paymentRowValues,
-  visit: visitRowValues
+  visit: visitRowValues,
+  cashClose: cashCloseRowValues
 };
 
 export interface PushResult {

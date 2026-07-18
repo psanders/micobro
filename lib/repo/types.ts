@@ -14,6 +14,7 @@ import type { PushResult } from "../sync/push";
 import type { PullResult } from "../sync/pull";
 import type { CreateVisitInput, Visit } from "../visits/visit.schema";
 import type { Profile, SetProfileInput } from "../profile/profile.schema";
+import type { CashClose, CashSummary } from "../cashClose/cashClose.schema";
 
 /** Row shape for the Buscar screen: status line + navigation target. */
 export interface CustomerSearchResult {
@@ -201,8 +202,15 @@ export interface PaymentRepo {
   getCollectContext(loanId: string): Promise<CollectContext | null>;
   /** Records the cobro (mora and cuota as separate rows) and returns the receipt. */
   collect(input: CollectInput): Promise<PaymentReceipt>;
-  /** Every payment (any loan) paid today — feeds Cuadre General's desglose. */
-  listToday(): Promise<Payment[]>;
+  /** Every payment (any loan, any method) since the last caja close — feeds Cuadre General. */
+  listSinceLastClose(): Promise<Payment[]>;
+}
+
+export interface CashCloseRepo {
+  /** The system-computed total (any payment method) since the last close. */
+  getSummary(): Promise<CashSummary>;
+  /** Rejects unless `verifiedCents` matches the current summary's total. */
+  close(verifiedCents: number): Promise<CashClose>;
 }
 
 export interface SyncStatus {
@@ -303,4 +311,5 @@ export interface Repos {
   route: RouteRepo;
   visits: VisitRepo;
   feedback: FeedbackRepo;
+  cashClose: CashCloseRepo;
 }

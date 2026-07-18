@@ -29,8 +29,8 @@ branch-per-change convention, confirmed against merged history).
 | 0 | Frame | done | |
 | 1 | Design (Pencil) | done | First pass (small "Caja" card) rejected by user as confusing — redesigned from scratch per user's own explained concept (see decision log). Final: `h48VL` retitled "Cuadre de caja", period subtitle, "COBRADO SEGÚN EL SISTEMA" hero (today-scoped stat row dropped), "TOTAL VERIFICADO" replacing Efectivo Contado, Desglose note removed, footer → "Cerrar caja" with match-gate copy. User: "That's perfect." |
 | 2 | Spec reconcile | done | Rewrote proposal.md, design.md, and both delta specs to match the redesigned concept (all payment methods, match-gated close, period-range ledger). `daily-reconciliation` delta now REMOVEs 3 old requirements (Efectivo esperado summary, Efectivo contado input, Cerrar día y sincronizar) and ADDs their replacements, plus MODIFIEs Desglose. `openspec validate` green |
-| 3 | Build | in-progress | |
-| 4 | Test | pending | |
+| 3 | Build | done | `cash_closes` table + migration; `lib/cashClose/` (getCashSummary derived-sum, closeCash match-gated); `listPaymentsSinceLastClose` replacing `listToday`; `CashCloseRepo` wired into real+mock+RepoProvider; `ENTITY_RANGES.cashClose`/`Cierres` tab in push.ts+provisionSheet.ts; `CuadreScreen.tsx` fully rewritten around the since-last-close period with the match-gated "Cerrar caja" action. Also fixed unrelated Pencil housekeeping mid-build (user request): `m/avatar-picker` was an orphan root frame showing all 9 cells as the same wrong image — fixed, expanded to 12 avatars, flattened to a horizontal row, relocated into the Mobile Component Library |
+| 4 | Test | in-progress | tsc/eslint/jest all green (71 suites, 288 tests). Found and fixed real fixture flakiness while testing (`payment-18`'s `todayAt(9,14)` can be wall-clock-future). On-device walk (7.3) not yet done |
 | 5 | Sync | pending | |
 | 6 | Archive | pending | |
 
@@ -39,6 +39,18 @@ Status values: `pending` · `in-progress` · `done` · `skipped` (with reason).
 ## Decision log
 
 Newest first. One line per meaningful decision or stage transition.
+
+- 2026-07-18 — Build complete. Chose plain `Error` (not `ValidationError`)
+  for closeCash's business-rule rejections (zero total, mismatch), matching
+  `updateCustomer.ts`'s existing precedent — `ValidationError` is reserved
+  for schema-shape failures. `getCashSummary`/`listPaymentsSinceLastClose`
+  both derive fresh from source tables per read (no persisted counter),
+  consistent with `composeRouteDay.ts`'s style. Mid-build, handled an
+  unrelated user request: fixed a real bug in `m/avatar-picker` (all 9
+  cells showed the same wrong image), expanded to 12 avatars via
+  AI-generated variants, flattened its 3-row grid to a horizontal row
+  matching the code's layout, and relocated it from an orphan root frame
+  into the Mobile Component Library's AVATARS section.
 
 - 2026-07-18 — Design pivoted entirely after user feedback. First pass (a
   small "Caja" card wedged between Efectivo Contado and Desglose, cash-only,

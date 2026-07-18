@@ -1,19 +1,30 @@
 /**
  * Copyright (C) 2026 by Pedro Sanders. MIT License.
  *
- * 12 Cuadre General per pencil.pen `h48VL`: efectivo esperado (today's
- * route + cash-only payments), an efectivo contado input with a live
- * match badge, the recibos/transferencias desglose, and "Cerrar día y
- * sincronizar". Replaces CuadrePlaceholderScreen.
+ * 12 Cuadre de caja per pencil.pen `h48VL`: reconciles the period since the
+ * last caja close (not "today") — the system-computed total (any payment
+ * method), a manually-verified total that must match it to unlock closing,
+ * and a desglose of recibos/transferencias for that same period. "Cerrar
+ * caja" replaces the old "Cerrar día y sincronizar": it's disabled until
+ * the totals match, and folds the sync in on success.
  */
 import { useCallback, useMemo, useState } from "react";
-import { View, Text, Pressable, ScrollView, ActivityIndicator, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  Pressable,
+  ScrollView,
+  ActivityIndicator,
+  Alert,
+  StyleSheet
+} from "react-native";
 import { useFocusEffect } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
-import { usePaymentRepo, useRouteRepo } from "../../lib/repo/RepoProvider";
+import { usePaymentRepo, useCashCloseRepo } from "../../lib/repo/RepoProvider";
 import { useAsync } from "../../lib/hooks/useAsync";
 import { formatCurrency } from "../../lib/utils/money";
+import { formatShortDate, formatRelativeTime } from "../../lib/utils/dates";
 import { useSyncContext } from "../../lib/sync/SyncProvider";
 import { AmountInputCard } from "../AmountInputCard";
 import { KvRow } from "../KvRow";
@@ -21,91 +32,98 @@ import { colors, fonts } from "../../lib/ui/theme";
 
 export function CuadreScreen() {
   const insets = useSafeAreaInsets();
-  const routeRepo = useRouteRepo();
   const paymentRepo = usePaymentRepo();
+  const cashCloseRepo = useCashCloseRepo();
   const { sync } = useSyncContext();
 
-  const route = useAsync(() => routeRepo.getToday(), []);
-  const today = useAsync(() => paymentRepo.listToday(), []);
-  const { reload: reloadRoute } = route;
-  const { reload: reloadToday } = today;
+  const summary = useAsync(() => cashCloseRepo.getSummary(), []);
+  const period = useAsync(() => paymentRepo.listSinceLastClose(), []);
+  const { reload: reloadSummary } = summary;
+  const { reload: reloadPeriod } = period;
   useFocusEffect(
     useCallback(() => {
-      reloadRoute();
-      reloadToday();
-    }, [reloadRoute, reloadToday])
+      reloadSummary();
+      reloadPeriod();
+    }, [reloadSummary, reloadPeriod])
   );
-  const [countedText, setCountedText] = useState("");
+
+  const [verifiedText, setVerifiedText] = useState("");
   const [closing, setClosing] = useState(false);
 
-  const day = route.data;
-  const payments = today.data ?? [];
-
-  const cashCents = payments
-    .filter((p) => p.method !== "transfer")
-    .reduce((sum, p) => sum + p.amountCents, 0);
+  const totalCents = summary.data?.totalCents ?? 0;
+  const periodStart = summary.data?.periodStart ?? null;
+  const payments = period.data ?? [];
   const transferCents = payments
     .filter((p) => p.method === "transfer")
     .reduce((sum, p) => sum + p.amountCents, 0);
 
-  const countedCents = useMemo(() => {
-    if (countedText === "") return 0;
-    const n = Number(countedText.replace(/[,.]/g, ""));
+  const verifiedCents = useMemo(() => {
+    if (verifiedText === "") return 0;
+    const n = Number(verifiedText.replace(/[,.]/g, ""));
     return Number.isFinite(n) && n >= 0 ? n * 100 : 0;
-  }, [countedText]);
+  }, [verifiedText]);
 
-  const matches = countedCents === cashCents;
+  const hasEnteredVerified = verifiedText !== "";
+  const matches = hasEnteredVerified && verifiedCents === totalCents;
+  const canClose = matches && totalCents > 0;
+  const differenceCents = verifiedCents - totalCents;
 
   const handleClose = async () => {
-    if (closing) return;
+    if (closing || !canClose) return;
     setClosing(true);
     try {
+      await cashCloseRepo.close(verifiedCents);
       await sync();
+      setVerifiedText("");
+      await Promise.all([reloadSummary(), reloadPeriod()]);
+    } catch (err) {
+      Alert.alert("No se pudo cerrar", err instanceof Error ? err.message : String(err));
     } finally {
       setClosing(false);
     }
   };
 
-  const loading = route.loading || today.loading;
+  const loading = summary.loading || period.loading;
 
   return (
     <View style={[styles.screen, { paddingTop: insets.top }]}>
       <View style={styles.header}>
-        <Text style={styles.title}>Cuadre del día</Text>
+        <Text style={styles.title}>Cuadre de caja</Text>
+        <Text style={styles.subtitle}>
+          {periodStart
+            ? `Desde el ${formatShortDate(periodStart)} · ${formatRelativeTime(periodStart)}`
+            : "Sin cierres previos"}
+        </Text>
       </View>
 
-      {loading || !day ? (
+      {loading ? (
         <ActivityIndicator color={colors.brandDeep} style={styles.loading} />
       ) : (
         <>
           <ScrollView contentContainerStyle={styles.content}>
             <View style={styles.summary}>
-              <Text style={styles.summaryLabel}>EFECTIVO ESPERADO</Text>
+              <Text style={styles.summaryLabel}>COBRADO SEGÚN EL SISTEMA</Text>
               <View style={styles.summaryAmountRow}>
                 <Text style={styles.summaryCurrency}>RD$</Text>
                 <Text style={styles.summaryAmount}>
-                  {(cashCents / 100).toLocaleString("es-DO")}
+                  {(totalCents / 100).toLocaleString("es-DO")}
                 </Text>
-              </View>
-              <View style={styles.summaryGrid}>
-                <View>
-                  <Text style={styles.summaryCellLabel}>Clientes</Text>
-                  <Text style={styles.summaryCellValue}>{day.clientCount}</Text>
-                </View>
-                <View>
-                  <Text style={styles.summaryCellLabel}>Pendientes</Text>
-                  <Text style={styles.summaryCellValue}>{day.pendingCount}</Text>
-                </View>
               </View>
             </View>
 
             <AmountInputCard
-              label="EFECTIVO CONTADO"
-              value={countedText}
-              onChangeText={setCountedText}
+              label="TOTAL VERIFICADO"
+              value={verifiedText}
+              onChangeText={setVerifiedText}
               matches={matches}
-              hint="Conta el efectivo y escribe el total. El sistema te avisa si hay diferencia."
+              hint="Cuenta el efectivo y las transferencias verificadas, y escribe el total. El sistema te avisa si hay diferencia."
             />
+            {hasEnteredVerified && !matches && (
+              <Text style={styles.mismatch}>
+                Diferencia: {formatCurrency(Math.abs(differenceCents))}
+                {differenceCents > 0 ? " de más" : " de menos"}
+              </Text>
+            )}
 
             <View style={styles.breakdownCard}>
               <View style={styles.breakdownHead}>
@@ -113,16 +131,13 @@ export function CuadreScreen() {
               </View>
               <KvRow label="Recibos" value={String(payments.length)} />
               <KvRow label="Transferencias" value={formatCurrency(transferCents)} />
-              <Text style={styles.note}>
-                Las transferencias no entran en el efectivo a entregar.
-              </Text>
             </View>
           </ScrollView>
 
           <View style={[styles.footer, { paddingBottom: 14 + insets.bottom }]}>
             <Pressable
-              style={[styles.closeBtn, closing && styles.closeBtnDisabled]}
-              disabled={closing}
+              style={[styles.closeBtn, (!canClose || closing) && styles.closeBtnDisabled]}
+              disabled={!canClose || closing}
               onPress={handleClose}
             >
               {closing ? (
@@ -130,11 +145,11 @@ export function CuadreScreen() {
               ) : (
                 <Feather name="check" size={16} color={colors.yellowAccent} />
               )}
-              <Text style={styles.closeBtnText}>
-                {closing ? "Sincronizando..." : "Cerrar día y sincronizar"}
-              </Text>
+              <Text style={styles.closeBtnText}>{closing ? "Cerrando..." : "Cerrar caja"}</Text>
             </Pressable>
-            <Text style={styles.footerNote}>Al cerrar, se envían todos los cobros del día.</Text>
+            <Text style={styles.footerNote}>
+              Los montos deben coincidir para poder cerrar la caja.
+            </Text>
           </View>
         </>
       )}
@@ -145,21 +160,19 @@ export function CuadreScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
   loading: { marginTop: 40 },
-  header: { paddingHorizontal: 20, paddingVertical: 14 },
+  header: { paddingHorizontal: 20, paddingVertical: 14, gap: 2 },
   title: { fontSize: 20, fontFamily: fonts.bold, color: colors.brandDeep },
+  subtitle: { fontSize: 12, fontFamily: fonts.medium, color: colors.slate },
   content: { paddingHorizontal: 20, paddingBottom: 16, gap: 12 },
   summary: { backgroundColor: colors.brandDeep, borderRadius: 18, padding: 18, gap: 12 },
   summaryLabel: { fontSize: 10, fontFamily: fonts.bold, color: "#A9C4F2", letterSpacing: 1.4 },
   summaryAmountRow: { flexDirection: "row", alignItems: "flex-end", gap: 6 },
   summaryCurrency: { fontSize: 18, fontFamily: fonts.semiBold, color: colors.yellowAccent },
   summaryAmount: { fontSize: 36, fontFamily: fonts.bold, color: colors.white, letterSpacing: -1 },
-  summaryGrid: { flexDirection: "row", gap: 8 },
-  summaryCellLabel: { fontSize: 10, fontFamily: fonts.medium, color: "#A9C4F2" },
-  summaryCellValue: { fontSize: 14, fontFamily: fonts.bold, color: colors.white, marginTop: 2 },
+  mismatch: { fontSize: 12, fontFamily: fonts.semiBold, color: colors.amber, textAlign: "center" },
   breakdownCard: { backgroundColor: colors.white, borderRadius: 18, padding: 16, gap: 10 },
   breakdownHead: { flexDirection: "row", justifyContent: "space-between" },
   breakdownLabel: { fontSize: 10, fontFamily: fonts.bold, color: colors.slate, letterSpacing: 1.4 },
-  note: { fontSize: 11, fontFamily: fonts.medium, color: colors.slate, lineHeight: 16 },
   footer: {
     backgroundColor: colors.white,
     gap: 8,
@@ -177,7 +190,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 14
   },
-  closeBtnDisabled: { opacity: 0.6 },
+  closeBtnDisabled: { opacity: 0.4 },
   closeBtnText: { fontSize: 15, fontFamily: fonts.bold, color: colors.white },
   footerNote: {
     fontSize: 11,

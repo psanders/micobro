@@ -24,3 +24,4 @@ export const useProfileRepo = () => useRepos().profile;
 export const useRouteRepo = () => useRepos().route;
 export const useVisitRepo = () => useRepos().visits;
 export const useFeedbackRepo = () => useRepos().feedback;
+export const useCashCloseRepo = () => useRepos().cashClose;
