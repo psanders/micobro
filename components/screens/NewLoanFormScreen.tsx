@@ -18,6 +18,14 @@ import { loanFrequencies, type LoanFrequency } from "../../lib/loans/loan.schema
 import { loanCostSummary } from "../../lib/loans/loanMath";
 import { ValidationError } from "../../lib/errors/ValidationError";
 import { formatCurrency, toCents } from "../../lib/utils/money";
+import { colors } from "../../lib/ui/theme";
+
+const frequencyLabels: Record<LoanFrequency, string> = {
+  daily: "Diario",
+  weekly: "Semanal",
+  biweekly: "Quincenal",
+  monthly: "Mensual"
+};
 
 export function NewLoanFormScreen({ customerId: initialCustomerId }: { customerId?: string }) {
   const router = useRouter();
@@ -138,7 +146,7 @@ export function NewLoanFormScreen({ customerId: initialCustomerId }: { customerI
               onPress={() => setFrequency(option)}
             >
               <Text style={[styles.chipText, frequency === option && styles.chipTextActive]}>
-                {option}
+                {frequencyLabels[option]}
               </Text>
             </Pressable>
           ))}
@@ -182,39 +190,39 @@ const styles = StyleSheet.create({
   center: { flex: 1, alignItems: "center", justifyContent: "center" },
   content: { padding: 16, gap: 20 },
   field: { gap: 8 },
-  label: { fontSize: 13, fontWeight: "600", color: "#5B6B8C" },
+  label: { fontSize: 13, fontWeight: "600", color: colors.muted },
   input: {
     borderWidth: 1,
-    borderColor: "#D3DFF4",
+    borderColor: colors.border,
     borderRadius: 12,
     padding: 14,
     fontSize: 15,
-    color: "#1A2B4C"
+    color: colors.ink
   },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   chip: {
     paddingHorizontal: 14,
     paddingVertical: 10,
     borderRadius: 20,
-    backgroundColor: "#F5F7FB"
+    backgroundColor: colors.subtle
   },
-  chipActive: { backgroundColor: "#1A2B4C" },
-  chipText: { fontSize: 13, color: "#1A2B4C" },
-  chipTextActive: { color: "#FFFFFF" },
+  chipActive: { backgroundColor: colors.brandPrimary },
+  chipText: { fontSize: 13, color: colors.ink },
+  chipTextActive: { color: colors.white },
   preview: {
-    backgroundColor: "#F5F7FB",
+    backgroundColor: colors.subtle,
     borderRadius: 14,
     padding: 14,
     gap: 8
   },
   previewRow: { flexDirection: "row", justifyContent: "space-between" },
-  previewLabel: { fontSize: 13, color: "#5B6B8C" },
-  previewValue: { fontSize: 13, fontWeight: "600", color: "#1A2B4C" },
-  previewLabelStrong: { fontSize: 14, fontWeight: "700", color: "#1A2B4C" },
-  previewValueStrong: { fontSize: 16, fontWeight: "700", color: "#1A2B4C" },
-  error: { color: "#D64545", fontSize: 13 },
+  previewLabel: { fontSize: 13, color: colors.muted },
+  previewValue: { fontSize: 13, fontWeight: "600", color: colors.ink },
+  previewLabelStrong: { fontSize: 14, fontWeight: "700", color: colors.ink },
+  previewValueStrong: { fontSize: 16, fontWeight: "700", color: colors.ink },
+  error: { color: colors.red, fontSize: 13 },
   submitButton: {
-    backgroundColor: "#1A2B4C",
+    backgroundColor: colors.brandPrimary,
     borderRadius: 14,
     paddingVertical: 16,
     alignItems: "center"
