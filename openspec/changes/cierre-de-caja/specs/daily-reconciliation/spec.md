@@ -1,15 +1,66 @@
+## REMOVED Requirements
+
+### Requirement: Efectivo esperado summary
+
+**Reason**: Replaced by a since-last-close system total covering all payment methods (see ADDED "Cuadre General shows the system-computed total since the last close") — the "today's route" framing no longer applies now that the screen reconciles the caja rather than a single day.
+**Migration**: None needed — the replacing requirement covers the same screen area.
+
+### Requirement: Efectivo contado input
+
+**Reason**: Replaced by "Total verificado" (see ADDED "Cuadre General requires a matching verified total to close"), which compares against the since-last-close system total (all payment methods) instead of today's efectivo esperado, and gates the close action rather than being purely informational.
+**Migration**: None needed.
+
+### Requirement: Cerrar día y sincronizar
+
+**Reason**: Replaced by "Cerrar caja" (see ADDED), which both reconciles (gated on a matching verified total) and syncs, rather than syncing unconditionally with no reconciliation.
+**Migration**: The sync side-effect is preserved as part of the new "Cerrar caja" action.
+
+## MODIFIED Requirements
+
+### Requirement: Desglose
+
+The screen SHALL show a breakdown of the recibos (count) and transferencias (total) recorded since the last close.
+
+#### Scenario: Desglose reflects the since-last-close period
+
+- **WHEN** payments (cash and/or transfer) have been recorded since the last close
+- **THEN** the desglose shows the recibos count and the transferencias total separately, covering that period
+
 ## ADDED Requirements
 
-### Requirement: Cuadre General shows the caja balance and a distinct close action
+### Requirement: Cuadre General shows the system-computed total since the last close
 
-The Cuadre General screen SHALL show the current caja balance (accumulated cash since the last close) and a "Cerrar caja" action, visually and functionally distinct from the existing "Cerrar día y sincronizar" action — closing the caja SHALL NOT be conflated with pushing/pulling sync mutations.
+The Cuadre General screen SHALL show a prominent system-computed total — the sum of all payments (any method) recorded since the last close — along with the date/time of that last close (or an indication that none has happened yet).
 
-#### Scenario: Caja section is distinct from Cerrar día y sincronizar
+#### Scenario: Total reflects the since-last-close period
 
-- **WHEN** Cuadre General loads
-- **THEN** the caja balance and "Cerrar caja" action are shown separately from the "Cerrar día y sincronizar" action, and tapping one does not trigger the other
+- **WHEN** Cuadre General opens
+- **THEN** the displayed total equals the sum of all payments recorded since the last close, regardless of payment method
 
-#### Scenario: Cerrar caja updates the displayed balance
+### Requirement: Cuadre General requires a matching verified total to close
 
-- **WHEN** the lender taps "Cerrar caja" with a non-zero balance
-- **THEN** the screen's caja balance updates to reflect the reset (0, plus anything collected since)
+The screen SHALL let the lender enter a verified total and SHALL show a match/mismatch indicator comparing it to the system-computed total. The "Cerrar caja" action SHALL be disabled unless the verified total exactly matches the system-computed total.
+
+#### Scenario: Verified total matches
+
+- **WHEN** the entered verified total equals the system-computed total
+- **THEN** a match indicator shows and "Cerrar caja" becomes enabled
+
+#### Scenario: Verified total differs
+
+- **WHEN** the entered verified total differs from the system-computed total
+- **THEN** a mismatch indicator shows the difference and "Cerrar caja" stays disabled
+
+### Requirement: Cerrar caja
+
+The screen SHALL offer "Cerrar caja", enabled only when the verified total matches the system-computed total and the total is non-zero. Tapping it SHALL record the close and trigger a sync.
+
+#### Scenario: Closing the caja
+
+- **WHEN** the lender taps "Cerrar caja" while it is enabled
+- **THEN** a ledger entry is recorded for the reconciled period and a sync push/pull runs
+
+#### Scenario: Cerrar caja is disabled when totals don't match or total is zero
+
+- **WHEN** the verified total doesn't match the system-computed total, or the system-computed total is 0
+- **THEN** "Cerrar caja" is disabled and tapping it has no effect

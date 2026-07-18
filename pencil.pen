@@ -5643,7 +5643,7 @@
                                           "id": "XlCal",
                                           "name": "title",
                                           "fill": "$brand.blue.deep",
-                                          "content": "Título",
+                                          "content": "Cuadre de caja",
                                           "fontFamily": "$font-family",
                                           "fontSize": 20,
                                           "fontWeight": "700"
@@ -5653,7 +5653,7 @@
                                           "id": "OJ3eJ",
                                           "name": "subtitle",
                                           "fill": "#7888A8",
-                                          "content": "Subtítulo",
+                                          "content": "Desde el 12 jul · hace 6 días",
                                           "fontFamily": "$font-family",
                                           "fontSize": 12,
                                           "fontWeight": "500"
@@ -14487,10 +14487,10 @@
                               "enabled": false
                             },
                             "XlCal": {
-                              "content": "Cuadre del día"
+                              "content": "Cuadre de caja"
                             },
                             "OJ3eJ": {
-                              "content": "Lunes, 11 mayo · Carlos R."
+                              "content": "Desde el 12 jul · hace 6 días"
                             },
                             "zF54G": {
                               "enabled": false
@@ -14526,7 +14526,7 @@
                                   "type": "text",
                                   "id": "yPzcG",
                                   "fill": "#A9C4F2",
-                                  "content": "EFECTIVO ESPERADO",
+                                  "content": "COBRADO SEGÚN EL SISTEMA",
                                   "fontFamily": "$font-family",
                                   "fontSize": 10,
                                   "fontWeight": "700",
@@ -14559,70 +14559,6 @@
                                       "letterSpacing": -1
                                     }
                                   ]
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "bCTii",
-                                  "width": "fill_container",
-                                  "gap": 8,
-                                  "children": [
-                                    {
-                                      "type": "frame",
-                                      "id": "jSyWt",
-                                      "width": "fill_container",
-                                      "layout": "vertical",
-                                      "gap": 2,
-                                      "children": [
-                                        {
-                                          "type": "text",
-                                          "id": "zNBKF",
-                                          "fill": "#A9C4F2",
-                                          "content": "Clientes",
-                                          "fontFamily": "$font-family",
-                                          "fontSize": 10,
-                                          "fontWeight": "600",
-                                          "letterSpacing": 0.6
-                                        },
-                                        {
-                                          "type": "text",
-                                          "id": "g12Yl",
-                                          "fill": "#FFFFFF",
-                                          "content": "18",
-                                          "fontFamily": "$font-family",
-                                          "fontSize": 14,
-                                          "fontWeight": "700"
-                                        }
-                                      ]
-                                    },
-                                    {
-                                      "type": "frame",
-                                      "id": "y3opE",
-                                      "width": "fill_container",
-                                      "layout": "vertical",
-                                      "gap": 2,
-                                      "children": [
-                                        {
-                                          "type": "text",
-                                          "id": "BcWFb",
-                                          "fill": "#A9C4F2",
-                                          "content": "Pendientes",
-                                          "fontFamily": "$font-family",
-                                          "fontSize": 10,
-                                          "fontWeight": "600",
-                                          "letterSpacing": 0.6
-                                        },
-                                        {
-                                          "type": "text",
-                                          "id": "loYu4",
-                                          "fill": "#FFFFFF",
-                                          "content": "5",
-                                          "fontFamily": "$font-family",
-                                          "fontSize": 14,
-                                          "fontWeight": "700"
-                                        }
-                                      ]
-                                    }
-                                  ]
                                 }
                               ]
                             },
@@ -14640,7 +14576,7 @@
                                   "type": "text",
                                   "id": "b54WQ",
                                   "fill": "#7888A8",
-                                  "content": "EFECTIVO CONTADO",
+                                  "content": "TOTAL VERIFICADO",
                                   "fontFamily": "$font-family",
                                   "fontSize": 10,
                                   "fontWeight": "700",
@@ -14721,7 +14657,7 @@
                                   "fill": "#7888A8",
                                   "textGrowth": "fixed-width",
                                   "width": "fill_container",
-                                  "content": "Conta el efectivo y escribe el total. El sistema te avisa si hay diferencia.",
+                                  "content": "Cuenta el efectivo y las transferencias verificadas, y escribe el total. El sistema te avisa si hay diferencia.",
                                   "lineHeight": 1.45,
                                   "fontFamily": "$font-family",
                                   "fontSize": 11,
@@ -14788,19 +14724,6 @@
                                       "content": "RD$250"
                                     }
                                   }
-                                },
-                                {
-                                  "type": "text",
-                                  "id": "UiUhA",
-                                  "name": "note",
-                                  "fill": "#7888A8",
-                                  "textGrowth": "fixed-width",
-                                  "width": "fill_container",
-                                  "content": "Las transferencias no entran en el efectivo a entregar.",
-                                  "lineHeight": 1.36,
-                                  "fontFamily": "$font-family",
-                                  "fontSize": 11,
-                                  "fontWeight": "500"
                                 }
                               ]
                             }
@@ -14851,7 +14774,7 @@
                                   "type": "text",
                                   "id": "jmOGu",
                                   "fill": "#FFFFFF",
-                                  "content": "Cerrar día y sincronizar",
+                                  "content": "Cerrar caja",
                                   "fontFamily": "$font-family",
                                   "fontSize": 15,
                                   "fontWeight": "700"
@@ -14864,7 +14787,7 @@
                               "fill": "#7888A8",
                               "textGrowth": "fixed-width",
                               "width": "fill_container",
-                              "content": "Al cerrar, se envían todos los cobros y se bloquea la edición.",
+                              "content": "Los montos deben coincidir para poder cerrar la caja.",
                               "lineHeight": 1.4,
                               "textAlign": "center",
                               "fontFamily": "$font-family",
