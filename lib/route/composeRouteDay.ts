@@ -31,7 +31,7 @@
  * instead of an empty state when `visits` is empty. Mi Ruta ignores it.
  */
 import { buildLoanDetailView } from "../loans/loanViews";
-import { computeLoanMora } from "../loans/mora";
+import { computeLoanMora, loanMoraPolicy } from "../loans/mora";
 import { composeUpcomingCustomers } from "./composeUpcomingCustomers";
 import type { Customer } from "../customers/customer.schema";
 import type { Loan } from "../loans/loan.schema";
@@ -86,7 +86,12 @@ export function composeRouteDay({
     const paymentsToday = loanPayments.filter((p) => isSameDay(p.paidAt, today));
 
     const customer = customersById.get(loan.customerId);
-    const { moraCents, moraDays } = computeLoanMora(loan, paymentsBeforeToday, today);
+    const { moraCents, moraDays } = computeLoanMora(
+      loan,
+      paymentsBeforeToday,
+      today,
+      loanMoraPolicy(loan)
+    );
     const view = buildLoanDetailView({
       loan,
       customerName: customer?.name ?? "Cliente",

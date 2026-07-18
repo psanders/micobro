@@ -43,6 +43,13 @@
       "when": 1784373103035,
       "tag": "0005_funny_inhumans",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1784399924165,
+      "tag": "0006_unknown_mastermind",
+      "breakpoints": true
     }
   ]
 }

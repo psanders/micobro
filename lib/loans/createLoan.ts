@@ -32,6 +32,7 @@ export function createCreateLoan({ db }: CreateLoanDeps) {
       startDate: params.startDate ?? now,
       status: "active",
       notes: params.notes ?? null,
+      graceDays: params.graceDays ?? null,
       createdAt: now,
       updatedAt: now
     };

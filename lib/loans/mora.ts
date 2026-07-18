@@ -11,6 +11,7 @@
  */
 import { MORA_NOTE, installmentDueDate, principalPaidCents } from "./loanViews";
 import { cuotaCents as computeCuotaCents, totalRepayCents } from "./loanMath";
+import { DEFAULT_GRACE_DAYS } from "./loan.schema";
 import type { Loan } from "./loan.schema";
 import type { Payment } from "../payments/payment.schema";
 
@@ -27,12 +28,28 @@ export interface MoraPolicy {
   minCents: number;
 }
 
+/**
+ * Formula-level default (no grace) — matches mikro's `defaultLoansConfig`
+ * parity described above. The app itself never applies this bare: every
+ * real call site derives its `graceDays` per loan via `loanMoraPolicy`,
+ * which defaults an unset (`null`) loan to `DEFAULT_GRACE_DAYS` (7).
+ */
 export const DEFAULT_MORA_POLICY: MoraPolicy = {
   rate: 0.1,
   graceDays: 0,
   capInCuotas: 1,
   minCents: 0
 };
+
+/** A loan's configured grace period, defaulting unset loans to 7 days. */
+export function effectiveGraceDays(loan: Loan): number {
+  return loan.graceDays ?? DEFAULT_GRACE_DAYS;
+}
+
+/** `DEFAULT_MORA_POLICY` with `graceDays` resolved from the loan itself. */
+export function loanMoraPolicy(loan: Loan): MoraPolicy {
+  return { ...DEFAULT_MORA_POLICY, graceDays: effectiveGraceDays(loan) };
+}
 
 export interface AccruedMora {
   moraCents: number;

@@ -26,7 +26,7 @@ export const LAST_PUSHED_AT_KEY = "lastPushedAt";
 // names and column widths match exactly what push writes here.
 export const ENTITY_RANGES: Record<string, string> = {
   customer: "Clientes!A:F",
-  loan: "Préstamos!A:K",
+  loan: "Préstamos!A:L",
   payment: "Pagos!A:G",
   visit: "Visitas!A:H",
   cashClose: "Cierres!A:E"
@@ -55,6 +55,7 @@ function loanRowValues(payload: Record<string, unknown>): (string | number | nul
     payload.startDate as string,
     payload.status as string,
     (payload.notes as string) ?? "",
+    (payload.graceDays as number | null) ?? "",
     payload.createdAt as string,
     payload.updatedAt as string
   ];

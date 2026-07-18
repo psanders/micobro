@@ -6,7 +6,7 @@
  * touched by this code path), and malformed-row skipping.
  *
  * Row arrays mirror push.ts's customerRowValues/loanRowValues column order
- * exactly (Clientes!A:F, Préstamos!A:K) — this is the round-trip contract
+ * exactly (Clientes!A:F, Préstamos!A:L) — this is the round-trip contract
  * task 1.1 asks to protect, enforced here black-box (through the public
  * pullEntities function) the same way push.test.ts already tests push.ts.
  */
@@ -51,6 +51,7 @@ const loanRow = (overrides: Partial<Record<string, string>> = {}) => [
   overrides.startDate ?? "2026-01-01T00:00:00.000Z",
   overrides.status ?? "active",
   overrides.notes ?? "",
+  overrides.graceDays ?? "",
   overrides.createdAt ?? "2026-01-01T00:00:00.000Z",
   overrides.updatedAt ?? "2026-01-02T00:00:00.000Z"
 ];

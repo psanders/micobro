@@ -1,34 +1,4 @@
-# loan-detail
-
-## Purpose
-
-The Préstamo Detalle screen — balance summary, total-a-pagar-hoy
-breakdown, plan de pagos schedule, and the action bar that starts a cobro.
-
-## Requirements
-
-### Requirement: Loan header and meta chips
-
-The Préstamo Detalle screen SHALL show a header with the loan code and a
-customer subtitle (name · business when known), plus meta chips for the
-payment frequency, the loan's term length, and its end date — all rendered
-from the loan record.
-
-#### Scenario: Weekly loan chips
-
-- **WHEN** a weekly 12-cuota loan's detail opens
-- **THEN** the chips read Semanal, the term length, and "Vence <date>"
-
-### Requirement: Balance summary card
-
-The screen SHALL show a brand-deep summary card with "BALANCE PENDIENTE"
-and the outstanding balance, a progress bar of principal paid, and a
-Pagado / Cuota <n> / <total> / Próxima <date> grid.
-
-#### Scenario: Summary reflects payments
-
-- **WHEN** three of twelve cuotas are paid on the mock exemplar loan
-- **THEN** the card shows the remaining balance, "3 / 12", and the next due date
+## MODIFIED Requirements
 
 ### Requirement: Total a pagar hoy
 
@@ -81,29 +51,3 @@ signal itself (see "Total a pagar hoy" above).
 
 - **WHEN** the user taps Ver historial
 - **THEN** the Histórico de Pagos screen opens for this loan
-
-### Requirement: Loan action bar
-
-The screen SHALL pin an action bar with "Anotar visita", which opens the
-visit-outcome screen for this loan's customer, and a primary "Cobrar"
-button that opens the collect flow for this loan.
-
-#### Scenario: Start collecting
-
-- **WHEN** the user taps Cobrar
-- **THEN** the Registrar cobro screen opens for that loan
-
-#### Scenario: Anotar visita
-
-- **WHEN** the user taps Anotar visita
-- **THEN** the visit-outcome screen opens for this loan's customer
-
-### Requirement: Unknown loan
-
-Opening a loan id that does not exist SHALL show a friendly not-found
-message instead of a blank or crashed screen.
-
-#### Scenario: Stale loan link
-
-- **WHEN** the screen opens with an id that matches no loan
-- **THEN** a Spanish not-found message renders with a way back

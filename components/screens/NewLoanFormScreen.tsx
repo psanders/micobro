@@ -14,7 +14,11 @@ import {
 import { useRouter } from "expo-router";
 import { useCustomerRepo, useLoanRepo } from "../../lib/repo/RepoProvider";
 import { useAsync } from "../../lib/hooks/useAsync";
-import { loanFrequencies, type LoanFrequency } from "../../lib/loans/loan.schema";
+import {
+  loanFrequencies,
+  DEFAULT_GRACE_DAYS,
+  type LoanFrequency
+} from "../../lib/loans/loan.schema";
 import { loanCostSummary } from "../../lib/loans/loanMath";
 import { addFrequencyInterval } from "../../lib/loans/loanViews";
 import { ValidationError } from "../../lib/errors/ValidationError";
@@ -63,6 +67,7 @@ export function NewLoanFormScreen({ customerId: initialCustomerId }: { customerI
   const [termCount, setTermCount] = useState("");
   const [frequency, setFrequency] = useState<LoanFrequency>("weekly");
   const [firstPaymentPresetIndex, setFirstPaymentPresetIndex] = useState(0);
+  const [graceDays, setGraceDays] = useState(String(DEFAULT_GRACE_DAYS));
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -106,7 +111,8 @@ export function NewLoanFormScreen({ customerId: initialCustomerId }: { customerI
         interestRate: Number(interestRate),
         termCount: Number(termCount),
         frequency,
-        startDate
+        startDate,
+        graceDays: graceDays.trim() === "" ? undefined : Number(graceDays)
       });
       router.back();
     } catch (err) {
@@ -208,6 +214,17 @@ export function NewLoanFormScreen({ customerId: initialCustomerId }: { customerI
           </Text>
           <Text style={styles.dateInputHint}>Toca para cambiar</Text>
         </Pressable>
+      </View>
+
+      <View style={styles.field}>
+        <Text style={styles.label}>Período de gracia (días)</Text>
+        <TextInput
+          style={styles.input}
+          keyboardType="numeric"
+          value={graceDays}
+          onChangeText={setGraceDays}
+          placeholder={String(DEFAULT_GRACE_DAYS)}
+        />
       </View>
 
       {costPreview && (

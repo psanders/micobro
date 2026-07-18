@@ -39,6 +39,7 @@ const TAB_HEADERS: Record<string, string[]> = {
     "Inicio",
     "Estado",
     "Notas",
+    "Período de gracia (días)",
     "Creado",
     "Actualizado"
   ],

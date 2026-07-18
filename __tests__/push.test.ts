@@ -43,6 +43,7 @@ const loanPayload = JSON.stringify({
   startDate: "2026-01-01T00:00:00.000Z",
   status: "active",
   notes: null,
+  graceDays: null,
   createdAt: "2026-01-01T00:00:00.000Z",
   updatedAt: "2026-01-01T00:00:00.000Z"
 });
@@ -212,7 +213,7 @@ describe("pushPendingMutations", () => {
     const result = await pushPendingMutations(db);
 
     // Assert
-    expect(appendRowMock).toHaveBeenCalledWith("sheet-1", "Préstamos!A:K", [
+    expect(appendRowMock).toHaveBeenCalledWith("sheet-1", "Préstamos!A:L", [
       "loan-1",
       "customer-1",
       500000,
@@ -221,6 +222,7 @@ describe("pushPendingMutations", () => {
       "weekly",
       "2026-01-01T00:00:00.000Z",
       "active",
+      "",
       "",
       "2026-01-01T00:00:00.000Z",
       "2026-01-01T00:00:00.000Z"
@@ -249,7 +251,7 @@ describe("pushPendingMutations", () => {
     expect(readRangeMock).toHaveBeenCalledWith("sheet-1", "Préstamos!A:A");
     expect(updateRowMock).toHaveBeenCalledWith(
       "sheet-1",
-      "Préstamos!A2:K2",
+      "Préstamos!A2:L2",
       expect.arrayContaining(["loan-1"])
     );
     expect(appendRowMock).not.toHaveBeenCalled();

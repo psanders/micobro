@@ -29,6 +29,7 @@ const loan: Loan = {
   startDate: daysAgo(31),
   status: "active",
   notes: null,
+  graceDays: null,
   createdAt: daysAgo(31),
   updatedAt: daysAgo(31)
 };
