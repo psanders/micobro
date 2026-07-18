@@ -29,6 +29,7 @@ export interface PrintReceiptLine {
 }
 
 export interface PrintReceiptData {
+  lenderName: string;
   receiptNumber: string;
   customerName: string;
   date: string;
@@ -67,7 +68,7 @@ export function buildReceiptBytes(data: PrintReceiptData): Uint8Array {
   push(...CMD.CENTER);
   push(...CMD.BOLD_ON);
   push(...CMD.DOUBLE_HEIGHT);
-  push(...line("MICOBRO"));
+  push(...line(data.lenderName));
   push(...CMD.NORMAL_SIZE);
   push(...line("RECIBO DE PAGO"));
   push(...CMD.BOLD_OFF);

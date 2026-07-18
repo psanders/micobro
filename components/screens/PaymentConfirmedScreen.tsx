@@ -26,6 +26,8 @@ import { colors, fonts } from "../../lib/ui/theme";
 import type { ReceiptLine } from "../../lib/repo/types";
 import { printReceiptWithUI } from "../../lib/printer";
 import { ReceiptView, type ReceiptViewData } from "../ReceiptView";
+import { useProfileRepo } from "../../lib/repo/RepoProvider";
+import { useAsync } from "../../lib/hooks/useAsync";
 
 export interface PaymentConfirmedParams {
   customerName: string;
@@ -51,8 +53,13 @@ export function PaymentConfirmedScreen({
   const [sharing, setSharing] = useState(false);
   const receiptRef = useRef<View>(null);
 
+  const profileRepo = useProfileRepo();
+  const profile = useAsync(() => profileRepo.get(), []);
+  const lenderName = profile.data?.businessName || profile.data?.name || "MICOBRO";
+
   const receiptViewData = useMemo<ReceiptViewData>(
     () => ({
+      lenderName,
       receiptNumber,
       customerName,
       paidAtLabel,
@@ -60,13 +67,14 @@ export function PaymentConfirmedScreen({
       lines,
       totalCents
     }),
-    [receiptNumber, customerName, paidAtLabel, methodLabel, lines, totalCents]
+    [lenderName, receiptNumber, customerName, paidAtLabel, methodLabel, lines, totalCents]
   );
 
   const handlePrint = async () => {
     setPrinting(true);
     try {
       await printReceiptWithUI({
+        lenderName,
         receiptNumber,
         customerName,
         date: paidAtLabel,
