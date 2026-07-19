@@ -188,7 +188,7 @@ export function HomePage() {
 
       {/* Solution / How it works */}
       <section id="como-funciona" className="bg-white">
-        <div className="mx-auto flex max-w-[1440px] flex-col items-center gap-10 px-6 pb-0 pt-16 md:gap-16 md:px-20 md:pt-24">
+        <div className="mx-auto flex max-w-[1440px] flex-col items-center gap-10 px-6 pb-0 pt-16 md:gap-16 md:px-20 md:pb-24 md:pt-24">
           <div className="flex max-w-[700px] flex-col items-center gap-4 text-center">
             <span className="text-[12px] font-bold tracking-widest text-brand-blue-primary md:text-[13px]">
               LA SOLUCIÓN
@@ -224,7 +224,7 @@ export function HomePage() {
             </div>
 
             {/* Desktop screen cascade */}
-            <div className="relative hidden h-[608px] w-[420px] shrink-0 md:block">
+            <div className="relative hidden h-[576px] w-[420px] shrink-0 md:block">
               <img
                 src={hoyScreen}
                 alt="Pantalla Hoy de Micobro"

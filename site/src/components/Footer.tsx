@@ -50,7 +50,7 @@ function LinkColumn({
 export function Footer() {
   return (
     <footer className="bg-brand-blue-primary text-white">
-      <div className="mx-auto max-w-[1440px] px-6 py-12 md:px-20 md:py-16">
+      <div className="mx-auto max-w-[1440px] px-6 pb-8 pt-12 md:px-20 md:pb-10 md:pt-16">
         <div className="flex flex-col gap-10 md:flex-row md:justify-between md:gap-16">
           <div className="max-w-[320px]">
             <a href={import.meta.env.BASE_URL}>
