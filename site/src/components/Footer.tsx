@@ -57,7 +57,7 @@ export function Footer() {
               <Logo inverted />
             </a>
             <p className="mt-3.5 text-sm leading-relaxed text-brand-mist">
-              Funciona sin conexión para prestamistas dominicanos.
+              Offline-first para prestamistas dominicanos.
             </p>
           </div>
 
