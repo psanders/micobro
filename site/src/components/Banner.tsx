@@ -16,7 +16,7 @@ export function Banner() {
       <div className="flex items-center gap-2 md:gap-1.5">
         <Users className="h-4 w-4 shrink-0" strokeWidth={2} />
         <p className="text-[12px] leading-snug md:text-[13px]">
-          <span className="font-bold">Acceso anticipado:</span>{" "}
+          <span className="font-bold">Acceso temprano:</span>{" "}
           <span className="text-brand-mist">
             por ahora, Micobro es solo para familiares y amigos.
           </span>
