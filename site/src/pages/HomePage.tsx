@@ -245,14 +245,10 @@ export function HomePage() {
         </div>
 
         {/* Mobile screen showcase */}
-        <div className="relative mt-10 overflow-hidden bg-[linear-gradient(155deg,#142A26_0%,#04110D_100%)] px-6 py-12 md:hidden">
+        <div className="relative mt-10 overflow-hidden bg-[linear-gradient(155deg,#142A26_0%,#04110D_100%)] py-12 md:hidden">
           <div className="pointer-events-none absolute -left-16 -top-10 h-56 w-56 rounded-full bg-brand-blue-sky/20 blur-[80px]" />
           <div className="pointer-events-none absolute -right-10 bottom-0 h-52 w-52 rounded-full bg-brand-orange-primary-2/15 blur-[75px]" />
-          <img
-            src={hoyScreen}
-            alt="Pantalla Hoy de Micobro"
-            className="relative mx-auto w-[220px] rounded-[24px] shadow-2xl"
-          />
+          <img src={hoyScreen} alt="Pantalla Hoy de Micobro" className="relative mx-auto w-full" />
         </div>
       </section>
 
