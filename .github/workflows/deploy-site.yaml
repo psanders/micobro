@@ -37,12 +37,10 @@ jobs:
         working-directory: site
         run: npm ci
 
-      # Project pages are served at /<repo>/, so the build needs to know its
-      # own base path for asset URLs to resolve.
+      # Served from the micobro.app custom domain (site/public/CNAME), so
+      # assets resolve from the root — not a /<repo>/ project-pages subpath.
       - name: Build site
         working-directory: site
-        env:
-          VITE_BASE: /micobro/
         run: npm run build
 
       - name: Setup Pages

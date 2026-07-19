@@ -26,3 +26,15 @@
     "Helvetica Neue", Arial, sans-serif;
   --font-logo: "Sora", ui-sans-serif, system-ui, sans-serif;
 }
+
+@layer base {
+  a[href],
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
+
+  button:disabled {
+    cursor: not-allowed;
+  }
+}
