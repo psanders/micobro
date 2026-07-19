@@ -22,14 +22,14 @@ export function Logo({ inverted = false, compact = false, className }: LogoProps
         className={clsx(
           markSize,
           markRadius,
-          "flex items-center justify-center pb-0.5",
+          "flex items-center justify-center",
           inverted ? "bg-white" : "bg-brand-blue-deep"
         )}
       >
         <span
           className={clsx(
             mSize,
-            "rotate-[0.27deg] font-bold leading-none",
+            "-translate-y-[0.125em] rotate-[0.27deg] font-bold leading-none",
             inverted ? "text-brand-blue-deep" : "text-white"
           )}
         >

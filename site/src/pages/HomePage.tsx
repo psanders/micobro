@@ -224,7 +224,7 @@ export function HomePage() {
             </div>
 
             {/* Desktop screen cascade */}
-            <div className="relative hidden h-[560px] w-[420px] shrink-0 md:block">
+            <div className="relative hidden h-[608px] w-[420px] shrink-0 md:block">
               <img
                 src={hoyScreen}
                 alt="Pantalla Hoy de Micobro"

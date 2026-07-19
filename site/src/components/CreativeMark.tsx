@@ -37,7 +37,7 @@ export function CreativeMark({ className }: CreativeMarkProps) {
           style={{ left: "15.4%", top: "12.3%", width: "55.4%", height: "35.4%" }}
         />
         <span
-          className="rotate-[0.27deg] text-[38cqw] font-bold leading-none text-white"
+          className="-translate-y-[0.055em] rotate-[0.27deg] text-[38cqw] font-bold leading-none text-white"
           style={{ fontFamily: "var(--font-logo)" }}
         >
           m
