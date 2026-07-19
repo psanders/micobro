@@ -1,6 +1,7 @@
 /**
  * Copyright (C) 2026 by Pedro Sanders. MIT License.
  */
+import { useState } from "react";
 import {
   WifiOff,
   Lock,
@@ -20,6 +21,8 @@ import {
 } from "lucide-react";
 import { Nav } from "../components/Nav";
 import { Footer } from "../components/Footer";
+import { Banner } from "../components/Banner";
+import { DownloadModal, WHATSAPP_GROUP_URL } from "../components/DownloadModal";
 import { PrimaryButton } from "../components/PrimaryButton";
 import { SecondaryButton } from "../components/SecondaryButton";
 import { CreativeMark } from "../components/CreativeMark";
@@ -108,9 +111,17 @@ const TESTIMONIALS = [
 const STEP_ICONS = [Sun, MapPin, HandCoins, Receipt, CircleCheckBig] as const;
 
 export function HomePage() {
+  const [downloadModalOpen, setDownloadModalOpen] = useState(false);
+
+  function handleDownloadClick() {
+    window.open(WHATSAPP_GROUP_URL, "_blank", "noopener,noreferrer");
+    setDownloadModalOpen(true);
+  }
+
   return (
     <div className="min-h-screen bg-brand-white font-sans text-brand-ink">
-      <Nav />
+      <Banner />
+      <Nav onDownloadClick={handleDownloadClick} />
 
       {/* Hero */}
       <section className="relative overflow-hidden bg-[linear-gradient(180deg,#FFFFFF_0%,#E2EDFC_100%)]">
@@ -133,7 +144,9 @@ export function HomePage() {
             </p>
 
             <div className="flex w-full flex-col gap-3 md:w-auto md:flex-row md:items-center">
-              <PrimaryButton className="w-full md:w-auto">Descargar en Google Play</PrimaryButton>
+              <PrimaryButton className="w-full md:w-auto" onClick={handleDownloadClick}>
+                Descargar en Google Play
+              </PrimaryButton>
               <SecondaryButton as="a" href="#como-funciona" className="w-full md:w-auto">
                 Ver cómo funciona
               </SecondaryButton>
@@ -345,13 +358,18 @@ export function HomePage() {
           <p className="text-[15px] text-brand-mist md:text-[17px]">
             Descárgala gratis y digitaliza tu cartera hoy mismo.
           </p>
-          <PrimaryButton className="w-full !bg-white !text-brand-blue-deep hover:!bg-brand-mist md:w-auto">
+          <PrimaryButton
+            className="w-full !bg-white !text-brand-blue-deep hover:!bg-brand-mist md:w-auto"
+            onClick={handleDownloadClick}
+          >
             Descargar en Google Play
           </PrimaryButton>
         </div>
       </section>
 
       <Footer />
+
+      <DownloadModal open={downloadModalOpen} onClose={() => setDownloadModalOpen(false)} />
     </div>
   );
 }

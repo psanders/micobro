@@ -12,7 +12,11 @@ const NAV_LINKS = [
   { label: "Precios", href: `${import.meta.env.BASE_URL}precios` }
 ] as const;
 
-export function Nav() {
+interface NavProps {
+  onDownloadClick: () => void;
+}
+
+export function Nav({ onDownloadClick }: NavProps) {
   const [open, setOpen] = useState(false);
 
   function close() {
@@ -39,7 +43,9 @@ export function Nav() {
         </div>
 
         <div className="hidden md:block">
-          <PrimaryButton size="nav">Descargar app</PrimaryButton>
+          <PrimaryButton size="nav" onClick={onDownloadClick}>
+            Descargar app
+          </PrimaryButton>
         </div>
 
         <button
