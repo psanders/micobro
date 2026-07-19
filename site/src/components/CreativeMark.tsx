@@ -16,7 +16,7 @@ interface CreativeMarkProps {
  */
 export function CreativeMark({ className }: CreativeMarkProps) {
   return (
-    <div className={clsx("relative aspect-square", className)}>
+    <div className={clsx("relative aspect-square @container", className)}>
       <div
         className="absolute rounded-full border-[3px] border-brand-orange-primary-2"
         style={{ left: "7.62%", top: "7.62%", width: "84.76%", height: "84.76%" }}
@@ -37,8 +37,8 @@ export function CreativeMark({ className }: CreativeMarkProps) {
           style={{ left: "15.4%", top: "12.3%", width: "55.4%", height: "35.4%" }}
         />
         <span
-          className="rotate-[0.27deg] font-bold leading-none text-white"
-          style={{ fontFamily: "var(--font-logo)", fontSize: "38%" }}
+          className="rotate-[0.27deg] text-[38cqw] font-bold leading-none text-white"
+          style={{ fontFamily: "var(--font-logo)" }}
         >
           m
         </span>
