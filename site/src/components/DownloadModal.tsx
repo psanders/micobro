@@ -1,8 +1,7 @@
 /**
  * Copyright (C) 2026 by Pedro Sanders. MIT License.
  */
-import { HeartHandshake, X } from "lucide-react";
-import { WhatsAppIcon } from "./SocialIcons";
+import { HeartHandshake, MessageCircle, X } from "lucide-react";
 
 export const WHATSAPP_GROUP_URL = "https://chat.whatsapp.com/Dh0lEeocwVj65T9xNyTCNC";
 
@@ -45,8 +44,8 @@ export function DownloadModal({ open, onClose }: DownloadModalProps) {
         </h2>
 
         <p className="text-sm leading-relaxed text-ds-muted">
-          Micobro todavía está en pruebas cerradas. Muy pronto abriremos la descarga para todos —
-          mientras tanto, si quieres ser parte de la prueba, escríbenos.
+          Micobro todavía está en pruebas cerradas. Muy pronto abriremos la descarga para todos.
+          Mientras tanto, si quieres ser parte de la prueba, escríbenos.
         </p>
 
         <a
@@ -55,7 +54,7 @@ export function DownloadModal({ open, onClose }: DownloadModalProps) {
           rel="noopener noreferrer"
           className="flex items-center justify-center gap-2.5 rounded-full bg-brand-blue-deep px-6 py-4 text-[15px] font-bold text-white no-underline transition-colors hover:bg-[#0a4640]"
         >
-          <WhatsAppIcon className="h-[18px] w-[18px]" />
+          <MessageCircle className="h-[18px] w-[18px]" strokeWidth={2} />
           Unirme al grupo de WhatsApp
         </a>
 

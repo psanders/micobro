@@ -80,7 +80,7 @@ const FEATURES = [
   {
     icon: FileSpreadsheet,
     title: "Respaldo en tu Google Sheet",
-    desc: "Tus datos respaldados en la nube — pero son tuyos, no nuestros."
+    desc: "Tus datos respaldados en la nube, pero son tuyos, no nuestros."
   }
 ] as const;
 
@@ -138,7 +138,7 @@ export function HomePage() {
             </h1>
 
             <p className="text-base leading-relaxed text-ds-muted md:text-[19px]">
-              Micobro registra tus clientes, préstamos y cobros desde el celular — sin depender de
+              Micobro registra tus clientes, préstamos y cobros desde el celular, sin depender de
               internet ni de una libreta.
             </p>
 
@@ -206,10 +206,10 @@ export function HomePage() {
               LA SOLUCIÓN
             </span>
             <h2 className="text-[28px] font-extrabold leading-[1.15] text-brand-ink md:text-[38px]">
-              Micobro hace lo que ya haces — pero mejor.
+              Micobro hace lo que ya haces. Pero mejor.
             </h2>
             <p className="text-[15px] leading-relaxed text-ds-muted md:text-[17px]">
-              Organiza lo que ya haces cada día: la ruta, el cobro, el recibo, el cuadre — sin
+              Organiza lo que ya haces cada día: la ruta, el cobro, el recibo, el cuadre, sin
               cambiar tu forma de trabajar.
             </p>
           </div>
@@ -301,7 +301,7 @@ export function HomePage() {
             </h2>
             <p className="text-[15px] leading-relaxed text-brand-night-muted md:text-[16px]">
               En muchas zonas del país la señal va y viene. Micobro guarda todo en tu teléfono al
-              instante — cuando haya internet, sincroniza solo. Cuando no, sigues cobrando igual.
+              instante. Cuando haya internet, sincroniza solo; cuando no, sigues cobrando igual.
             </p>
           </div>
 
