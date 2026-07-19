@@ -22,7 +22,7 @@ import {
 import { Nav } from "../components/Nav";
 import { Footer } from "../components/Footer";
 import { Banner } from "../components/Banner";
-import { DownloadModal, WHATSAPP_GROUP_URL } from "../components/DownloadModal";
+import { DownloadModal } from "../components/DownloadModal";
 import { PrimaryButton } from "../components/PrimaryButton";
 import { SecondaryButton } from "../components/SecondaryButton";
 import { CreativeMark } from "../components/CreativeMark";
@@ -114,7 +114,6 @@ export function HomePage() {
   const [downloadModalOpen, setDownloadModalOpen] = useState(false);
 
   function handleDownloadClick() {
-    window.open(WHATSAPP_GROUP_URL, "_blank", "noopener,noreferrer");
     setDownloadModalOpen(true);
   }
 
