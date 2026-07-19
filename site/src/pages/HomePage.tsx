@@ -51,7 +51,7 @@ const FLOW_STEPS = [
 const FEATURES = [
   {
     icon: WifiOff,
-    title: "Offline-first",
+    title: "Sin conexión",
     desc: "Funciona sin señal ni wifi. Sincroniza cuando puedas."
   },
   {
@@ -282,7 +282,7 @@ export function HomePage() {
         <div className="mx-auto flex max-w-[1440px] flex-col items-center gap-10 md:flex-row md:items-center md:justify-between md:gap-20">
           <div className="flex w-full flex-col gap-5 md:max-w-[520px]">
             <span className="text-[12px] font-bold tracking-widest text-brand-yellow-accent md:text-[13px]">
-              POR QUÉ OFFLINE-FIRST
+              POR QUÉ FUNCIONA SIN CONEXIÓN
             </span>
             <h2 className="text-[26px] font-extrabold leading-[1.15] text-white md:text-[36px]">
               Tu negocio no debería depender de tener señal.
