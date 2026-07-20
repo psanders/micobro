@@ -9,3 +9,6 @@ package-lock.json
 
 # drizzle-generated — CLAUDE.md says never hand-edit these
 lib/db/migrations/
+
+# marketing website — separate npm package with its own tooling
+site/
