@@ -72,7 +72,7 @@ export function Footer() {
 
         <div className="mt-6 flex flex-col-reverse items-center gap-6 md:flex-row md:justify-between">
           <p className="text-[13px] text-brand-mist">
-            © 2026 Micobro. Todos los derechos reservados.
+            © 2026 Mikro, S.R.L · Santo Domingo, RD
           </p>
           <div className="flex gap-4">
             {SOCIAL.map(({ icon: Icon, label, href }) => (
