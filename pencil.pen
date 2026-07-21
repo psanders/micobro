@@ -13832,6 +13832,20 @@
                                   "content": "Semanal"
                                 }
                               }
+                            },
+                            {
+                              "id": "a6f37S",
+                              "type": "ref",
+                              "ref": "crIxS",
+                              "width": "fill_container",
+                              "descendants": {
+                                "UKTdy": {
+                                  "content": "Tipo de préstamo"
+                                },
+                                "qYwem": {
+                                  "content": "Tradicional"
+                                }
+                              }
                             }
                           ]
                         },
@@ -21974,7 +21988,7 @@
                       "fill": "$brand.blue.deep",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "La primera plataforma de microfinanzas con IA.",
+                      "content": "Lleva tus préstamos al día, aunque no haya señal.",
                       "lineHeight": 1.05,
                       "fontFamily": "Geist",
                       "fontSize": 90,
@@ -22177,12 +22191,12 @@
                 {
                   "type": "frame",
                   "id": "H6KAFk",
-                  "fill": "#25D366",
+                  "fill": "$brand.blue.deep",
                   "cornerRadius": 9999,
                   "effect": {
                     "type": "shadow",
                     "shadowType": "outer",
-                    "color": "#25D36666",
+                    "color": "#0B4F4A66",
                     "offset": {
                       "x": 0,
                       "y": 12
@@ -22201,7 +22215,7 @@
                       "id": "llFKq",
                       "width": 36,
                       "height": 36,
-                      "icon": "phone",
+                      "icon": "globe",
                       "library": "lucide",
                       "fill": "$brand.white"
                     },
@@ -22209,7 +22223,7 @@
                       "type": "text",
                       "id": "BAWSJ",
                       "fill": "$brand.white",
-                      "content": "+1 (849) 354-7577",
+                      "content": "micobro.app",
                       "fontFamily": "Geist",
                       "fontSize": 36,
                       "fontWeight": "700"
@@ -22397,7 +22411,7 @@
                       "fill": "$brand.white",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "La primera plataforma de microfinanzas con IA.",
+                      "content": "Lleva tus préstamos al día, aunque no haya señal.",
                       "lineHeight": 1.05,
                       "fontFamily": "Geist",
                       "fontSize": 90,
@@ -22600,12 +22614,12 @@
                 {
                   "type": "frame",
                   "id": "a2gYb",
-                  "fill": "#25D366",
+                  "fill": "$brand.blue.deep",
                   "cornerRadius": 9999,
                   "effect": {
                     "type": "shadow",
                     "shadowType": "outer",
-                    "color": "#25D36666",
+                    "color": "#0B4F4A66",
                     "offset": {
                       "x": 0,
                       "y": 12
@@ -22624,7 +22638,7 @@
                       "id": "JjH3v",
                       "width": 36,
                       "height": 36,
-                      "icon": "phone",
+                      "icon": "globe",
                       "library": "lucide",
                       "fill": "$brand.white"
                     },
@@ -22632,7 +22646,7 @@
                       "type": "text",
                       "id": "sNvb8",
                       "fill": "$brand.white",
-                      "content": "+1 (849) 354-7577",
+                      "content": "micobro.app",
                       "fontFamily": "Geist",
                       "fontSize": 36,
                       "fontWeight": "700"
@@ -23163,7 +23177,7 @@
                   "fill": "$brand.blue.deep",
                   "textGrowth": "fixed-width",
                   "width": "fill_container",
-                  "content": "La primera plataforma de microfinanzas con IA.",
+                  "content": "Lleva tus préstamos al día, aunque no haya señal.",
                   "lineHeight": 1.05,
                   "fontFamily": "Geist",
                   "fontSize": 56,
@@ -23176,7 +23190,7 @@
                   "fill": "#5B6B8C",
                   "textGrowth": "fixed-width",
                   "width": "fill_container",
-                  "content": "Somos la plataforma de microfinanzas nativa de IA. Proveemos un software unificado de cobranzas, evaluación y notificaciones de seguimiento a clientes.",
+                  "content": "Sin internet. Recibos por WhatsApp o impresos. Respaldo en tu Google Sheet.",
                   "lineHeight": 1.4,
                   "fontFamily": "Geist",
                   "fontSize": 20,
@@ -23185,12 +23199,12 @@
                 {
                   "type": "frame",
                   "id": "Hvnyp",
-                  "fill": "#25D366",
+                  "fill": "$brand.blue.deep",
                   "cornerRadius": 9999,
                   "effect": {
                     "type": "shadow",
                     "shadowType": "outer",
-                    "color": "#25D36666",
+                    "color": "#0B4F4A66",
                     "offset": {
                       "x": 0,
                       "y": 12
@@ -23209,7 +23223,7 @@
                       "id": "XVoHK",
                       "width": 24,
                       "height": 24,
-                      "icon": "phone",
+                      "icon": "globe",
                       "library": "lucide",
                       "fill": "$brand.white"
                     },
@@ -23217,7 +23231,7 @@
                       "type": "text",
                       "id": "fmTZK",
                       "fill": "$brand.white",
-                      "content": "+1 (849) 354-7577",
+                      "content": "micobro.app",
                       "fontFamily": "Geist",
                       "fontSize": 24,
                       "fontWeight": "700"
@@ -23564,7 +23578,7 @@
                   "fill": "$brand.white",
                   "textGrowth": "fixed-width",
                   "width": "fill_container",
-                  "content": "La primera plataforma de microfinanzas impulsada por IA.",
+                  "content": "Lleva tus préstamos al día, aunque no haya señal.",
                   "lineHeight": 1.05,
                   "fontFamily": "Geist",
                   "fontSize": 56,
@@ -23577,7 +23591,7 @@
                   "fill": "#A3B4CC",
                   "textGrowth": "fixed-width",
                   "width": "fill_container",
-                  "content": "Decisiones en tiempo real, sin papeleos. Micobro impulsa a tu microfinanciera con IA.",
+                  "content": "Sin internet. Recibos por WhatsApp o impresos. Respaldo en tu Google Sheet.",
                   "lineHeight": 1.4,
                   "fontFamily": "Geist",
                   "fontSize": 20,
@@ -23586,12 +23600,12 @@
                 {
                   "type": "frame",
                   "id": "LTej6",
-                  "fill": "#25D366",
+                  "fill": "$brand.blue.deep",
                   "cornerRadius": 9999,
                   "effect": {
                     "type": "shadow",
                     "shadowType": "outer",
-                    "color": "#25D36666",
+                    "color": "#0B4F4A66",
                     "offset": {
                       "x": 0,
                       "y": 12
@@ -23610,7 +23624,7 @@
                       "id": "Y7JAHu",
                       "width": 24,
                       "height": 24,
-                      "icon": "phone",
+                      "icon": "globe",
                       "library": "lucide",
                       "fill": "$brand.white"
                     },
@@ -23618,7 +23632,7 @@
                       "type": "text",
                       "id": "o0J2Lb",
                       "fill": "$brand.white",
-                      "content": "+1 (849) 354-7577",
+                      "content": "micobro.app",
                       "fontFamily": "Geist",
                       "fontSize": 24,
                       "fontWeight": "700"
@@ -23956,7 +23970,7 @@
                       "fill": "$brand.blue.deep",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "La primera plataforma de microfinanzas con IA.",
+                      "content": "Lleva tus préstamos al día, aunque no haya señal.",
                       "lineHeight": 1.05,
                       "fontFamily": "Geist",
                       "fontSize": 90,
@@ -24146,12 +24160,12 @@
                 {
                   "type": "frame",
                   "id": "w6uetK",
-                  "fill": "#25D366",
+                  "fill": "$brand.blue.deep",
                   "cornerRadius": 9999,
                   "effect": {
                     "type": "shadow",
                     "shadowType": "outer",
-                    "color": "#25D36666",
+                    "color": "#0B4F4A66",
                     "offset": {
                       "x": 0,
                       "y": 12
@@ -24170,7 +24184,7 @@
                       "id": "S77lte",
                       "width": 36,
                       "height": 36,
-                      "icon": "phone",
+                      "icon": "globe",
                       "library": "lucide",
                       "fill": "$brand.white"
                     },
@@ -24178,7 +24192,7 @@
                       "type": "text",
                       "id": "Db7CD",
                       "fill": "$brand.white",
-                      "content": "+1 (849) 354-7577",
+                      "content": "micobro.app",
                       "fontFamily": "Geist",
                       "fontSize": 36,
                       "fontWeight": "700"
@@ -24343,7 +24357,7 @@
                       "fill": "$brand.blue.deep",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "La primera plataforma de microfinanzas con IA.",
+                      "content": "Lleva tus préstamos al día, aunque no haya señal.",
                       "lineHeight": 1.1,
                       "fontFamily": "Geist",
                       "fontSize": 72,
@@ -24533,12 +24547,12 @@
                 {
                   "type": "frame",
                   "id": "tTXfF",
-                  "fill": "#25D366",
+                  "fill": "$brand.blue.deep",
                   "cornerRadius": 9999,
                   "effect": {
                     "type": "shadow",
                     "shadowType": "outer",
-                    "color": "#25D36666",
+                    "color": "#0B4F4A66",
                     "offset": {
                       "x": 0,
                       "y": 12
@@ -24557,7 +24571,7 @@
                       "id": "LPAZB",
                       "width": 36,
                       "height": 36,
-                      "icon": "phone",
+                      "icon": "globe",
                       "library": "lucide",
                       "fill": "$brand.white"
                     },
@@ -24565,7 +24579,7 @@
                       "type": "text",
                       "id": "h5Qv4",
                       "fill": "$brand.white",
-                      "content": "+1 (849) 354-7577",
+                      "content": "micobro.app",
                       "fontFamily": "Geist",
                       "fontSize": 36,
                       "fontWeight": "700"
@@ -24920,12 +24934,12 @@
                 {
                   "type": "frame",
                   "id": "P1MIq",
-                  "fill": "#25D366",
+                  "fill": "$brand.blue.deep",
                   "cornerRadius": 9999,
                   "effect": {
                     "type": "shadow",
                     "shadowType": "outer",
-                    "color": "#25D36666",
+                    "color": "#0B4F4A66",
                     "offset": {
                       "x": 0,
                       "y": 12
@@ -24944,7 +24958,7 @@
                       "id": "WZvkU",
                       "width": 36,
                       "height": 36,
-                      "icon": "phone",
+                      "icon": "globe",
                       "library": "lucide",
                       "fill": "$brand.white"
                     },
@@ -24952,7 +24966,7 @@
                       "type": "text",
                       "id": "J3Nhfz",
                       "fill": "$brand.white",
-                      "content": "+1 (849) 354-7577",
+                      "content": "micobro.app",
                       "fontFamily": "Geist",
                       "fontSize": 36,
                       "fontWeight": "700"
@@ -25131,7 +25145,7 @@
                   "fill": "$brand.blue.deep",
                   "textGrowth": "fixed-width",
                   "width": "fill_container",
-                  "content": "La primera plataforma de microfinanzas con IA.",
+                  "content": "Lleva tus préstamos al día, aunque no haya señal.",
                   "lineHeight": 1.05,
                   "fontFamily": "Geist",
                   "fontSize": 64,
@@ -25141,12 +25155,12 @@
                 {
                   "type": "frame",
                   "id": "K1uLMv",
-                  "fill": "#25D366",
+                  "fill": "$brand.blue.deep",
                   "cornerRadius": 9999,
                   "effect": {
                     "type": "shadow",
                     "shadowType": "outer",
-                    "color": "#25D36666",
+                    "color": "#0B4F4A66",
                     "offset": {
                       "x": 0,
                       "y": 12
@@ -25165,7 +25179,7 @@
                       "id": "z9VmP4",
                       "width": 30,
                       "height": 30,
-                      "icon": "phone",
+                      "icon": "globe",
                       "library": "lucide",
                       "fill": "$brand.white"
                     },
@@ -25173,7 +25187,7 @@
                       "type": "text",
                       "id": "r0pWa",
                       "fill": "$brand.white",
-                      "content": "+1 (849) 354-7577",
+                      "content": "micobro.app",
                       "fontFamily": "Geist",
                       "fontSize": 30,
                       "fontWeight": "700"
@@ -72661,417 +72675,6 @@
     },
     {
       "type": "frame",
-      "id": "j6ghA",
-      "x": -2156,
-      "y": 12264,
-      "name": "Offer Table · Micobro",
-      "clip": true,
-      "width": 1040,
-      "height": 597,
-      "fill": {
-        "type": "gradient",
-        "gradientType": "linear",
-        "enabled": true,
-        "rotation": 180,
-        "size": {
-          "height": 1
-        },
-        "colors": [
-          {
-            "color": "#FFFFFF",
-            "position": 0
-          },
-          {
-            "color": "#E2EDFC",
-            "position": 1
-          }
-        ]
-      },
-      "cornerRadius": 20,
-      "gap": 60,
-      "padding": 60,
-      "children": [
-        {
-          "type": "frame",
-          "id": "DZqns",
-          "name": "left",
-          "width": "fill_container",
-          "layout": "vertical",
-          "gap": 24,
-          "justifyContent": "center",
-          "children": [
-            {
-              "type": "frame",
-              "id": "vyYlM",
-              "name": "logoRow",
-              "gap": 12,
-              "alignItems": "center",
-              "children": [
-                {
-                  "type": "frame",
-                  "id": "l7JC0o",
-                  "name": "component/logo-mark",
-                  "width": 40,
-                  "height": 40,
-                  "fill": {
-                    "type": "gradient",
-                    "gradientType": "linear",
-                    "enabled": true,
-                    "rotation": 150,
-                    "size": {
-                      "height": 1
-                    },
-                    "colors": [
-                      {
-                        "color": "$brand.blue.sky",
-                        "position": 0
-                      },
-                      {
-                        "color": "$brand.blue.deep",
-                        "position": 1
-                      }
-                    ]
-                  },
-                  "cornerRadius": 10,
-                  "padding": [
-                    0,
-                    0,
-                    4,
-                    0
-                  ],
-                  "justifyContent": "center",
-                  "children": [
-                    {
-                      "type": "text",
-                      "id": "II5Dy",
-                      "name": "logoM",
-                      "rotation": 0.2685392692845832,
-                      "fill": "$brand.white",
-                      "content": "m",
-                      "lineHeight": 1,
-                      "textAlign": "center",
-                      "textAlignVertical": "middle",
-                      "fontFamily": "Geist",
-                      "fontSize": 24,
-                      "fontWeight": "700"
-                    }
-                  ]
-                },
-                {
-                  "type": "text",
-                  "id": "hg9Q8",
-                  "name": "logoWord",
-                  "fill": "$brand.blue.deep",
-                  "content": "micobro",
-                  "fontFamily": "Geist",
-                  "fontSize": 32,
-                  "fontWeight": "700",
-                  "letterSpacing": -0.5
-                }
-              ]
-            },
-            {
-              "type": "text",
-              "id": "aEotI",
-              "name": "headline",
-              "fill": "$brand.blue.deep",
-              "textGrowth": "fixed-width",
-              "width": "fill_container",
-              "content": "La primera plataforma de microfinanzas con IA.",
-              "lineHeight": 1.05,
-              "fontFamily": "Geist",
-              "fontSize": 32,
-              "fontWeight": "700",
-              "letterSpacing": -1.5
-            },
-            {
-              "type": "text",
-              "id": "uHO6h",
-              "name": "body",
-              "fill": "#5B6B8C",
-              "textGrowth": "fixed-width",
-              "width": "fill_container",
-              "content": "Somos la plataforma de microfinanzas nativa de IA. Proveemos un software unificado de cobranzas, evaluación y notificaciones de seguimiento a clientes.",
-              "lineHeight": 1.4,
-              "fontFamily": "Geist",
-              "fontSize": 18,
-              "fontWeight": "500"
-            }
-          ]
-        },
-        {
-          "type": "frame",
-          "id": "hXupW",
-          "name": "right",
-          "width": "fill_container",
-          "layout": "vertical",
-          "gap": 16,
-          "children": [
-            {
-              "type": "text",
-              "id": "fDbfk",
-              "name": "tableTitle",
-              "fill": "$brand.orange.primary-2",
-              "textGrowth": "fixed-width",
-              "width": "fill_container",
-              "content": "Tabla de oferta para 15K pesos",
-              "fontFamily": "Geist",
-              "fontSize": 18,
-              "fontWeight": "500"
-            },
-            {
-              "type": "frame",
-              "id": "qfiL3",
-              "name": "headerRow",
-              "width": "fill_container",
-              "justifyContent": "space_between",
-              "children": [
-                {
-                  "type": "text",
-                  "id": "dJnBw",
-                  "fill": "#5B6B8C",
-                  "content": "PLAZO (SEMANAS)",
-                  "fontFamily": "Geist",
-                  "fontSize": 13,
-                  "fontWeight": "500"
-                },
-                {
-                  "type": "text",
-                  "id": "N6bmP",
-                  "fill": "#5B6B8C",
-                  "content": "PAGO SEMANAL",
-                  "fontFamily": "Geist",
-                  "fontSize": 13,
-                  "fontWeight": "500"
-                }
-              ]
-            },
-            {
-              "type": "frame",
-              "id": "knBTc",
-              "name": "row",
-              "width": "fill_container",
-              "padding": [
-                4,
-                8
-              ],
-              "justifyContent": "space_between",
-              "children": [
-                {
-                  "type": "text",
-                  "id": "OiE9P",
-                  "fill": "$brand.blue.deep",
-                  "content": "7",
-                  "fontFamily": "Geist",
-                  "fontSize": 13,
-                  "fontWeight": "700"
-                },
-                {
-                  "type": "text",
-                  "id": "nzVXL",
-                  "fill": "$brand.blue.deep",
-                  "content": "RD$ 2,700.00",
-                  "fontFamily": "Geist",
-                  "fontSize": 13,
-                  "fontWeight": "700"
-                }
-              ]
-            },
-            {
-              "type": "frame",
-              "id": "Rrifz",
-              "name": "row",
-              "width": "fill_container",
-              "padding": [
-                4,
-                8
-              ],
-              "justifyContent": "space_between",
-              "children": [
-                {
-                  "type": "text",
-                  "id": "KGkOl",
-                  "fill": "$brand.blue.deep",
-                  "content": "8",
-                  "fontFamily": "Geist",
-                  "fontSize": 13,
-                  "fontWeight": "700"
-                },
-                {
-                  "type": "text",
-                  "id": "XeHij",
-                  "fill": "$brand.blue.deep",
-                  "content": "RD$ 2,400.00",
-                  "fontFamily": "Geist",
-                  "fontSize": 13,
-                  "fontWeight": "700"
-                }
-              ]
-            },
-            {
-              "type": "frame",
-              "id": "cjvh1",
-              "name": "row",
-              "width": "fill_container",
-              "padding": [
-                4,
-                8
-              ],
-              "justifyContent": "space_between",
-              "children": [
-                {
-                  "type": "text",
-                  "id": "HXS1P",
-                  "fill": "$brand.blue.deep",
-                  "content": "9",
-                  "fontFamily": "Geist",
-                  "fontSize": 13,
-                  "fontWeight": "700"
-                },
-                {
-                  "type": "text",
-                  "id": "sbZ6j",
-                  "fill": "$brand.blue.deep",
-                  "content": "RD$ 2,150.00",
-                  "fontFamily": "Geist",
-                  "fontSize": 13,
-                  "fontWeight": "700"
-                }
-              ]
-            },
-            {
-              "type": "frame",
-              "id": "UAVGs",
-              "name": "row",
-              "width": "fill_container",
-              "cornerRadius": 8,
-              "stroke": "$brand.blue.sky",
-              "strokeWidth": 1,
-              "padding": [
-                4,
-                8
-              ],
-              "justifyContent": "space_between",
-              "children": [
-                {
-                  "type": "text",
-                  "id": "k5A0m",
-                  "fill": "$brand.blue.deep",
-                  "content": "10",
-                  "fontFamily": "Geist",
-                  "fontSize": 15,
-                  "fontWeight": "700"
-                },
-                {
-                  "type": "text",
-                  "id": "jipVY",
-                  "fill": "$brand.orange.primary-2",
-                  "content": "RD$ 1,950.00",
-                  "fontFamily": "Geist",
-                  "fontSize": 15,
-                  "fontWeight": "700"
-                }
-              ]
-            },
-            {
-              "type": "frame",
-              "id": "U76xV",
-              "name": "row",
-              "width": "fill_container",
-              "padding": [
-                4,
-                8
-              ],
-              "justifyContent": "space_between",
-              "children": [
-                {
-                  "type": "text",
-                  "id": "P8SqXC",
-                  "fill": "$brand.blue.deep",
-                  "content": "11",
-                  "fontFamily": "Geist",
-                  "fontSize": 13,
-                  "fontWeight": "700"
-                },
-                {
-                  "type": "text",
-                  "id": "NrDzz",
-                  "fill": "$brand.blue.deep",
-                  "content": "RD$ 1,800.00",
-                  "fontFamily": "Geist",
-                  "fontSize": 13,
-                  "fontWeight": "700"
-                }
-              ]
-            },
-            {
-              "type": "frame",
-              "id": "f4F0Fz",
-              "name": "row",
-              "width": "fill_container",
-              "padding": [
-                4,
-                8
-              ],
-              "justifyContent": "space_between",
-              "children": [
-                {
-                  "type": "text",
-                  "id": "rr1yO",
-                  "fill": "$brand.blue.deep",
-                  "content": "12",
-                  "fontFamily": "Geist",
-                  "fontSize": 13,
-                  "fontWeight": "700"
-                },
-                {
-                  "type": "text",
-                  "id": "AyRd2",
-                  "fill": "$brand.blue.deep",
-                  "content": "RD$ 1,700.00",
-                  "fontFamily": "Geist",
-                  "fontSize": 13,
-                  "fontWeight": "700"
-                }
-              ]
-            },
-            {
-              "type": "frame",
-              "id": "l7bbG5",
-              "name": "row",
-              "width": "fill_container",
-              "padding": [
-                4,
-                8
-              ],
-              "justifyContent": "space_between",
-              "children": [
-                {
-                  "type": "text",
-                  "id": "p3sAfu",
-                  "fill": "$brand.blue.deep",
-                  "content": "13",
-                  "fontFamily": "Geist",
-                  "fontSize": 13,
-                  "fontWeight": "700"
-                },
-                {
-                  "type": "text",
-                  "id": "RaT5r",
-                  "fill": "$brand.blue.deep",
-                  "content": "RD$ 1,600.00",
-                  "fontFamily": "Geist",
-                  "fontSize": 13,
-                  "fontWeight": "700"
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "type": "frame",
       "id": "u6FoTW",
       "x": -5953,
       "y": 15746,
@@ -73080,6 +72683,17 @@
       "width": 1440,
       "layout": "vertical",
       "children": [
+        {
+          "id": "yCzLj",
+          "type": "ref",
+          "ref": "x97mk",
+          "name": "Banner Announcement",
+          "width": "fill_container",
+          "padding": [
+            12,
+            80
+          ]
+        },
         {
           "type": "frame",
           "id": "Ra8ov",
@@ -73353,7 +72967,7 @@
                   "fill": "$ds.muted",
                   "textGrowth": "fixed-width",
                   "width": "fill_container",
-                  "content": "Micobro registra tus clientes, préstamos y cobros desde el celular — sin depender de internet ni de una libreta.",
+                  "content": "Micobro registra tus clientes, préstamos y cobros desde el celular, sin depender de internet ni de una libreta.",
                   "lineHeight": 1.5,
                   "fontFamily": "$font-family",
                   "fontSize": 19,
@@ -74006,7 +73620,7 @@
                   "fill": "$ds.muted",
                   "textGrowth": "fixed-width",
                   "width": 600,
-                  "content": "Organiza lo que ya haces cada día: la ruta, el cobro, el recibo, el cuadre — sin cambiar tu forma de trabajar.",
+                  "content": "Organiza lo que ya haces cada día: la ruta, el cobro, el recibo, el cuadre, sin cambiar tu forma de trabajar.",
                   "lineHeight": 1.5,
                   "textAlign": "center",
                   "fontFamily": "$font-family",
@@ -75853,7 +75467,7 @@
                           "fill": "$brand.ink",
                           "textGrowth": "fixed-width",
                           "width": "fill_container",
-                          "content": "Offline-first",
+                          "content": "Sin conexión",
                           "lineHeight": 1.25,
                           "fontFamily": "$font-family",
                           "fontSize": 17,
@@ -76150,7 +75764,7 @@
                           "fill": "$ds.muted",
                           "textGrowth": "fixed-width",
                           "width": "fill_container",
-                          "content": "Tus datos respaldados en la nube — pero son tuyos, no nuestros.",
+                          "content": "Tus datos respaldados en la nube, pero son tuyos, no nuestros.",
                           "lineHeight": 1.45,
                           "fontFamily": "$font-family",
                           "fontSize": 14,
@@ -76209,7 +75823,7 @@
                   "id": "DLsv1",
                   "name": "eyebrow",
                   "fill": "$brand.yellow.accent",
-                  "content": "POR QUÉ OFFLINE-FIRST",
+                  "content": "POR QUÉ FUNCIONA SIN CONEXIÓN",
                   "fontFamily": "$font-family",
                   "fontSize": 13,
                   "fontWeight": "700",
@@ -76235,7 +75849,7 @@
                   "fill": "$brand.night.muted",
                   "textGrowth": "fixed-width",
                   "width": "fill_container",
-                  "content": "En muchas zonas del país la señal va y viene. Micobro guarda todo en tu teléfono al instante — cuando haya internet, sincroniza solo. Cuando no, sigues cobrando igual.",
+                  "content": "En muchas zonas del país la señal va y viene. Micobro guarda todo en tu teléfono al instante. Cuando haya internet, sincroniza solo; cuando no, sigues cobrando igual.",
                   "lineHeight": 1.6,
                   "fontFamily": "$font-family",
                   "fontSize": 16,
@@ -76885,7 +76499,7 @@
                       "fill": "$brand.mist",
                       "textGrowth": "fixed-width",
                       "width": 280,
-                      "content": "Offline-first para prestamistas dominicanos.",
+                      "content": "Funciona sin conexión para prestamistas dominicanos.",
                       "lineHeight": 1.5,
                       "fontFamily": "$font-family",
                       "fontSize": 14,
@@ -77058,7 +76672,7 @@
                   "id": "UTAj8",
                   "name": "copyright",
                   "fill": "$brand.mist",
-                  "content": "© 2026 Micobro. Todos los derechos reservados.",
+                  "content": "© 2026 Mikro, S.R.L · Santo Domingo, RD",
                   "fontFamily": "$font-family",
                   "fontSize": 13,
                   "fontWeight": "normal"
@@ -77107,6 +76721,35 @@
       "width": 390,
       "layout": "vertical",
       "children": [
+        {
+          "id": "rbhWA",
+          "type": "ref",
+          "ref": "x97mk",
+          "name": "Banner Announcement",
+          "width": "fill_container",
+          "padding": [
+            10,
+            20
+          ],
+          "descendants": {
+            "F1Zi3L": {
+              "width": "fill_container"
+            },
+            "YGYU7": {
+              "gap": 2,
+              "layout": "vertical",
+              "width": "fill_container"
+            },
+            "E7wQSt": {
+              "fontSize": 12
+            },
+            "Dp6W2": {
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "fontSize": 12
+            }
+          }
+        },
         {
           "type": "frame",
           "id": "PIH4E",
@@ -77300,7 +76943,7 @@
               "fill": "$ds.muted",
               "textGrowth": "fixed-width",
               "width": "fill_container",
-              "content": "Micobro registra tus clientes, préstamos y cobros desde el celular — sin depender de internet ni de una libreta.",
+              "content": "Micobro registra tus clientes, préstamos y cobros desde el celular, sin depender de internet ni de una libreta.",
               "lineHeight": 1.5,
               "textAlign": "center",
               "fontFamily": "$font-family",
@@ -77872,7 +77515,7 @@
                   "fill": "$brand.ink",
                   "textGrowth": "fixed-width",
                   "width": "fill_container",
-                  "content": "Micobro hace lo que ya haces — pero mejor.",
+                  "content": "Micobro hace lo que ya haces. Pero mejor.",
                   "lineHeight": 1.18,
                   "textAlign": "center",
                   "fontFamily": "$font-family",
@@ -77886,7 +77529,7 @@
                   "fill": "$ds.muted",
                   "textGrowth": "fixed-width",
                   "width": "fill_container",
-                  "content": "Organiza lo que ya haces cada día: la ruta, el cobro, el recibo, el cuadre — sin cambiar tu forma de trabajar.",
+                  "content": "Organiza lo que ya haces cada día: la ruta, el cobro, el recibo, el cuadre, sin cambiar tu forma de trabajar.",
                   "lineHeight": 1.5,
                   "textAlign": "center",
                   "fontFamily": "$font-family",
@@ -78965,7 +78608,7 @@
                       "fill": "$brand.ink",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "Offline-first",
+                      "content": "Sin conexión",
                       "lineHeight": 1.25,
                       "fontFamily": "$font-family",
                       "fontSize": 16,
@@ -79253,7 +78896,7 @@
                       "fill": "$ds.muted",
                       "textGrowth": "fixed-width",
                       "width": "fill_container",
-                      "content": "Tus datos respaldados en la nube — pero son tuyos, no nuestros.",
+                      "content": "Tus datos respaldados en la nube, pero son tuyos, no nuestros.",
                       "lineHeight": 1.45,
                       "fontFamily": "$font-family",
                       "fontSize": 14,
@@ -79301,7 +78944,7 @@
               "id": "s8OQNJ",
               "name": "eyebrow",
               "fill": "$brand.yellow.accent",
-              "content": "POR QUÉ OFFLINE-FIRST",
+              "content": "POR QUÉ FUNCIONA SIN CONEXIÓN",
               "fontFamily": "$font-family",
               "fontSize": 12,
               "fontWeight": "700",
@@ -79327,7 +78970,7 @@
               "fill": "$brand.night.muted",
               "textGrowth": "fixed-width",
               "width": "fill_container",
-              "content": "En muchas zonas del país la señal va y viene. Micobro guarda todo en tu teléfono al instante — cuando haya internet, sincroniza solo. Cuando no, sigues cobrando igual.",
+              "content": "En muchas zonas del país la señal va y viene. Micobro guarda todo en tu teléfono al instante. Cuando haya internet, sincroniza solo; cuando no, sigues cobrando igual.",
               "lineHeight": 1.55,
               "fontFamily": "$font-family",
               "fontSize": 15,
@@ -79931,7 +79574,7 @@
               "fill": "$brand.mist",
               "textGrowth": "fixed-width",
               "width": "fill_container",
-              "content": "Offline-first para prestamistas dominicanos.",
+              "content": "Funciona sin conexión para prestamistas dominicanos.",
               "lineHeight": 1.5,
               "fontFamily": "$font-family",
               "fontSize": 13,
@@ -80102,7 +79745,7 @@
                   "id": "mTvJl",
                   "name": "copyright",
                   "fill": "$brand.mist",
-                  "content": "© 2026 Micobro. Todos los derechos reservados.",
+                  "content": "© 2026 Mikro, S.R.L · Santo Domingo, RD",
                   "textAlign": "center",
                   "fontFamily": "$font-family",
                   "fontSize": 12,
@@ -80135,6 +79778,1243 @@
                       "fill": "$brand.white"
                     }
                   ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "x97mk",
+      "x": -5953,
+      "y": 15606,
+      "name": "m/banner-announcement",
+      "reusable": true,
+      "width": 1440,
+      "fill": "$brand.blue.deep",
+      "padding": [
+        12,
+        80
+      ],
+      "justifyContent": "space_between",
+      "alignItems": "center",
+      "children": [
+        {
+          "type": "frame",
+          "id": "F1Zi3L",
+          "name": "Left",
+          "gap": 10,
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "icon",
+              "id": "pno6V",
+              "name": "icon",
+              "width": 16,
+              "height": 16,
+              "icon": "users",
+              "library": "lucide",
+              "fill": "$brand.white"
+            },
+            {
+              "type": "frame",
+              "id": "YGYU7",
+              "name": "Text Row",
+              "gap": 6,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "E7wQSt",
+                  "name": "label",
+                  "fill": "$brand.white",
+                  "content": "Acceso temprano:",
+                  "fontFamily": "$font-family",
+                  "fontSize": 13,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "Dp6W2",
+                  "name": "detail",
+                  "fill": "$brand.mist",
+                  "content": "por ahora, Micobro es solo para familiares y amigos.",
+                  "fontFamily": "$font-family",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "icon",
+          "id": "sqQ7e",
+          "name": "close",
+          "width": 16,
+          "height": 16,
+          "icon": "x",
+          "library": "lucide",
+          "fill": "$brand.mist"
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "BpYoE",
+      "x": -3923,
+      "y": 15746,
+      "name": "m/modal-announcement",
+      "reusable": true,
+      "clip": true,
+      "width": 420,
+      "fill": "$brand.white",
+      "cornerRadius": "$radius.card",
+      "effect": {
+        "type": "shadow",
+        "shadowType": "outer",
+        "color": "#0000004D",
+        "offset": {
+          "x": 0,
+          "y": 20
+        },
+        "blur": 48,
+        "spread": -8
+      },
+      "layout": "vertical",
+      "gap": 20,
+      "padding": 32,
+      "children": [
+        {
+          "type": "frame",
+          "id": "Ry1ul",
+          "name": "Top Row",
+          "width": "fill_container",
+          "justifyContent": "end",
+          "children": [
+            {
+              "id": "f6NVsi",
+              "type": "ref",
+              "ref": "ZFqxI",
+              "name": "close btn",
+              "width": 32,
+              "height": 32,
+              "descendants": {
+                "Qaoaj": {
+                  "icon": "x",
+                  "width": 16,
+                  "height": 16
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "fHXkU",
+          "name": "Icon Badge",
+          "width": 56,
+          "height": 56,
+          "fill": "$brand.mist",
+          "cornerRadius": "$radius.pill",
+          "layout": "vertical",
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "icon",
+              "id": "z6f3J",
+              "name": "icon",
+              "width": 26,
+              "height": 26,
+              "icon": "heart-handshake",
+              "library": "lucide",
+              "fill": "$brand.blue.deep"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "id": "g5Mtq",
+          "name": "title",
+          "fill": "$brand.ink",
+          "textGrowth": "fixed-width",
+          "width": "fill_container",
+          "content": "Por ahora, solo para familiares y amigos",
+          "lineHeight": 1.2,
+          "fontFamily": "$font-family",
+          "fontSize": 22,
+          "fontWeight": "800"
+        },
+        {
+          "type": "text",
+          "id": "LhnAq",
+          "name": "body",
+          "fill": "$ds.muted",
+          "textGrowth": "fixed-width",
+          "width": "fill_container",
+          "content": "Micobro todavía está en pruebas cerradas. Muy pronto abriremos la descarga para todos. Mientras tanto, si quieres ser parte de la prueba, escríbenos.",
+          "lineHeight": 1.5,
+          "fontFamily": "$font-family",
+          "fontSize": 14,
+          "fontWeight": "normal"
+        },
+        {
+          "type": "frame",
+          "id": "uxXFZ",
+          "name": "cta btn",
+          "width": "fill_container",
+          "fill": "$brand.blue.deep",
+          "cornerRadius": "$radius.pill",
+          "gap": 10,
+          "padding": [
+            16,
+            24
+          ],
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "icon",
+              "id": "S74KJ",
+              "name": "i",
+              "width": 18,
+              "height": 18,
+              "icon": "message-circle",
+              "library": "lucide",
+              "fill": "$brand.white"
+            },
+            {
+              "type": "text",
+              "id": "jASPT",
+              "name": "t",
+              "fill": "$brand.white",
+              "content": "Unirme al grupo de WhatsApp",
+              "fontFamily": "$font-family",
+              "fontSize": 15,
+              "fontWeight": "700"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "id": "uauqw",
+          "name": "dismiss link",
+          "fill": "$ds.muted",
+          "textGrowth": "fixed-width",
+          "width": "fill_container",
+          "content": "Entendido, seguir viendo",
+          "textAlign": "center",
+          "fontFamily": "$font-family",
+          "fontSize": 13,
+          "fontWeight": "700"
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "IGK1Q",
+      "x": 430,
+      "y": 0,
+      "name": "06c Crédito Abierto Detalle",
+      "clip": true,
+      "width": 390,
+      "height": 844,
+      "fill": "#F4F8FF",
+      "layout": "vertical",
+      "children": [
+        {
+          "id": "Z31gZ",
+          "type": "ref",
+          "ref": "g8L0O",
+          "width": "fill_container"
+        },
+        {
+          "id": "a4aSI8",
+          "type": "ref",
+          "ref": "AFMnH",
+          "width": "fill_container",
+          "descendants": {
+            "XlCal": {
+              "content": "Crédito Abierto #CA-00156"
+            },
+            "OJ3eJ": {
+              "content": "José Núñez · Motoconcho"
+            },
+            "zF54G": {
+              "icon": "ellipsis-vertical"
+            }
+          }
+        },
+        {
+          "type": "frame",
+          "id": "FnH1i",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "gap": 14,
+          "padding": [
+            4,
+            20
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "W9jvNs",
+              "width": "fill_container",
+              "gap": 6,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "UMUwF",
+                  "fill": "#E8F7F2",
+                  "cornerRadius": 9999,
+                  "gap": 6,
+                  "padding": [
+                    6,
+                    10
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "i3QZ4V",
+                      "fill": "#0B7066",
+                      "content": "Semanal",
+                      "fontFamily": "Inter",
+                      "fontSize": 11,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "Npgl2",
+                  "fill": "#E8F7F2",
+                  "cornerRadius": 9999,
+                  "gap": 6,
+                  "padding": [
+                    6,
+                    10
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "JFQnB",
+                      "fill": "#0B7066",
+                      "content": "Activo",
+                      "fontFamily": "Inter",
+                      "fontSize": 11,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "aYnaB",
+              "width": "fill_container",
+              "fill": "$brand.blue.deep",
+              "cornerRadius": 18,
+              "layout": "vertical",
+              "gap": 14,
+              "padding": 20,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "sUzRt",
+                  "fill": "#9FE6D2",
+                  "content": "CAPITAL PENDIENTE",
+                  "fontFamily": "Inter",
+                  "fontSize": 11,
+                  "fontWeight": "600",
+                  "letterSpacing": 1.5
+                },
+                {
+                  "type": "text",
+                  "id": "Nl4up",
+                  "fill": "$brand.white",
+                  "content": "RD$10,000",
+                  "fontFamily": "Inter",
+                  "fontSize": 36,
+                  "fontWeight": "700",
+                  "letterSpacing": -1
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "i1RB7R",
+              "width": "fill_container",
+              "fill": "#FFFFFF",
+              "cornerRadius": 18,
+              "layout": "vertical",
+              "gap": 12,
+              "padding": 16,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "yu6Ap",
+                  "width": "fill_container",
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "AlnAa",
+                      "fill": "#5B6B7A",
+                      "content": "Tasa de interés",
+                      "fontFamily": "Inter",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "p0v4sL",
+                      "fill": "#1A1A1A",
+                      "content": "5% semanal",
+                      "fontFamily": "Inter",
+                      "fontSize": 13,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "rectangle",
+                  "id": "zIeks",
+                  "fill": "#E2EAF7",
+                  "width": "fill_container",
+                  "height": 1
+                },
+                {
+                  "type": "frame",
+                  "id": "U8WhQ",
+                  "width": "fill_container",
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "ht2Bq",
+                      "fill": "#5B6B7A",
+                      "content": "Próx. pago",
+                      "fontFamily": "Inter",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "M7IBQ",
+                      "fill": "#1A1A1A",
+                      "content": "25 ago",
+                      "fontFamily": "Inter",
+                      "fontSize": 13,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "rectangle",
+                  "id": "cZVHA",
+                  "fill": "#E2EAF7",
+                  "width": "fill_container",
+                  "height": 1
+                },
+                {
+                  "type": "frame",
+                  "id": "ogHwX",
+                  "width": "fill_container",
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "lOS6z",
+                      "fill": "#5B6B7A",
+                      "content": "Interés pendiente",
+                      "fontFamily": "Inter",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "netB3",
+                      "fill": "#D97706",
+                      "content": "RD$500",
+                      "fontFamily": "Inter",
+                      "fontSize": 13,
+                      "fontWeight": "700"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "bwTVb",
+              "width": "fill_container",
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "l7tdw3",
+                  "fill": "#1A1A1A",
+                  "content": "HISTORIAL DE CICLOS",
+                  "fontFamily": "Inter",
+                  "fontSize": 11,
+                  "fontWeight": "700",
+                  "letterSpacing": 1.5
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "lS7YZ",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 6,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "NpqLt",
+                  "width": "fill_container",
+                  "fill": "#F0FDF4",
+                  "cornerRadius": 12,
+                  "padding": 12,
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "oIb3t",
+                      "fill": "#1A1A1A",
+                      "content": "Ciclo 1",
+                      "fontFamily": "Inter",
+                      "fontSize": 13,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "PqVHz",
+                      "gap": 8,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "V4W63q",
+                          "fill": "#1A1A1A",
+                          "content": "RD$500",
+                          "fontFamily": "Inter",
+                          "fontSize": 13,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "icon",
+                          "id": "Ln4Yu",
+                          "width": 18,
+                          "height": 18,
+                          "icon": "check",
+                          "library": "lucide",
+                          "fill": "#10B981"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "E0cVkV",
+                  "width": "fill_container",
+                  "fill": "#F0FDF4",
+                  "cornerRadius": 12,
+                  "padding": 12,
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "sEoxi",
+                      "fill": "#1A1A1A",
+                      "content": "Ciclo 2",
+                      "fontFamily": "Inter",
+                      "fontSize": 13,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "fx4Yd",
+                      "gap": 8,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "BbxYf",
+                          "fill": "#1A1A1A",
+                          "content": "RD$500",
+                          "fontFamily": "Inter",
+                          "fontSize": 13,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "icon",
+                          "id": "f7S5UD",
+                          "width": 18,
+                          "height": 18,
+                          "icon": "check",
+                          "library": "lucide",
+                          "fill": "#10B981"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "W4QVQ1",
+                  "width": "fill_container",
+                  "fill": "#FEF3C7",
+                  "cornerRadius": 12,
+                  "padding": 12,
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "tSUrF",
+                      "fill": "#92400E",
+                      "content": "Ciclo 3",
+                      "fontFamily": "Inter",
+                      "fontSize": 13,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "i5GpW6",
+                      "gap": 8,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "SCTxT",
+                          "fill": "#92400E",
+                          "content": "Int: RD$500 + Cap: RD$500",
+                          "fontFamily": "Inter",
+                          "fontSize": 12,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "icon",
+                          "id": "hIVjI",
+                          "width": 18,
+                          "height": 18,
+                          "icon": "alert-circle",
+                          "library": "lucide",
+                          "fill": "#D97706"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "eIp5q",
+          "width": "fill_container",
+          "fill": "$brand.white",
+          "stroke": "#E2EAF7",
+          "strokeWidth": {
+            "top": 1
+          },
+          "strokeAlignment": "inner",
+          "layout": "vertical",
+          "gap": 10,
+          "padding": [
+            14,
+            20
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "zc6OQ",
+              "width": "fill_container",
+              "fill": "$brand.mist",
+              "cornerRadius": 12,
+              "gap": 6,
+              "padding": 14,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "U6AOf",
+                  "width": 16,
+                  "height": 16,
+                  "icon": "notebook-pen",
+                  "library": "lucide",
+                  "fill": "$brand.blue.deep"
+                },
+                {
+                  "type": "text",
+                  "id": "u2jxs",
+                  "fill": "$brand.blue.deep",
+                  "content": "Anotar visita",
+                  "fontFamily": "$font-family",
+                  "fontSize": 14,
+                  "fontWeight": "700"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "tioUc",
+              "width": "fill_container",
+              "fill": "$brand.blue.deep",
+              "cornerRadius": 12,
+              "gap": 6,
+              "padding": 14,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "K5Qzm",
+                  "width": 16,
+                  "height": 16,
+                  "icon": "banknote",
+                  "library": "lucide",
+                  "fill": "$brand.white"
+                },
+                {
+                  "type": "text",
+                  "id": "rOavM",
+                  "fill": "$brand.white",
+                  "content": "Cobrar",
+                  "fontFamily": "$font-family",
+                  "fontSize": 14,
+                  "fontWeight": "700"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "gH1rr",
+      "x": 860,
+      "y": 0,
+      "name": "07c Cobrar Crédito Abierto",
+      "clip": true,
+      "width": 390,
+      "height": 844,
+      "fill": "#F4F8FF",
+      "layout": "vertical",
+      "children": [
+        {
+          "id": "SO1ao",
+          "type": "ref",
+          "ref": "g8L0O",
+          "width": "fill_container"
+        },
+        {
+          "id": "ft441",
+          "type": "ref",
+          "ref": "AFMnH",
+          "width": "fill_container",
+          "descendants": {
+            "XlCal": {
+              "content": "Cobrar Crédito Abierto"
+            },
+            "OJ3eJ": {
+              "content": "José Núñez · Motoconcho"
+            },
+            "zF54G": {
+              "icon": "chevron-left"
+            }
+          }
+        },
+        {
+          "type": "frame",
+          "id": "MMbrL",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "gap": 14,
+          "padding": [
+            4,
+            20
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "K9Yaq",
+              "width": "fill_container",
+              "fill": "#E8F7F2",
+              "cornerRadius": 14,
+              "layout": "vertical",
+              "gap": 8,
+              "padding": 16,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "TS82r",
+                  "fill": "#0B7066",
+                  "content": "Ciclo 3 · Del 18 al 25 de agosto",
+                  "fontFamily": "Inter",
+                  "fontSize": 12,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "text",
+                  "id": "OsHRj",
+                  "fill": "#0B7066",
+                  "content": "Capital actual: RD$10,000",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "gaotS",
+              "width": "fill_container",
+              "fill": "#FFFFFF",
+              "cornerRadius": 18,
+              "layout": "vertical",
+              "gap": 10,
+              "padding": 16,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "v6UHv",
+                  "fill": "#5B6B7A",
+                  "content": "INTERÉS PENDIENTE",
+                  "fontFamily": "Inter",
+                  "fontSize": 11,
+                  "fontWeight": "600",
+                  "letterSpacing": 1.5
+                },
+                {
+                  "type": "text",
+                  "id": "ET5b6",
+                  "fill": "#1A1A1A",
+                  "content": "RD$500",
+                  "fontFamily": "Inter",
+                  "fontSize": 32,
+                  "fontWeight": "700"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "qwpec",
+              "fill": "#5B6B7A",
+              "content": "OPCIONES DE PAGO",
+              "fontFamily": "Inter",
+              "fontSize": 11,
+              "fontWeight": "600",
+              "letterSpacing": 1.5
+            },
+            {
+              "type": "frame",
+              "id": "f9k1N",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 12,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "i6nQI",
+                  "width": "fill_container",
+                  "fill": "#FFFFFF",
+                  "cornerRadius": 14,
+                  "stroke": "$brand.blue.deep",
+                  "strokeWidth": 2,
+                  "layout": "vertical",
+                  "gap": 12,
+                  "padding": 16,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "f8DEMV",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "D8C0a",
+                          "layout": "vertical",
+                          "gap": 4,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "aOC44",
+                              "fill": "#1A1A1A",
+                              "content": "Solo interés",
+                              "fontFamily": "Inter",
+                              "fontSize": 14,
+                              "fontWeight": "700"
+                            },
+                            {
+                              "type": "text",
+                              "id": "ulCJa",
+                              "fill": "#5B6B7A",
+                              "content": "Mantiene el capital pendiente",
+                              "fontFamily": "Inter",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "eqTWR",
+                          "width": 24,
+                          "height": 24,
+                          "fill": "$brand.blue.deep",
+                          "cornerRadius": 9999,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "q8eS3q",
+                              "width": 14,
+                              "height": 14,
+                              "icon": "check",
+                              "library": "lucide",
+                              "fill": "$brand.white"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "IRRPF",
+                      "width": "fill_container",
+                      "fill": "#F0F9FF",
+                      "cornerRadius": 10,
+                      "padding": [
+                        8,
+                        12
+                      ],
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "VRBHd",
+                          "fill": "#5B6B7A",
+                          "content": "A pagar",
+                          "fontFamily": "Inter",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "DXSZe",
+                          "fill": "$brand.blue.deep",
+                          "content": "RD$500",
+                          "fontFamily": "Inter",
+                          "fontSize": 16,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "YleBW",
+                  "width": "fill_container",
+                  "fill": "#FFFFFF",
+                  "cornerRadius": 14,
+                  "stroke": "#E2EAF7",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 12,
+                  "padding": 16,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "uWOFf",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "q3h7s9",
+                          "layout": "vertical",
+                          "gap": 4,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "ES2ae",
+                              "fill": "#1A1A1A",
+                              "content": "Interés + capital",
+                              "fontFamily": "Inter",
+                              "fontSize": 14,
+                              "fontWeight": "700"
+                            },
+                            {
+                              "type": "text",
+                              "id": "Wug2I",
+                              "fill": "#5B6B7A",
+                              "content": "Reduce el capital y siguiente interés",
+                              "fontFamily": "Inter",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "UIHh4",
+                          "width": 24,
+                          "height": 24,
+                          "fill": "#E2EAF7",
+                          "cornerRadius": 9999
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "ipJ7V",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 8,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "N8MWjr",
+                          "fill": "#5B6B7A",
+                          "content": "Capital a pagar",
+                          "fontFamily": "Inter",
+                          "fontSize": 12,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Gf67H",
+                          "width": "fill_container",
+                          "fill": "#F4F8FF",
+                          "cornerRadius": 10,
+                          "stroke": "#E2EAF7",
+                          "strokeWidth": 1,
+                          "padding": [
+                            12,
+                            14
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "Cyezp",
+                              "fill": "#5B6B7A",
+                              "content": "RD$",
+                              "fontFamily": "Inter",
+                              "fontSize": 14,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "text",
+                              "id": "orBUT",
+                              "fill": "#1A1A1A",
+                              "content": "2,000",
+                              "fontFamily": "Inter",
+                              "fontSize": 14,
+                              "fontWeight": "600"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "DSyT4",
+                      "width": "fill_container",
+                      "fill": "#F0FDF4",
+                      "cornerRadius": 10,
+                      "padding": [
+                        8,
+                        12
+                      ],
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "Sw0VQ",
+                          "fill": "#5B6B7A",
+                          "content": "A pagar",
+                          "fontFamily": "Inter",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "UPZgn",
+                          "fill": "#10B981",
+                          "content": "RD$2,500",
+                          "fontFamily": "Inter",
+                          "fontSize": 16,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "h224py",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 8,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "AlA1f",
+                  "fill": "#5B6B7A",
+                  "content": "DESPUÉS DEL PAGO",
+                  "fontFamily": "Inter",
+                  "fontSize": 11,
+                  "fontWeight": "600",
+                  "letterSpacing": 1.5
+                },
+                {
+                  "type": "frame",
+                  "id": "c9ntq",
+                  "width": "fill_container",
+                  "fill": "#F9FAFB",
+                  "cornerRadius": 10,
+                  "layout": "vertical",
+                  "gap": 8,
+                  "padding": 12,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "RvyQC",
+                      "justifyContent": "space_between",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "mwZoK",
+                          "fill": "#5B6B7A",
+                          "content": "Capital restante",
+                          "fontFamily": "Inter",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "PfnS6",
+                          "fill": "#1A1A1A",
+                          "content": "RD$10,000",
+                          "fontFamily": "Inter",
+                          "fontSize": 12,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "rectangle",
+                      "id": "Llfpi",
+                      "fill": "#E2EAF7",
+                      "width": "fill_container",
+                      "height": 1
+                    },
+                    {
+                      "type": "frame",
+                      "id": "n5FhCz",
+                      "justifyContent": "space_between",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "OUq7i",
+                          "fill": "#5B6B7A",
+                          "content": "Próx. interés (5%)",
+                          "fontFamily": "Inter",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "bl65z",
+                          "fill": "#1A1A1A",
+                          "content": "RD$500",
+                          "fontFamily": "Inter",
+                          "fontSize": 12,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "aTyQt",
+          "width": "fill_container",
+          "fill": "$brand.white",
+          "stroke": "#E2EAF7",
+          "strokeWidth": {
+            "top": 1
+          },
+          "strokeAlignment": "inner",
+          "layout": "vertical",
+          "gap": 10,
+          "padding": [
+            14,
+            20
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "XW8uY",
+              "width": "fill_container",
+              "fill": "$brand.blue.deep",
+              "cornerRadius": 12,
+              "gap": 6,
+              "padding": 14,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "rKbuw",
+                  "width": 16,
+                  "height": 16,
+                  "icon": "banknote",
+                  "library": "lucide",
+                  "fill": "$brand.white"
+                },
+                {
+                  "type": "text",
+                  "id": "g8x4qQ",
+                  "fill": "$brand.white",
+                  "content": "Confirmar pago RD$500",
+                  "fontFamily": "$font-family",
+                  "fontSize": 14,
+                  "fontWeight": "700"
                 }
               ]
             }
