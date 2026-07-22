@@ -8,6 +8,7 @@
 import {
   CUOTA_ROUNDING_CENTS,
   cuotaCents,
+  lastCuotaCents,
   loanCostSummary,
   totalInterestCents,
   totalRepayCents
@@ -78,6 +79,41 @@ describe("loanMath", () => {
     });
   });
 
+  describe("lastCuotaCents", () => {
+    it("absorbs the rounding remainder — issue #59 (8,000 @ 2750 bps / 30 daily)", () => {
+      // totalRepay = 1,020,000; raw cuota = 34,000 → rounds up to 35,000.
+      // 29 cuotas of 35,000 = 1,015,000, so the last cuota shrinks to 5,000.
+      expect(cuotaCents(800000, 2750, 30)).toBe(35000);
+      expect(lastCuotaCents(800000, 2750, 30)).toBe(5000);
+    });
+
+    it("equals cuotaCents when the rounded cuotas divide the repay amount", () => {
+      // 1,000,000 @ 2000 bps / 12: cuota 100,000 divides 1,200,000 evenly.
+      expect(lastCuotaCents(1000000, 2000, 12)).toBe(100000);
+    });
+
+    it("never goes below zero when rounding overshoots the whole repay amount", () => {
+      // 120,000 @ 1000 bps / 12: cuota 15,000, but 11 × 15,000 = 165,000 already
+      // exceeds the 132,000 repay, so the nominal last cuota clamps at zero.
+      expect(lastCuotaCents(120000, 1000, 12)).toBe(0);
+    });
+
+    it("invariant: (termCount − 1) cuotas + last cuota reconcile to totalRepayCents", () => {
+      // The exact guarantee issue #59 was worried about: the schedule never
+      // collects more or less than principal + flat interest.
+      const cases: Array<[number, number, number]> = [
+        [800000, 2750, 30],
+        [1000000, 2050, 12],
+        [2880000, 1200, 12]
+      ];
+      for (const [principal, rate, term] of cases) {
+        const scheduled =
+          cuotaCents(principal, rate, term) * (term - 1) + lastCuotaCents(principal, rate, term);
+        expect(scheduled).toBe(totalRepayCents(principal, rate));
+      }
+    });
+  });
+
   describe("loanCostSummary", () => {
     it("aggregates principal, interest, repay, and cuota for one loan", () => {
       const summary = loanCostSummary({
@@ -90,7 +126,8 @@ describe("loanMath", () => {
         principalCents: 1000000,
         totalInterestCents: 200000,
         totalRepayCents: 1200000,
-        cuotaCents: 100000
+        cuotaCents: 100000,
+        lastCuotaCents: 100000
       });
     });
   });
