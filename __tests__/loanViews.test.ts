@@ -73,6 +73,24 @@ describe("buildLoanDetailView", () => {
     expect(view.balanceCents).toBe(3225600 - 810000);
   });
 
+  it("the schedule reconciles to totalRepayCents — the last cuota absorbs rounding (issue #59)", () => {
+    // Without mora, the sum of every installment must equal exactly what the
+    // loan collects: principal + flat interest, never the naive cuota × term.
+    const view = buildLoanDetailView({
+      loan,
+      customerName: "José Núñez",
+      business: "Motoconcho",
+      payments: [],
+      today
+    });
+
+    const scheduledCents = view.schedule.reduce((sum, item) => sum + item.amountCents, 0);
+    expect(scheduledCents).toBe(view.totalRepayCents);
+    expect(scheduledCents).toBe(3225600);
+    // The naive "cuota × term" a lender might compute overshoots the true total.
+    expect(view.schedule[0]!.amountCents * loan.termCount).toBeGreaterThan(view.totalRepayCents);
+  });
+
   it("breaks down due-today as overdue cuota + mora line", () => {
     const view = buildLoanDetailView({
       loan,

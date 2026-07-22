@@ -10,7 +10,7 @@
  * bare principal.
  */
 import { methodLabels } from "../payments/labels";
-import { cuotaCents, totalInterestCents, totalRepayCents } from "./loanMath";
+import { cuotaCents, lastCuotaCents, totalInterestCents, totalRepayCents } from "./loanMath";
 import type { Loan, LoanFrequency } from "./loan.schema";
 import type { Payment } from "../payments/payment.schema";
 import type {
@@ -91,6 +91,7 @@ export function buildLoanDetailView({
   today = new Date()
 }: LoanViewInput): LoanDetailView {
   const cuota = cuotaCents(loan.principalCents, loan.interestRateBps, loan.termCount);
+  const lastCuota = lastCuotaCents(loan.principalCents, loan.interestRateBps, loan.termCount);
   const repayCents = totalRepayCents(loan.principalCents, loan.interestRateBps);
   const paidCents = principalPaidCents(payments);
   const startOfToday = new Date(today);
@@ -100,11 +101,8 @@ export function buildLoanDetailView({
   let cumulative = 0;
   let moraAttached = false;
   for (let number = 1; number <= loan.termCount; number++) {
-    // The last cuota absorbs the rounding remainder (never below zero —
-    // a small loan with a coarse rounding increment can otherwise "finish"
-    // before its nominal last installment).
-    const amountCents =
-      number === loan.termCount ? Math.max(0, repayCents - cuota * (loan.termCount - 1)) : cuota;
+    // The last cuota absorbs the rounding remainder (see `lastCuotaCents`).
+    const amountCents = number === loan.termCount ? lastCuota : cuota;
     cumulative += amountCents;
     const dueDate = installmentDueDate(loan, number);
     const status: LoanScheduleItem["status"] =

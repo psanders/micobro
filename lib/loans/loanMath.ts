@@ -48,11 +48,30 @@ export function cuotaCents(
   return roundUpToIncrement(repay / termCount, CUOTA_ROUNDING_CENTS);
 }
 
+/**
+ * The final installment, which absorbs the remainder left by rounding every
+ * earlier cuota up to `CUOTA_ROUNDING_CENTS`, so the schedule sums back to
+ * `totalRepayCents` (see `loanViews.ts`). Never below zero — a small loan with
+ * a coarse increment can "finish" before its nominal last installment. Equals
+ * `cuotaCents` exactly when the rounded cuotas already divide the repay amount.
+ */
+export function lastCuotaCents(
+  principalCents: number,
+  interestRateBps: number,
+  termCount: number
+): number {
+  const cuota = cuotaCents(principalCents, interestRateBps, termCount);
+  const repay = totalRepayCents(principalCents, interestRateBps);
+  return Math.max(0, repay - cuota * (termCount - 1));
+}
+
 export interface LoanCostSummary {
   principalCents: number;
   totalInterestCents: number;
   totalRepayCents: number;
   cuotaCents: number;
+  /** Final installment; differs from `cuotaCents` when rounding leaves a remainder. */
+  lastCuotaCents: number;
 }
 
 /** Total-cost-of-loan summary — what "Total a pagar" surfaces in the UI. */
@@ -65,6 +84,7 @@ export function loanCostSummary(loan: {
     principalCents: loan.principalCents,
     totalInterestCents: totalInterestCents(loan.principalCents, loan.interestRateBps),
     totalRepayCents: totalRepayCents(loan.principalCents, loan.interestRateBps),
-    cuotaCents: cuotaCents(loan.principalCents, loan.interestRateBps, loan.termCount)
+    cuotaCents: cuotaCents(loan.principalCents, loan.interestRateBps, loan.termCount),
+    lastCuotaCents: lastCuotaCents(loan.principalCents, loan.interestRateBps, loan.termCount)
   };
 }

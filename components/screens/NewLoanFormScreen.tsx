@@ -233,6 +233,14 @@ export function NewLoanFormScreen({ customerId: initialCustomerId }: { customerI
             <Text style={styles.previewLabel}>Cuota estimada</Text>
             <Text style={styles.previewValue}>{formatCurrency(costPreview.cuotaCents)}</Text>
           </View>
+          {costPreview.lastCuotaCents !== costPreview.cuotaCents && (
+            <View style={styles.previewRow}>
+              <Text style={styles.previewLabelSub}>Última cuota</Text>
+              <Text style={styles.previewValueSub}>
+                {formatCurrency(costPreview.lastCuotaCents)}
+              </Text>
+            </View>
+          )}
           <View style={styles.previewRow}>
             <Text style={styles.previewLabel}>Interés total</Text>
             <Text style={styles.previewValue}>
@@ -303,6 +311,8 @@ const styles = StyleSheet.create({
   previewRow: { flexDirection: "row", justifyContent: "space-between" },
   previewLabel: { fontSize: 13, color: colors.muted },
   previewValue: { fontSize: 13, fontWeight: "600", color: colors.ink },
+  previewLabelSub: { fontSize: 12, color: colors.muted, paddingLeft: 12 },
+  previewValueSub: { fontSize: 12, fontWeight: "600", color: colors.muted },
   previewLabelStrong: { fontSize: 14, fontWeight: "700", color: colors.ink },
   previewValueStrong: { fontSize: 16, fontWeight: "700", color: colors.ink },
   error: { color: colors.red, fontSize: 13 },
