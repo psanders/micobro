@@ -4,6 +4,11 @@ name: Release Android APK
 # build is green, builds a release APK, then bumps package.json, tags, and
 # publishes a GitHub Release with the APK attached — one link to download.
 #
+# Runs against whichever branch you select in the "Run workflow" dropdown, so
+# you can cut a build from main or from any feature branch (e.g. to share a
+# pre-merge build with a customer). The version bump and tag land on that same
+# branch, not on a hardcoded main.
+#
 # Nothing is committed, tagged, or pushed until the build itself succeeds, so
 # a broken build never leaves a half-finished release behind.
 
@@ -48,6 +53,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          # workflow_dispatch checks out the branch picked in the Run workflow
+          # dropdown; being explicit keeps the release ref unambiguous.
+          ref: ${{ github.ref }}
 
       - uses: actions/setup-node@v4
         with:
@@ -131,13 +139,21 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      # Only reached once the build above has actually succeeded.
+      # Only reached once the build above has actually succeeded. The bump and
+      # tag land on the branch this workflow was dispatched from
+      # (github.ref_name) — main, or any feature branch you're cutting from.
+      # If that branch already carries the target version (e.g. it was bumped
+      # in the PR), there's nothing to commit and we just tag the current HEAD.
       - name: Commit version bump, tag, and push
         run: |
-          git add package.json package-lock.json
-          git commit -m "chore(release): v${{ inputs.version }}"
+          if git diff --quiet -- package.json package-lock.json; then
+            echo "package.json already at v${{ inputs.version }} — skipping bump commit"
+          else
+            git add package.json package-lock.json
+            git commit -m "chore(release): v${{ inputs.version }}"
+          fi
           git tag "v${{ inputs.version }}"
-          git push origin HEAD:main
+          git push origin HEAD:"${{ github.ref_name }}"
           git push origin "v${{ inputs.version }}"
 
       - name: Create GitHub Release and attach APK
