@@ -1,7 +1,7 @@
 {
   "name": "micobro",
   "description": "Offline-first loan tracking for independent lenders in the Dominican Republic, syncing local SQLite with Google Sheets.",
-  "version": "0.2.1",
+  "version": "0.2.3",
   "private": true,
   "main": "expo-router/entry",
   "engines": {

@@ -5,6 +5,7 @@
  * Requires react-native-ble-plx and a development build to function.
  */
 import { Alert, Platform, PermissionsAndroid } from "react-native";
+import { logger } from "./logger";
 
 const LINE_WIDTH = 32;
 
@@ -264,15 +265,25 @@ export async function requestBluetoothPermission(): Promise<boolean> {
       PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
       PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT
     ]);
-    return (
-      result[PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN] === "granted" &&
-      result[PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT] === "granted"
-    );
+    const scanGranted = result[PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN] === "granted";
+    const connectGranted = result[PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT] === "granted";
+
+    if (!scanGranted || !connectGranted) {
+      const denied: string[] = [];
+      if (!scanGranted) denied.push("BLUETOOTH_SCAN");
+      if (!connectGranted) denied.push("BLUETOOTH_CONNECT");
+      logger.warn("bluetooth permission denied", { denied });
+    }
+
+    return scanGranted && connectGranted;
   }
 
   const result = await PermissionsAndroid.request(
     PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
   );
+  if (result !== "granted") {
+    logger.warn("location permission denied (required for Bluetooth on Android <31)");
+  }
   return result === "granted";
 }
 
@@ -295,18 +306,15 @@ function pickDevice(devices: Array<{ id: string; name: string }>, data: PrintRec
   Alert.alert("Seleccionar impresora", "Elige un dispositivo:", buttons);
 }
 
+/**
+ * Scans for a Bluetooth printer and prints, with Alert-based UI for the
+ * device-selection and not-found cases. The caller MUST ensure Bluetooth
+ * permission is granted first (via requestBluetoothPermission) — a denial is
+ * handled up in the UI by routing to the "Permiso de impresión" screen, not
+ * here, so this function assumes permission and goes straight to scanning.
+ */
 export async function printReceiptWithUI(data: PrintReceiptData): Promise<void> {
   try {
-    const granted = await requestBluetoothPermission();
-    if (!granted) {
-      Alert.alert(
-        "Permiso denegado",
-        "Activa los permisos de Bluetooth en Ajustes para poder imprimir.",
-        [{ text: "OK" }]
-      );
-      return;
-    }
-
     const { matched, all } = await scanForPrinters();
 
     if (matched.length > 0) {
