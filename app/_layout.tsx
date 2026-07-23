@@ -72,6 +72,10 @@ function Gate() {
         />
         <Stack.Screen name="loans/[id]/historial" options={{ headerShown: false }} />
         <Stack.Screen name="pago-confirmado" options={{ headerShown: false }} />
+        <Stack.Screen
+          name="permiso-impresion"
+          options={{ headerShown: false, presentation: "modal" }}
+        />
         <Stack.Screen name="perfil" options={{ headerShown: false }} />
         <Stack.Screen
           name="feedback/consentimiento"

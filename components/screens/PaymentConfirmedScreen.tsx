@@ -24,7 +24,7 @@ import { formatCurrency } from "../../lib/utils/money";
 import { KvRow } from "../KvRow";
 import { colors, fonts } from "../../lib/ui/theme";
 import type { ReceiptLine } from "../../lib/repo/types";
-import { printReceiptWithUI } from "../../lib/printer";
+import { printReceiptWithUI, requestBluetoothPermission } from "../../lib/printer";
 import { ReceiptView, type ReceiptViewData } from "../ReceiptView";
 import { useProfileRepo } from "../../lib/repo/RepoProvider";
 import { useAsync } from "../../lib/hooks/useAsync";
@@ -73,6 +73,11 @@ export function PaymentConfirmedScreen({
   const handlePrint = async () => {
     setPrinting(true);
     try {
+      const granted = await requestBluetoothPermission();
+      if (!granted) {
+        router.push("/permiso-impresion");
+        return;
+      }
       await printReceiptWithUI({
         lenderName,
         receiptNumber,
