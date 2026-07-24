@@ -47,4 +47,19 @@ describe("buildReceiptBytes", () => {
     expect(text).toContain("TOTAL:");
     expect(text).toContain("RD$5,150.00");
   });
+
+  it("prints the lender phone, formatted, after the thank-you line when set", () => {
+    // Stored as bare digits — the receipt formats it as XXX-XXX-XXXX.
+    const bytes = buildReceiptBytes({ ...sampleReceipt, phone: "8095550143" });
+    const text = new TextDecoder().decode(bytes);
+    const thanksAt = text.indexOf("Gracias por su pago");
+    const telAt = text.indexOf("Tel: 809-555-0143");
+    expect(telAt).toBeGreaterThan(thanksAt);
+  });
+
+  it("omits the phone line when phone is unset", () => {
+    const bytes = buildReceiptBytes(sampleReceipt);
+    const text = new TextDecoder().decode(bytes);
+    expect(text).not.toContain("Tel:");
+  });
 });

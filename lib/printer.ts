@@ -6,6 +6,7 @@
  */
 import { Alert, Platform, PermissionsAndroid } from "react-native";
 import { logger } from "./logger";
+import { formatPhone } from "./utils/text";
 
 const LINE_WIDTH = 32;
 
@@ -37,6 +38,8 @@ export interface PrintReceiptData {
   method: string;
   lines: PrintReceiptLine[];
   totalCents: number;
+  /** Lender's contact phone, printed after the thank-you line — omitted entirely when unset. */
+  phone?: string | null;
 }
 
 function text(s: string): number[] {
@@ -98,6 +101,9 @@ export function buildReceiptBytes(data: PrintReceiptData): Uint8Array {
   push(...CMD.BOLD_ON);
   push(...line("Gracias por su pago!"));
   push(...CMD.BOLD_OFF);
+  if (data.phone) {
+    push(...line(`Tel: ${formatPhone(data.phone)}`));
+  }
   push(...CMD.FEED_LINES(4));
   push(...CMD.FEED_CUT);
 
