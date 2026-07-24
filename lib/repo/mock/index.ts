@@ -68,6 +68,7 @@ export function createMockRepos(): Repos {
     name: "Carlos",
     avatarKey: "male4",
     businessName: null,
+    businessNumber: null,
     phone: null
   };
 
@@ -221,6 +222,7 @@ export function createMockRepos(): Repos {
       name: params.name,
       avatarKey: params.avatarKey ?? null,
       businessName: params.businessName ?? null,
+      businessNumber: params.businessNumber ?? null,
       phone: params.phone ?? null
     };
     return profileState;

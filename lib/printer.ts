@@ -37,6 +37,8 @@ export interface PrintReceiptData {
   method: string;
   lines: PrintReceiptLine[];
   totalCents: number;
+  /** Lender's business number, printed after "Gracias por su pago." — omitted entirely when unset. */
+  businessNumber?: string | null;
 }
 
 function text(s: string): number[] {
@@ -96,8 +98,12 @@ export function buildReceiptBytes(data: PrintReceiptData): Uint8Array {
   push(...line(divider("=")));
   push(...CMD.CENTER);
   push(...CMD.BOLD_ON);
-  push(...line("Gracias por su pago!"));
+  push(...line("Gracias por su pago."));
   push(...CMD.BOLD_OFF);
+  if (data.businessNumber) {
+    push(...CMD.NORMAL_SIZE);
+    push(...line(`Numero de negocio: ${data.businessNumber}`));
+  }
   push(...CMD.FEED_LINES(4));
   push(...CMD.FEED_CUT);
 

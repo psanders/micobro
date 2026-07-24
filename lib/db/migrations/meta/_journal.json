@@ -71,6 +71,13 @@
       "when": 1784927453018,
       "tag": "0009_lethal_cassandra_nova",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1784930640377,
+      "tag": "0010_easy_mad_thinker",
+      "breakpoints": true
     }
   ]
 }

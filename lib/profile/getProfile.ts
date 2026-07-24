@@ -31,6 +31,7 @@ export function createGetProfile({ db }: GetProfileDeps) {
       name: row.name,
       avatarKey: row.avatarKey,
       businessName: row.businessName,
+      businessNumber: row.businessNumber,
       phone: row.phone
     };
   };

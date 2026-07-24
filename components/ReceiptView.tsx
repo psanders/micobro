@@ -20,6 +20,8 @@ export interface ReceiptViewData {
   method: string;
   lines: ReceiptLine[];
   totalCents: number;
+  /** Lender's business number, shown after "Gracias por su pago." — omitted entirely when unset. */
+  businessNumber?: string | null;
 }
 
 function Row({ label, value }: { label: string; value: string }) {
@@ -64,7 +66,10 @@ export const ReceiptView = forwardRef<View, { data: ReceiptViewData }>(({ data }
       <View style={s.dashedDivider} />
 
       <View style={s.footer}>
-        <Text style={s.thanks}>Gracias por su pago</Text>
+        <Text style={s.thanks}>Gracias por su pago.</Text>
+        {data.businessNumber && (
+          <Text style={s.businessNumber}>Número de negocio: {data.businessNumber}</Text>
+        )}
       </View>
     </View>
   );
@@ -143,5 +148,10 @@ const s = StyleSheet.create({
     fontFamily: fonts.bold,
     fontSize: 11,
     color: colors.ink
+  },
+  businessNumber: {
+    fontFamily: fonts.regular,
+    fontSize: 10,
+    color: colors.slate
   }
 });
