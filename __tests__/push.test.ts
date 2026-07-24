@@ -44,6 +44,8 @@ const loanPayload = JSON.stringify({
   status: "active",
   notes: null,
   graceDays: null,
+  moraEnabled: null,
+  moraRateBps: null,
   createdAt: "2026-01-01T00:00:00.000Z",
   updatedAt: "2026-01-01T00:00:00.000Z"
 });
@@ -213,7 +215,7 @@ describe("pushPendingMutations", () => {
     const result = await pushPendingMutations(db);
 
     // Assert
-    expect(appendRowMock).toHaveBeenCalledWith("sheet-1", "Préstamos!A:L", [
+    expect(appendRowMock).toHaveBeenCalledWith("sheet-1", "Préstamos!A:N", [
       "loan-1",
       "customer-1",
       500000,
@@ -224,10 +226,92 @@ describe("pushPendingMutations", () => {
       "active",
       "",
       "",
+      "",
+      "",
       "2026-01-01T00:00:00.000Z",
       "2026-01-01T00:00:00.000Z"
     ]);
     expect(result).toEqual({ pushed: 1, failed: 0 });
+  });
+
+  it("emits mora columns losslessly for an enabled loan with a custom rate", async () => {
+    // Arrange
+    const moraLoanPayload = JSON.stringify({
+      id: "loan-2",
+      customerId: "customer-1",
+      principalCents: 500000,
+      interestRateBps: 1000,
+      termCount: 12,
+      frequency: "weekly",
+      startDate: "2026-01-01T00:00:00.000Z",
+      status: "active",
+      notes: null,
+      graceDays: null,
+      moraEnabled: true,
+      moraRateBps: 1500,
+      createdAt: "2026-01-01T00:00:00.000Z",
+      updatedAt: "2026-01-01T00:00:00.000Z"
+    });
+    const mutation = {
+      id: "m3c",
+      entity: "loan",
+      entityId: "loan-2",
+      operation: "create",
+      payload: moraLoanPayload,
+      status: "pending",
+      retryCount: 0
+    };
+    const db = makeDbStub([mutation]);
+
+    // Act
+    await pushPendingMutations(db);
+
+    // Assert
+    expect(appendRowMock).toHaveBeenCalledWith(
+      "sheet-1",
+      "Préstamos!A:N",
+      expect.arrayContaining(["TRUE", 1500])
+    );
+  });
+
+  it("emits FALSE for a loan with mora explicitly disabled", async () => {
+    // Arrange
+    const disabledMoraPayload = JSON.stringify({
+      id: "loan-3",
+      customerId: "customer-1",
+      principalCents: 500000,
+      interestRateBps: 1000,
+      termCount: 12,
+      frequency: "weekly",
+      startDate: "2026-01-01T00:00:00.000Z",
+      status: "active",
+      notes: null,
+      graceDays: null,
+      moraEnabled: false,
+      moraRateBps: null,
+      createdAt: "2026-01-01T00:00:00.000Z",
+      updatedAt: "2026-01-01T00:00:00.000Z"
+    });
+    const mutation = {
+      id: "m3d",
+      entity: "loan",
+      entityId: "loan-3",
+      operation: "create",
+      payload: disabledMoraPayload,
+      status: "pending",
+      retryCount: 0
+    };
+    const db = makeDbStub([mutation]);
+
+    // Act
+    await pushPendingMutations(db);
+
+    // Assert
+    expect(appendRowMock).toHaveBeenCalledWith(
+      "sheet-1",
+      "Préstamos!A:N",
+      expect.arrayContaining(["FALSE", ""])
+    );
   });
 
   it("updates the existing Préstamos row in place for a loan update mutation", async () => {
@@ -251,7 +335,7 @@ describe("pushPendingMutations", () => {
     expect(readRangeMock).toHaveBeenCalledWith("sheet-1", "Préstamos!A:A");
     expect(updateRowMock).toHaveBeenCalledWith(
       "sheet-1",
-      "Préstamos!A2:L2",
+      "Préstamos!A2:N2",
       expect.arrayContaining(["loan-1"])
     );
     expect(appendRowMock).not.toHaveBeenCalled();

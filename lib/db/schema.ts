@@ -66,6 +66,15 @@ export const loans = sqliteTable("loans", {
   // treated as the 7-day default at read time (see
   // `lib/loans/loan.schema.ts`'s `DEFAULT_GRACE_DAYS`).
   graceDays: integer("grace_days"),
+  // Whether mora (late fee) applies to this loan at all. Nullable rather
+  // than backfilled so existing loans need no data migration — null is
+  // treated as "enabled" at read time (see `lib/loans/mora.ts`'s
+  // `isMoraEnabled`). Only `false` disables mora.
+  moraEnabled: integer("mora_enabled", { mode: "boolean" }),
+  // The loan's own mora rate, in basis points (1000 = 10%). Nullable —
+  // null is treated as `DEFAULT_MORA_RATE_BPS` at read time (see
+  // `lib/loans/mora.ts`'s `effectiveMoraRateBps`).
+  moraRateBps: integer("mora_rate_bps"),
   createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
   updatedAt: integer("updated_at", { mode: "timestamp" }).notNull()
 });

@@ -24,6 +24,8 @@ const loan: Loan = {
   status: "active",
   notes: null,
   graceDays: null,
+  moraEnabled: null,
+  moraRateBps: null,
   createdAt: daysAgo(28),
   updatedAt: daysAgo(28)
 };

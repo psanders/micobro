@@ -9,7 +9,8 @@ import {
   Pressable,
   ScrollView,
   ActivityIndicator,
-  StyleSheet
+  StyleSheet,
+  Switch
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useCustomerRepo, useLoanRepo } from "../../lib/repo/RepoProvider";
@@ -68,6 +69,8 @@ export function NewLoanFormScreen({ customerId: initialCustomerId }: { customerI
   const [frequency, setFrequency] = useState<LoanFrequency>("weekly");
   const [firstPaymentPresetIndex, setFirstPaymentPresetIndex] = useState(0);
   const [graceDays, setGraceDays] = useState(String(DEFAULT_GRACE_DAYS));
+  const [moraEnabled, setMoraEnabled] = useState(false);
+  const [moraRate, setMoraRate] = useState("10");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -112,7 +115,11 @@ export function NewLoanFormScreen({ customerId: initialCustomerId }: { customerI
         termCount: Number(termCount),
         frequency,
         startDate,
-        graceDays: graceDays.trim() === "" ? undefined : Number(graceDays)
+        graceDays: graceDays.trim() === "" ? undefined : Number(graceDays),
+        moraEnabled,
+        ...(moraEnabled && {
+          moraRate: moraRate.trim() === "" ? undefined : Number(moraRate)
+        })
       });
       router.back();
     } catch (err) {
@@ -216,16 +223,36 @@ export function NewLoanFormScreen({ customerId: initialCustomerId }: { customerI
         </Pressable>
       </View>
 
-      <View style={styles.field}>
-        <Text style={styles.label}>Período de gracia (días)</Text>
-        <TextInput
-          style={styles.input}
-          keyboardType="numeric"
-          value={graceDays}
-          onChangeText={setGraceDays}
-          placeholder={String(DEFAULT_GRACE_DAYS)}
-        />
+      <View style={[styles.field, styles.switchRow]}>
+        <Text style={styles.label}>Cobrar mora por atraso</Text>
+        <Switch value={moraEnabled} onValueChange={setMoraEnabled} />
       </View>
+
+      {moraEnabled && (
+        <>
+          <View style={styles.field}>
+            <Text style={styles.label}>Período de gracia (días)</Text>
+            <TextInput
+              style={styles.input}
+              keyboardType="numeric"
+              value={graceDays}
+              onChangeText={setGraceDays}
+              placeholder={String(DEFAULT_GRACE_DAYS)}
+            />
+          </View>
+
+          <View style={styles.field}>
+            <Text style={styles.label}>Tasa de mora (%)</Text>
+            <TextInput
+              style={styles.input}
+              keyboardType="numeric"
+              value={moraRate}
+              onChangeText={setMoraRate}
+              placeholder="10"
+            />
+          </View>
+        </>
+      )}
 
       {costPreview && (
         <View style={styles.preview}>
@@ -272,6 +299,7 @@ const styles = StyleSheet.create({
   center: { flex: 1, alignItems: "center", justifyContent: "center" },
   content: { padding: 16, gap: 20 },
   field: { gap: 8 },
+  switchRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   label: { fontSize: 13, fontWeight: "600", color: colors.muted },
   input: {
     borderWidth: 1,
