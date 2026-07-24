@@ -6,6 +6,7 @@
  */
 import { Alert, Platform, PermissionsAndroid } from "react-native";
 import { logger } from "./logger";
+import { formatPhone } from "./utils/text";
 
 const LINE_WIDTH = 32;
 
@@ -101,7 +102,7 @@ export function buildReceiptBytes(data: PrintReceiptData): Uint8Array {
   push(...line("Gracias por su pago!"));
   push(...CMD.BOLD_OFF);
   if (data.phone) {
-    push(...line(`Tel: ${data.phone}`));
+    push(...line(`Tel: ${formatPhone(data.phone)}`));
   }
   push(...CMD.FEED_LINES(4));
   push(...CMD.FEED_CUT);

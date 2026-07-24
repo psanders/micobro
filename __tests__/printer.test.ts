@@ -48,8 +48,9 @@ describe("buildReceiptBytes", () => {
     expect(text).toContain("RD$5,150.00");
   });
 
-  it("prints the lender phone after the thank-you line when set", () => {
-    const bytes = buildReceiptBytes({ ...sampleReceipt, phone: "809-555-0143" });
+  it("prints the lender phone, formatted, after the thank-you line when set", () => {
+    // Stored as bare digits — the receipt formats it as XXX-XXX-XXXX.
+    const bytes = buildReceiptBytes({ ...sampleReceipt, phone: "8095550143" });
     const text = new TextDecoder().decode(bytes);
     const thanksAt = text.indexOf("Gracias por su pago");
     const telAt = text.indexOf("Tel: 809-555-0143");

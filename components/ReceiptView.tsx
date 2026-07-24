@@ -9,6 +9,7 @@
 import { forwardRef } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { formatCurrency } from "../lib/utils/money";
+import { formatPhone } from "../lib/utils/text";
 import { colors, fonts } from "../lib/ui/theme";
 import type { ReceiptLine } from "../lib/repo/types";
 
@@ -67,7 +68,7 @@ export const ReceiptView = forwardRef<View, { data: ReceiptViewData }>(({ data }
 
       <View style={s.footer}>
         <Text style={s.thanks}>Gracias por su pago</Text>
-        {data.phone && <Text style={s.contact}>Tel: {data.phone}</Text>}
+        {data.phone && <Text style={s.contact}>Tel: {formatPhone(data.phone)}</Text>}
       </View>
     </View>
   );
