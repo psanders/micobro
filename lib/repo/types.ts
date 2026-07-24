@@ -191,6 +191,8 @@ export interface CollectContext {
   /** The current cuota, capped at the remaining balance. */
   cuotaCents: number;
   currentInstallmentNumber: number;
+  /** Total cuotas on the loan's schedule — 0 for crédito abierto (no fixed term). */
+  installmentsTotal: number;
   moraCents: number;
   moraDays: number;
   remainingInstallments: number;

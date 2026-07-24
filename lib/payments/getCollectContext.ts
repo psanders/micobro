@@ -69,6 +69,7 @@ export function createGetCollectContext({ db }: GetCollectContextDeps) {
         cuotaCents: state.interestDueCents,
         // Meaningless for open credit — no fixed installment schedule.
         currentInstallmentNumber: 0,
+        installmentsTotal: 0,
         moraCents: 0,
         moraDays: 0,
         remainingInstallments: 0,
@@ -103,6 +104,7 @@ export function createGetCollectContext({ db }: GetCollectContextDeps) {
       business: null,
       cuotaCents: Math.min(cuota, view.balanceCents),
       currentInstallmentNumber: Math.min(view.installmentsPaid + 1, view.installmentsTotal),
+      installmentsTotal: view.installmentsTotal,
       moraCents,
       moraDays,
       remainingInstallments: view.installmentsTotal - view.installmentsPaid,

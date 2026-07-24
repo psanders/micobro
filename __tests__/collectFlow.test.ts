@@ -28,6 +28,7 @@ describe("mock collect flow", () => {
       moraCents: 75000,
       moraDays: 3,
       currentInstallmentNumber: 4,
+      installmentsTotal: 12,
       loanCode: "L-00003"
     });
   });
@@ -58,6 +59,7 @@ describe("mock collect flow", () => {
     const ctx = await repos.payments.getCollectContext("loan-3");
     expect(ctx!.moraCents).toBe(0);
     expect(ctx!.currentInstallmentNumber).toBe(5);
+    expect(ctx!.installmentsTotal).toBe(12);
   });
 
   it("customer detail reflects standing and activity", async () => {

@@ -8,6 +8,7 @@
 import {
   buildLoanDetailView,
   loanCode,
+  cuotaLabel,
   installmentDueDate,
   addFrequencyInterval,
   addNonSundayDays,
@@ -151,6 +152,26 @@ describe("buildLoanDetailView", () => {
   it("loanCode derives a stable 5-digit code", () => {
     expect(loanCode("loan-3")).toBe("L-00003");
     expect(loanCode("8f14e45f-ceea-467f-9575-0844ab0c1b2d")).toMatch(/^L-\d{5}$/);
+  });
+});
+
+// Spec: collect-payment — receipts (digital and printed) show the current
+// cuota against the loan's total cuota count, not just the current number
+// (issue #64).
+describe("cuotaLabel", () => {
+  it("formats the current cuota against the loan's total", () => {
+    expect(cuotaLabel(1, 42)).toBe("Cuota 1/42");
+    expect(cuotaLabel(4, 12)).toBe("Cuota 4/12");
+  });
+
+  it("stays correct at the edges of the schedule", () => {
+    expect(cuotaLabel(1, 1)).toBe("Cuota 1/1");
+    expect(cuotaLabel(12, 12)).toBe("Cuota 12/12");
+  });
+
+  it("works for loans with large or small term counts", () => {
+    expect(cuotaLabel(3, 200)).toBe("Cuota 3/200");
+    expect(cuotaLabel(1, 4)).toBe("Cuota 1/4");
   });
 });
 

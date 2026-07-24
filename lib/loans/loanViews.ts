@@ -36,6 +36,16 @@ export function loanCode(id: string): string {
 }
 
 /**
+ * "Cuota 1/42" — the current installment against the loan's total cuota
+ * count, shared by the digital receipt (`ReceiptView`) and the printed
+ * thermal receipt (`lib/printer.ts`), which both render whatever label
+ * `CollectPaymentScreen` puts in the receipt line — see issue #64.
+ */
+export function cuotaLabel(currentInstallmentNumber: number, installmentsTotal: number): string {
+  return `Cuota ${currentInstallmentNumber}/${installmentsTotal}`;
+}
+
+/**
  * `date` shifted by `count` payment intervals for `frequency` (monthly
  * shifts by calendar months, everything else by a fixed day count).
  * `count` may be negative to shift backward. Shared by `installmentDueDate`
