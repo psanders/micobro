@@ -23,3 +23,19 @@ export function formatCedula(value: string | null | undefined): string {
   if (digits.length !== 11) return value;
   return `${digits.slice(0, 3)}-${digits.slice(3, 10)}-${digits.slice(10)}`;
 }
+
+/**
+ * Live formatter for a TextInput's onChangeText: inserts the "-" delimiters
+ * of "XXX-XXXXXXX-X" progressively as digits are typed, rather than only
+ * once all 11 digits are present. Re-derives the mask from the current
+ * digits on every keystroke (instead of tracking cursor/previous state), so
+ * it's naturally robust to backspace/deletion anywhere in the string —
+ * whatever comes out of `normalizeCedula` after the edit is what gets
+ * regrouped. Extra digits past 11 are dropped.
+ */
+export function formatCedulaInput(value: string): string {
+  const digits = normalizeCedula(value).slice(0, 11);
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 10) return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+  return `${digits.slice(0, 3)}-${digits.slice(3, 10)}-${digits.slice(10)}`;
+}

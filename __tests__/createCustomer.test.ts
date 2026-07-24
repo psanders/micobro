@@ -43,6 +43,44 @@ describe("createCreateCustomer", () => {
     });
   });
 
+  describe("phone", () => {
+    it("stores a valid 10-digit phone (dashed input) normalized to digits only", async () => {
+      // Arrange
+      const db = makeDbStub();
+      const createCustomer = createCreateCustomer({ db: db as unknown as Database });
+
+      // Act
+      const result = await createCustomer({ name: "Juana Pérez", phone: "809-251-2222" });
+
+      // Assert
+      expect(result.phone).toBe("8092512222");
+    });
+
+    it("rejects a phone that isn't 10 digits", async () => {
+      // Arrange
+      const db = makeDbStub();
+      const createCustomer = createCreateCustomer({ db: db as unknown as Database });
+
+      // Act + Assert
+      await expect(
+        createCustomer({ name: "Juana Pérez", phone: "809-251-222" })
+      ).rejects.toBeInstanceOf(ValidationError);
+      expect(db.insert).not.toHaveBeenCalled();
+    });
+
+    it("rejects an empty phone", async () => {
+      // Arrange
+      const db = makeDbStub();
+      const createCustomer = createCreateCustomer({ db: db as unknown as Database });
+
+      // Act + Assert
+      await expect(createCustomer({ name: "Juana Pérez", phone: "" })).rejects.toBeInstanceOf(
+        ValidationError
+      );
+      expect(db.insert).not.toHaveBeenCalled();
+    });
+  });
+
   describe("cédula", () => {
     it("stores a valid 11-digit cédula normalized to digits only", async () => {
       // Arrange

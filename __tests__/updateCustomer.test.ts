@@ -106,6 +106,36 @@ describe("createUpdateCustomer", () => {
     });
   });
 
+  describe("phone", () => {
+    it("stores a valid 10-digit phone (dashed input) normalized to digits only", async () => {
+      // Arrange
+      const db = makeDbStub();
+      const updateCustomer = createUpdateCustomer({ db: db as unknown as Database });
+
+      // Act
+      const result = await updateCustomer({
+        id: "customer-1",
+        name: "Juana Pérez",
+        phone: "809-765-4321"
+      });
+
+      // Assert
+      expect(result.phone).toBe("8097654321");
+    });
+
+    it("rejects a phone that isn't 10 digits", async () => {
+      // Arrange
+      const db = makeDbStub();
+      const updateCustomer = createUpdateCustomer({ db: db as unknown as Database });
+
+      // Act + Assert
+      await expect(
+        updateCustomer({ id: "customer-1", name: "Juana Pérez", phone: "12345" })
+      ).rejects.toBeInstanceOf(ValidationError);
+      expect((db as unknown as Record<string, jest.Mock>).update).not.toHaveBeenCalled();
+    });
+  });
+
   describe("cédula", () => {
     it("stores a valid 11-digit cédula (dashed input) normalized to digits only", async () => {
       // Arrange
