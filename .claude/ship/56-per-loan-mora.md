@@ -1,7 +1,7 @@
 # Ship checkpoint — 56-per-loan-mora
 
 Started: 2026-07-24
-Current stage: 2 — Spec reconcile
+Current stage: DONE — shipped in PR #62 (2026-07-24)
 
 **Scope:** Make mora (late fee) per-loan configurable — a loan can opt out of
 mora entirely (`moraEnabled`) and set its own rate (`moraRateBps`) instead of
