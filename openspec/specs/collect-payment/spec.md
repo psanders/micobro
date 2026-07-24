@@ -27,14 +27,14 @@ The screen SHALL build the "TIPO DE COBRO" options from the loan's state
 preselected), "Cobrar cuota" (when mora = 0, preselected), "Solo mora"
 (when mora > 0), "Saldar préstamo" (remaining balance + mora, only when
 more than one cuota remains), and "Otro monto" (always; reveals an inline
-amount input when selected). The cuota amount SHALL never exceed the
-remaining balance. Selecting an option SHALL update the readout, hint,
-and breakdown.
+amount input when selected). The cuota amount is interest-inclusive (see
+`lib/loans/loanMath.ts`) and SHALL never exceed the remaining balance.
+Selecting an option SHALL update the readout, hint, and breakdown.
 
 #### Scenario: Mora preselects cuota + mora
 
-- **WHEN** the flow opens for the mock exemplar loan with RD$750 mora and cuota RD$2,400
-- **THEN** "Cobrar cuota + mora" is selected and the readout shows RD$3,150
+- **WHEN** the flow opens for the mock exemplar loan with RD$750 mora and cuota RD$2,700
+- **THEN** "Cobrar cuota + mora" is selected and the readout shows RD$3,450
 
 #### Scenario: Custom amount
 
@@ -51,13 +51,13 @@ and breakdown.
 The screen SHALL show a "CÓMO SE APLICA" card listing how the selected
 amount applies using the shared mora-first split: mora is covered first,
 the remainder applies to the cuota (e.g. "Mora (prioridad)" RD$750, then
-"Cuota 4" RD$2,400). A custom amount on a loan without mora shows a
+"Cuota 4" RD$2,700). A custom amount on a loan without mora shows a
 single "Monto personalizado" line; with mora it shows the split.
 
 #### Scenario: Mora applies first
 
 - **WHEN** "Cobrar cuota + mora" is selected on the mock exemplar loan
-- **THEN** the breakdown lists Mora (prioridad) RD$750 before Cuota 4 RD$2,400
+- **THEN** the breakdown lists Mora (prioridad) RD$750 before Cuota 4 RD$2,700
 
 #### Scenario: Custom split with mora
 
@@ -84,7 +84,7 @@ reflect the new balance.
 
 #### Scenario: Mock balances update
 
-- **WHEN** the user collects RD$3,150 on the mock exemplar loan and returns to its detail
+- **WHEN** the user collects RD$3,450 on the mock exemplar loan and returns to its detail
 - **THEN** the balance drops accordingly and cuota 4 shows as paid
 
 #### Scenario: Real mode records a payment
@@ -104,8 +104,8 @@ Listo SHALL return to the loan detail.
 
 #### Scenario: Receipt contents
 
-- **WHEN** RD$3,150 in atrasos is collected in efectivo
-- **THEN** the confirmation shows RD$3,150, the mora and cuota lines, Efectivo, a receipt number, and the time
+- **WHEN** RD$3,450 in atrasos is collected in efectivo
+- **THEN** the confirmation shows RD$3,450, the mora and cuota lines, Efectivo, a receipt number, and the time
 
 #### Scenario: Done returns to the loan
 
