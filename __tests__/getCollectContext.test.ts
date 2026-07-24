@@ -76,6 +76,7 @@ describe("createGetCollectContext", () => {
 
     expect(result?.openCredit).toBeNull();
     expect(result?.cuotaCents).toBeGreaterThan(0);
+    expect(result?.installmentsTotal).toBe(12);
   });
 
   describe("open-credit loan", () => {
@@ -94,6 +95,7 @@ describe("createGetCollectContext", () => {
       expect(result?.remainingBalanceCents).toBe(1050000);
       expect(result?.moraCents).toBe(0);
       expect(result?.currentInstallmentNumber).toBe(0);
+      expect(result?.installmentsTotal).toBe(0);
       expect(result?.remainingInstallments).toBe(0);
     });
   });

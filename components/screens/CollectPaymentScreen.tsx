@@ -23,6 +23,7 @@ import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { usePaymentRepo } from "../../lib/repo/RepoProvider";
 import { useAsync } from "../../lib/hooks/useAsync";
 import { computePaymentSplit } from "../../lib/payments/paymentSplit";
+import { cuotaLabel as formatCuotaLabel } from "../../lib/loans/loanViews";
 import { formatCurrency } from "../../lib/utils/money";
 import { formatShortDate, formatTime } from "../../lib/utils/dates";
 import { Avatar } from "../Avatar";
@@ -141,7 +142,7 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
 
   const breakdown = useMemo((): ReceiptLine[] => {
     if (!ctx) return [];
-    const cuotaLabel = `Cuota ${ctx.currentInstallmentNumber}`;
+    const cuotaLabel = formatCuotaLabel(ctx.currentInstallmentNumber, ctx.installmentsTotal);
     switch (effectiveOption) {
       case "mora":
         return [{ label: "Mora (prioridad)", amountCents: mora }];
