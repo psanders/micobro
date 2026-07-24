@@ -52,7 +52,28 @@ export function addFrequencyInterval(date: Date, frequency: LoanFrequency, count
   return new Date(date.getTime() + count * days * DAY_MS);
 }
 
+/**
+ * `date` shifted forward by `count` non-Sunday calendar days: Sundays are
+ * walked over (never counted, never returned) so the result always lands
+ * on a Monday–Saturday. Used for daily loans with `skipSundays` on, where
+ * a naive `addFrequencyInterval` could land a cuota on a Sunday.
+ */
+export function addNonSundayDays(date: Date, count: number): Date {
+  let result = new Date(date);
+  let remaining = count;
+  while (remaining > 0) {
+    result = new Date(result.getTime() + DAY_MS);
+    if (result.getDay() !== 0) {
+      remaining -= 1;
+    }
+  }
+  return result;
+}
+
 export function installmentDueDate(loan: Loan, number: number): Date {
+  if (loan.frequency === "daily" && loan.skipSundays) {
+    return addNonSundayDays(new Date(loan.startDate), number);
+  }
   return addFrequencyInterval(new Date(loan.startDate), loan.frequency, number);
 }
 

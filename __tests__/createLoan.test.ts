@@ -32,7 +32,28 @@ describe("createCreateLoan", () => {
       expect(result.principalCents).toBe(500000);
       expect(result.interestRateBps).toBe(1000);
       expect(result.status).toBe("active");
+      expect(result.skipSundays).toBeNull();
       expect(db.insert).toHaveBeenCalledTimes(2);
+    });
+
+    it("persists skipSundays for a daily loan with Saltar domingos on", async () => {
+      // Arrange
+      const db = makeDbStub();
+      const createLoan = createCreateLoan({ db: db as unknown as Database });
+
+      // Act
+      const result = await createLoan({
+        customerId: "customer-1",
+        principal: 5000,
+        interestRate: 10,
+        termCount: 30,
+        frequency: "daily",
+        skipSundays: true
+      });
+
+      // Assert
+      expect(result.skipSundays).toBe(true);
+      expect(db.values).toHaveBeenCalledWith(expect.objectContaining({ skipSundays: true }));
     });
   });
 

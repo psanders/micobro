@@ -36,6 +36,11 @@ export const createLoanSchema = z.object({
   // Percentage (e.g. 10 = 10%), mirroring `interestRate`. Omitted means
   // "use the default" (DEFAULT_MORA_RATE_BPS, 10%).
   moraRate: z.number().nonnegative("La tasa de mora no puede ser negativa").optional(),
+  // Whether a daily loan's schedule skips Sundays (no cuota falls due on a
+  // Sunday). Omitted/undefined means "off" — see
+  // `lib/loans/loanViews.ts`'s `installmentDueDate`. Meaningless for
+  // non-daily frequencies.
+  skipSundays: z.boolean().optional(),
   notes: z.string().optional()
 });
 
@@ -57,6 +62,8 @@ export interface Loan {
   moraEnabled: boolean | null;
   /** null = use DEFAULT_MORA_RATE_BPS (1000 = 10%); see `lib/loans/mora.ts`. */
   moraRateBps: number | null;
+  /** null = off (default); only meaningful for daily loans. See `lib/loans/loanViews.ts`. */
+  skipSundays: boolean | null;
   createdAt: Date;
   updatedAt: Date;
 }

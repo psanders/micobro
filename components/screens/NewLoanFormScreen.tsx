@@ -22,7 +22,7 @@ import {
   type LoanFrequency
 } from "../../lib/loans/loan.schema";
 import { loanCostSummary } from "../../lib/loans/loanMath";
-import { addFrequencyInterval } from "../../lib/loans/loanViews";
+import { addFrequencyInterval, addNonSundayDays } from "../../lib/loans/loanViews";
 import { ValidationError } from "../../lib/errors/ValidationError";
 import { formatCurrency, toCents } from "../../lib/utils/money";
 import { formatShortDate } from "../../lib/utils/dates";
@@ -89,6 +89,7 @@ export function NewLoanFormScreen({ customerId: initialCustomerId }: { customerI
   const [graceDays, setGraceDays] = useState(String(DEFAULT_GRACE_DAYS));
   const [moraEnabled, setMoraEnabled] = useState(false);
   const [moraRate, setMoraRate] = useState("10");
+  const [skipSundays, setSkipSundays] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -102,9 +103,15 @@ export function NewLoanFormScreen({ customerId: initialCustomerId }: { customerI
   }, [frequency]);
 
   const firstPaymentIntervalsFromNow = firstPaymentPresetIndex + 1;
+  // For a skip-Sundays daily loan, the previewed "primer pago" must itself
+  // be a non-Sunday day so it agrees with installmentDueDate(loan, 1) —
+  // which walks the schedule the same way (see loanViews.ts).
   const firstPaymentDate = useMemo(
-    () => addFrequencyInterval(new Date(), frequency, firstPaymentIntervalsFromNow),
-    [frequency, firstPaymentIntervalsFromNow]
+    () =>
+      frequency === "daily" && skipSundays
+        ? addNonSundayDays(new Date(), firstPaymentIntervalsFromNow)
+        : addFrequencyInterval(new Date(), frequency, firstPaymentIntervalsFromNow),
+    [frequency, firstPaymentIntervalsFromNow, skipSundays]
   );
 
   const principalValue = Number(principal);
@@ -139,7 +146,8 @@ export function NewLoanFormScreen({ customerId: initialCustomerId }: { customerI
         moraEnabled,
         ...(moraEnabled && {
           moraRate: moraRate.trim() === "" ? undefined : Number(moraRate)
-        })
+        }),
+        ...(frequency === "daily" && { skipSundays })
       });
       router.back();
     } catch (err) {
@@ -229,6 +237,13 @@ export function NewLoanFormScreen({ customerId: initialCustomerId }: { customerI
             <Text style={styles.dateInputHint}>Toca para cambiar</Text>
           </Pressable>
         </View>
+
+        {frequency === "daily" && (
+          <View style={[styles.field, styles.switchRow]}>
+            <Text style={styles.label}>Saltar domingos</Text>
+            <Toggle value={skipSundays} onValueChange={setSkipSundays} />
+          </View>
+        )}
 
         <View style={styles.field}>
           <Text style={styles.label}>Monto del préstamo</Text>

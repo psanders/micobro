@@ -138,6 +138,7 @@ export const loanFixtures: Loan[] = [
     graceDays: null,
     moraEnabled: null,
     moraRateBps: null,
+    skipSundays: null,
     createdAt: daysAgo(28),
     updatedAt: daysAgo(28)
   },
@@ -155,6 +156,7 @@ export const loanFixtures: Loan[] = [
     graceDays: null,
     moraEnabled: null,
     moraRateBps: null,
+    skipSundays: null,
     createdAt: daysAgo(200),
     updatedAt: daysAgo(30)
   },
@@ -172,6 +174,7 @@ export const loanFixtures: Loan[] = [
     graceDays: null,
     moraEnabled: null,
     moraRateBps: null,
+    skipSundays: null,
     createdAt: daysAgo(31),
     updatedAt: daysAgo(31)
   },
@@ -189,6 +192,7 @@ export const loanFixtures: Loan[] = [
     graceDays: null,
     moraEnabled: null,
     moraRateBps: null,
+    skipSundays: null,
     createdAt: daysAgo(20),
     updatedAt: daysAgo(20)
   },
@@ -206,6 +210,7 @@ export const loanFixtures: Loan[] = [
     graceDays: null,
     moraEnabled: null,
     moraRateBps: null,
+    skipSundays: null,
     createdAt: daysAgo(42),
     updatedAt: daysAgo(42)
   },
@@ -223,6 +228,7 @@ export const loanFixtures: Loan[] = [
     graceDays: null,
     moraEnabled: null,
     moraRateBps: null,
+    skipSundays: null,
     createdAt: daysAgo(49),
     updatedAt: daysAgo(49)
   },
@@ -239,6 +245,7 @@ export const loanFixtures: Loan[] = [
     graceDays: null,
     moraEnabled: null,
     moraRateBps: null,
+    skipSundays: null,
     createdAt: daysAgo(400),
     updatedAt: daysAgo(390)
   },
@@ -256,6 +263,7 @@ export const loanFixtures: Loan[] = [
     graceDays: null,
     moraEnabled: null,
     moraRateBps: null,
+    skipSundays: null,
     createdAt: daysAgo(5),
     updatedAt: daysAgo(5)
   },
@@ -273,6 +281,7 @@ export const loanFixtures: Loan[] = [
     graceDays: null,
     moraEnabled: null,
     moraRateBps: null,
+    skipSundays: null,
     createdAt: daysAgo(21),
     updatedAt: daysAgo(21)
   },
@@ -290,6 +299,7 @@ export const loanFixtures: Loan[] = [
     graceDays: null,
     moraEnabled: null,
     moraRateBps: null,
+    skipSundays: null,
     createdAt: daysAgo(28),
     updatedAt: daysAgo(28)
   }

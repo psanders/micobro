@@ -75,6 +75,12 @@ export const loans = sqliteTable("loans", {
   // null is treated as `DEFAULT_MORA_RATE_BPS` at read time (see
   // `lib/loans/mora.ts`'s `effectiveMoraRateBps`).
   moraRateBps: integer("mora_rate_bps"),
+  // Whether a daily loan's schedule skips Sundays (no cuota ever falls due
+  // on a Sunday). Nullable rather than backfilled so existing loans need no
+  // data migration — null is treated as "off" at read time (see
+  // `lib/loans/loanViews.ts`'s `installmentDueDate`). Meaningless for
+  // non-daily frequencies.
+  skipSundays: integer("skip_sundays", { mode: "boolean" }),
   createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
   updatedAt: integer("updated_at", { mode: "timestamp" }).notNull()
 });

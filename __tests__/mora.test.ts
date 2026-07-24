@@ -14,7 +14,8 @@ import {
   effectiveGraceDays,
   isMoraEnabled,
   effectiveMoraRateBps,
-  loanMoraPolicy
+  loanMoraPolicy,
+  daysLateExcludingSundays
 } from "../lib/loans/mora";
 import { MORA_NOTE } from "../lib/loans/loanViews";
 import type { Loan } from "../lib/loans/loan.schema";
@@ -41,6 +42,7 @@ const baseLoan: Loan = {
   graceDays: null,
   moraEnabled: null,
   moraRateBps: null,
+  skipSundays: null,
   createdAt: daysAgo(28),
   updatedAt: daysAgo(28)
 };
@@ -352,5 +354,55 @@ describe("computeLoanMora wired to a loan's own mora configuration", () => {
 
     // Assert — double the rate means double the accrued mora
     expect(customResult.moraCents).toBe(defaultResult.moraCents * 2);
+  });
+});
+
+// Spec: loan-configuration "Mora counts business days" — a Sunday-skipping
+// daily loan's overdue day-count excludes Sundays, so a Sunday passing
+// never adds to how late it is.
+describe("daysLateExcludingSundays", () => {
+  // 2026-07-06 is a Monday; 2026-07-16 is 10 calendar days later and the
+  // range (07-06, 07-16] contains exactly one Sunday (07-12).
+  const dueDate = new Date("2026-07-06T00:00:00");
+  const today = new Date("2026-07-16T00:00:00");
+
+  it("counts every calendar day when skipSundays is off", () => {
+    expect(daysLateExcludingSundays(dueDate, today, false)).toBe(10);
+  });
+
+  it("excludes the Sunday that passed when skipSundays is on", () => {
+    expect(daysLateExcludingSundays(dueDate, today, true)).toBe(9);
+  });
+
+  it("returns the raw (non-positive) count unchanged when nothing is late yet", () => {
+    expect(daysLateExcludingSundays(today, dueDate, true)).toBeLessThanOrEqual(0);
+  });
+});
+
+describe("computeLoanMora for a Sunday-skipping daily loan", () => {
+  // startDate is a Sunday so cuota 1 (installmentDueDate skips it) lands on
+  // Monday 2026-07-06 for both loans below — the two only differ in whether
+  // the Sunday that later passes (07-12) counts toward daysLate.
+  const skipSundaysLoan: Loan = {
+    ...baseLoan,
+    frequency: "daily",
+    startDate: new Date("2026-07-05T00:00:00"),
+    termCount: 30,
+    graceDays: 0,
+    skipSundays: true
+  };
+  const today = new Date("2026-07-16T00:00:00");
+
+  it("counts business days late, excluding the Sunday that passed", () => {
+    const result = computeLoanMora(skipSundaysLoan, [], today, loanMoraPolicy(skipSundaysLoan));
+
+    expect(result.moraDays).toBe(9);
+  });
+
+  it("counts every calendar day late for the same schedule with skipSundays off", () => {
+    const noSkipLoan: Loan = { ...skipSundaysLoan, skipSundays: null };
+    const result = computeLoanMora(noSkipLoan, [], today, loanMoraPolicy(noSkipLoan));
+
+    expect(result.moraDays).toBe(10);
   });
 });

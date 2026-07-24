@@ -10,6 +10,7 @@ import {
   loanCode,
   installmentDueDate,
   addFrequencyInterval,
+  addNonSundayDays,
   defaultFirstPaymentDate
 } from "../lib/loans/loanViews";
 import type { Loan, LoanFrequency } from "../lib/loans/loan.schema";
@@ -32,6 +33,7 @@ const loan: Loan = {
   graceDays: null,
   moraEnabled: null,
   moraRateBps: null,
+  skipSundays: null,
   createdAt: daysAgo(31),
   updatedAt: daysAgo(31)
 };
@@ -207,11 +209,91 @@ describe("addFrequencyInterval / defaultFirstPaymentDate", () => {
       graceDays: null,
       moraEnabled: null,
       moraRateBps: null,
+      skipSundays: null,
       createdAt: now,
       updatedAt: now
     };
     expect(installmentDueDate(loan, 1).getTime()).toBe(
       addFrequencyInterval(now, "weekly", 1).getTime()
+    );
+  });
+});
+
+// Spec: loan-configuration "Sunday-skip for daily loans" — a per-loan opt-in
+// (mirroring moraEnabled) that keeps every daily cuota off Sundays.
+describe("installmentDueDate with skipSundays", () => {
+  // 2026-07-18 is a Saturday, so the naive daily schedule (startDate + n
+  // days) would land cuota 1 on Sunday 2026-07-19.
+  const saturday = new Date("2026-07-18T00:00:00");
+
+  function dailyLoan(overrides: Partial<Loan> = {}): Loan {
+    return {
+      id: "loan-daily",
+      customerId: "customer-x",
+      principalCents: 3000000,
+      interestRateBps: 1000,
+      termCount: 30,
+      frequency: "daily",
+      startDate: saturday,
+      status: "active",
+      notes: null,
+      graceDays: null,
+      moraEnabled: null,
+      moraRateBps: null,
+      skipSundays: null,
+      createdAt: saturday,
+      updatedAt: saturday,
+      ...overrides
+    };
+  }
+
+  it("shifts a Sunday due date to the following Monday", () => {
+    const loan = dailyLoan({ skipSundays: true });
+
+    // Naively, cuota 1 = startDate + 1 day = Sunday 2026-07-19.
+    const cuota1 = installmentDueDate(loan, 1);
+    expect(cuota1.getDay()).not.toBe(0);
+    expect(cuota1.toDateString()).toBe(new Date("2026-07-20T00:00:00").toDateString());
+  });
+
+  it("never lands a cuota on a Sunday across a schedule that crosses one", () => {
+    const loan = dailyLoan({ skipSundays: true });
+
+    const dueDates = Array.from({ length: 10 }, (_, i) => installmentDueDate(loan, i + 1));
+    expect(dueDates.every((d) => d.getDay() !== 0)).toBe(true);
+
+    // Cuota 7 naively falls on startDate + 7 days = Saturday 2026-07-25; with
+    // the Sunday (07-26) skipped, it actually lands two calendar days later,
+    // on Monday 2026-07-27 — the schedule spans extra calendar days.
+    const naiveCuota7 = addFrequencyInterval(saturday, "daily", 7);
+    expect(naiveCuota7.toDateString()).toBe(new Date("2026-07-25T00:00:00").toDateString());
+    expect(dueDates[6]!.toDateString()).toBe(new Date("2026-07-27T00:00:00").toDateString());
+    expect(dueDates[6]!.getTime()).toBeGreaterThan(naiveCuota7.getTime());
+  });
+
+  it("matches addFrequencyInterval exactly when skipSundays is off", () => {
+    const loan = dailyLoan({ skipSundays: null });
+
+    for (let n = 1; n <= 10; n++) {
+      expect(installmentDueDate(loan, n).getTime()).toBe(
+        addFrequencyInterval(saturday, "daily", n).getTime()
+      );
+    }
+  });
+
+  it("leaves non-daily loans unaffected even if skipSundays is set", () => {
+    const weeklyLoan: Loan = { ...dailyLoan({ skipSundays: true }), frequency: "weekly" };
+
+    expect(installmentDueDate(weeklyLoan, 1).getTime()).toBe(
+      addFrequencyInterval(saturday, "weekly", 1).getTime()
+    );
+  });
+
+  it("addNonSundayDays walks forward, skipping Sundays without counting them", () => {
+    // From Saturday, 2 non-Sunday days forward is Monday then Tuesday
+    // (Sunday is skipped entirely, not counted).
+    expect(addNonSundayDays(saturday, 2).toDateString()).toBe(
+      new Date("2026-07-21T00:00:00").toDateString()
     );
   });
 });

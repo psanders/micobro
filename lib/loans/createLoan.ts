@@ -35,6 +35,7 @@ export function createCreateLoan({ db }: CreateLoanDeps) {
       graceDays: params.graceDays ?? null,
       moraEnabled: params.moraEnabled ?? null,
       moraRateBps: params.moraRate != null ? Math.round(params.moraRate * 100) : null,
+      skipSundays: params.skipSundays ?? null,
       createdAt: now,
       updatedAt: now
     };

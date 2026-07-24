@@ -26,6 +26,7 @@ const loan: Loan = {
   graceDays: null,
   moraEnabled: null,
   moraRateBps: null,
+  skipSundays: null,
   createdAt: daysAgo(28),
   updatedAt: daysAgo(28)
 };
