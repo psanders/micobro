@@ -6,7 +6,7 @@
  * touched by this code path), and malformed-row skipping.
  *
  * Row arrays mirror push.ts's customerRowValues/loanRowValues column order
- * exactly (Clientes!A:F, Préstamos!A:N) — this is the round-trip contract
+ * exactly (Clientes!A:F, Préstamos!A:P) — this is the round-trip contract
  * task 1.1 asks to protect, enforced here black-box (through the public
  * pullEntities function) the same way push.test.ts already tests push.ts.
  */
@@ -55,6 +55,7 @@ const loanRow = (overrides: Partial<Record<string, string>> = {}) => [
   overrides.moraEnabled ?? "",
   overrides.moraRateBps ?? "",
   overrides.skipSundays ?? "",
+  overrides.loanType ?? "",
   overrides.createdAt ?? "2026-01-01T00:00:00.000Z",
   overrides.updatedAt ?? "2026-01-02T00:00:00.000Z"
 ];
@@ -240,5 +241,27 @@ describe("pullEntities", () => {
 
     const insertValuesMock = (db.insert as jest.Mock).mock.results[0].value.values as jest.Mock;
     expect(insertValuesMock).toHaveBeenCalledWith(expect.objectContaining({ skipSundays: null }));
+  });
+
+  it("parses a loan row's loan_type column into loanType", async () => {
+    mockRanges({ loan: [["ID"], loanRow({ loanType: "open_credit" })] });
+    const db = makeDbStub([[], []]);
+
+    await pullEntities(db);
+
+    const insertValuesMock = (db.insert as jest.Mock).mock.results[0].value.values as jest.Mock;
+    expect(insertValuesMock).toHaveBeenCalledWith(
+      expect.objectContaining({ loanType: "open_credit" })
+    );
+  });
+
+  it("parses a blank loan_type column as null, matching an unset (term) loan's default behavior", async () => {
+    mockRanges({ loan: [["ID"], loanRow()] });
+    const db = makeDbStub([[], []]);
+
+    await pullEntities(db);
+
+    const insertValuesMock = (db.insert as jest.Mock).mock.results[0].value.values as jest.Mock;
+    expect(insertValuesMock).toHaveBeenCalledWith(expect.objectContaining({ loanType: null }));
   });
 });

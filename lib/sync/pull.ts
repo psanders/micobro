@@ -25,7 +25,7 @@ import { ENTITY_RANGES } from "./push";
 import { logger } from "../logger";
 import type { Database } from "../db/client";
 import type { Customer } from "../customers/customer.schema";
-import type { Loan, LoanFrequency, LoanStatus } from "../loans/loan.schema";
+import type { Loan, LoanFrequency, LoanStatus, LoanType } from "../loans/loan.schema";
 
 export const LAST_PULLED_AT_KEY = "lastPulledAt";
 
@@ -66,7 +66,7 @@ function rowToCustomer(row: string[]): Customer | null {
   };
 }
 
-// Inverse of loanRowValues in push.ts — same "Préstamos!A:O" column order.
+// Inverse of loanRowValues in push.ts — same "Préstamos!A:P" column order.
 function rowToLoan(row: string[]): Loan | null {
   const [
     id,
@@ -82,6 +82,7 @@ function rowToLoan(row: string[]): Loan | null {
     moraEnabledRaw,
     moraRateBpsRaw,
     skipSundaysRaw,
+    loanTypeRaw,
     createdAtRaw,
     updatedAtRaw
   ] = row;
@@ -93,6 +94,7 @@ function rowToLoan(row: string[]): Loan | null {
   const moraEnabled = moraEnabledRaw ? moraEnabledRaw.toLowerCase() === "true" : null;
   const moraRateBps = moraRateBpsRaw ? parseNumber(moraRateBpsRaw) : null;
   const skipSundays = skipSundaysRaw ? skipSundaysRaw.toLowerCase() === "true" : null;
+  const loanType = loanTypeRaw ? (loanTypeRaw as LoanType) : null;
   const createdAt = createdAtRaw ? parseDate(createdAtRaw) : null;
   const updatedAt = updatedAtRaw ? parseDate(updatedAtRaw) : null;
   if (
@@ -123,6 +125,7 @@ function rowToLoan(row: string[]): Loan | null {
     moraEnabled,
     moraRateBps,
     skipSundays,
+    loanType,
     createdAt,
     updatedAt
   };

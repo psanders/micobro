@@ -81,6 +81,13 @@ export const loans = sqliteTable("loans", {
   // `lib/loans/loanViews.ts`'s `installmentDueDate`). Meaningless for
   // non-daily frequencies.
   skipSundays: integer("skip_sundays", { mode: "boolean" }),
+  // "term" | "open_credit" (crédito abierto). Nullable rather than
+  // backfilled so existing loans need no data migration — null is treated
+  // as "term" at read time (see `lib/loans/loan.schema.ts`'s
+  // `effectiveLoanType`), mirroring the moraEnabled/skipSundays pattern.
+  // Open-credit loans run interest-only cycles on an outstanding capital
+  // balance instead of a fixed cuota schedule — see `lib/loans/openCredit.ts`.
+  loanType: text("loan_type"),
   createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
   updatedAt: integer("updated_at", { mode: "timestamp" }).notNull()
 });

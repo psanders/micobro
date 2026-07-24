@@ -31,14 +31,24 @@ export {
   daysLateExcludingSundays
 } from "./mora";
 export type { MoraPolicy, AccruedMora } from "./mora";
-export { createLoanSchema, loanFrequencies, loanStatuses, DEFAULT_GRACE_DAYS } from "./loan.schema";
+export { openCreditState } from "./openCredit";
+export type { OpenCreditState, OpenCreditCycle, OpenCreditCycleStatus } from "./openCredit";
+export {
+  createLoanSchema,
+  loanFrequencies,
+  loanStatuses,
+  loanTypes,
+  DEFAULT_GRACE_DAYS,
+  effectiveLoanType
+} from "./loan.schema";
 export type {
   CreateLoanInput,
   Loan,
   LoanWithCustomer,
   LoanDetail,
   LoanFrequency,
-  LoanStatus
+  LoanStatus,
+  LoanType
 } from "./loan.schema";
 export type { ListLoansByCustomerInput } from "./listLoansByCustomer";
 export type { GetLoanDetailInput } from "./getLoanDetail";

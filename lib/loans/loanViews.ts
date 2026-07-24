@@ -188,7 +188,11 @@ export function buildLoanDetailView({
     moraDays,
     dueTodayCents: dueTodayLines.reduce((sum, line) => sum + line.amountCents, 0),
     dueTodayLines,
-    schedule
+    schedule,
+    // Callers building an open-credit view override this after the fact
+    // (buildLoanDetailView's cuota/schedule math is term-only) — see
+    // getLoanDetailView.ts / repo/mock/index.ts's viewOf.
+    openCredit: null
   };
 }
 

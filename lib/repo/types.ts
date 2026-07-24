@@ -9,6 +9,7 @@ import type {
   CreateLoanInput,
   LoanFrequency
 } from "../loans/loan.schema";
+import type { OpenCreditCycle } from "../loans/openCredit";
 import type { Payment, CreatePaymentInput, PaymentMethod } from "../payments/payment.schema";
 import type { PushResult } from "../sync/push";
 import type { PullResult } from "../sync/pull";
@@ -74,6 +75,28 @@ export interface CustomerRepo {
   getDetail(id: string): Promise<CustomerDetailView | null>;
 }
 
+/**
+ * Open-credit projection for the 06c/07c screens; `null` for a term loan.
+ * Mirrors `OpenCreditState` (see `lib/loans/openCredit.ts`) but adds the
+ * loan's own rate/frequency, which the screens need to render "5% semanal"
+ * and the after-payment interest preview without a second loan fetch.
+ */
+export interface OpenCreditView {
+  /** Capital pendiente. */
+  balanceCents: number;
+  /** Current-cycle Interés pendiente. */
+  interestDueCents: number;
+  /** Próx. pago. */
+  nextDueDate: Date;
+  /** Per-cycle rate — for "5% semanal" and the after-capital preview. */
+  interestRateBps: number;
+  /** For the freq label and preview math. */
+  frequency: LoanFrequency;
+  isClosed: boolean;
+  /** Historial de ciclos. */
+  cycles: OpenCreditCycle[];
+}
+
 export type CuotaStatus = "paid" | "overdue" | "upcoming";
 
 /** One row of the Plan de pagos. Labels are computed in the UI. */
@@ -125,6 +148,8 @@ export interface LoanDetailView {
   dueTodayCents: number;
   dueTodayLines: DueTodayLine[];
   schedule: LoanScheduleItem[];
+  /** Populated instead of the term fields above's meaningful use when this is a crédito abierto loan; `null` for a term loan. */
+  openCredit: OpenCreditView | null;
 }
 
 /** One row of the Histórico de Pagos list. */
@@ -170,6 +195,8 @@ export interface CollectContext {
   moraDays: number;
   remainingInstallments: number;
   remainingBalanceCents: number;
+  /** Set instead when this is a crédito abierto loan; `null` for a term loan. */
+  openCredit: OpenCreditView | null;
 }
 
 export interface ReceiptLine {

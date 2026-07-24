@@ -34,6 +34,7 @@ const loan: Loan = {
   moraEnabled: null,
   moraRateBps: null,
   skipSundays: null,
+  loanType: null,
   createdAt: daysAgo(31),
   updatedAt: daysAgo(31)
 };
@@ -210,6 +211,7 @@ describe("addFrequencyInterval / defaultFirstPaymentDate", () => {
       moraEnabled: null,
       moraRateBps: null,
       skipSundays: null,
+      loanType: null,
       createdAt: now,
       updatedAt: now
     };
@@ -241,6 +243,7 @@ describe("installmentDueDate with skipSundays", () => {
       moraEnabled: null,
       moraRateBps: null,
       skipSundays: null,
+      loanType: null,
       createdAt: saturday,
       updatedAt: saturday,
       ...overrides
