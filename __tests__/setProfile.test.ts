@@ -24,7 +24,6 @@ describe("createSetProfile", () => {
         name: "  Julia Reyes  ",
         avatarKey: "female2",
         businessName: "Financiera Julia",
-        businessNumber: "RNC-123456789",
         phone: "8095551234"
       });
 
@@ -32,7 +31,6 @@ describe("createSetProfile", () => {
       expect(result.name).toBe("Julia Reyes");
       expect(result.avatarKey).toBe("female2");
       expect(result.businessName).toBe("Financiera Julia");
-      expect(result.businessNumber).toBe("RNC-123456789");
       expect(result.phone).toBe("8095551234");
       expect((db as unknown as Record<string, jest.Mock>).insert).toHaveBeenCalledTimes(1);
       expect((db as unknown as Record<string, jest.Mock>).onConflictDoUpdate).toHaveBeenCalledTimes(
@@ -51,7 +49,6 @@ describe("createSetProfile", () => {
       // Assert
       expect(result.avatarKey).toBeNull();
       expect(result.businessName).toBeNull();
-      expect(result.businessNumber).toBeNull();
       expect(result.phone).toBeNull();
     });
   });

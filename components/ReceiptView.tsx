@@ -20,8 +20,8 @@ export interface ReceiptViewData {
   method: string;
   lines: ReceiptLine[];
   totalCents: number;
-  /** Lender's business number, shown after "Gracias por su pago." — omitted entirely when unset. */
-  businessNumber?: string | null;
+  /** Lender's contact phone, shown after the thank-you line — omitted entirely when unset. */
+  phone?: string | null;
 }
 
 function Row({ label, value }: { label: string; value: string }) {
@@ -66,10 +66,8 @@ export const ReceiptView = forwardRef<View, { data: ReceiptViewData }>(({ data }
       <View style={s.dashedDivider} />
 
       <View style={s.footer}>
-        <Text style={s.thanks}>Gracias por su pago.</Text>
-        {data.businessNumber && (
-          <Text style={s.businessNumber}>Número de negocio: {data.businessNumber}</Text>
-        )}
+        <Text style={s.thanks}>Gracias por su pago</Text>
+        {data.phone && <Text style={s.contact}>Tel: {data.phone}</Text>}
       </View>
     </View>
   );
@@ -149,7 +147,7 @@ const s = StyleSheet.create({
     fontSize: 11,
     color: colors.ink
   },
-  businessNumber: {
+  contact: {
     fontFamily: fonts.regular,
     fontSize: 10,
     color: colors.slate

@@ -1,1 +1,0 @@
-ALTER TABLE `profile` ADD `business_number` text;

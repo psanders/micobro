@@ -43,7 +43,6 @@ export function EditProfileScreen() {
   const [name, setName] = useState("");
   const [avatarKey, setAvatarKey] = useState<AvatarKey | undefined>(undefined);
   const [businessName, setBusinessName] = useState("");
-  const [businessNumber, setBusinessNumber] = useState("");
   const [phone, setPhone] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -53,7 +52,6 @@ export function EditProfileScreen() {
     setName(profile.data.name);
     setAvatarKey((profile.data.avatarKey as AvatarKey | null) ?? undefined);
     setBusinessName(profile.data.businessName ?? "");
-    setBusinessNumber(profile.data.businessNumber ?? "");
     setPhone(profile.data.phone ?? "");
   }, [profile.data]);
 
@@ -65,7 +63,6 @@ export function EditProfileScreen() {
         name,
         avatarKey,
         businessName: businessName || undefined,
-        businessNumber: businessNumber || undefined,
         phone: phone || undefined
       });
       router.back();
@@ -117,15 +114,6 @@ export function EditProfileScreen() {
           <View style={styles.field}>
             <Text style={styles.label}>Nombre del negocio (opcional)</Text>
             <TextInput style={styles.input} value={businessName} onChangeText={setBusinessName} />
-          </View>
-
-          <View style={styles.field}>
-            <Text style={styles.label}>Número de negocio (opcional)</Text>
-            <TextInput
-              style={styles.input}
-              value={businessNumber}
-              onChangeText={setBusinessNumber}
-            />
           </View>
 
           <View style={styles.field}>

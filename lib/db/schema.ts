@@ -44,7 +44,6 @@ export const profile = sqliteTable("profile", {
   name: text("name").notNull(),
   avatarKey: text("avatar_key"),
   businessName: text("business_name"),
-  businessNumber: text("business_number"),
   phone: text("phone"),
   createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
   updatedAt: integer("updated_at", { mode: "timestamp" }).notNull()

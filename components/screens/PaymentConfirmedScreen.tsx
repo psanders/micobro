@@ -56,7 +56,7 @@ export function PaymentConfirmedScreen({
   const profileRepo = useProfileRepo();
   const profile = useAsync(() => profileRepo.get(), []);
   const lenderName = profile.data?.businessName || profile.data?.name || "MICOBRO";
-  const businessNumber = profile.data?.businessNumber ?? null;
+  const phone = profile.data?.phone ?? null;
 
   const receiptViewData = useMemo<ReceiptViewData>(
     () => ({
@@ -67,18 +67,9 @@ export function PaymentConfirmedScreen({
       method: methodLabel,
       lines,
       totalCents,
-      businessNumber
+      phone
     }),
-    [
-      lenderName,
-      receiptNumber,
-      customerName,
-      paidAtLabel,
-      methodLabel,
-      lines,
-      totalCents,
-      businessNumber
-    ]
+    [lenderName, receiptNumber, customerName, paidAtLabel, methodLabel, lines, totalCents, phone]
   );
 
   const handlePrint = async () => {
@@ -97,7 +88,7 @@ export function PaymentConfirmedScreen({
         method: methodLabel,
         lines,
         totalCents,
-        businessNumber
+        phone
       });
     } finally {
       setPrinting(false);

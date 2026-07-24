@@ -26,7 +26,6 @@ export function createSetProfile({ db }: SetProfileDeps) {
       name: params.name,
       avatarKey: params.avatarKey ?? null,
       businessName: params.businessName ?? null,
-      businessNumber: params.businessNumber ?? null,
       phone: params.phone ?? null,
       createdAt: now,
       updatedAt: now
@@ -41,7 +40,6 @@ export function createSetProfile({ db }: SetProfileDeps) {
           name: row.name,
           avatarKey: row.avatarKey,
           businessName: row.businessName,
-          businessNumber: row.businessNumber,
           phone: row.phone,
           updatedAt: row.updatedAt
         }
@@ -51,7 +49,6 @@ export function createSetProfile({ db }: SetProfileDeps) {
       name: row.name,
       avatarKey: row.avatarKey,
       businessName: row.businessName,
-      businessNumber: row.businessNumber,
       phone: row.phone
     };
   };

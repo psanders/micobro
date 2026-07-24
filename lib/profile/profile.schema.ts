@@ -37,7 +37,6 @@ export const setProfileSchema = z.object({
     .transform((v) => v.trim()),
   avatarKey: z.enum(AVATAR_KEYS).optional(),
   businessName: z.string().optional(),
-  businessNumber: z.string().optional(),
   phone: z.string().optional()
 });
 
@@ -53,11 +52,5 @@ export interface Profile {
   name: string;
   avatarKey: string | null;
   businessName: string | null;
-  /**
-   * The lender's registered business/tax identifier (RNC or similar),
-   * printed on receipts as "Número de negocio" when set — see
-   * `components/ReceiptView.tsx` and `lib/printer.ts`.
-   */
-  businessNumber: string | null;
   phone: string | null;
 }

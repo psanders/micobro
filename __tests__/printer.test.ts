@@ -48,24 +48,17 @@ describe("buildReceiptBytes", () => {
     expect(text).toContain("RD$5,150.00");
   });
 
-  it("prints the business number after the thank-you line when set", () => {
-    const bytes = buildReceiptBytes({ ...sampleReceipt, businessNumber: "RNC-123456789" });
+  it("prints the lender phone after the thank-you line when set", () => {
+    const bytes = buildReceiptBytes({ ...sampleReceipt, phone: "809-555-0143" });
     const text = new TextDecoder().decode(bytes);
-    const thanksIndex = text.indexOf("Gracias por su pago.");
-    const businessNumberIndex = text.indexOf("Numero de negocio: RNC-123456789");
-    expect(thanksIndex).toBeGreaterThan(-1);
-    expect(businessNumberIndex).toBeGreaterThan(thanksIndex);
+    const thanksAt = text.indexOf("Gracias por su pago");
+    const telAt = text.indexOf("Tel: 809-555-0143");
+    expect(telAt).toBeGreaterThan(thanksAt);
   });
 
-  it("omits the business number line entirely when unset", () => {
+  it("omits the phone line when phone is unset", () => {
     const bytes = buildReceiptBytes(sampleReceipt);
     const text = new TextDecoder().decode(bytes);
-    expect(text).not.toContain("Numero de negocio");
-  });
-
-  it("omits the business number line when explicitly null", () => {
-    const bytes = buildReceiptBytes({ ...sampleReceipt, businessNumber: null });
-    const text = new TextDecoder().decode(bytes);
-    expect(text).not.toContain("Numero de negocio");
+    expect(text).not.toContain("Tel:");
   });
 });

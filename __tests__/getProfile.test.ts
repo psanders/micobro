@@ -19,7 +19,6 @@ describe("createGetProfile", () => {
       name: "Julia Reyes",
       avatarKey: "female2",
       businessName: null,
-      businessNumber: null,
       phone: null,
       createdAt: new Date("2026-01-01T00:00:00Z"),
       updatedAt: new Date("2026-01-01T00:00:00Z")
@@ -35,7 +34,6 @@ describe("createGetProfile", () => {
       name: "Julia Reyes",
       avatarKey: "female2",
       businessName: null,
-      businessNumber: null,
       phone: null
     });
   });
