@@ -1,7 +1,7 @@
 # Ship checkpoint — loan-creation-fidelity
 
 Started: 2026-07-24
-Current stage: 1 — Design (Pencil)
+Current stage: Committed + PR #66 (2026-07-24). Remaining: OpenSpec archive (blocked) + optional Pencil parity.
 
 **Scope:** Change 1 of the Loans-screen epic. Two coupled items on the Nuevo
 Préstamo flow:
@@ -29,8 +29,11 @@ cluster on the way (item 3, partial).
 | 2 | Spec reconcile | done | Delta ADDS "Equal-size installments" to loan-configuration (worked examples: 15000/10%/12→1375 all equal; /7→2357+2358 last). `openspec validate --strict` PASSES. Promotion deferred to Sync; archive 44+6 FIRST so loan-configuration exists in main specs before this change lands. |
 | 3 | Build | done | Sonnet subagent: `components/SelectField.tsx` (new); `NewLoanFormScreen.tsx` (Frecuencia→select, Tipo de préstamo select, green switch, client card, reorder, Primer pago kept); `loanMath.ts` equal whole-peso cuota (PESO_CENTS=100, final absorbs remainder). Uncommitted. |
 | 4 | Test | done | Verified by Opus independently: `tsc --noEmit` clean; jest 47 suites / 254 tests pass (8 test files updated for new cuota math). Lint clean modulo stray `.claude/worktrees/`. Manual emulator confirm still pending (app on PIN lock — needs user). |
-| 5 | Sync | pending | Gate. Order: `openspec archive` 6,44,3,5 (user runs — classifier-blocked for me), THEN this change. |
-| 6 | Archive | pending | Gate. |
+| 5 | Sync | pending | Committed as PROPOSAL in PR #66. Formal spec promotion still pending: `openspec archive` 6,44,3,5 (user runs — classifier-blocked for me), THEN this change. |
+| 6 | Archive | pending | Post-merge (or when unblocked). |
+
+**Committed:** `feat(loans): Nuevo Préstamo design fidelity + equal-size cuotas` → PR #66
+(https://github.com/psanders/micobro/pull/66). Off `main`. `pencil.pen` intentionally NOT committed.
 
 Status values: `pending` · `in-progress` · `done` · `skipped` (with reason).
 
