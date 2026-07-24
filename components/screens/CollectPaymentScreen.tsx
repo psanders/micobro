@@ -35,6 +35,7 @@ import type { PaymentMethod } from "../../lib/payments/payment.schema";
 import type { ReceiptLine } from "../../lib/repo/types";
 
 type PayOption = "arrears" | "cuota" | "mora" | "settle" | "custom";
+type OpenCreditPayOption = "interest" | "interest_capital";
 
 export function CollectPaymentScreen({ loanId }: { loanId: string }) {
   const router = useRouter();
@@ -47,8 +48,30 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
   const [submitting, setSubmitting] = useState(false);
   const customInputRef = useRef<TextInput>(null);
 
+  // Crédito abierto (07c): "Solo interés" vs "Interés + capital", with a
+  // lender-entered capital amount for the latter.
+  const [ocOption, setOcOption] = useState<OpenCreditPayOption>("interest");
+  const [ocCapitalText, setOcCapitalText] = useState("");
+
   const context = useAsync(() => paymentRepo.getCollectContext(loanId), [loanId]);
   const ctx = context.data;
+  const oc = ctx?.openCredit ?? null;
+
+  const ocCapitalCents = useMemo(() => {
+    const n = Number(ocCapitalText.replace(/[,.]/g, ""));
+    return Number.isFinite(n) && n > 0 ? Math.round(n * 100) : 0;
+  }, [ocCapitalText]);
+  const ocInterestCents = oc?.interestDueCents ?? 0;
+  // Only actually applied to the total/preview when "Interés + capital" is
+  // the selected option — the input stays live either way so its pill
+  // preview updates as the lender types.
+  const ocCapitalPortion = ocOption === "interest_capital" ? ocCapitalCents : 0;
+  const ocAmountCents = ocInterestCents + ocCapitalPortion;
+  const ocBalanceAfterCents = Math.max(0, (oc?.balanceCents ?? 0) - ocCapitalPortion);
+  const ocNextInterestCents = oc
+    ? Math.round((ocBalanceAfterCents * oc.interestRateBps) / 10000)
+    : 0;
+  const ocCurrentCycle = oc && oc.cycles.length > 0 ? oc.cycles[oc.cycles.length - 1]! : null;
 
   const cuota = ctx?.cuotaCents ?? 0;
   const mora = ctx?.moraCents ?? 0;
@@ -158,15 +181,26 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
       : `${options.find((o) => o.key === effectiveOption)?.label ?? ""} seleccionado`;
 
   const handleConfirm = async () => {
-    if (!ctx || submitting || amount <= 0) return;
+    if (!ctx || submitting) return;
+    const isOpenCredit = ctx.openCredit !== null;
+    const totalCents = isOpenCredit ? ocAmountCents : amount;
+    if (totalCents <= 0) return;
+
     setSubmitting(true);
     try {
+      const lines: ReceiptLine[] = isOpenCredit
+        ? [
+            { label: "Interés", amountCents: ocInterestCents },
+            ...(ocCapitalPortion > 0 ? [{ label: "Capital", amountCents: ocCapitalPortion }] : [])
+          ]
+        : breakdown;
+
       const receipt = await paymentRepo.collect({
         loanId: ctx.loanId,
-        amountCents: amount,
+        amountCents: totalCents,
         method,
-        moraCents: split.moraPortionCents,
-        lines: breakdown
+        moraCents: isOpenCredit ? 0 : split.moraPortionCents,
+        lines
       });
       router.replace({
         pathname: "/pago-confirmado",
@@ -192,6 +226,177 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
 
       {context.loading || !ctx ? (
         <ActivityIndicator color={colors.brandDeep} style={styles.loading} />
+      ) : ctx.openCredit ? (
+        <>
+          <ScrollView contentContainerStyle={styles.content}>
+            <View style={styles.clientRow}>
+              <Avatar avatarKey={ctx.customerAvatarKey} name={ctx.customerName} size={40} />
+              <View style={styles.clientText}>
+                <Text style={styles.clientName}>{ctx.customerName}</Text>
+                <Text style={styles.clientMeta}>
+                  {ctx.business ? `${ctx.business} · ` : ""}Préstamo #{ctx.loanCode}
+                </Text>
+              </View>
+            </View>
+
+            <View style={styles.ocBanner}>
+              <Text style={styles.ocBannerTitle}>
+                {ocCurrentCycle
+                  ? `Ciclo ${ocCurrentCycle.index} · Del ${formatShortDate(ocCurrentCycle.start)} al ${formatShortDate(ocCurrentCycle.end)}`
+                  : ""}
+              </Text>
+              <Text style={styles.ocBannerSub}>
+                Capital actual: {formatCurrency(ctx.openCredit.balanceCents)}
+              </Text>
+            </View>
+
+            <View style={styles.ocInterestCard}>
+              <SectionLabel>INTERÉS PENDIENTE</SectionLabel>
+              <Text style={styles.ocInterestAmount}>{formatCurrency(ocInterestCents)}</Text>
+            </View>
+
+            <View style={styles.section}>
+              <SectionLabel>OPCIONES DE PAGO</SectionLabel>
+              <View style={styles.ocOptions}>
+                <Pressable
+                  style={[
+                    styles.ocOptionCard,
+                    ocOption === "interest" && styles.ocOptionCardSelected
+                  ]}
+                  onPress={() => setOcOption("interest")}
+                >
+                  <View style={styles.ocOptionHeader}>
+                    <View style={styles.ocOptionTextWrap}>
+                      <Text style={styles.ocOptionTitle}>Solo interés</Text>
+                      <Text style={styles.ocOptionSubtitle}>Mantiene el capital pendiente</Text>
+                    </View>
+                    <View
+                      style={[styles.ocRadio, ocOption === "interest" && styles.ocRadioSelected]}
+                    >
+                      {ocOption === "interest" ? (
+                        <Feather name="check" size={14} color={colors.white} />
+                      ) : null}
+                    </View>
+                  </View>
+                  <View style={styles.ocPayPill}>
+                    <Text style={styles.ocPayPillLabel}>A pagar</Text>
+                    <Text style={styles.ocPayPillValue}>{formatCurrency(ocInterestCents)}</Text>
+                  </View>
+                </Pressable>
+
+                <Pressable
+                  style={[
+                    styles.ocOptionCard,
+                    ocOption === "interest_capital" && styles.ocOptionCardSelected
+                  ]}
+                  onPress={() => setOcOption("interest_capital")}
+                >
+                  <View style={styles.ocOptionHeader}>
+                    <View style={styles.ocOptionTextWrap}>
+                      <Text style={styles.ocOptionTitle}>Interés + capital</Text>
+                      <Text style={styles.ocOptionSubtitle}>
+                        Reduce el capital y siguiente interés
+                      </Text>
+                    </View>
+                    <View
+                      style={[
+                        styles.ocRadio,
+                        ocOption === "interest_capital" && styles.ocRadioSelected
+                      ]}
+                    >
+                      {ocOption === "interest_capital" ? (
+                        <Feather name="check" size={14} color={colors.white} />
+                      ) : null}
+                    </View>
+                  </View>
+                  <Text style={styles.ocCapitalLabel}>Capital a pagar</Text>
+                  <View style={styles.customInputCard}>
+                    <Text style={styles.customInputLabel}>RD$</Text>
+                    <TextInput
+                      style={styles.customInput}
+                      value={ocCapitalText}
+                      onChangeText={setOcCapitalText}
+                      keyboardType="numeric"
+                      placeholder="0"
+                      placeholderTextColor={colors.slate}
+                    />
+                  </View>
+                  <View style={[styles.ocPayPill, styles.ocPayPillGreen]}>
+                    <Text style={styles.ocPayPillLabel}>A pagar</Text>
+                    <Text style={[styles.ocPayPillValue, styles.ocPayPillValueGreen]}>
+                      {formatCurrency(ocInterestCents + ocCapitalCents)}
+                    </Text>
+                  </View>
+                </Pressable>
+              </View>
+            </View>
+
+            <View style={styles.section}>
+              <SectionLabel>DESPUÉS DEL PAGO</SectionLabel>
+              <View style={styles.ocAfterCard}>
+                <KvRow label="Capital restante" value={formatCurrency(ocBalanceAfterCents)} />
+                <View style={styles.divider} />
+                <KvRow
+                  label={`Próx. interés (${oc ? oc.interestRateBps / 100 : 0}%)`}
+                  value={formatCurrency(ocNextInterestCents)}
+                />
+              </View>
+            </View>
+
+            <View style={styles.section}>
+              <SectionLabel>MÉTODO DE PAGO</SectionLabel>
+              <View style={styles.methodRow}>
+                <Pressable
+                  style={[styles.methodBtn, method === "cash" && styles.methodBtnActive]}
+                  onPress={() => setMethod("cash")}
+                >
+                  <MaterialCommunityIcons
+                    name="cash"
+                    size={18}
+                    color={method === "cash" ? colors.white : colors.brandDeep}
+                  />
+                  <Text style={[styles.methodText, method === "cash" && styles.methodTextActive]}>
+                    Efectivo
+                  </Text>
+                </Pressable>
+                <Pressable
+                  style={[styles.methodBtn, method === "transfer" && styles.methodBtnActive]}
+                  onPress={() => setMethod("transfer")}
+                >
+                  <MaterialCommunityIcons
+                    name="swap-horizontal"
+                    size={18}
+                    color={method === "transfer" ? colors.white : colors.brandDeep}
+                  />
+                  <Text
+                    style={[styles.methodText, method === "transfer" && styles.methodTextActive]}
+                  >
+                    Transferencia
+                  </Text>
+                </Pressable>
+              </View>
+            </View>
+          </ScrollView>
+
+          <Pressable
+            style={[
+              styles.cta,
+              { paddingBottom: 18 + insets.bottom },
+              (submitting || ocAmountCents <= 0) && styles.ctaDisabled
+            ]}
+            disabled={submitting || ocAmountCents <= 0}
+            onPress={handleConfirm}
+          >
+            {submitting ? (
+              <ActivityIndicator color={colors.white} />
+            ) : (
+              <Feather name="check" size={20} color={colors.white} />
+            )}
+            <Text style={styles.ctaText}>
+              {submitting ? "Procesando..." : `Confirmar pago ${formatCurrency(ocAmountCents)}`}
+            </Text>
+          </Pressable>
+        </>
       ) : (
         <>
           <ScrollView contentContainerStyle={styles.content}>
@@ -402,5 +607,68 @@ const styles = StyleSheet.create({
     paddingTop: 18
   },
   ctaDisabled: { opacity: 0.6 },
-  ctaText: { fontSize: 15, fontFamily: fonts.bold, color: colors.white }
+  ctaText: { fontSize: 15, fontFamily: fonts.bold, color: colors.white },
+  divider: { height: 1, backgroundColor: colors.actionBarBorder },
+  ocBanner: {
+    backgroundColor: colors.mist,
+    borderRadius: 14,
+    padding: 16,
+    gap: 8
+  },
+  ocBannerTitle: { fontSize: 12, fontFamily: fonts.semiBold, color: colors.brandPrimary },
+  ocBannerSub: { fontSize: 13, fontFamily: fonts.medium, color: colors.brandPrimary },
+  ocInterestCard: {
+    backgroundColor: colors.white,
+    borderRadius: 18,
+    padding: 16,
+    gap: 10
+  },
+  ocInterestAmount: { fontSize: 32, fontFamily: fonts.bold, color: "#1A1A1A" },
+  ocOptions: { gap: 12 },
+  ocOptionCard: {
+    backgroundColor: colors.white,
+    borderRadius: 14,
+    padding: 16,
+    gap: 12,
+    borderWidth: 1,
+    borderColor: colors.actionBarBorder
+  },
+  ocOptionCardSelected: { borderWidth: 2, borderColor: colors.brandDeep },
+  ocOptionHeader: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between"
+  },
+  ocOptionTextWrap: { flex: 1, gap: 4 },
+  ocOptionTitle: { fontSize: 14, fontFamily: fonts.bold, color: "#1A1A1A" },
+  ocOptionSubtitle: { fontSize: 12, fontFamily: fonts.medium, color: "#5B6B7A" },
+  ocRadio: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: colors.actionBarBorder,
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  ocRadioSelected: { backgroundColor: colors.brandDeep },
+  ocCapitalLabel: { fontSize: 12, fontFamily: fonts.semiBold, color: "#5B6B7A" },
+  ocPayPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "#F0F9FF",
+    borderRadius: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 12
+  },
+  ocPayPillGreen: { backgroundColor: "#F0FDF4" },
+  ocPayPillLabel: { fontSize: 12, fontFamily: fonts.medium, color: "#5B6B7A" },
+  ocPayPillValue: { fontSize: 16, fontFamily: fonts.bold, color: colors.brandDeep },
+  ocPayPillValueGreen: { color: "#10B981" },
+  ocAfterCard: {
+    backgroundColor: "#F9FAFB",
+    borderRadius: 10,
+    padding: 12,
+    gap: 8
+  }
 });

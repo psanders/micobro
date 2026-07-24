@@ -47,6 +47,7 @@ const loanPayload = JSON.stringify({
   moraEnabled: null,
   moraRateBps: null,
   skipSundays: null,
+  loanType: null,
   createdAt: "2026-01-01T00:00:00.000Z",
   updatedAt: "2026-01-01T00:00:00.000Z"
 });
@@ -216,7 +217,7 @@ describe("pushPendingMutations", () => {
     const result = await pushPendingMutations(db);
 
     // Assert
-    expect(appendRowMock).toHaveBeenCalledWith("sheet-1", "Préstamos!A:O", [
+    expect(appendRowMock).toHaveBeenCalledWith("sheet-1", "Préstamos!A:P", [
       "loan-1",
       "customer-1",
       500000,
@@ -225,6 +226,7 @@ describe("pushPendingMutations", () => {
       "weekly",
       "2026-01-01T00:00:00.000Z",
       "active",
+      "",
       "",
       "",
       "",
@@ -252,6 +254,7 @@ describe("pushPendingMutations", () => {
       moraEnabled: true,
       moraRateBps: 1500,
       skipSundays: null,
+      loanType: null,
       createdAt: "2026-01-01T00:00:00.000Z",
       updatedAt: "2026-01-01T00:00:00.000Z"
     });
@@ -272,7 +275,7 @@ describe("pushPendingMutations", () => {
     // Assert
     expect(appendRowMock).toHaveBeenCalledWith(
       "sheet-1",
-      "Préstamos!A:O",
+      "Préstamos!A:P",
       expect.arrayContaining(["TRUE", 1500])
     );
   });
@@ -293,6 +296,7 @@ describe("pushPendingMutations", () => {
       moraEnabled: false,
       moraRateBps: null,
       skipSundays: null,
+      loanType: null,
       createdAt: "2026-01-01T00:00:00.000Z",
       updatedAt: "2026-01-01T00:00:00.000Z"
     });
@@ -313,7 +317,7 @@ describe("pushPendingMutations", () => {
     // Assert
     expect(appendRowMock).toHaveBeenCalledWith(
       "sheet-1",
-      "Préstamos!A:O",
+      "Préstamos!A:P",
       expect.arrayContaining(["FALSE", ""])
     );
   });
@@ -334,6 +338,7 @@ describe("pushPendingMutations", () => {
       moraEnabled: null,
       moraRateBps: null,
       skipSundays: true,
+      loanType: null,
       createdAt: "2026-01-01T00:00:00.000Z",
       updatedAt: "2026-01-01T00:00:00.000Z"
     });
@@ -354,7 +359,7 @@ describe("pushPendingMutations", () => {
     // Assert
     expect(appendRowMock).toHaveBeenCalledWith(
       "sheet-1",
-      "Préstamos!A:O",
+      "Préstamos!A:P",
       expect.arrayContaining(["TRUE"])
     );
   });
@@ -375,7 +380,70 @@ describe("pushPendingMutations", () => {
     // Act
     await pushPendingMutations(db);
 
-    // Assert — last value before createdAt/updatedAt is the blank skip_sundays column
+    // Assert — skip_sundays is the 2nd-to-last column before loanType/createdAt/updatedAt
+    const values = appendRowMock.mock.calls[0][2] as unknown[];
+    expect(values[values.length - 4]).toBe("");
+  });
+
+  it("emits loanType losslessly for an open-credit loan", async () => {
+    // Arrange
+    const openCreditPayload = JSON.stringify({
+      id: "loan-5",
+      customerId: "customer-1",
+      principalCents: 1000000,
+      interestRateBps: 500,
+      termCount: 0,
+      frequency: "weekly",
+      startDate: "2026-01-01T00:00:00.000Z",
+      status: "active",
+      notes: null,
+      graceDays: null,
+      moraEnabled: null,
+      moraRateBps: null,
+      skipSundays: null,
+      loanType: "open_credit",
+      createdAt: "2026-01-01T00:00:00.000Z",
+      updatedAt: "2026-01-01T00:00:00.000Z"
+    });
+    const mutation = {
+      id: "m3g",
+      entity: "loan",
+      entityId: "loan-5",
+      operation: "create",
+      payload: openCreditPayload,
+      status: "pending",
+      retryCount: 0
+    };
+    const db = makeDbStub([mutation]);
+
+    // Act
+    await pushPendingMutations(db);
+
+    // Assert
+    expect(appendRowMock).toHaveBeenCalledWith(
+      "sheet-1",
+      "Préstamos!A:P",
+      expect.arrayContaining(["open_credit"])
+    );
+  });
+
+  it("emits blank loanType for a term loan (loanType: null)", async () => {
+    // Arrange — loanPayload has loanType: null, same as an unset (term) loan
+    const mutation = {
+      id: "m3h",
+      entity: "loan",
+      entityId: "loan-1",
+      operation: "create",
+      payload: loanPayload,
+      status: "pending",
+      retryCount: 0
+    };
+    const db = makeDbStub([mutation]);
+
+    // Act
+    await pushPendingMutations(db);
+
+    // Assert — loanType is the column immediately before createdAt/updatedAt
     const values = appendRowMock.mock.calls[0][2] as unknown[];
     expect(values[values.length - 3]).toBe("");
   });
@@ -401,7 +469,7 @@ describe("pushPendingMutations", () => {
     expect(readRangeMock).toHaveBeenCalledWith("sheet-1", "Préstamos!A:A");
     expect(updateRowMock).toHaveBeenCalledWith(
       "sheet-1",
-      "Préstamos!A2:O2",
+      "Préstamos!A2:P2",
       expect.arrayContaining(["loan-1"])
     );
     expect(appendRowMock).not.toHaveBeenCalled();

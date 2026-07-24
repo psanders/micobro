@@ -139,6 +139,7 @@ export const loanFixtures: Loan[] = [
     moraEnabled: null,
     moraRateBps: null,
     skipSundays: null,
+    loanType: null,
     createdAt: daysAgo(28),
     updatedAt: daysAgo(28)
   },
@@ -157,6 +158,7 @@ export const loanFixtures: Loan[] = [
     moraEnabled: null,
     moraRateBps: null,
     skipSundays: null,
+    loanType: null,
     createdAt: daysAgo(200),
     updatedAt: daysAgo(30)
   },
@@ -175,6 +177,7 @@ export const loanFixtures: Loan[] = [
     moraEnabled: null,
     moraRateBps: null,
     skipSundays: null,
+    loanType: null,
     createdAt: daysAgo(31),
     updatedAt: daysAgo(31)
   },
@@ -193,6 +196,7 @@ export const loanFixtures: Loan[] = [
     moraEnabled: null,
     moraRateBps: null,
     skipSundays: null,
+    loanType: null,
     createdAt: daysAgo(20),
     updatedAt: daysAgo(20)
   },
@@ -211,6 +215,7 @@ export const loanFixtures: Loan[] = [
     moraEnabled: null,
     moraRateBps: null,
     skipSundays: null,
+    loanType: null,
     createdAt: daysAgo(42),
     updatedAt: daysAgo(42)
   },
@@ -229,6 +234,7 @@ export const loanFixtures: Loan[] = [
     moraEnabled: null,
     moraRateBps: null,
     skipSundays: null,
+    loanType: null,
     createdAt: daysAgo(49),
     updatedAt: daysAgo(49)
   },
@@ -246,6 +252,7 @@ export const loanFixtures: Loan[] = [
     moraEnabled: null,
     moraRateBps: null,
     skipSundays: null,
+    loanType: null,
     createdAt: daysAgo(400),
     updatedAt: daysAgo(390)
   },
@@ -264,6 +271,7 @@ export const loanFixtures: Loan[] = [
     moraEnabled: null,
     moraRateBps: null,
     skipSundays: null,
+    loanType: null,
     createdAt: daysAgo(5),
     updatedAt: daysAgo(5)
   },
@@ -282,6 +290,7 @@ export const loanFixtures: Loan[] = [
     moraEnabled: null,
     moraRateBps: null,
     skipSundays: null,
+    loanType: null,
     createdAt: daysAgo(21),
     updatedAt: daysAgo(21)
   },
@@ -300,8 +309,31 @@ export const loanFixtures: Loan[] = [
     moraEnabled: null,
     moraRateBps: null,
     skipSundays: null,
+    loanType: null,
     createdAt: daysAgo(28),
     updatedAt: daysAgo(28)
+  },
+  // Luis Pérez's crédito abierto: RD$10,000 capital @ 5%/cycle (500 bps),
+  // semanal. Cycles 1–2 paid interest-only (RD$500 each, balance unchanged);
+  // cycle 3 (current) is still pending — the exemplar for Pass 2's
+  // open-credit detail/collect screens (see lib/loans/openCredit.ts).
+  {
+    id: "loan-11",
+    customerId: "customer-5",
+    principalCents: 1000000,
+    interestRateBps: 500,
+    termCount: 0,
+    frequency: "weekly",
+    startDate: daysAgo(21),
+    status: "active",
+    notes: null,
+    graceDays: null,
+    moraEnabled: null,
+    moraRateBps: null,
+    skipSundays: null,
+    loanType: "open_credit",
+    createdAt: daysAgo(21),
+    updatedAt: daysAgo(21)
   }
 ];
 
@@ -365,7 +397,12 @@ export const paymentFixtures: Payment[] = [
   // loan-10 (Ramón Ortiz): cuotas 1–3.
   payment("payment-27", "loan-10", 195000, daysAgo(21)),
   payment("payment-28", "loan-10", 195000, daysAgo(14)),
-  payment("payment-29", "loan-10", 195000, daysAgo(7))
+  payment("payment-29", "loan-10", 195000, daysAgo(7)),
+  // loan-11 (Luis Pérez, crédito abierto): two interest-only cycles
+  // (RD$500 each, see lib/loans/openCredit.ts) — balance stays RD$10,000,
+  // cycle 3 (current) is still pending.
+  payment("payment-30", "loan-11", 50000, daysAgo(18)),
+  payment("payment-31", "loan-11", 50000, daysAgo(11))
 ];
 
 /** Ana Figueroa's route-day promise ("Mañana 3pm") already recorded as a visit. */

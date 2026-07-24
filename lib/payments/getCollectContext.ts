@@ -8,10 +8,12 @@ import { customers, loans, payments } from "../db/schema";
 import { buildLoanDetailView, loanCode } from "../loans/loanViews";
 import { cuotaCents } from "../loans/loanMath";
 import { computeLoanMora, loanMoraPolicy } from "../loans/mora";
+import { effectiveLoanType } from "../loans/loan.schema";
+import { openCreditState } from "../loans/openCredit";
 import type { Customer } from "../customers/customer.schema";
 import type { Loan } from "../loans/loan.schema";
 import type { Payment } from "./payment.schema";
-import type { CollectContext } from "../repo/types";
+import type { CollectContext, OpenCreditView } from "../repo/types";
 import type { Database } from "../db/client";
 
 export interface GetCollectContextDeps {
@@ -43,6 +45,38 @@ export function createGetCollectContext({ db }: GetCollectContextDeps) {
       .from(payments)
       .where(eq(payments.loanId, loanId))) as Payment[];
 
+    const customerName = customer?.name ?? "Cliente";
+
+    if (effectiveLoanType(loan) === "open_credit") {
+      const state = openCreditState(loan, loanPayments, new Date());
+      const openCredit: OpenCreditView = {
+        balanceCents: state.balanceCents,
+        interestDueCents: state.interestDueCents,
+        nextDueDate: state.nextDueDate,
+        interestRateBps: loan.interestRateBps,
+        frequency: loan.frequency,
+        isClosed: state.isClosed,
+        cycles: state.cycles
+      };
+      return {
+        loanId: loan.id,
+        loanCode: loanCode(loan.id),
+        customerId: loan.customerId,
+        customerName,
+        customerAvatarKey: null,
+        business: null,
+        // "Solo interés" is the default amount for an open-credit cobro.
+        cuotaCents: state.interestDueCents,
+        // Meaningless for open credit — no fixed installment schedule.
+        currentInstallmentNumber: 0,
+        moraCents: 0,
+        moraDays: 0,
+        remainingInstallments: 0,
+        remainingBalanceCents: state.balanceCents,
+        openCredit
+      };
+    }
+
     const { moraCents, moraDays } = computeLoanMora(
       loan,
       loanPayments,
@@ -52,7 +86,7 @@ export function createGetCollectContext({ db }: GetCollectContextDeps) {
 
     const view = buildLoanDetailView({
       loan,
-      customerName: customer?.name ?? "Cliente",
+      customerName,
       business: null,
       payments: loanPayments,
       moraCents,
@@ -72,7 +106,8 @@ export function createGetCollectContext({ db }: GetCollectContextDeps) {
       moraCents,
       moraDays,
       remainingInstallments: view.installmentsTotal - view.installmentsPaid,
-      remainingBalanceCents: view.balanceCents
+      remainingBalanceCents: view.balanceCents,
+      openCredit: null
     };
   };
 

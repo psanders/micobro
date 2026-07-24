@@ -43,6 +43,7 @@ const TAB_HEADERS: Record<string, string[]> = {
     "Mora activa",
     "Mora (bps)",
     "Salta domingos",
+    "Tipo",
     "Creado",
     "Actualizado"
   ],

@@ -64,6 +64,13 @@
       "when": 1784924376188,
       "tag": "0008_friendly_zaladane",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1784927453018,
+      "tag": "0009_lethal_cassandra_nova",
+      "breakpoints": true
     }
   ]
 }

@@ -15,10 +15,12 @@ import {
 } from "../../customers/customer.schema";
 import {
   createLoanSchema,
+  effectiveLoanType,
   type Loan,
   type LoanWithCustomer,
   type LoanDetail
 } from "../../loans/loan.schema";
+import { openCreditState } from "../../loans/openCredit";
 import { createPaymentSchema, type Payment } from "../../payments/payment.schema";
 import { setProfileSchema, type Profile } from "../../profile/profile.schema";
 import {
@@ -44,7 +46,7 @@ import { routeDayFixture } from "./routeFixtures";
 import { normalizeText } from "../../utils/text";
 import { createMockSyncRepo } from "./syncRepo.mock";
 import type { CashClose } from "../../cashClose/cashClose.schema";
-import type { CustomerActivityItem, LoanDetailView, Repos } from "../types";
+import type { CustomerActivityItem, LoanDetailView, OpenCreditView, Repos } from "../types";
 
 export function createMockRepos(): Repos {
   const customers: Customer[] = customerFixtures.map((c) => ({ ...c }));
@@ -76,15 +78,51 @@ export function createMockRepos(): Repos {
 
   const viewOf = (loan: Loan): LoanDetailView => {
     const customer = customers.find((c) => c.id === loan.customerId);
+    const customerName = customer?.name ?? "Cliente";
+    const business = metaOf(loan.customerId)?.business ?? null;
+    const loanPayments = payments.filter((p) => p.loanId === loan.id);
+
+    if (effectiveLoanType(loan) === "open_credit") {
+      const ocState = openCreditState(loan, loanPayments, new Date());
+      const base = buildLoanDetailView({
+        loan,
+        customerName,
+        business,
+        payments: loanPayments,
+        moraCents: 0,
+        moraDays: 0
+      });
+      const openCredit: OpenCreditView = {
+        balanceCents: ocState.balanceCents,
+        interestDueCents: ocState.interestDueCents,
+        nextDueDate: ocState.nextDueDate,
+        interestRateBps: loan.interestRateBps,
+        frequency: loan.frequency,
+        isClosed: ocState.isClosed,
+        cycles: ocState.cycles
+      };
+      return {
+        ...base,
+        balanceCents: ocState.balanceCents,
+        nextDueDate: ocState.nextDueDate,
+        moraCents: 0,
+        moraDays: 0,
+        openCredit
+      };
+    }
+
     const state = moraOf(loan.id);
-    return buildLoanDetailView({
-      loan,
-      customerName: customer?.name ?? "Cliente",
-      business: metaOf(loan.customerId)?.business ?? null,
-      payments: payments.filter((p) => p.loanId === loan.id),
-      moraCents: state.moraCents,
-      moraDays: state.moraDays
-    });
+    return {
+      ...buildLoanDetailView({
+        loan,
+        customerName,
+        business,
+        payments: loanPayments,
+        moraCents: state.moraCents,
+        moraDays: state.moraDays
+      }),
+      openCredit: null
+    };
   };
 
   const createCustomer = withErrorHandlingAndValidation(async (params): Promise<Customer> => {
@@ -121,12 +159,16 @@ export function createMockRepos(): Repos {
 
   const createLoan = withErrorHandlingAndValidation(async (params): Promise<Loan> => {
     const now = new Date();
+    const isOpenCredit = params.loanType === "open_credit";
     const loan: Loan = {
       id: Crypto.randomUUID(),
       customerId: params.customerId,
       principalCents: params.principal,
       interestRateBps: Math.round(params.interestRate * 100),
-      termCount: params.termCount,
+      // See lib/loans/createLoan.ts's real-repo counterpart: open credit has
+      // no fixed term, so 0 is a safe placeholder the open-credit paths
+      // never read.
+      termCount: isOpenCredit ? 0 : (params.termCount as number),
       frequency: params.frequency,
       startDate: params.startDate ?? now,
       status: "active",
@@ -135,6 +177,7 @@ export function createMockRepos(): Repos {
       moraEnabled: params.moraEnabled ?? null,
       moraRateBps: params.moraRate != null ? Math.round(params.moraRate * 100) : null,
       skipSundays: params.skipSundays ?? null,
+      loanType: isOpenCredit ? "open_credit" : null,
       createdAt: now,
       updatedAt: now
     };
@@ -294,6 +337,25 @@ export function createMockRepos(): Repos {
         const loan = loans.find((l) => l.id === loanId);
         if (!loan) return null;
         const view = viewOf(loan);
+
+        if (view.openCredit) {
+          return {
+            loanId: loan.id,
+            loanCode: loanCode(loan.id),
+            customerId: loan.customerId,
+            customerName: view.customerName,
+            customerAvatarKey: metaOf(loan.customerId)?.avatarKey ?? null,
+            business: view.business,
+            cuotaCents: view.openCredit.interestDueCents,
+            currentInstallmentNumber: 0,
+            moraCents: 0,
+            moraDays: 0,
+            remainingInstallments: 0,
+            remainingBalanceCents: view.balanceCents,
+            openCredit: view.openCredit
+          };
+        }
+
         const state = moraOf(loanId);
         const cuota = cuotaCents(loan.principalCents, loan.interestRateBps, loan.termCount);
         return {
@@ -308,7 +370,8 @@ export function createMockRepos(): Repos {
           moraCents: state.moraCents,
           moraDays: state.moraDays,
           remainingInstallments: view.installmentsTotal - view.installmentsPaid,
-          remainingBalanceCents: view.balanceCents
+          remainingBalanceCents: view.balanceCents,
+          openCredit: null
         };
       },
       collect: async (input) => {

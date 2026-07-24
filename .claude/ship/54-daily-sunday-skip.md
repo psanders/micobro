@@ -1,7 +1,7 @@
 # Ship checkpoint — 54-daily-sunday-skip
 
 Started: 2026-07-24
-Current stage: 3 — Build (Sonnet)
+Current stage: Committed + PR #67 (2026-07-24), rebased onto main after #66 merged. Remaining: OpenSpec archive + Pencil parity.
 
 **Scope:** Change 2 of the Loans-screen epic (#54). Per-loan "Saltar domingos"
 toggle on daily loans: no cuota falls due on a Sunday (Sunday → Monday), and

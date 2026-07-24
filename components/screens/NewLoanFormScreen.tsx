@@ -19,7 +19,8 @@ import { useAsync } from "../../lib/hooks/useAsync";
 import {
   loanFrequencies,
   DEFAULT_GRACE_DAYS,
-  type LoanFrequency
+  type LoanFrequency,
+  type LoanType
 } from "../../lib/loans/loan.schema";
 import { loanCostSummary } from "../../lib/loans/loanMath";
 import { addFrequencyInterval, addNonSundayDays } from "../../lib/loans/loanViews";
@@ -40,12 +41,15 @@ const frequencyLabels: Record<LoanFrequency, string> = {
 };
 
 /**
- * "Tipo de préstamo" only has one option today (Tradicional/"term") — a UI
- * placeholder matching the pencil.pen design ahead of a future change
- * (Crédito Abierto) that adds the second option and wires it up. Not
- * persisted: `loanRepo.create` has no `loanType` field yet.
+ * "Tipo de préstamo": Tradicional (term, fixed cuotas) or Crédito Abierto
+ * (open credit, interest-only cycles on an outstanding capital — see
+ * `lib/loans/openCredit.ts`). Selecting Crédito Abierto hides the fields
+ * that only make sense for a term loan (Plazo, mora, Saltar domingos).
  */
-const loanTypeOptions = [{ value: "term", label: "Tradicional" }];
+const loanTypeOptions: { value: LoanType; label: string }[] = [
+  { value: "term", label: "Tradicional" },
+  { value: "open_credit", label: "Crédito Abierto" }
+];
 
 /**
  * Cycling presets for "primer pago" (first payment date), same pattern as
@@ -80,7 +84,7 @@ export function NewLoanFormScreen({ customerId: initialCustomerId }: { customerI
   // Once a customer is picked, collapse the chip list behind the selected
   // card; "Cambiar" reopens it. Starts open when there's nothing picked yet.
   const [showClientPicker, setShowClientPicker] = useState(!initialCustomerId);
-  const [loanType, setLoanType] = useState("term");
+  const [loanType, setLoanType] = useState<LoanType>("term");
   const [principal, setPrincipal] = useState("");
   const [interestRate, setInterestRate] = useState("");
   const [termCount, setTermCount] = useState("");
@@ -94,6 +98,7 @@ export function NewLoanFormScreen({ customerId: initialCustomerId }: { customerI
   const [submitting, setSubmitting] = useState(false);
 
   const selectedCustomer = (customers ?? []).find((customer) => customer.id === customerId);
+  const isOpenCredit = loanType === "open_credit";
 
   // Changing the frequency changes what "healthy default" means (mañana vs.
   // en 1 semana), so a preset the lender picked for the old frequency isn't
@@ -118,7 +123,7 @@ export function NewLoanFormScreen({ customerId: initialCustomerId }: { customerI
   const interestRateValue = Number(interestRate);
   const termCountValue = Number(termCount);
   const costPreview =
-    principalValue > 0 && termCountValue > 0 && Number.isInteger(termCountValue)
+    !isOpenCredit && principalValue > 0 && termCountValue > 0 && Number.isInteger(termCountValue)
       ? loanCostSummary({
           principalCents: toCents(principalValue),
           interestRateBps: Math.round((interestRateValue || 0) * 100),
@@ -139,15 +144,22 @@ export function NewLoanFormScreen({ customerId: initialCustomerId }: { customerI
         customerId,
         principal: Number(principal),
         interestRate: Number(interestRate),
-        termCount: Number(termCount),
+        // Open credit has no fixed term — omitted (not just undefined) so
+        // createLoanSchema's .refine (term-only requirement) is satisfied.
+        ...(!isOpenCredit && { termCount: Number(termCount) }),
         frequency,
         startDate,
-        graceDays: graceDays.trim() === "" ? undefined : Number(graceDays),
-        moraEnabled,
-        ...(moraEnabled && {
-          moraRate: moraRate.trim() === "" ? undefined : Number(moraRate)
+        loanType: isOpenCredit ? "open_credit" : undefined,
+        // Mora and Saltar domingos are meaningless for open credit — no
+        // mora ever applies to it (capitalization is the penalty instead).
+        ...(!isOpenCredit && {
+          graceDays: graceDays.trim() === "" ? undefined : Number(graceDays),
+          moraEnabled,
+          ...(moraEnabled && {
+            moraRate: moraRate.trim() === "" ? undefined : Number(moraRate)
+          })
         }),
-        ...(frequency === "daily" && { skipSundays })
+        ...(frequency === "daily" && !isOpenCredit && { skipSundays })
       });
       router.back();
     } catch (err) {
@@ -238,7 +250,7 @@ export function NewLoanFormScreen({ customerId: initialCustomerId }: { customerI
           </Pressable>
         </View>
 
-        {frequency === "daily" && (
+        {frequency === "daily" && !isOpenCredit && (
           <View style={[styles.field, styles.switchRow]}>
             <Text style={styles.label}>Saltar domingos</Text>
             <Toggle value={skipSundays} onValueChange={setSkipSundays} />
@@ -256,21 +268,25 @@ export function NewLoanFormScreen({ customerId: initialCustomerId }: { customerI
           />
         </View>
 
-        <View style={styles.field}>
-          <Text style={styles.label}>Plazo (número de cuotas)</Text>
-          <TextInput
-            style={styles.input}
-            keyboardType="number-pad"
-            value={termCount}
-            // Cuotas are whole numbers — strip anything but digits so a
-            // stray decimal can't reach the integer schema validation.
-            onChangeText={(t) => setTermCount(t.replace(/[^0-9]/g, ""))}
-            placeholder="12"
-          />
-        </View>
+        {!isOpenCredit && (
+          <View style={styles.field}>
+            <Text style={styles.label}>Plazo (número de cuotas)</Text>
+            <TextInput
+              style={styles.input}
+              keyboardType="number-pad"
+              value={termCount}
+              // Cuotas are whole numbers — strip anything but digits so a
+              // stray decimal can't reach the integer schema validation.
+              onChangeText={(t) => setTermCount(t.replace(/[^0-9]/g, ""))}
+              placeholder="12"
+            />
+          </View>
+        )}
 
         <View style={styles.field}>
-          <Text style={styles.label}>Tasa de interés (%)</Text>
+          <Text style={styles.label}>
+            {isOpenCredit ? "Interés por ciclo (%)" : "Tasa de interés (%)"}
+          </Text>
           <TextInput
             style={styles.input}
             keyboardType="numeric"
@@ -280,12 +296,14 @@ export function NewLoanFormScreen({ customerId: initialCustomerId }: { customerI
           />
         </View>
 
-        <View style={[styles.field, styles.switchRow]}>
-          <Text style={styles.label}>Cobrar mora por atraso</Text>
-          <Toggle value={moraEnabled} onValueChange={setMoraEnabled} />
-        </View>
+        {!isOpenCredit && (
+          <View style={[styles.field, styles.switchRow]}>
+            <Text style={styles.label}>Cobrar mora por atraso</Text>
+            <Toggle value={moraEnabled} onValueChange={setMoraEnabled} />
+          </View>
+        )}
 
-        {moraEnabled && (
+        {!isOpenCredit && moraEnabled && (
           <>
             <View style={styles.field}>
               <Text style={styles.label}>Período de gracia (días)</Text>

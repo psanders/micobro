@@ -7,10 +7,12 @@ import { withErrorHandlingAndValidation } from "../utils/withErrorHandlingAndVal
 import { customers, loans, payments } from "../db/schema";
 import { buildLoanDetailView } from "./loanViews";
 import { computeLoanMora, loanMoraPolicy } from "./mora";
+import { effectiveLoanType } from "./loan.schema";
+import { openCreditState } from "./openCredit";
 import type { Customer } from "../customers/customer.schema";
 import type { Loan } from "./loan.schema";
 import type { Payment } from "../payments/payment.schema";
-import type { LoanDetailView } from "../repo/types";
+import type { LoanDetailView, OpenCreditView } from "../repo/types";
 import type { Database } from "../db/client";
 
 export interface GetLoanDetailViewDeps {
@@ -41,6 +43,42 @@ export function createGetLoanDetailView({ db }: GetLoanDetailViewDeps) {
       .from(payments)
       .where(eq(payments.loanId, id))) as Payment[];
 
+    const customerName = customer?.name ?? "Cliente";
+
+    if (effectiveLoanType(loan) === "open_credit") {
+      // Open credit has no cuota schedule or mora — its balance/interest
+      // come from the cycle-replay engine, not computeLoanMora/cuota math
+      // (those are term-only). buildLoanDetailView still gives us a
+      // consistent base shape (termCount 0 → empty schedule, no crash); we
+      // just override the fields that mean something different here.
+      const state = openCreditState(loan, loanPayments, new Date());
+      const base = buildLoanDetailView({
+        loan,
+        customerName,
+        business: null,
+        payments: loanPayments,
+        moraCents: 0,
+        moraDays: 0
+      });
+      const openCredit: OpenCreditView = {
+        balanceCents: state.balanceCents,
+        interestDueCents: state.interestDueCents,
+        nextDueDate: state.nextDueDate,
+        interestRateBps: loan.interestRateBps,
+        frequency: loan.frequency,
+        isClosed: state.isClosed,
+        cycles: state.cycles
+      };
+      return {
+        ...base,
+        balanceCents: state.balanceCents,
+        nextDueDate: state.nextDueDate,
+        moraCents: 0,
+        moraDays: 0,
+        openCredit
+      };
+    }
+
     const { moraCents, moraDays } = computeLoanMora(
       loan,
       loanPayments,
@@ -48,14 +86,17 @@ export function createGetLoanDetailView({ db }: GetLoanDetailViewDeps) {
       loanMoraPolicy(loan)
     );
 
-    return buildLoanDetailView({
-      loan,
-      customerName: customer?.name ?? "Cliente",
-      business: null,
-      payments: loanPayments,
-      moraCents,
-      moraDays
-    });
+    return {
+      ...buildLoanDetailView({
+        loan,
+        customerName,
+        business: null,
+        payments: loanPayments,
+        moraCents,
+        moraDays
+      }),
+      openCredit: null
+    };
   };
 
   return withErrorHandlingAndValidation(fn, getLoanDetailViewSchema);

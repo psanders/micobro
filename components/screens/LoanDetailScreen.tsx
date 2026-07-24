@@ -17,7 +17,7 @@ import {
 } from "react-native";
 import { useRouter, useFocusEffect } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { MaterialCommunityIcons, Feather } from "@expo/vector-icons";
 import { useLoanRepo } from "../../lib/repo/RepoProvider";
 import { useAsync } from "../../lib/hooks/useAsync";
 import { formatCurrency } from "../../lib/utils/money";
@@ -28,8 +28,10 @@ import { SectionLabel } from "../SectionLabel";
 import { ProgressBar } from "../ProgressBar";
 import { MetaChip } from "../MetaChip";
 import { CuotaRow } from "../CuotaRow";
+import { KvRow } from "../KvRow";
 import { colors, fonts } from "../../lib/ui/theme";
-import type { DueTodayLine } from "../../lib/repo/types";
+import type { DueTodayLine, OpenCreditView } from "../../lib/repo/types";
+import type { OpenCreditCycle } from "../../lib/loans/openCredit";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -40,6 +42,32 @@ function dueLineLabel(line: DueTodayLine): string {
   }
   const when = line.dueDate ? (isToday(line.dueDate) ? "hoy" : formatShortDate(line.dueDate)) : "";
   return `Cuota ${line.installmentNumber}${when ? ` · ${when}` : ""}`;
+}
+
+/** "Historial de ciclos" row style: green+check for anything that covered
+ * its interest (in full or with capital), amber+alert for a cycle still
+ * pending or one whose interest got capitalized (skipped). */
+function cycleRowIsSettled(status: OpenCreditCycle["status"]): boolean {
+  return status === "paid" || status === "interest_only" || status === "interest_plus_capital";
+}
+
+function cycleAmountLabel(cycle: OpenCreditCycle): string {
+  if (cycle.status === "pending") {
+    return cycle.capitalPaidCents > 0
+      ? `Int: ${formatCurrency(cycle.interestDueCents)} + Cap: ${formatCurrency(cycle.capitalPaidCents)}`
+      : `Int: ${formatCurrency(cycle.interestDueCents)}`;
+  }
+  if (cycle.status === "skipped") {
+    return formatCurrency(cycle.interestDueCents);
+  }
+  return formatCurrency(cycle.paidCents);
+}
+
+/** "5% semanal" — frequencyLabels' nouns ("Semanal") double as the lowercase
+ * per-cycle adjective the design wants. */
+function rateLabel(openCredit: OpenCreditView): string {
+  const rate = openCredit.interestRateBps / 100;
+  return `${rate}% ${frequencyLabels[openCredit.frequency].toLowerCase()}`;
 }
 
 export function LoanDetailScreen({ loanId }: { loanId: string }) {
@@ -94,106 +122,168 @@ export function LoanDetailScreen({ loanId }: { loanId: string }) {
       ) : (
         <>
           <ScrollView contentContainerStyle={styles.content}>
-            <View style={styles.chips}>
-              <MetaChip>{frequencyLabels[loan.frequency]}</MetaChip>
-              {termDays > 0 ? <MetaChip>{`${termDays} días`}</MetaChip> : null}
-              {loan.endDate ? (
-                <MetaChip>{`Vence ${formatShortDate(loan.endDate)}`}</MetaChip>
-              ) : null}
-            </View>
+            {loan.openCredit ? (
+              <>
+                <View style={styles.chips}>
+                  <MetaChip>{frequencyLabels[loan.frequency]}</MetaChip>
+                  <MetaChip>{loan.openCredit.isClosed ? "Cerrado" : "Activo"}</MetaChip>
+                </View>
 
-            <View style={styles.summary}>
-              <Text style={styles.summaryLabel}>BALANCE PENDIENTE</Text>
-              <Text style={styles.summaryAmount}>{formatCurrency(loan.balanceCents)}</Text>
-              <Text style={styles.summaryCaption}>
-                Total a pagar {formatCurrency(loan.totalRepayCents)}
-                {loan.totalInterestCents > 0
-                  ? ` · Interés ${formatCurrency(loan.totalInterestCents)}`
-                  : ""}
-              </Text>
-              <ProgressBar
-                progress={
-                  loan.paidCents + loan.balanceCents > 0
-                    ? loan.paidCents / (loan.paidCents + loan.balanceCents)
-                    : 0
-                }
-                trackColor={colors.brandPrimary}
-                fillColor={colors.white}
-              />
-              <View style={styles.summaryGrid}>
-                <View>
-                  <Text style={styles.summaryCellLabel}>Pagado</Text>
-                  <Text style={styles.summaryCellValue}>{formatCurrency(loan.paidCents)}</Text>
-                </View>
-                <View>
-                  <Text style={styles.summaryCellLabel}>Cuota</Text>
-                  <Text style={styles.summaryCellValue}>
-                    {loan.installmentsPaid} / {loan.installmentsTotal}
+                <View style={styles.summary}>
+                  <Text style={styles.summaryLabel}>CAPITAL PENDIENTE</Text>
+                  <Text style={styles.summaryAmount}>
+                    {formatCurrency(loan.openCredit.balanceCents)}
                   </Text>
                 </View>
-                <View>
-                  <Text style={styles.summaryCellLabel}>Próxima</Text>
-                  <Text style={styles.summaryCellValue}>
-                    {loan.nextDueDate ? formatShortDate(loan.nextDueDate) : "—"}
-                  </Text>
-                </View>
-              </View>
-            </View>
 
-            <View style={styles.dueCard}>
-              <View style={styles.dueTop}>
-                <View style={styles.dueTitleWrap}>
-                  <Text style={styles.dueLabel}>TOTAL A PAGAR HOY</Text>
-                  <Text style={styles.dueSub}>Lo que el cliente debe entregar ahora</Text>
+                <View style={styles.dueCard}>
+                  <KvRow label="Tasa de interés" value={rateLabel(loan.openCredit)} />
+                  <View style={styles.divider} />
+                  <KvRow label="Próx. pago" value={formatShortDate(loan.openCredit.nextDueDate)} />
+                  <View style={styles.divider} />
+                  <KvRow
+                    label="Interés pendiente"
+                    value={formatCurrency(loan.openCredit.interestDueCents)}
+                    valueColor={colors.amber}
+                  />
                 </View>
-                <View style={styles.dueAmountRow}>
-                  <Text style={[styles.dueCurrency, !hasArrears && styles.dueAmountOk]}>RD$</Text>
-                  <Text style={[styles.dueAmount, !hasArrears && styles.dueAmountOk]}>
-                    {(loan.dueTodayCents / 100).toLocaleString("es-DO")}
-                  </Text>
-                </View>
-              </View>
-              <View style={styles.divider} />
-              <View style={styles.dueLines}>
-                {loan.dueTodayLines.map((line, index) => (
-                  <View key={index} style={styles.dueLine}>
-                    <View style={styles.dueLineLeft}>
+
+                <SectionLabel>HISTORIAL DE CICLOS</SectionLabel>
+                <View style={styles.ocCycles}>
+                  {loan.openCredit.cycles.map((cycle) => {
+                    const settled = cycleRowIsSettled(cycle.status);
+                    return (
                       <View
+                        key={cycle.index}
                         style={[
-                          styles.dueDot,
-                          line.kind === "mora" && { backgroundColor: colors.orangeDeep }
+                          styles.ocCycleRow,
+                          settled ? styles.ocCycleRowPaid : styles.ocCycleRowAmber
                         ]}
-                      />
-                      <Text style={styles.dueLineText}>{dueLineLabel(line)}</Text>
+                      >
+                        <Text style={[styles.ocCycleName, !settled && styles.ocCycleTextAmber]}>
+                          Ciclo {cycle.index}
+                        </Text>
+                        <View style={styles.ocCycleRight}>
+                          <Text style={[styles.ocCycleAmount, !settled && styles.ocCycleTextAmber]}>
+                            {cycleAmountLabel(cycle)}
+                          </Text>
+                          {settled ? (
+                            <Feather name="check" size={16} color="#10B981" />
+                          ) : (
+                            <Feather name="alert-circle" size={16} color={colors.amber} />
+                          )}
+                        </View>
+                      </View>
+                    );
+                  })}
+                </View>
+              </>
+            ) : (
+              <>
+                <View style={styles.chips}>
+                  <MetaChip>{frequencyLabels[loan.frequency]}</MetaChip>
+                  {termDays > 0 ? <MetaChip>{`${termDays} días`}</MetaChip> : null}
+                  {loan.endDate ? (
+                    <MetaChip>{`Vence ${formatShortDate(loan.endDate)}`}</MetaChip>
+                  ) : null}
+                </View>
+
+                <View style={styles.summary}>
+                  <Text style={styles.summaryLabel}>BALANCE PENDIENTE</Text>
+                  <Text style={styles.summaryAmount}>{formatCurrency(loan.balanceCents)}</Text>
+                  <Text style={styles.summaryCaption}>
+                    Total a pagar {formatCurrency(loan.totalRepayCents)}
+                    {loan.totalInterestCents > 0
+                      ? ` · Interés ${formatCurrency(loan.totalInterestCents)}`
+                      : ""}
+                  </Text>
+                  <ProgressBar
+                    progress={
+                      loan.paidCents + loan.balanceCents > 0
+                        ? loan.paidCents / (loan.paidCents + loan.balanceCents)
+                        : 0
+                    }
+                    trackColor={colors.brandPrimary}
+                    fillColor={colors.white}
+                  />
+                  <View style={styles.summaryGrid}>
+                    <View>
+                      <Text style={styles.summaryCellLabel}>Pagado</Text>
+                      <Text style={styles.summaryCellValue}>{formatCurrency(loan.paidCents)}</Text>
                     </View>
-                    <Text style={styles.dueLineAmount}>{formatCurrency(line.amountCents)}</Text>
+                    <View>
+                      <Text style={styles.summaryCellLabel}>Cuota</Text>
+                      <Text style={styles.summaryCellValue}>
+                        {loan.installmentsPaid} / {loan.installmentsTotal}
+                      </Text>
+                    </View>
+                    <View>
+                      <Text style={styles.summaryCellLabel}>Próxima</Text>
+                      <Text style={styles.summaryCellValue}>
+                        {loan.nextDueDate ? formatShortDate(loan.nextDueDate) : "—"}
+                      </Text>
+                    </View>
                   </View>
-                ))}
-              </View>
-            </View>
+                </View>
 
-            <View style={styles.planHead}>
-              <SectionLabel>PLAN DE PAGOS</SectionLabel>
-              <Pressable hitSlop={8} onPress={() => router.push(`/loans/${loan.id}/historial`)}>
-                <Text style={styles.planLink}>Ver historial ›</Text>
-              </Pressable>
-            </View>
+                <View style={styles.dueCard}>
+                  <View style={styles.dueTop}>
+                    <View style={styles.dueTitleWrap}>
+                      <Text style={styles.dueLabel}>TOTAL A PAGAR HOY</Text>
+                      <Text style={styles.dueSub}>Lo que el cliente debe entregar ahora</Text>
+                    </View>
+                    <View style={styles.dueAmountRow}>
+                      <Text style={[styles.dueCurrency, !hasArrears && styles.dueAmountOk]}>
+                        RD$
+                      </Text>
+                      <Text style={[styles.dueAmount, !hasArrears && styles.dueAmountOk]}>
+                        {(loan.dueTodayCents / 100).toLocaleString("es-DO")}
+                      </Text>
+                    </View>
+                  </View>
+                  <View style={styles.divider} />
+                  <View style={styles.dueLines}>
+                    {loan.dueTodayLines.map((line, index) => (
+                      <View key={index} style={styles.dueLine}>
+                        <View style={styles.dueLineLeft}>
+                          <View
+                            style={[
+                              styles.dueDot,
+                              line.kind === "mora" && { backgroundColor: colors.orangeDeep }
+                            ]}
+                          />
+                          <Text style={styles.dueLineText}>{dueLineLabel(line)}</Text>
+                        </View>
+                        <Text style={styles.dueLineAmount}>{formatCurrency(line.amountCents)}</Text>
+                      </View>
+                    ))}
+                  </View>
+                </View>
 
-            <View style={styles.schedule}>
-              {loan.schedule.map((item) => (
-                <CuotaRow
-                  key={item.number}
-                  name={`Cuota ${item.number}`}
-                  date={
-                    item.status === "overdue"
-                      ? `${formatShortDate(item.dueDate)} · ATRASO`
-                      : formatShortDate(item.dueDate)
-                  }
-                  amount={formatCurrency(item.amountCents)}
-                  status={item.status}
-                />
-              ))}
-            </View>
+                <View style={styles.planHead}>
+                  <SectionLabel>PLAN DE PAGOS</SectionLabel>
+                  <Pressable hitSlop={8} onPress={() => router.push(`/loans/${loan.id}/historial`)}>
+                    <Text style={styles.planLink}>Ver historial ›</Text>
+                  </Pressable>
+                </View>
+
+                <View style={styles.schedule}>
+                  {loan.schedule.map((item) => (
+                    <CuotaRow
+                      key={item.number}
+                      name={`Cuota ${item.number}`}
+                      date={
+                        item.status === "overdue"
+                          ? `${formatShortDate(item.dueDate)} · ATRASO`
+                          : formatShortDate(item.dueDate)
+                      }
+                      amount={formatCurrency(item.amountCents)}
+                      status={item.status}
+                    />
+                  ))}
+                </View>
+              </>
+            )}
           </ScrollView>
 
           <View style={[styles.actionBar, { paddingBottom: 14 + insets.bottom }]}>
@@ -279,6 +369,20 @@ const styles = StyleSheet.create({
   planHead: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   planLink: { fontSize: 11, fontFamily: fonts.bold, color: colors.brandDeep },
   schedule: { gap: 6 },
+  ocCycles: { gap: 6 },
+  ocCycleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderRadius: 12,
+    padding: 12
+  },
+  ocCycleRowPaid: { backgroundColor: "#F0FDF4" },
+  ocCycleRowAmber: { backgroundColor: "#FEF3C7" },
+  ocCycleName: { fontSize: 13, fontFamily: fonts.semiBold, color: "#1A1A1A" },
+  ocCycleRight: { flexDirection: "row", alignItems: "center", gap: 8 },
+  ocCycleAmount: { fontSize: 13, fontFamily: fonts.semiBold, color: "#1A1A1A" },
+  ocCycleTextAmber: { color: "#92400E" },
   actionBar: {
     flexDirection: "row",
     gap: 10,
