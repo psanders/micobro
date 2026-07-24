@@ -46,9 +46,32 @@ export function effectiveGraceDays(loan: Loan): number {
   return loan.graceDays ?? DEFAULT_GRACE_DAYS;
 }
 
-/** `DEFAULT_MORA_POLICY` with `graceDays` resolved from the loan itself. */
+/**
+ * Default mora rate in basis points (1000 = 10% / 30 días), applied when a
+ * loan's own `moraRateBps` is unset (`null`) — matches `DEFAULT_MORA_POLICY.rate`.
+ */
+export const DEFAULT_MORA_RATE_BPS = 1000;
+
+/** Whether a loan charges mora at all — `null`/unset defaults to enabled. */
+export function isMoraEnabled(loan: Loan): boolean {
+  return loan.moraEnabled ?? true;
+}
+
+/** A loan's configured mora rate in basis points, defaulting unset loans to 10%. */
+export function effectiveMoraRateBps(loan: Loan): number {
+  return loan.moraRateBps ?? DEFAULT_MORA_RATE_BPS;
+}
+
+/**
+ * `DEFAULT_MORA_POLICY` with `graceDays` and `rate` resolved from the loan
+ * itself — `rate` is zeroed when the loan has mora disabled.
+ */
 export function loanMoraPolicy(loan: Loan): MoraPolicy {
-  return { ...DEFAULT_MORA_POLICY, graceDays: effectiveGraceDays(loan) };
+  return {
+    ...DEFAULT_MORA_POLICY,
+    rate: isMoraEnabled(loan) ? effectiveMoraRateBps(loan) / 10000 : 0,
+    graceDays: effectiveGraceDays(loan)
+  };
 }
 
 export interface AccruedMora {

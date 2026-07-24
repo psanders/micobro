@@ -10,7 +10,10 @@ import {
   oldestOverdueInstallment,
   computeLoanMora,
   DEFAULT_MORA_POLICY,
+  DEFAULT_MORA_RATE_BPS,
   effectiveGraceDays,
+  isMoraEnabled,
+  effectiveMoraRateBps,
   loanMoraPolicy
 } from "../lib/loans/mora";
 import { MORA_NOTE } from "../lib/loans/loanViews";
@@ -36,6 +39,8 @@ const baseLoan: Loan = {
   status: "active",
   notes: null,
   graceDays: null,
+  moraEnabled: null,
+  moraRateBps: null,
   createdAt: daysAgo(28),
   updatedAt: daysAgo(28)
 };
@@ -256,5 +261,96 @@ describe("computeLoanMora wired to a loan's own grace period", () => {
 
     // Assert
     expect(result.moraCents).toBeGreaterThan(0);
+  });
+});
+
+describe("isMoraEnabled", () => {
+  it("defaults an unset loan to enabled", () => {
+    // Act + Assert
+    expect(isMoraEnabled({ ...baseLoan, moraEnabled: null })).toBe(true);
+  });
+
+  it("is disabled when the loan explicitly sets moraEnabled to false", () => {
+    // Act + Assert
+    expect(isMoraEnabled({ ...baseLoan, moraEnabled: false })).toBe(false);
+  });
+
+  it("stays enabled when the loan explicitly sets moraEnabled to true", () => {
+    // Act + Assert
+    expect(isMoraEnabled({ ...baseLoan, moraEnabled: true })).toBe(true);
+  });
+});
+
+describe("effectiveMoraRateBps", () => {
+  it("defaults an unset loan to DEFAULT_MORA_RATE_BPS", () => {
+    // Act + Assert
+    expect(effectiveMoraRateBps({ ...baseLoan, moraRateBps: null })).toBe(DEFAULT_MORA_RATE_BPS);
+  });
+
+  it("uses the loan's configured rate when set", () => {
+    // Act + Assert
+    expect(effectiveMoraRateBps({ ...baseLoan, moraRateBps: 500 })).toBe(500);
+  });
+});
+
+describe("loanMoraPolicy wired to a loan's own mora configuration", () => {
+  it("zeroes the rate for a loan with mora disabled", () => {
+    // Act
+    const policy = loanMoraPolicy({ ...baseLoan, moraEnabled: false });
+
+    // Assert
+    expect(policy.rate).toBe(0);
+  });
+
+  it("resolves rate from the loan's own custom mora rate", () => {
+    // Act — 500 bps = 5%
+    const policy = loanMoraPolicy({ ...baseLoan, moraRateBps: 500 });
+
+    // Assert
+    expect(policy.rate).toBe(0.05);
+  });
+
+  it("resolves to the 10% default for a loan that never set moraRateBps", () => {
+    // Act
+    const policy = loanMoraPolicy({ ...baseLoan, moraEnabled: null, moraRateBps: null });
+
+    // Assert
+    expect(policy.rate).toBe(0.1);
+  });
+});
+
+describe("computeLoanMora wired to a loan's own mora configuration", () => {
+  it("never accrues mora for a disabled loan, regardless of days late", () => {
+    // Arrange — cuota1 due 21 days ago on baseLoan, well past any grace period
+    const disabledLoan: Loan = { ...baseLoan, moraEnabled: false };
+
+    // Act
+    const result = computeLoanMora(disabledLoan, [], new Date(), loanMoraPolicy(disabledLoan));
+
+    // Assert
+    expect(result.moraCents).toBe(0);
+  });
+
+  it("accrues mora at the loan's own custom rate", () => {
+    // Arrange — 2000 bps = 20%, double the 10% default; graceDays: 0 so the
+    // full 21 days late accrue (baseLoan's cuota1 due 21 days ago)
+    const customRateLoan: Loan = { ...baseLoan, moraRateBps: 2000, graceDays: 0 };
+
+    // Act
+    const defaultResult = computeLoanMora(
+      { ...baseLoan, graceDays: 0 },
+      [],
+      new Date(),
+      loanMoraPolicy({ ...baseLoan, graceDays: 0 })
+    );
+    const customResult = computeLoanMora(
+      customRateLoan,
+      [],
+      new Date(),
+      loanMoraPolicy(customRateLoan)
+    );
+
+    // Assert — double the rate means double the accrued mora
+    expect(customResult.moraCents).toBe(defaultResult.moraCents * 2);
   });
 });

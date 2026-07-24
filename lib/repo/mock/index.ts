@@ -132,6 +132,8 @@ export function createMockRepos(): Repos {
       status: "active",
       notes: params.notes ?? null,
       graceDays: params.graceDays ?? null,
+      moraEnabled: params.moraEnabled ?? null,
+      moraRateBps: params.moraRate != null ? Math.round(params.moraRate * 100) : null,
       createdAt: now,
       updatedAt: now
     };

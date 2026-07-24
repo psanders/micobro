@@ -44,6 +44,8 @@ function loan(overrides: Partial<Loan>): Loan {
     status: "active",
     notes: null,
     graceDays: null,
+    moraEnabled: null,
+    moraRateBps: null,
     createdAt: daysBeforeToday(10),
     updatedAt: daysBeforeToday(10),
     ...overrides

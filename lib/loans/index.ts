@@ -22,7 +22,10 @@ export {
   computeLoanMora,
   oldestOverdueInstallment,
   DEFAULT_MORA_POLICY,
+  DEFAULT_MORA_RATE_BPS,
   effectiveGraceDays,
+  isMoraEnabled,
+  effectiveMoraRateBps,
   loanMoraPolicy
 } from "./mora";
 export type { MoraPolicy, AccruedMora } from "./mora";

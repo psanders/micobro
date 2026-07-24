@@ -30,6 +30,8 @@ const loan: Loan = {
   status: "active",
   notes: null,
   graceDays: null,
+  moraEnabled: null,
+  moraRateBps: null,
   createdAt: daysAgo(31),
   updatedAt: daysAgo(31)
 };
@@ -198,6 +200,8 @@ describe("addFrequencyInterval / defaultFirstPaymentDate", () => {
       status: "active",
       notes: null,
       graceDays: null,
+      moraEnabled: null,
+      moraRateBps: null,
       createdAt: now,
       updatedAt: now
     };

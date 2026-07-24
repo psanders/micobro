@@ -28,6 +28,14 @@ export const createLoanSchema = z.object({
   // Days of leeway before mora starts accruing on an overdue cuota.
   // Omitted/undefined means "use the default" (DEFAULT_GRACE_DAYS, 7).
   graceDays: z.number().int().nonnegative("El período de gracia no puede ser negativo").optional(),
+  // Whether this loan charges mora at all. Omitted/undefined means "use
+  // the default" (enabled) at the data layer — see `lib/loans/mora.ts`'s
+  // `isMoraEnabled` — though the Nuevo Préstamo form itself defaults its
+  // toggle off, so a newly created loan is opt-in.
+  moraEnabled: z.boolean().optional(),
+  // Percentage (e.g. 10 = 10%), mirroring `interestRate`. Omitted means
+  // "use the default" (DEFAULT_MORA_RATE_BPS, 10%).
+  moraRate: z.number().nonnegative("La tasa de mora no puede ser negativa").optional(),
   notes: z.string().optional()
 });
 
@@ -45,6 +53,10 @@ export interface Loan {
   notes: string | null;
   /** null = use DEFAULT_GRACE_DAYS (7); see `lib/loans/mora.ts`. */
   graceDays: number | null;
+  /** null = enabled (default); only `false` disables mora. See `lib/loans/mora.ts`. */
+  moraEnabled: boolean | null;
+  /** null = use DEFAULT_MORA_RATE_BPS (1000 = 10%); see `lib/loans/mora.ts`. */
+  moraRateBps: number | null;
   createdAt: Date;
   updatedAt: Date;
 }
