@@ -36,8 +36,9 @@ const loan: Loan = {
   updatedAt: daysAgo(31)
 };
 
-// 270000 = the interest-inclusive cuota for principal 2880000 @ 1200 bps / 12
-// (see lib/loans/loanMath.ts).
+// 268800 = the interest-inclusive cuota for principal 2880000 @ 1200 bps / 12
+// (see lib/loans/loanMath.ts); these payments default to a slightly larger
+// 270000 to model a lender who rounds a cobro up in the field.
 const cuotaPayment = (id: string, paidAt: Date, amountCents = 270000): Payment => ({
   id,
   loanId: "loan-3",
@@ -68,7 +69,7 @@ describe("buildLoanDetailView", () => {
 
     expect(view.schedule.slice(0, 3).every((c) => c.status === "paid")).toBe(true);
     expect(view.schedule[3]!.status).toBe("overdue");
-    expect(view.schedule[3]!.amountCents).toBe(345000);
+    expect(view.schedule[3]!.amountCents).toBe(343800);
     expect(view.schedule[4]!.status).toBe("upcoming");
     expect(view.installmentsPaid).toBe(3);
     // totalRepayCents (3225600 = 2880000 principal + 345600 flat interest) - paidCents (810000).
@@ -89,8 +90,12 @@ describe("buildLoanDetailView", () => {
     const scheduledCents = view.schedule.reduce((sum, item) => sum + item.amountCents, 0);
     expect(scheduledCents).toBe(view.totalRepayCents);
     expect(scheduledCents).toBe(3225600);
-    // The naive "cuota × term" a lender might compute overshoots the true total.
-    expect(view.schedule[0]!.amountCents * loan.termCount).toBeGreaterThan(view.totalRepayCents);
+    // For this loan the whole-peso cuota happens to divide the repay amount
+    // evenly, so "cuota × term" already matches the true total exactly — no
+    // absorption needed. loanMath.test.ts's `lastCuotaCents` suite covers
+    // the (more common) case where it doesn't divide evenly and the last
+    // cuota must absorb the remainder.
+    expect(view.schedule[0]!.amountCents * loan.termCount).toBe(view.totalRepayCents);
   });
 
   it("breaks down due-today as overdue cuota + mora line", () => {
@@ -104,12 +109,12 @@ describe("buildLoanDetailView", () => {
       today
     });
 
-    expect(view.dueTodayCents).toBe(345000);
+    expect(view.dueTodayCents).toBe(343800);
     expect(view.dueTodayLines).toHaveLength(2);
     expect(view.dueTodayLines[0]).toMatchObject({
       kind: "installment",
       installmentNumber: 4,
-      amountCents: 270000
+      amountCents: 268800
     });
     expect(view.dueTodayLines[1]).toMatchObject({ kind: "mora", moraDays: 3, amountCents: 75000 });
   });

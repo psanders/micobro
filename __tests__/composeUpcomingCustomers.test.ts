@@ -108,8 +108,9 @@ describe("composeUpcomingCustomers", () => {
   });
 
   it("excludes a fully paid-off loan", () => {
-    // Arrange — principal 40000 @ 1000bps/4 cuotas repays 45000 (interest
-    // folded in, rounded up to the nearest 5000-cent cuota) — pay it all off
+    // Arrange — principal 40000 @ 1000bps/4 cuotas repays 44000 total
+    // (interest folded in, cuota rounded to the nearest whole peso) — pay it
+    // off with a little extra to be sure
     const paidLoan = loan({ id: "loan-paid", startDate: daysBeforeToday(10) });
     const paidPayments = [
       payment({ id: "p-paid", loanId: "loan-paid", amountCents: 45000, paidAt: daysBeforeToday(5) })

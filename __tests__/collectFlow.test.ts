@@ -19,12 +19,12 @@ describe("mock collect flow", () => {
     expect(view).not.toBeNull();
     expect(view!.customerName).toBe("José Núñez");
     expect(view!.moraCents).toBe(75000);
-    expect(view!.dueTodayCents).toBe(345000);
+    expect(view!.dueTodayCents).toBe(343800);
     expect(view!.schedule[3]!.status).toBe("overdue");
 
     const ctx = await repos.payments.getCollectContext("loan-3");
     expect(ctx).toMatchObject({
-      cuotaCents: 270000,
+      cuotaCents: 268800,
       moraCents: 75000,
       moraDays: 3,
       currentInstallmentNumber: 4,
@@ -36,24 +36,24 @@ describe("mock collect flow", () => {
     const repos = createMockRepos();
     const receipt = await repos.payments.collect({
       loanId: "loan-3",
-      amountCents: 345000,
+      amountCents: 343800,
       method: "cash",
       moraCents: 75000,
       lines: [
         { label: "Mora (prioridad)", amountCents: 75000 },
-        { label: "Cuota 4", amountCents: 270000 }
+        { label: "Cuota 4", amountCents: 268800 }
       ]
     });
 
-    expect(receipt.totalCents).toBe(345000);
+    expect(receipt.totalCents).toBe(343800);
     expect(receipt.customerName).toBe("José Núñez");
     expect(receipt.receiptNumber).toMatch(/^R-\d{5}$/);
 
     const view = await repos.loans.getDetailView("loan-3");
     expect(view!.moraCents).toBe(0);
     expect(view!.schedule[3]!.status).toBe("paid");
-    // totalRepayCents (3225600 = 2880000 principal + 345600 flat interest) - paidCents (1080000).
-    expect(view!.balanceCents).toBe(3225600 - 1080000);
+    // totalRepayCents (3225600 = 2880000 principal + 345600 flat interest) - paidCents (1078800).
+    expect(view!.balanceCents).toBe(3225600 - 1078800);
 
     const ctx = await repos.payments.getCollectContext("loan-3");
     expect(ctx!.moraCents).toBe(0);

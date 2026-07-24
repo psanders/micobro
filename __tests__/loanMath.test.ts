@@ -2,11 +2,11 @@
  * Copyright (C) 2026 by Pedro Sanders. MIT License.
  *
  * Flat add-on interest — golden values worked by hand against mikro's
- * `calculateLoanOptions` core (principal × rate, cuota rounded up to
- * CUOTA_ROUNDING_CENTS). See lib/loans/loanMath.ts.
+ * `calculateLoanOptions` core (principal × rate, cuota rounded to the
+ * nearest whole peso). See lib/loans/loanMath.ts.
  */
 import {
-  CUOTA_ROUNDING_CENTS,
+  PESO_CENTS,
   cuotaCents,
   lastCuotaCents,
   loanCostSummary,
@@ -15,8 +15,8 @@ import {
 } from "../lib/loans/loanMath";
 
 describe("loanMath", () => {
-  it("CUOTA_ROUNDING_CENTS is 50 pesos", () => {
-    expect(CUOTA_ROUNDING_CENTS).toBe(5000);
+  it("PESO_CENTS is one peso", () => {
+    expect(PESO_CENTS).toBe(100);
   });
 
   describe("totalInterestCents", () => {
@@ -49,53 +49,58 @@ describe("loanMath", () => {
   describe("cuotaCents", () => {
     it("worked example: principal 1,000,000 cents, 2000 bps, 12 cuotas", () => {
       // totalInterest = 200,000; totalRepay = 1,200,000; raw cuota = 100,000
-      // — already a multiple of 5,000, so rounding is a no-op.
+      // — already a whole-peso amount, so rounding is a no-op.
       expect(totalInterestCents(1000000, 2000)).toBe(200000);
       expect(totalRepayCents(1000000, 2000)).toBe(1200000);
       expect(cuotaCents(1000000, 2000, 12)).toBe(100000);
     });
 
-    it("rounds a fractional cuota up to the next 50 pesos", () => {
+    it("rounds a fractional cuota to the nearest whole peso", () => {
       // totalInterest = round(1,000,000 * 2050 / 10000) = 205,000.
-      // totalRepay = 1,205,000; raw cuota = 100,416.67 → rounds up to 105,000.
+      // totalRepay = 1,205,000; raw cuota = 100,416.67 → rounds to 100,400.
       expect(totalInterestCents(1000000, 2050)).toBe(205000);
-      expect(cuotaCents(1000000, 2050, 12)).toBe(105000);
+      expect(cuotaCents(1000000, 2050, 12)).toBe(100400);
     });
 
     it("matches the mock exemplar loan (José Núñez: 2,880,000 @ 1200 bps / 12)", () => {
       // totalInterest = 345,600; totalRepay = 3,225,600; raw cuota = 268,800
-      // → rounds up to 270,000.
-      expect(cuotaCents(2880000, 1200, 12)).toBe(270000);
+      // — already a whole-peso amount.
+      expect(cuotaCents(2880000, 1200, 12)).toBe(268800);
     });
 
-    it("rounding can dominate on a small loan (see lib/loans/mora.ts test fixtures)", () => {
-      // 120,000 @ 1000 bps / 12: raw cuota is 11,000 but rounds up to 15,000 —
-      // the 50-peso increment is large relative to this loan's size.
-      expect(cuotaCents(120000, 1000, 12)).toBe(15000);
+    it("stays a small, exact peso amount even on a small loan", () => {
+      // 120,000 @ 1000 bps / 12: totalRepay = 132,000, raw cuota = 11,000
+      // — a whole-peso amount already, unlike the old 50-peso rounding
+      // increment which used to inflate this to 15,000.
+      expect(cuotaCents(120000, 1000, 12)).toBe(11000);
     });
 
     it("returns the bare principal-per-term cuota when the rate is zero", () => {
-      expect(cuotaCents(1000000, 0, 12)).toBe(85000); // ceil(83,333.3 / 5000) * 5000
+      // 1,000,000 / 12 = 83,333.33 → rounds to the nearest whole peso, 83,300.
+      expect(cuotaCents(1000000, 0, 12)).toBe(83300);
     });
   });
 
   describe("lastCuotaCents", () => {
-    it("absorbs the rounding remainder — issue #59 (8,000 @ 2750 bps / 30 daily)", () => {
-      // totalRepay = 1,020,000; raw cuota = 34,000 → rounds up to 35,000.
-      // 29 cuotas of 35,000 = 1,015,000, so the last cuota shrinks to 5,000.
-      expect(cuotaCents(800000, 2750, 30)).toBe(35000);
-      expect(lastCuotaCents(800000, 2750, 30)).toBe(5000);
+    it("absorbs the rounding remainder so the schedule reconciles exactly", () => {
+      // 1,000,000 @ 2050 bps / 12: cuota rounds to 100,400 (see cuotaCents
+      // above). 11 cuotas of 100,400 = 1,104,400, so the last cuota picks
+      // up the remaining 100,600 to reach the full 1,205,000 repay.
+      expect(cuotaCents(1000000, 2050, 12)).toBe(100400);
+      expect(lastCuotaCents(1000000, 2050, 12)).toBe(100600);
     });
 
-    it("equals cuotaCents when the rounded cuotas divide the repay amount", () => {
+    it("equals cuotaCents when the rounded cuota already divides the repay amount", () => {
       // 1,000,000 @ 2000 bps / 12: cuota 100,000 divides 1,200,000 evenly.
       expect(lastCuotaCents(1000000, 2000, 12)).toBe(100000);
     });
 
     it("never goes below zero when rounding overshoots the whole repay amount", () => {
-      // 120,000 @ 1000 bps / 12: cuota 15,000, but 11 × 15,000 = 165,000 already
-      // exceeds the 132,000 repay, so the nominal last cuota clamps at zero.
-      expect(lastCuotaCents(120000, 1000, 12)).toBe(0);
+      // 1,050 @ 0 bps / 21: raw cuota is 50 cents, rounds to 100 (Math.round
+      // ties up), but 20 × 100 = 2,000 already exceeds the 1,050 repay, so
+      // the nominal last cuota clamps at zero.
+      expect(cuotaCents(1050, 0, 21)).toBe(100);
+      expect(lastCuotaCents(1050, 0, 21)).toBe(0);
     });
 
     it("invariant: (termCount − 1) cuotas + last cuota reconcile to totalRepayCents", () => {
