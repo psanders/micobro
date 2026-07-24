@@ -9,10 +9,11 @@ import {
   Pressable,
   ScrollView,
   ActivityIndicator,
-  StyleSheet,
-  Switch
+  StyleSheet
 } from "react-native";
 import { useRouter } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Feather } from "@expo/vector-icons";
 import { useCustomerRepo, useLoanRepo } from "../../lib/repo/RepoProvider";
 import { useAsync } from "../../lib/hooks/useAsync";
 import {
@@ -26,6 +27,10 @@ import { ValidationError } from "../../lib/errors/ValidationError";
 import { formatCurrency, toCents } from "../../lib/utils/money";
 import { formatShortDate } from "../../lib/utils/dates";
 import { colors } from "../../lib/ui/theme";
+import { ScreenHeader } from "../ScreenHeader";
+import { ClientRow } from "../ClientRow";
+import { SelectField } from "../SelectField";
+import { Toggle } from "../Toggle";
 
 const frequencyLabels: Record<LoanFrequency, string> = {
   daily: "Diario",
@@ -33,6 +38,14 @@ const frequencyLabels: Record<LoanFrequency, string> = {
   biweekly: "Quincenal",
   monthly: "Mensual"
 };
+
+/**
+ * "Tipo de préstamo" only has one option today (Tradicional/"term") — a UI
+ * placeholder matching the pencil.pen design ahead of a future change
+ * (Crédito Abierto) that adds the second option and wires it up. Not
+ * persisted: `loanRepo.create` has no `loanType` field yet.
+ */
+const loanTypeOptions = [{ value: "term", label: "Tradicional" }];
 
 /**
  * Cycling presets for "primer pago" (first payment date), same pattern as
@@ -58,11 +71,16 @@ function firstPaymentLabel(date: Date, frequency: LoanFrequency, intervalsFromNo
 
 export function NewLoanFormScreen({ customerId: initialCustomerId }: { customerId?: string }) {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const customerRepo = useCustomerRepo();
   const loanRepo = useLoanRepo();
   const { data: customers, loading } = useAsync(() => customerRepo.list(), []);
 
   const [customerId, setCustomerId] = useState(initialCustomerId ?? "");
+  // Once a customer is picked, collapse the chip list behind the selected
+  // card; "Cambiar" reopens it. Starts open when there's nothing picked yet.
+  const [showClientPicker, setShowClientPicker] = useState(!initialCustomerId);
+  const [loanType, setLoanType] = useState("term");
   const [principal, setPrincipal] = useState("");
   const [interestRate, setInterestRate] = useState("");
   const [termCount, setTermCount] = useState("");
@@ -73,6 +91,8 @@ export function NewLoanFormScreen({ customerId: initialCustomerId }: { customerI
   const [moraRate, setMoraRate] = useState("10");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  const selectedCustomer = (customers ?? []).find((customer) => customer.id === customerId);
 
   // Changing the frequency changes what "healthy default" means (mañana vs.
   // en 1 semana), so a preset the lender picked for the old frequency isn't
@@ -129,173 +149,195 @@ export function NewLoanFormScreen({ customerId: initialCustomerId }: { customerI
     }
   }
 
+  const headerSubtitle = selectedCustomer ? `Para ${selectedCustomer.name}` : undefined;
+
   if (loading) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator />
+      <View style={[styles.screen, { paddingTop: insets.top }]}>
+        <ScreenHeader title="Nuevo préstamo" onBack={() => router.back()} />
+        <View style={styles.center}>
+          <ActivityIndicator />
+        </View>
       </View>
     );
   }
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      {!initialCustomerId && (
+    <View style={[styles.screen, { paddingTop: insets.top }]}>
+      <ScreenHeader title="Nuevo préstamo" subtitle={headerSubtitle} onBack={() => router.back()} />
+      <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
         <View style={styles.field}>
-          <Text style={styles.label}>Cliente</Text>
-          <View style={styles.chips}>
-            {(customers ?? []).map((customer) => (
-              <Pressable
-                key={customer.id}
-                style={[styles.chip, customerId === customer.id && styles.chipActive]}
-                onPress={() => setCustomerId(customer.id)}
-              >
-                <Text
-                  style={[styles.chipText, customerId === customer.id && styles.chipTextActive]}
-                >
-                  {customer.name}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
-        </View>
-      )}
-
-      <View style={styles.field}>
-        <Text style={styles.label}>Monto (RD$)</Text>
-        <TextInput
-          style={styles.input}
-          keyboardType="numeric"
-          value={principal}
-          onChangeText={setPrincipal}
-          placeholder="15000"
-        />
-      </View>
-
-      <View style={styles.field}>
-        <Text style={styles.label}>Tasa de interés (%)</Text>
-        <TextInput
-          style={styles.input}
-          keyboardType="numeric"
-          value={interestRate}
-          onChangeText={setInterestRate}
-          placeholder="10"
-        />
-      </View>
-
-      <View style={styles.field}>
-        <Text style={styles.label}>Cantidad de pagos</Text>
-        <TextInput
-          style={styles.input}
-          keyboardType="numeric"
-          value={termCount}
-          onChangeText={setTermCount}
-          placeholder="12"
-        />
-      </View>
-
-      <View style={styles.field}>
-        <Text style={styles.label}>Frecuencia</Text>
-        <View style={styles.chips}>
-          {loanFrequencies.map((option) => (
-            <Pressable
-              key={option}
-              style={[styles.chip, frequency === option && styles.chipActive]}
-              onPress={() => setFrequency(option)}
-            >
-              <Text style={[styles.chipText, frequency === option && styles.chipTextActive]}>
-                {frequencyLabels[option]}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
-      </View>
-
-      <View style={styles.field}>
-        <Text style={styles.label}>Primer pago</Text>
-        <Pressable
-          style={styles.dateInput}
-          onPress={() => setFirstPaymentPresetIndex((i) => (i + 1) % FIRST_PAYMENT_PRESET_COUNT)}
-        >
-          <Text style={styles.dateInputText}>
-            {firstPaymentLabel(firstPaymentDate, frequency, firstPaymentIntervalsFromNow)}
-          </Text>
-          <Text style={styles.dateInputHint}>Toca para cambiar</Text>
-        </Pressable>
-      </View>
-
-      <View style={[styles.field, styles.switchRow]}>
-        <Text style={styles.label}>Cobrar mora por atraso</Text>
-        <Switch value={moraEnabled} onValueChange={setMoraEnabled} />
-      </View>
-
-      {moraEnabled && (
-        <>
-          <View style={styles.field}>
-            <Text style={styles.label}>Período de gracia (días)</Text>
-            <TextInput
-              style={styles.input}
-              keyboardType="numeric"
-              value={graceDays}
-              onChangeText={setGraceDays}
-              placeholder={String(DEFAULT_GRACE_DAYS)}
+          {selectedCustomer && !showClientPicker ? (
+            <ClientRow
+              avatarKey={selectedCustomer.avatarKey}
+              name={selectedCustomer.name}
+              meta="Cliente seleccionado"
+              trailing={<Feather name="chevron-right" size={18} color={colors.slate} />}
+              onPress={initialCustomerId ? undefined : () => setShowClientPicker(true)}
             />
-          </View>
+          ) : (
+            <>
+              <Text style={styles.label}>Cliente</Text>
+              <View style={styles.chips}>
+                {(customers ?? []).map((customer) => (
+                  <Pressable
+                    key={customer.id}
+                    style={[styles.chip, customerId === customer.id && styles.chipActive]}
+                    onPress={() => {
+                      setCustomerId(customer.id);
+                      setShowClientPicker(false);
+                    }}
+                  >
+                    <Text
+                      style={[styles.chipText, customerId === customer.id && styles.chipTextActive]}
+                    >
+                      {customer.name}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+            </>
+          )}
+        </View>
 
-          <View style={styles.field}>
-            <Text style={styles.label}>Tasa de mora (%)</Text>
-            <TextInput
-              style={styles.input}
-              keyboardType="numeric"
-              value={moraRate}
-              onChangeText={setMoraRate}
-              placeholder="10"
-            />
-          </View>
-        </>
-      )}
+        <SelectField
+          label="Tipo de préstamo"
+          value={loanType}
+          options={loanTypeOptions}
+          onChange={setLoanType}
+        />
 
-      {costPreview && (
-        <View style={styles.preview}>
-          <View style={styles.previewRow}>
-            <Text style={styles.previewLabel}>Cuota estimada</Text>
-            <Text style={styles.previewValue}>{formatCurrency(costPreview.cuotaCents)}</Text>
-          </View>
-          {costPreview.lastCuotaCents !== costPreview.cuotaCents && (
+        <SelectField
+          label="Frecuencia de pago"
+          value={frequency}
+          options={loanFrequencies.map((option) => ({
+            value: option,
+            label: frequencyLabels[option]
+          }))}
+          onChange={setFrequency}
+        />
+
+        <View style={styles.field}>
+          <Text style={styles.label}>Primer pago</Text>
+          <Pressable
+            style={styles.dateInput}
+            onPress={() => setFirstPaymentPresetIndex((i) => (i + 1) % FIRST_PAYMENT_PRESET_COUNT)}
+          >
+            <Text style={styles.dateInputText}>
+              {firstPaymentLabel(firstPaymentDate, frequency, firstPaymentIntervalsFromNow)}
+            </Text>
+            <Text style={styles.dateInputHint}>Toca para cambiar</Text>
+          </Pressable>
+        </View>
+
+        <View style={styles.field}>
+          <Text style={styles.label}>Monto del préstamo</Text>
+          <TextInput
+            style={styles.input}
+            keyboardType="numeric"
+            value={principal}
+            onChangeText={setPrincipal}
+            placeholder="15000"
+          />
+        </View>
+
+        <View style={styles.field}>
+          <Text style={styles.label}>Plazo (número de cuotas)</Text>
+          <TextInput
+            style={styles.input}
+            keyboardType="numeric"
+            value={termCount}
+            onChangeText={setTermCount}
+            placeholder="12"
+          />
+        </View>
+
+        <View style={styles.field}>
+          <Text style={styles.label}>Tasa de interés (%)</Text>
+          <TextInput
+            style={styles.input}
+            keyboardType="numeric"
+            value={interestRate}
+            onChangeText={setInterestRate}
+            placeholder="10"
+          />
+        </View>
+
+        <View style={[styles.field, styles.switchRow]}>
+          <Text style={styles.label}>Cobrar mora por atraso</Text>
+          <Toggle value={moraEnabled} onValueChange={setMoraEnabled} />
+        </View>
+
+        {moraEnabled && (
+          <>
+            <View style={styles.field}>
+              <Text style={styles.label}>Período de gracia (días)</Text>
+              <TextInput
+                style={styles.input}
+                keyboardType="numeric"
+                value={graceDays}
+                onChangeText={setGraceDays}
+                placeholder={String(DEFAULT_GRACE_DAYS)}
+              />
+            </View>
+
+            <View style={styles.field}>
+              <Text style={styles.label}>Tasa de mora (%)</Text>
+              <TextInput
+                style={styles.input}
+                keyboardType="numeric"
+                value={moraRate}
+                onChangeText={setMoraRate}
+                placeholder="10"
+              />
+            </View>
+          </>
+        )}
+
+        {costPreview && (
+          <View style={styles.preview}>
             <View style={styles.previewRow}>
-              <Text style={styles.previewLabelSub}>Última cuota</Text>
-              <Text style={styles.previewValueSub}>
-                {formatCurrency(costPreview.lastCuotaCents)}
+              <Text style={styles.previewLabel}>Cuota estimada</Text>
+              <Text style={styles.previewValue}>{formatCurrency(costPreview.cuotaCents)}</Text>
+            </View>
+            {costPreview.lastCuotaCents !== costPreview.cuotaCents && (
+              <View style={styles.previewRow}>
+                <Text style={styles.previewLabelSub}>Última cuota</Text>
+                <Text style={styles.previewValueSub}>
+                  {formatCurrency(costPreview.lastCuotaCents)}
+                </Text>
+              </View>
+            )}
+            <View style={styles.previewRow}>
+              <Text style={styles.previewLabel}>Interés total</Text>
+              <Text style={styles.previewValue}>
+                {formatCurrency(costPreview.totalInterestCents)}
               </Text>
             </View>
-          )}
-          <View style={styles.previewRow}>
-            <Text style={styles.previewLabel}>Interés total</Text>
-            <Text style={styles.previewValue}>
-              {formatCurrency(costPreview.totalInterestCents)}
-            </Text>
+            <View style={styles.previewRow}>
+              <Text style={styles.previewLabelStrong}>Total a pagar</Text>
+              <Text style={styles.previewValueStrong}>
+                {formatCurrency(costPreview.totalRepayCents)}
+              </Text>
+            </View>
           </View>
-          <View style={styles.previewRow}>
-            <Text style={styles.previewLabelStrong}>Total a pagar</Text>
-            <Text style={styles.previewValueStrong}>
-              {formatCurrency(costPreview.totalRepayCents)}
-            </Text>
-          </View>
-        </View>
-      )}
+        )}
 
-      {error && <Text style={styles.error}>{error}</Text>}
+        {error && <Text style={styles.error}>{error}</Text>}
 
-      <Pressable style={styles.submitButton} onPress={handleSubmit} disabled={submitting}>
-        <Text style={styles.submitButtonText}>
-          {submitting ? "Guardando..." : "Crear préstamo"}
-        </Text>
-      </Pressable>
-    </ScrollView>
+        <Pressable style={styles.submitButton} onPress={handleSubmit} disabled={submitting}>
+          <Text style={styles.submitButtonText}>
+            {submitting ? "Guardando..." : "Crear préstamo"}
+          </Text>
+        </Pressable>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: "#FFFFFF" },
+  scroll: { flex: 1 },
   center: { flex: 1, alignItems: "center", justifyContent: "center" },
   content: { padding: 16, gap: 20 },
   field: { gap: 8 },

@@ -45,8 +45,10 @@ const payment = (
   createdAt: paidAt
 });
 
-// 265000 = the interest-inclusive cuota for principal 2880000 @ 1000 bps / 12
-// (see lib/loans/loanMath.ts).
+// 264000 = the interest-inclusive cuota for principal 2880000 @ 1000 bps / 12
+// (see lib/loans/loanMath.ts); these payments default to a slightly larger
+// 265000 to model a lender who rounds a cobro up in the field — still a
+// full cuota by the `isFullCuota` (>=) check in buildPaymentHistoryView.
 describe("buildPaymentHistoryView", () => {
   it("totals collections, numbers full cuotas, and lists newest first", () => {
     const payments = [

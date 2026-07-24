@@ -3,8 +3,8 @@
  *
  * Flat add-on interest: the loan accrues one interest amount over its
  * whole term (not per period, not declining balance) — `principal × rate`,
- * folded into an equal cuota across every installment and rounded up to a
- * collection-friendly increment. Ported from mikro's
+ * folded into an equal cuota across every installment, rounded to the
+ * nearest whole peso. Ported from mikro's
  * `@mikro/common/utils/calculateLoan.ts` (`calculateLoanOptions`'s
  * per-option core: `totalInterest`/`totalRepay`/`paymentPerPeriod`) — not
  * imported as a package for the same reason `lib/payments/paymentSplit.ts`
@@ -13,14 +13,11 @@
  * the single-option core, not mikro's options-generator loop.
  */
 
-/**
- * Rounding increment for collection-friendly cuota amounts (50 pesos),
- * mirroring mikro's `DEFAULT_PAYMENT_ROUNDING_INCREMENT`.
- */
-export const CUOTA_ROUNDING_CENTS = 5000;
+/** One peso in cents — cuotas round to the nearest whole peso, never a fractional amount. */
+export const PESO_CENTS = 100;
 
-function roundUpToIncrement(valueCents: number, incrementCents: number): number {
-  return Math.ceil(valueCents / incrementCents) * incrementCents;
+function roundToNearestPeso(valueCents: number): number {
+  return Math.round(valueCents / PESO_CENTS) * PESO_CENTS;
 }
 
 /** rate = interestRateBps / 10000 (e.g. 2000 bps → 0.20 = 20% flat over the whole loan). */
@@ -34,10 +31,10 @@ export function totalRepayCents(principalCents: number, interestRateBps: number)
 }
 
 /**
- * Equal cuota across the term, rounded up to `CUOTA_ROUNDING_CENTS`. The
- * schedule's last installment absorbs the rounding remainder (see
- * `loanViews.ts` / `mora.ts`), so this is the amount for every
- * installment except (usually) the last one.
+ * Equal cuota across the term, rounded to the nearest whole peso. This is
+ * the amount for every installment except the last, which absorbs
+ * whatever few-peso remainder that rounding leaves behind (see
+ * `loanViews.ts` / `mora.ts`).
  */
 export function cuotaCents(
   principalCents: number,
@@ -45,15 +42,17 @@ export function cuotaCents(
   termCount: number
 ): number {
   const repay = totalRepayCents(principalCents, interestRateBps);
-  return roundUpToIncrement(repay / termCount, CUOTA_ROUNDING_CENTS);
+  return roundToNearestPeso(repay / termCount);
 }
 
 /**
- * The final installment, which absorbs the remainder left by rounding every
- * earlier cuota up to `CUOTA_ROUNDING_CENTS`, so the schedule sums back to
- * `totalRepayCents` (see `loanViews.ts`). Never below zero — a small loan with
- * a coarse increment can "finish" before its nominal last installment. Equals
- * `cuotaCents` exactly when the rounded cuotas already divide the repay amount.
+ * The final installment, which absorbs the remainder left by rounding
+ * every earlier cuota to the nearest whole peso, so the schedule sums back
+ * to `totalRepayCents` exactly (see `loanViews.ts`). Never below zero — in
+ * principle a short-term loan could "finish" before its nominal last
+ * installment if the earlier cuotas round up past the full repay amount.
+ * Equals `cuotaCents` exactly when the rounded cuota already divides the
+ * repay amount evenly.
  */
 export function lastCuotaCents(
   principalCents: number,

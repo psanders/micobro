@@ -2,12 +2,14 @@
  * Copyright (C) 2026 by Pedro Sanders. MIT License.
  */
 
-/** "11 may" — the short es-DO date used across the collection screens. */
+/** "14/08" — the short es-DO date (día/mes) used across the collection
+ * screens. Numeric día/mes to avoid the Spanish month abbreviation "ago"
+ * (agosto) reading like the English word "ago". Built manually (not via
+ * Intl `2-digit`, which Hermes ignores — it wouldn't zero-pad). */
 export function formatShortDate(date: Date): string {
-  return date
-    .toLocaleDateString("es-DO", { day: "numeric", month: "short" })
-    .replace(/\.$/, "")
-    .replace(/ de /, " ");
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  return `${day}/${month}`;
 }
 
 /** "9:41 AM" */
