@@ -260,9 +260,11 @@ export function NewLoanFormScreen({ customerId: initialCustomerId }: { customerI
           <Text style={styles.label}>Plazo (número de cuotas)</Text>
           <TextInput
             style={styles.input}
-            keyboardType="numeric"
+            keyboardType="number-pad"
             value={termCount}
-            onChangeText={setTermCount}
+            // Cuotas are whole numbers — strip anything but digits so a
+            // stray decimal can't reach the integer schema validation.
+            onChangeText={(t) => setTermCount(t.replace(/[^0-9]/g, ""))}
             placeholder="12"
           />
         </View>

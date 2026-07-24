@@ -22,7 +22,10 @@ export const createLoanSchema = z.object({
   customerId: z.string().min(1, "El cliente es obligatorio"),
   principal: z.number().positive("El monto debe ser mayor a cero").transform(toCents),
   interestRate: z.number().nonnegative("La tasa no puede ser negativa"),
-  termCount: z.number().int().positive("El plazo debe ser mayor a cero"),
+  termCount: z
+    .number()
+    .int("El plazo debe ser un número entero de cuotas")
+    .positive("El plazo debe ser mayor a cero"),
   frequency: z.enum(loanFrequencies),
   startDate: z.date().optional(),
   // Days of leeway before mora starts accruing on an overdue cuota.
