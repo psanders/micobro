@@ -6,10 +6,18 @@ import { View, Text, TextInput, Pressable, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import { useCustomerRepo } from "../../lib/repo/RepoProvider";
 import { ValidationError } from "../../lib/errors/ValidationError";
-import { formatCedula, normalizeCedula } from "../../lib/utils/cedula";
+import { formatCedulaInput, normalizeCedula } from "../../lib/utils/cedula";
+import { formatPhoneInput, normalizePhone } from "../../lib/utils/text";
 import { AvatarPicker } from "../AvatarPicker";
 import type { AvatarKey } from "../avatars";
 import { colors, fonts, radius } from "../../lib/ui/theme";
+
+/** Real-time hint under a field being formatted as the user types. */
+function formatHint(digits: string, maxDigits: number, format: string): string {
+  if (digits.length === 0) return `Formato: ${format}`;
+  if (digits.length < maxDigits) return `Faltan ${maxDigits - digits.length} dígitos`;
+  return "";
+}
 
 export function NewCustomerFormScreen() {
   const router = useRouter();
@@ -54,9 +62,12 @@ export function NewCustomerFormScreen() {
         <TextInput
           style={styles.input}
           keyboardType="phone-pad"
+          placeholder="809-251-2222"
+          maxLength={12}
           value={phone}
-          onChangeText={setPhone}
+          onChangeText={(v) => setPhone(formatPhoneInput(v))}
         />
+        <Text style={styles.hint}>{formatHint(normalizePhone(phone), 10, "809-251-2222")}</Text>
       </View>
 
       <View style={styles.field}>
@@ -69,11 +80,12 @@ export function NewCustomerFormScreen() {
         <TextInput
           style={styles.input}
           keyboardType="number-pad"
-          placeholder="000-0000000-0"
+          placeholder="037-0089330-2"
           maxLength={13}
           value={cedula}
-          onChangeText={(v) => setCedula(formatCedula(normalizeCedula(v)) || v)}
+          onChangeText={(v) => setCedula(formatCedulaInput(v))}
         />
+        <Text style={styles.hint}>{formatHint(normalizeCedula(cedula), 11, "037-0089330-2")}</Text>
       </View>
 
       <View style={styles.field}>
@@ -105,6 +117,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.regular,
     color: colors.ink
   },
+  hint: { fontSize: 12, fontFamily: fonts.regular, color: colors.muted, minHeight: 16 },
   error: { color: colors.red, fontSize: 13, fontFamily: fonts.medium },
   submitButton: {
     backgroundColor: colors.brandDeep,
