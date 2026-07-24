@@ -20,8 +20,8 @@ Change 2 (`feat/daily-sunday-skip`) — overlaps loan.schema/form/sync.
 | 2 | Spec reconcile | done | Deltas ADD open-credit create / detail / collect. `openspec validate --strict` passes. |
 | 3 | Build | done | Sonnet, 2 passes: (A) model+migration, `openCredit.ts` cycle engine, create flow, sync, tests; (B) detail + collect + form UI. Verified by Opus: tsc clean, eslint clean, engine + view builders + screens reviewed. |
 | 4 | Test | done (automated) | tsc clean; eslint clean (only pre-existing `.claude/worktrees` noise); jest **296/296**. Manual emulator (8.2) pending — lender to drive. |
-| 5 | Sync | pending | Gate — awaiting approval to promote deltas + commit/PR. |
-| 6 | Archive | pending | Gate. |
+| 5 | Sync | done | `openspec archive` promoted the 3 deltas into `openspec/specs/**` (collect-payment ~, loan-detail ~, loan-configuration new). All 3 validate ✓ (pre-existing `google-connect` failure unrelated). |
+| 6 | Archive | done | Change moved to `openspec/changes/archive/2026-07-24-55-open-credit-loans/`. PR #68 (base main). 2 tasks left open by design: 8.2 manual emulator, 9.1 Pencil parity. |
 
 Status values: `pending` · `in-progress` · `done` · `skipped`.
 
