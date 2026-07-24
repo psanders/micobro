@@ -135,6 +135,30 @@ export function oldestOverdueInstallment(
 }
 
 /**
+ * Number of Sundays among the `days` calendar days following `from`
+ * (`from` + 1, `from` + 2, ..., `from` + `days`). Used to convert a raw
+ * calendar-day-late count into a business-day (Sunday-excluded) one.
+ */
+function countSundaysAfter(from: Date, days: number): number {
+  let count = 0;
+  for (let i = 1; i <= days; i++) {
+    if (new Date(from.getTime() + i * DAY_MS).getDay() === 0) count += 1;
+  }
+  return count;
+}
+
+/**
+ * Days late between `dueDate` and `today`, excluding Sundays when
+ * `skipSundays` is on — so a Sunday passing never adds to how late a loan
+ * is. Identical to the raw calendar-day count when `skipSundays` is off.
+ */
+export function daysLateExcludingSundays(dueDate: Date, today: Date, skipSundays: boolean): number {
+  const rawDaysLate = Math.floor((today.getTime() - dueDate.getTime()) / DAY_MS);
+  if (!skipSundays || rawDaysLate <= 0) return rawDaysLate;
+  return rawDaysLate - countSundaysAfter(dueDate, rawDaysLate);
+}
+
+/**
  * Accrued mora for a loan, net of any mora already collected (payments
  * flagged `MORA_NOTE`) on or after the oldest overdue due date — mirrors
  * mikro's collected-LATE_FEE netting in `computeAccruedMora`.
@@ -150,7 +174,11 @@ export function computeLoanMora(
 
   const startOfToday = new Date(today);
   startOfToday.setHours(0, 0, 0, 0);
-  const daysLate = Math.floor((startOfToday.getTime() - overdue.dueDate.getTime()) / DAY_MS);
+  const daysLate = daysLateExcludingSundays(
+    overdue.dueDate,
+    startOfToday,
+    loan.frequency === "daily" && !!loan.skipSundays
+  );
 
   const gross = computeAccruedMora(daysLate, overdue.amountCents, policy);
   if (gross.moraCents === 0) return gross;

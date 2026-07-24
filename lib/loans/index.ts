@@ -14,6 +14,7 @@ export {
   loanCode,
   installmentDueDate,
   addFrequencyInterval,
+  addNonSundayDays,
   defaultFirstPaymentDate,
   MORA_NOTE
 } from "./loanViews";
@@ -26,7 +27,8 @@ export {
   effectiveGraceDays,
   isMoraEnabled,
   effectiveMoraRateBps,
-  loanMoraPolicy
+  loanMoraPolicy,
+  daysLateExcludingSundays
 } from "./mora";
 export type { MoraPolicy, AccruedMora } from "./mora";
 export { createLoanSchema, loanFrequencies, loanStatuses, DEFAULT_GRACE_DAYS } from "./loan.schema";

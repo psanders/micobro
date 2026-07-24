@@ -42,6 +42,7 @@ const TAB_HEADERS: Record<string, string[]> = {
     "Período de gracia (días)",
     "Mora activa",
     "Mora (bps)",
+    "Salta domingos",
     "Creado",
     "Actualizado"
   ],

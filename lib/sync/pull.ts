@@ -66,7 +66,7 @@ function rowToCustomer(row: string[]): Customer | null {
   };
 }
 
-// Inverse of loanRowValues in push.ts — same "Préstamos!A:N" column order.
+// Inverse of loanRowValues in push.ts — same "Préstamos!A:O" column order.
 function rowToLoan(row: string[]): Loan | null {
   const [
     id,
@@ -81,6 +81,7 @@ function rowToLoan(row: string[]): Loan | null {
     graceDaysRaw,
     moraEnabledRaw,
     moraRateBpsRaw,
+    skipSundaysRaw,
     createdAtRaw,
     updatedAtRaw
   ] = row;
@@ -91,6 +92,7 @@ function rowToLoan(row: string[]): Loan | null {
   const graceDays = graceDaysRaw ? parseNumber(graceDaysRaw) : null;
   const moraEnabled = moraEnabledRaw ? moraEnabledRaw.toLowerCase() === "true" : null;
   const moraRateBps = moraRateBpsRaw ? parseNumber(moraRateBpsRaw) : null;
+  const skipSundays = skipSundaysRaw ? skipSundaysRaw.toLowerCase() === "true" : null;
   const createdAt = createdAtRaw ? parseDate(createdAtRaw) : null;
   const updatedAt = updatedAtRaw ? parseDate(updatedAtRaw) : null;
   if (
@@ -120,6 +122,7 @@ function rowToLoan(row: string[]): Loan | null {
     graceDays,
     moraEnabled,
     moraRateBps,
+    skipSundays,
     createdAt,
     updatedAt
   };

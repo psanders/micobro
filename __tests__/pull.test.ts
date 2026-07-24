@@ -54,6 +54,7 @@ const loanRow = (overrides: Partial<Record<string, string>> = {}) => [
   overrides.graceDays ?? "",
   overrides.moraEnabled ?? "",
   overrides.moraRateBps ?? "",
+  overrides.skipSundays ?? "",
   overrides.createdAt ?? "2026-01-01T00:00:00.000Z",
   overrides.updatedAt ?? "2026-01-02T00:00:00.000Z"
 ];
@@ -219,5 +220,25 @@ describe("pullEntities", () => {
     expect(insertValuesMock).toHaveBeenCalledWith(
       expect.objectContaining({ moraEnabled: null, moraRateBps: null })
     );
+  });
+
+  it("parses a loan row's skip_sundays column into skipSundays", async () => {
+    mockRanges({ loan: [["ID"], loanRow({ skipSundays: "TRUE" })] });
+    const db = makeDbStub([[], []]);
+
+    await pullEntities(db);
+
+    const insertValuesMock = (db.insert as jest.Mock).mock.results[0].value.values as jest.Mock;
+    expect(insertValuesMock).toHaveBeenCalledWith(expect.objectContaining({ skipSundays: true }));
+  });
+
+  it("parses a blank skip_sundays column as null, matching an unset loan's default behavior", async () => {
+    mockRanges({ loan: [["ID"], loanRow()] });
+    const db = makeDbStub([[], []]);
+
+    await pullEntities(db);
+
+    const insertValuesMock = (db.insert as jest.Mock).mock.results[0].value.values as jest.Mock;
+    expect(insertValuesMock).toHaveBeenCalledWith(expect.objectContaining({ skipSundays: null }));
   });
 });
