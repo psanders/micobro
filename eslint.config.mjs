@@ -18,6 +18,8 @@ export default tseslint.config(
       "metro.config.js",
       "jest.config.js",
       "drizzle.config.ts",
+      "commitlint.config.js",
+      "release.config.js",
       ".storybook/**",
       "lib/db/migrations/**"
     ]

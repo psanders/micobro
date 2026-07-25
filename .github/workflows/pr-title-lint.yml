@@ -1,0 +1,39 @@
+name: PR Title Lint
+
+# PRs here are squash-merged (CLAUDE.md § Branch hygiene), so the PR title
+# becomes the actual commit message on main — not any individual commit made
+# on the branch. The husky commit-msg hook only guards those individual
+# commits, so this is the check that actually protects auto-release.yml's
+# semantic-release run from a malformed type silently breaking or
+# misclassifying a version bump.
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  pull-requests: read
+
+jobs:
+  lint-pr-title:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          types: |
+            build
+            chore
+            ci
+            copy
+            design
+            docs
+            feat
+            fix
+            perf
+            refactor
+            revert
+            style
+            test
+          requireScope: false
