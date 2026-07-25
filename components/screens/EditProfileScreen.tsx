@@ -29,9 +29,17 @@ import { useProfileRepo } from "../../lib/repo/RepoProvider";
 import { useAsync } from "../../lib/hooks/useAsync";
 import { ValidationError } from "../../lib/errors/ValidationError";
 import { AVATAR_KEYS, type AvatarKey } from "../../lib/profile/profile.schema";
+import { formatPhoneInput, normalizePhone } from "../../lib/utils/text";
 import { avatarSource } from "../avatars";
 import { ScreenHeader } from "../ScreenHeader";
 import { colors, fonts, radius } from "../../lib/ui/theme";
+
+/** Real-time hint under a field being formatted as the user types. */
+function formatHint(digits: string, maxDigits: number, format: string): string {
+  if (digits.length === 0) return `Formato: ${format}`;
+  if (digits.length < maxDigits) return `Faltan ${maxDigits - digits.length} dígitos`;
+  return "";
+}
 
 export function EditProfileScreen() {
   const router = useRouter();
@@ -121,9 +129,12 @@ export function EditProfileScreen() {
             <TextInput
               style={styles.input}
               keyboardType="phone-pad"
+              placeholder="809-251-2222"
+              maxLength={12}
               value={phone}
-              onChangeText={setPhone}
+              onChangeText={(v) => setPhone(formatPhoneInput(v))}
             />
+            <Text style={styles.hint}>{formatHint(normalizePhone(phone), 10, "809-251-2222")}</Text>
           </View>
 
           {error && <Text style={styles.error}>{error}</Text>}
@@ -178,6 +189,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.regular,
     color: colors.ink
   },
+  hint: { fontSize: 12, fontFamily: fonts.regular, color: colors.muted, minHeight: 16 },
   error: { color: colors.red, fontSize: 13, fontFamily: fonts.medium },
   submitButton: {
     backgroundColor: colors.brandDeep,

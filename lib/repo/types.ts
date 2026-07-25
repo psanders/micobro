@@ -233,6 +233,8 @@ export interface PaymentRepo {
   collect(input: CollectInput): Promise<PaymentReceipt>;
   /** Every payment (any loan, any method) since the last caja close — feeds Cuadre General. */
   listSinceLastClose(): Promise<Payment[]>;
+  /** Reconstructs the receipt for a past payment, for Histórico de Pagos' "Ver recibo". */
+  getReceipt(paymentId: string): Promise<PaymentReceipt | null>;
 }
 
 export interface CashCloseRepo {

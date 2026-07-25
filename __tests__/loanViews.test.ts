@@ -12,10 +12,13 @@ import {
   installmentDueDate,
   addFrequencyInterval,
   addNonSundayDays,
-  defaultFirstPaymentDate
+  buildPaymentReceipt,
+  defaultFirstPaymentDate,
+  healthyFirstPaymentFloor
 } from "../lib/loans/loanViews";
 import type { Loan, LoanFrequency } from "../lib/loans/loan.schema";
 import type { Payment } from "../lib/payments/payment.schema";
+import type { Customer } from "../lib/customers/customer.schema";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const today = new Date("2026-07-14T12:00:00");
@@ -242,6 +245,43 @@ describe("addFrequencyInterval / defaultFirstPaymentDate", () => {
   });
 });
 
+// Spec: loan-configuration "First payment date" — the calendar picker's
+// minimum date and the value the form resets to on a frequency change.
+describe("healthyFirstPaymentFloor", () => {
+  const saturday = new Date("2026-07-18T14:00:00"); // tomorrow is Sunday 19th
+  const wednesday = new Date("2026-07-15T14:00:00"); // tomorrow is Thursday 16th
+
+  it("equals defaultFirstPaymentDate for non-daily frequencies, regardless of skipSundays", () => {
+    (["weekly", "biweekly", "monthly"] as LoanFrequency[]).forEach((frequency) => {
+      expect(healthyFirstPaymentFloor(frequency, true, saturday).getTime()).toBe(
+        defaultFirstPaymentDate(frequency, saturday).getTime()
+      );
+      expect(healthyFirstPaymentFloor(frequency, false, saturday).getTime()).toBe(
+        defaultFirstPaymentDate(frequency, saturday).getTime()
+      );
+    });
+  });
+
+  it("equals defaultFirstPaymentDate for daily when skipSundays is off, even if that lands on a Sunday", () => {
+    expect(healthyFirstPaymentFloor("daily", false, saturday).getTime()).toBe(
+      defaultFirstPaymentDate("daily", saturday).getTime()
+    );
+    expect(healthyFirstPaymentFloor("daily", false, saturday).getDay()).toBe(0);
+  });
+
+  it("skips forward to Monday when the naive daily default would land on a Sunday and skipSundays is on", () => {
+    const floor = healthyFirstPaymentFloor("daily", true, saturday);
+    expect(floor.getDay()).toBe(1);
+    expect(floor.getTime()).not.toBe(defaultFirstPaymentDate("daily", saturday).getTime());
+  });
+
+  it("equals defaultFirstPaymentDate for daily with skipSundays on when tomorrow isn't a Sunday", () => {
+    expect(healthyFirstPaymentFloor("daily", true, wednesday).getTime()).toBe(
+      defaultFirstPaymentDate("daily", wednesday).getTime()
+    );
+  });
+});
+
 // Spec: loan-configuration "Sunday-skip for daily loans" — a per-loan opt-in
 // (mirroring moraEnabled) that keeps every daily cuota off Sundays.
 describe("installmentDueDate with skipSundays", () => {
@@ -319,5 +359,65 @@ describe("installmentDueDate with skipSundays", () => {
     expect(addNonSundayDays(saturday, 2).toDateString()).toBe(
       new Date("2026-07-21T00:00:00").toDateString()
     );
+  });
+});
+
+// Spec: payment-history "Ver recibo desde el historial" — reconstructing a
+// past cobro's receipt, combining a mora+installment cobro's two rows into
+// one receipt with one canonical receipt number.
+describe("buildPaymentReceipt", () => {
+  const customer: Customer = {
+    id: "customer-2",
+    name: "José Núñez",
+    phone: "8095551234",
+    address: null,
+    cedula: null,
+    avatarKey: null,
+    createdAt: today,
+    updatedAt: today
+  };
+
+  it("returns null when the payment doesn't belong to the loan", () => {
+    const receipt = buildPaymentReceipt("does-not-exist", loan, customer, threePaid);
+    expect(receipt).toBeNull();
+  });
+
+  it("rebuilds a single-line receipt for a standalone cuota payment", () => {
+    const receipt = buildPaymentReceipt("p2", loan, customer, threePaid);
+    expect(receipt).not.toBeNull();
+    expect(receipt!.paymentId).toBe("p2");
+    expect(receipt!.customerName).toBe("José Núñez");
+    expect(receipt!.totalCents).toBe(270000);
+    expect(receipt!.lines).toEqual([{ label: "Cuota 2/12", amountCents: 270000 }]);
+  });
+
+  it("combines a mora row and an installment row from the same cobro into one receipt", () => {
+    const paidAt = daysAgo(3);
+    const moraRow: Payment = {
+      id: "mora-1",
+      loanId: "loan-3",
+      amountCents: 15000,
+      paidAt,
+      method: "cash",
+      notes: "mora",
+      createdAt: paidAt
+    };
+    const cuotaRow = cuotaPayment("p4", paidAt);
+    const allPayments = [...threePaid, moraRow, cuotaRow];
+
+    const fromMora = buildPaymentReceipt("mora-1", loan, customer, allPayments);
+    const fromCuota = buildPaymentReceipt("p4", loan, customer, allPayments);
+
+    expect(fromMora).not.toBeNull();
+    expect(fromCuota).not.toBeNull();
+    expect(fromMora!.totalCents).toBe(285000);
+    expect(fromCuota!.totalCents).toBe(285000);
+    expect(fromMora!.lines).toEqual([
+      { label: "Mora (prioridad)", amountCents: 15000 },
+      { label: "Cuota 4/12", amountCents: 270000 }
+    ]);
+    expect(fromCuota!.lines).toEqual(fromMora!.lines);
+    // Tapping either sibling row opens the same receipt, same number.
+    expect(fromCuota!.receiptNumber).toBe(fromMora!.receiptNumber);
   });
 });

@@ -6,6 +6,7 @@ import { createListPaymentsByLoan } from "../../payments/listPaymentsByLoan";
 import { createListPaymentsSinceLastClose } from "../../payments/listPaymentsSinceLastClose";
 import { createGetCollectContext } from "../../payments/getCollectContext";
 import { createCollectPayment } from "../../payments/collectPayment";
+import { createGetPaymentReceipt } from "../../payments/getPaymentReceipt";
 import { notifyMutationQueued } from "../../sync/syncEvents";
 import type { Database } from "../../db/client";
 import type { PaymentRepo } from "../types";
@@ -16,6 +17,7 @@ export function createRealPaymentRepo({ db }: { db: Database }): PaymentRepo {
   const createPayment = createCreatePayment({ db });
   const getCollectContext = createGetCollectContext({ db });
   const collectPayment = createCollectPayment({ db });
+  const getPaymentReceipt = createGetPaymentReceipt({ db });
 
   return {
     listByLoan: (loanId) => listPaymentsByLoan({ loanId }),
@@ -30,6 +32,7 @@ export function createRealPaymentRepo({ db }: { db: Database }): PaymentRepo {
       notifyMutationQueued();
       return receipt;
     },
-    listSinceLastClose: () => listPaymentsSinceLastClose({})
+    listSinceLastClose: () => listPaymentsSinceLastClose({}),
+    getReceipt: (paymentId) => getPaymentReceipt({ paymentId })
   };
 }

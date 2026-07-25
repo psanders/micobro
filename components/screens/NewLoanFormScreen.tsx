@@ -23,7 +23,7 @@ import {
   type LoanType
 } from "../../lib/loans/loan.schema";
 import { loanCostSummary } from "../../lib/loans/loanMath";
-import { addFrequencyInterval, addNonSundayDays } from "../../lib/loans/loanViews";
+import { addFrequencyInterval, healthyFirstPaymentFloor } from "../../lib/loans/loanViews";
 import { ValidationError } from "../../lib/errors/ValidationError";
 import { formatCurrency, toCents } from "../../lib/utils/money";
 import { formatShortDate } from "../../lib/utils/dates";
@@ -32,6 +32,7 @@ import { ScreenHeader } from "../ScreenHeader";
 import { ClientRow } from "../ClientRow";
 import { SelectField } from "../SelectField";
 import { Toggle } from "../Toggle";
+import { CalendarPicker } from "../CalendarPicker";
 
 const frequencyLabels: Record<LoanFrequency, string> = {
   daily: "Diario",
@@ -51,26 +52,15 @@ const loanTypeOptions: { value: LoanType; label: string }[] = [
   { value: "open_credit", label: "Crédito Abierto" }
 ];
 
-/**
- * Cycling presets for "primer pago" (first payment date), same pattern as
- * VisitOutcomeScreen's DATE_PRESETS — no native date-picker dependency.
- * Preset 0 is the healthy per-frequency default (mañana for diario, en 1
- * semana for semanal, ...); 1 and 2 let the lender push it further out.
- */
-const FIRST_PAYMENT_PRESET_COUNT = 3;
-
-function firstPaymentLabel(date: Date, frequency: LoanFrequency, intervalsFromNow: number): string {
+/** Relative label for the default date, else the numeric "DD/MM" fallback
+ * — the app avoids Spanish month abbreviations ("ago") reading like the
+ * English word "ago" (see lib/utils/dates.ts). */
+function firstPaymentLabel(date: Date, frequency: LoanFrequency, isDefault: boolean): string {
   const short = formatShortDate(date);
-  if (frequency === "daily") {
-    if (intervalsFromNow === 1) return `Mañana, ${short}`;
-    if (intervalsFromNow === 2) return `Pasado mañana, ${short}`;
-    return `En ${intervalsFromNow} días, ${short}`;
-  }
-  const unitSingular =
-    frequency === "weekly" ? "semana" : frequency === "biweekly" ? "quincena" : "mes";
-  const unit =
-    intervalsFromNow === 1 ? unitSingular : frequency === "monthly" ? "meses" : `${unitSingular}s`;
-  return `En ${intervalsFromNow} ${unit}, ${short}`;
+  if (!isDefault) return short;
+  if (frequency === "daily") return `Mañana, ${short}`;
+  const unit = frequency === "weekly" ? "semana" : frequency === "biweekly" ? "quincena" : "mes";
+  return `En 1 ${unit}, ${short}`;
 }
 
 export function NewLoanFormScreen({ customerId: initialCustomerId }: { customerId?: string }) {
@@ -89,11 +79,23 @@ export function NewLoanFormScreen({ customerId: initialCustomerId }: { customerI
   const [interestRate, setInterestRate] = useState("");
   const [termCount, setTermCount] = useState("");
   const [frequency, setFrequency] = useState<LoanFrequency>("weekly");
-  const [firstPaymentPresetIndex, setFirstPaymentPresetIndex] = useState(0);
+  const [skipSundays, setSkipSundays] = useState(false);
+  // `firstPaymentFloor` is the single source of truth for "the healthy
+  // default right now" — both the initial state below and the
+  // frequency-reset effect reuse this exact value (rather than each
+  // calling healthyFirstPaymentFloor/`new Date()` independently) so
+  // `isFirstPaymentDefault` compares two computations of the same instant
+  // instead of two different millisecond timestamps a render/effect cycle
+  // apart.
+  const firstPaymentFloor = useMemo(
+    () => healthyFirstPaymentFloor(frequency, skipSundays),
+    [frequency, skipSundays]
+  );
+  const [firstPaymentDate, setFirstPaymentDate] = useState<Date>(() => firstPaymentFloor);
+  const [showCalendar, setShowCalendar] = useState(false);
   const [graceDays, setGraceDays] = useState(String(DEFAULT_GRACE_DAYS));
   const [moraEnabled, setMoraEnabled] = useState(false);
   const [moraRate, setMoraRate] = useState("10");
-  const [skipSundays, setSkipSundays] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -101,23 +103,22 @@ export function NewLoanFormScreen({ customerId: initialCustomerId }: { customerI
   const isOpenCredit = loanType === "open_credit";
 
   // Changing the frequency changes what "healthy default" means (mañana vs.
-  // en 1 semana), so a preset the lender picked for the old frequency isn't
-  // meaningful anymore — snap back to the default (index 0).
+  // en 1 semana) — a date the lender picked for the old frequency isn't
+  // meaningful anymore, so snap back to the new default.
   useEffect(() => {
-    setFirstPaymentPresetIndex(0);
+    setFirstPaymentDate(firstPaymentFloor);
   }, [frequency]);
 
-  const firstPaymentIntervalsFromNow = firstPaymentPresetIndex + 1;
-  // For a skip-Sundays daily loan, the previewed "primer pago" must itself
-  // be a non-Sunday day so it agrees with installmentDueDate(loan, 1) —
-  // which walks the schedule the same way (see loanViews.ts).
-  const firstPaymentDate = useMemo(
-    () =>
-      frequency === "daily" && skipSundays
-        ? addNonSundayDays(new Date(), firstPaymentIntervalsFromNow)
-        : addFrequencyInterval(new Date(), frequency, firstPaymentIntervalsFromNow),
-    [frequency, firstPaymentIntervalsFromNow, skipSundays]
-  );
+  // Turning on Saltar domingos can invalidate an already-picked Sunday —
+  // bump it forward to the (now Sunday-aware) floor rather than leaving an
+  // invalid date staged for submit.
+  useEffect(() => {
+    if (frequency === "daily" && skipSundays && firstPaymentDate.getDay() === 0) {
+      setFirstPaymentDate(firstPaymentFloor);
+    }
+  }, [skipSundays]);
+
+  const isFirstPaymentDefault = firstPaymentDate.getTime() === firstPaymentFloor.getTime();
 
   const principalValue = Number(principal);
   const interestRateValue = Number(interestRate);
@@ -239,12 +240,9 @@ export function NewLoanFormScreen({ customerId: initialCustomerId }: { customerI
 
         <View style={styles.field}>
           <Text style={styles.label}>Primer pago</Text>
-          <Pressable
-            style={styles.dateInput}
-            onPress={() => setFirstPaymentPresetIndex((i) => (i + 1) % FIRST_PAYMENT_PRESET_COUNT)}
-          >
+          <Pressable style={styles.dateInput} onPress={() => setShowCalendar(true)}>
             <Text style={styles.dateInputText}>
-              {firstPaymentLabel(firstPaymentDate, frequency, firstPaymentIntervalsFromNow)}
+              {firstPaymentLabel(firstPaymentDate, frequency, isFirstPaymentDefault)}
             </Text>
             <Text style={styles.dateInputHint}>Toca para cambiar</Text>
           </Pressable>
@@ -366,6 +364,16 @@ export function NewLoanFormScreen({ customerId: initialCustomerId }: { customerI
           </Text>
         </Pressable>
       </ScrollView>
+
+      <CalendarPicker
+        visible={showCalendar}
+        title="Primer pago"
+        value={firstPaymentDate}
+        minDate={firstPaymentFloor}
+        isDateDisabled={(d) => frequency === "daily" && skipSundays && d.getDay() === 0}
+        onSelect={setFirstPaymentDate}
+        onClose={() => setShowCalendar(false)}
+      />
     </View>
   );
 }

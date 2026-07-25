@@ -64,4 +64,43 @@ describe("real profile repo", () => {
       1
     );
   });
+
+  describe("phone", () => {
+    it("stores a valid 10-digit phone (dashed input) normalized to digits only", async () => {
+      const db = makeDbStub([]);
+      const repo = createRealProfileRepo({ db: db as unknown as Database });
+
+      const profile = await repo.set({ name: "Julia Reyes", phone: "809-251-2222" });
+
+      expect(profile.phone).toBe("8092512222");
+    });
+
+    it("rejects a phone that isn't 10 digits", async () => {
+      const db = makeDbStub([]);
+      const repo = createRealProfileRepo({ db: db as unknown as Database });
+
+      await expect(repo.set({ name: "Julia Reyes", phone: "809-251-222" })).rejects.toThrow(
+        "El teléfono debe tener 10 dígitos"
+      );
+      expect((db as unknown as Record<string, jest.Mock>).insert).not.toHaveBeenCalled();
+    });
+
+    it("allows omitting the phone entirely, unlike the required customer phone", async () => {
+      const db = makeDbStub([]);
+      const repo = createRealProfileRepo({ db: db as unknown as Database });
+
+      const profile = await repo.set({ name: "Julia Reyes" });
+
+      expect(profile.phone).toBeNull();
+    });
+
+    it("allows an explicit empty string, same as omitting it", async () => {
+      const db = makeDbStub([]);
+      const repo = createRealProfileRepo({ db: db as unknown as Database });
+
+      const profile = await repo.set({ name: "Julia Reyes", phone: "" });
+
+      expect(profile.phone).toBeNull();
+    });
+  });
 });

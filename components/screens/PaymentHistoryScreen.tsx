@@ -94,6 +94,7 @@ export function PaymentHistoryScreen({ loanId }: { loanId: string }) {
                   label={entry.label}
                   subLabel={entry.subLabel}
                   amount={formatCurrency(entry.amountCents)}
+                  onPress={() => router.push(`/pago-historico/${entry.id}`)}
                 />
               ))}
             </View>

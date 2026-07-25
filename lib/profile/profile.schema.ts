@@ -2,6 +2,7 @@
  * Copyright (C) 2026 by Pedro Sanders. MIT License.
  */
 import { z } from "zod/v4";
+import { normalizePhone } from "../utils/text";
 
 /**
  * The fixed row id for the single profile row this install ever has —
@@ -30,6 +31,22 @@ export const AVATAR_KEYS = [
 
 export type AvatarKey = (typeof AVATAR_KEYS)[number];
 
+/**
+ * Dominican mobile phone: 10 digits, commonly typed with dashes
+ * ("XXX-XXX-XXXX"). Same shape as customer.schema.ts's `phoneSchema`, but
+ * optional — the lender may choose not to share their own phone — so an
+ * empty/omitted value passes through untouched and only a non-empty value
+ * is normalized and length-checked.
+ */
+const optionalPhoneSchema = z
+  .string()
+  .transform((v) => (v.length === 0 ? v : normalizePhone(v)))
+  .refine(
+    (v) => v.length === 0 || v.length === 10,
+    "El teléfono debe tener 10 dígitos (formato 809-251-2222)"
+  )
+  .optional();
+
 export const setProfileSchema = z.object({
   name: z
     .string()
@@ -37,7 +54,7 @@ export const setProfileSchema = z.object({
     .transform((v) => v.trim()),
   avatarKey: z.enum(AVATAR_KEYS).optional(),
   businessName: z.string().optional(),
-  phone: z.string().optional()
+  phone: optionalPhoneSchema
 });
 
 export type SetProfileInput = z.infer<typeof setProfileSchema>;
