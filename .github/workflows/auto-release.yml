@@ -1,0 +1,59 @@
+name: Auto Release
+
+# Automated versioning: on every push to main, semantic-release inspects the
+# commits since the last vX.Y.Z tag and, if any are releasable (feat -> minor,
+# fix/copy/design -> patch, BREAKING CHANGE -> major — see release.config.js),
+# bumps package.json, writes CHANGELOG.md, commits
+# "chore(release): vX.Y.Z [skip ci]", tags it, and publishes a GitHub Release.
+#
+# Uses the default GITHUB_TOKEN, not a PAT. That's deliberate: tags/commits
+# pushed with GITHUB_TOKEN don't trigger other workflows, which keeps this
+# job from re-triggering itself (or CI) in a loop. The tradeoff is that the
+# on-demand Android APK workflow (release.yml, still workflow_dispatch-only)
+# does NOT auto-fire off these tags — wiring that up needs a RELEASE_TOKEN PAT
+# (see ../mikro's release.yaml for the pattern) and is a deliberate follow-up,
+# not done here: building/signing an APK for every patch-level release
+# (including copy/design-only ones) isn't obviously wanted, and adding a PAT
+# secret is a call for a repo admin, not this change.
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: auto-release
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Test
+        run: npm run test
+
+      - name: Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx semantic-release
