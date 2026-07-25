@@ -70,4 +70,32 @@ worked example. Full guide: `/ps:create-validated-function`.
 ## Commits
 
 Use **Conventional Commits** (`type(scope): subject`, e.g. `feat(customers): add phone validation`).
-Not currently enforced by a commit-msg hook — `husky` only runs `lint-staged` on `pre-commit`.
+Enforced by a `husky` `commit-msg` hook running `commitlint` (see `commitlint.config.js`
+for the allowed types, including the non-standard `copy` and `design`), and by
+`pr-title-lint.yml` on PR titles — PRs are squash-merged, so the title is what
+actually lands as the commit on `main`. `release.config.js` derives version bumps
+from these commits via `semantic-release` (`.github/workflows/auto-release.yml`).
+
+## Branch hygiene
+
+Once a branch's PR is confirmed merged into `main`, delete it without asking:
+
+- Verify with `gh pr list --head <branch> --state merged --json number,mergedAt`,
+  not `git merge-base --is-ancestor` — PRs here are squash-merged, so the
+  branch tip is never actually an ancestor of `main` even when merged.
+- If the branch is checked out in a worktree (`git worktree list`), remove the
+  worktree first (`git worktree remove <path>`, `--force` if it only has
+  disposable untracked cruft like a stray `node_modules`), then delete the
+  branch (`git branch -D` — squash merges mean `-d`'s ancestry check will
+  refuse even genuinely merged branches, so `-D` is expected here, not a red flag).
+- Check the remote: `git ls-remote --heads origin <branch>`. This repo has
+  "delete branch on merge" enabled, so it's usually already gone; if not,
+  delete it (`git push origin --delete <branch>`).
+- Before deleting, check for local commits the remote/main don't have
+  (`git log origin/main..<branch>` after a `git fetch`) — an unpushed commit
+  sitting on an otherwise-merged branch is in-progress work, not cleanup
+  fodder. Push it first, or ask.
+
+Do this proactively at the end of any task that ends in a merged PR, and
+whenever you notice a stale merged branch lying around — don't wait to be
+asked twice.
