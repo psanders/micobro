@@ -12,6 +12,7 @@
 import { methodLabels } from "../payments/labels";
 import { cuotaCents, lastCuotaCents, totalInterestCents, totalRepayCents } from "./loanMath";
 import type { Loan, LoanFrequency } from "./loan.schema";
+import type { Customer } from "../customers/customer.schema";
 import type { Payment } from "../payments/payment.schema";
 import type {
   CustomerLoanSummary,
@@ -19,7 +20,9 @@ import type {
   LoanDetailView,
   LoanScheduleItem,
   PaymentHistoryEntry,
-  PaymentHistoryView
+  PaymentHistoryView,
+  PaymentReceipt,
+  ReceiptLine
 } from "../repo/types";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -96,6 +99,23 @@ export function installmentDueDate(loan: Loan, number: number): Date {
  */
 export function defaultFirstPaymentDate(frequency: LoanFrequency, from: Date = new Date()): Date {
   return addFrequencyInterval(from, frequency, 1);
+}
+
+/**
+ * `defaultFirstPaymentDate`, except for a skip-Sundays daily loan, where the
+ * floor itself must be a non-Sunday day so it agrees with
+ * `installmentDueDate(loan, 1)` (which walks the schedule the same way).
+ * Used by the new-loan form as both the "primer pago" calendar's minimum
+ * selectable date and the value it resets to on a frequency change.
+ */
+export function healthyFirstPaymentFloor(
+  frequency: LoanFrequency,
+  skipSundays: boolean,
+  from: Date = new Date()
+): Date {
+  return frequency === "daily" && skipSundays
+    ? addNonSundayDays(from, 1)
+    : defaultFirstPaymentDate(frequency, from);
 }
 
 export function principalPaidCents(payments: Payment[]): number {
@@ -207,24 +227,80 @@ export function buildLoanDetailView({
 }
 
 /**
- * Histórico de Pagos for one loan. `allPayments` is the whole payments
- * table (not just this loan's) because receipt numbers are assigned by
- * creation order across every loan, matching how `collectPayment` mints
- * them (`R-${index in the whole table}`).
+ * Receipt number for every payment row, assigned by creation order across
+ * the whole `payments` table — matching how `collectPayment` mints them
+ * (`R-${index in the whole table}`).
  */
-export function buildPaymentHistoryView(loan: Loan, allPayments: Payment[]): PaymentHistoryView {
-  const cuota = cuotaCents(loan.principalCents, loan.interestRateBps, loan.termCount);
+export function buildReceiptNumberIndex(allPayments: Payment[]): Map<string, string> {
   const byCreatedAt = [...allPayments].sort(
     (a, b) => a.createdAt.getTime() - b.createdAt.getTime()
   );
-  const receiptIndex = new Map(byCreatedAt.map((p, i) => [p.id, i]));
-  const receiptNumberOf = (id: string) =>
-    `R-${String((receiptIndex.get(id) ?? 0) + 1).padStart(5, "0")}`;
+  return new Map(byCreatedAt.map((p, i) => [p.id, `R-${String(i + 1).padStart(5, "0")}`]));
+}
+
+/**
+ * One cobro (`collectPayment.ts`) can write up to two payment rows — a mora
+ * row and an installment row — sharing one `loanId` and one `paidAt`
+ * instant. Both should read as the same receipt: this returns the
+ * canonical (lower, i.e. earliest-written) receipt number for every row in
+ * `loanPayments`, keyed by payment id, using the per-row numbers from
+ * `buildReceiptNumberIndex`.
+ */
+export function canonicalReceiptNumbers(
+  loanPayments: Payment[],
+  receiptNumberIndex: Map<string, string>
+): Map<string, string> {
+  const byTimestamp = new Map<number, Payment[]>();
+  for (const payment of loanPayments) {
+    const key = payment.paidAt.getTime();
+    const group = byTimestamp.get(key) ?? [];
+    group.push(payment);
+    byTimestamp.set(key, group);
+  }
+  const canonical = new Map<string, string>();
+  for (const group of byTimestamp.values()) {
+    const numbers = group.map((p) => receiptNumberIndex.get(p.id) ?? "");
+    const lowest = numbers.reduce((a, b) => (a <= b ? a : b));
+    for (const payment of group) canonical.set(payment.id, lowest);
+  }
+  return canonical;
+}
+
+/**
+ * Which cuota number (1-based, among full-cuota payments only) each
+ * non-mora `loanPayments` row is, in chronological order — shared by
+ * `buildPaymentHistoryView` (list label "Cuota N") and `buildPaymentReceipt`
+ * (receipt label "Cuota N/Total", via `cuotaLabel`, matching the live
+ * just-collected receipt's format).
+ */
+function cuotaNumbersByPaymentId(loan: Loan, loanPayments: Payment[]): Map<string, number> {
+  const cuota = cuotaCents(loan.principalCents, loan.interestRateBps, loan.termCount);
+  const chronological = [...loanPayments].sort((a, b) => a.paidAt.getTime() - b.paidAt.getTime());
+  let cuotaNumber = 0;
+  const numbers = new Map<string, number>();
+  for (const payment of chronological) {
+    if (payment.notes === MORA_NOTE) continue;
+    if (payment.amountCents >= cuota) {
+      cuotaNumber += 1;
+      numbers.set(payment.id, cuotaNumber);
+    }
+  }
+  return numbers;
+}
+
+/**
+ * Histórico de Pagos for one loan. `allPayments` is the whole payments
+ * table (not just this loan's) because receipt numbers are assigned by
+ * creation order across every loan (see `buildReceiptNumberIndex`).
+ */
+export function buildPaymentHistoryView(loan: Loan, allPayments: Payment[]): PaymentHistoryView {
+  const receiptNumberIndex = buildReceiptNumberIndex(allPayments);
 
   const loanPayments = allPayments.filter((p) => p.loanId === loan.id);
+  const receiptNumberOf = canonicalReceiptNumbers(loanPayments, receiptNumberIndex);
+  const cuotaNumbers = cuotaNumbersByPaymentId(loan, loanPayments);
   const chronological = [...loanPayments].sort((a, b) => a.paidAt.getTime() - b.paidAt.getTime());
 
-  let cuotaNumber = 0;
   let moraPaidCents = 0;
   const entries: PaymentHistoryEntry[] = [];
   for (const payment of chronological) {
@@ -235,20 +311,19 @@ export function buildPaymentHistoryView(loan: Loan, allPayments: Payment[]): Pay
         id: payment.id,
         date: payment.paidAt,
         label: "Pago de mora",
-        subLabel: `${methodLabels[payment.method ?? "cash"]} · Recibo #${receiptNumberOf(payment.id)}`,
+        subLabel: `${methodLabels[payment.method ?? "cash"]} · Recibo #${receiptNumberOf.get(payment.id)}`,
         amountCents: payment.amountCents
       });
       continue;
     }
-    const isFullCuota = payment.amountCents >= cuota;
-    if (isFullCuota) cuotaNumber += 1;
+    const cuotaNumber = cuotaNumbers.get(payment.id);
     entries.push({
       id: payment.id,
       date: payment.paidAt,
-      label: isFullCuota ? `Cuota ${cuotaNumber}` : "Abono a cuenta",
-      subLabel: isFullCuota
-        ? `Pago completo · ${methodLabels[payment.method ?? "cash"]} · Recibo #${receiptNumberOf(payment.id)} · sin mora`
-        : `Anticipo del cliente · Recibo #${receiptNumberOf(payment.id)}`,
+      label: cuotaNumber ? `Cuota ${cuotaNumber}` : "Abono a cuenta",
+      subLabel: cuotaNumber
+        ? `Pago completo · ${methodLabels[payment.method ?? "cash"]} · Recibo #${receiptNumberOf.get(payment.id)} · sin mora`
+        : `Anticipo del cliente · Recibo #${receiptNumberOf.get(payment.id)}`,
       amountCents: payment.amountCents
     });
   }
@@ -256,11 +331,56 @@ export function buildPaymentHistoryView(loan: Loan, allPayments: Payment[]): Pay
 
   return {
     totalCollectedCents: loanPayments.reduce((sum, p) => sum + p.amountCents, 0),
-    installmentsPaid: cuotaNumber,
+    installmentsPaid: cuotaNumbers.size,
     installmentsTotal: loan.termCount,
     moraPaidCents,
     lastPaymentAt: chronological.length ? chronological[chronological.length - 1]!.paidAt : null,
     entries
+  };
+}
+
+/**
+ * Reconstructs the receipt for a past cobro — the same shape
+ * `collectPayment.ts` returns right after collecting, rebuilt from the
+ * stored rows for the Histórico de Pagos "Ver recibo" screen. `paymentId`
+ * may be either sibling row of a combined mora+installment cobro (see
+ * `canonicalReceiptNumbers`); both resolve to the same receipt, combining
+ * both amounts into separate lines. Returns `null` if `paymentId` doesn't
+ * belong to `loan`.
+ */
+export function buildPaymentReceipt(
+  paymentId: string,
+  loan: Loan,
+  customer: Customer,
+  allPayments: Payment[]
+): PaymentReceipt | null {
+  const target = allPayments.find((p) => p.id === paymentId && p.loanId === loan.id);
+  if (!target) return null;
+
+  const loanPayments = allPayments.filter((p) => p.loanId === loan.id);
+  const siblings = loanPayments.filter((p) => p.paidAt.getTime() === target.paidAt.getTime());
+
+  const receiptNumberIndex = buildReceiptNumberIndex(allPayments);
+  const canonicalNumbers = canonicalReceiptNumbers(loanPayments, receiptNumberIndex);
+  const cuotaNumbers = cuotaNumbersByPaymentId(loan, loanPayments);
+
+  const lines: ReceiptLine[] = [...siblings]
+    .sort((a, b) => (a.notes === MORA_NOTE ? 0 : 1) - (b.notes === MORA_NOTE ? 0 : 1))
+    .map((p) => {
+      if (p.notes === MORA_NOTE) return { label: "Mora (prioridad)", amountCents: p.amountCents };
+      const cuotaNumber = cuotaNumbers.get(p.id);
+      const label = cuotaNumber ? cuotaLabel(cuotaNumber, loan.termCount) : "Abono a cuenta";
+      return { label, amountCents: p.amountCents };
+    });
+
+  return {
+    paymentId: target.id,
+    receiptNumber: canonicalNumbers.get(target.id) ?? "",
+    paidAt: target.paidAt,
+    totalCents: siblings.reduce((sum, p) => sum + p.amountCents, 0),
+    method: target.method ?? "cash",
+    customerName: customer.name,
+    lines
   };
 }
 

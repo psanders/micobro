@@ -6,6 +6,7 @@ export { createListPaymentsByLoan } from "./listPaymentsByLoan";
 export { createListPaymentsSinceLastClose } from "./listPaymentsSinceLastClose";
 export { createGetCollectContext } from "./getCollectContext";
 export { createCollectPayment } from "./collectPayment";
+export { createGetPaymentReceipt } from "./getPaymentReceipt";
 export { computePaymentSplit } from "./paymentSplit";
 export type { PaymentSplitInput, PaymentSplitResult } from "./paymentSplit";
 export { createPaymentSchema, paymentMethods } from "./payment.schema";

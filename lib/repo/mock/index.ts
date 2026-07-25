@@ -27,6 +27,7 @@ import {
   buildCustomerLoanSummary,
   buildLoanDetailView,
   buildPaymentHistoryView,
+  buildPaymentReceipt,
   loanCode,
   MORA_NOTE
 } from "../../loans/loanViews";
@@ -428,6 +429,15 @@ export function createMockRepos(): Repos {
           customerName: customer?.name ?? "Cliente",
           lines: input.lines
         };
+      },
+      getReceipt: async (paymentId) => {
+        const target = payments.find((p) => p.id === paymentId);
+        if (!target) return null;
+        const loan = loans.find((l) => l.id === target.loanId);
+        if (!loan) return null;
+        const customer = customers.find((c) => c.id === loan.customerId);
+        if (!customer) return null;
+        return buildPaymentReceipt(paymentId, loan, customer, payments);
       }
     },
     sync: createMockSyncRepo(),

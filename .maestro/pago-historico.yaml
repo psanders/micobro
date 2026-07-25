@@ -1,0 +1,87 @@
+# Covers: Préstamo Detalle -> Ver historial -> tap a payment entry -> Recibo
+# de pago (Imprimir/WhatsApp visible) -> back to Histórico de pagos.
+#
+# Requires a mock-repo build (EXPO_PUBLIC_USE_MOCK_REPOS=true) — see the
+# comment in pin-unlock.yaml. Uses María Rosa Peralta's loan-1
+# (lib/repo/mock/fixtures.ts): 3 standalone cuota payments, newest first is
+# "Cuota 3" (payment-3, transfer), so `loanCode("loan-1")` -> "L-00001".
+appId: ${APP_ID}
+---
+- launchApp:
+    clearState: true
+- runFlow:
+    when:
+      true: ${DEV_URL}
+    commands:
+      - extendedWaitUntil:
+          visible: "Development Build"
+          timeout: 20000
+      - openLink: ${DEV_URL}
+      - extendedWaitUntil:
+          visible: "Continue"
+          timeout: 45000
+      - back
+- extendedWaitUntil:
+    visible: "Crea tu PIN"
+    timeout: 30000
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- extendedWaitUntil:
+    visible: "Confirma tu PIN"
+    timeout: 10000
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- extendedWaitUntil:
+    visible: "Ahora no, tal vez después"
+    timeout: 15000
+- tapOn: "Ahora no, tal vez después"
+- extendedWaitUntil:
+    visible: "Hola, Carlos."
+    timeout: 15000
+
+- tapOn:
+    id: "tab-buscar"
+- extendedWaitUntil:
+    visible: "Buscar cliente"
+    timeout: 15000
+- tapOn: "Nombre, teléfono o cédula…"
+- inputText: "Maria"
+- extendedWaitUntil:
+    visible: "María Rosa Peralta"
+    timeout: 15000
+- tapOn: "María Rosa Peralta"
+- extendedWaitUntil:
+    visible: "PRÉSTAMOS ACTIVOS"
+    timeout: 15000
+
+# Her only active loan card (components/screens/CustomerDetailScreen.tsx
+# loanTitle: "Préstamo #<code>").
+- tapOn: "Préstamo #L-00001"
+
+# LoanDetailScreen (components/screens/LoanDetailScreen.tsx).
+- extendedWaitUntil:
+    visible: "TOTAL A PAGAR HOY"
+    timeout: 15000
+- tapOn: "Ver historial ›"
+
+# PaymentHistoryScreen (components/screens/PaymentHistoryScreen.tsx).
+- extendedWaitUntil:
+    visible: "Histórico de pagos"
+    timeout: 15000
+- tapOn: "Cuota 3"
+
+# PaymentReceiptScreen (components/screens/PaymentReceiptScreen.tsx).
+- extendedWaitUntil:
+    visible: "Recibo de pago"
+    timeout: 15000
+- assertVisible: "Imprimir"
+- assertVisible: "WhatsApp"
+- back
+
+- extendedWaitUntil:
+    visible: "Histórico de pagos"
+    timeout: 15000

@@ -4,7 +4,8 @@
  * m/payment-row from pencil.pen: a month/day date badge, a label + method
  * sub-line, and the trailing amount, used on Histórico de Pagos.
  */
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, Pressable, StyleSheet } from "react-native";
+import { Feather } from "@expo/vector-icons";
 import { colors, fonts } from "../lib/ui/theme";
 
 interface PaymentHistoryRowProps {
@@ -13,11 +14,19 @@ interface PaymentHistoryRowProps {
   label: string;
   subLabel: string;
   amount: string;
+  onPress?: () => void;
 }
 
-export function PaymentHistoryRow({ month, day, label, subLabel, amount }: PaymentHistoryRowProps) {
+export function PaymentHistoryRow({
+  month,
+  day,
+  label,
+  subLabel,
+  amount,
+  onPress
+}: PaymentHistoryRowProps) {
   return (
-    <View style={styles.row}>
+    <Pressable style={styles.row} onPress={onPress}>
       <View style={styles.dateBadge}>
         <Text style={styles.month}>{month}</Text>
         <Text style={styles.day}>{day}</Text>
@@ -27,7 +36,8 @@ export function PaymentHistoryRow({ month, day, label, subLabel, amount }: Payme
         <Text style={styles.subLabel}>{subLabel}</Text>
       </View>
       <Text style={styles.amount}>{amount}</Text>
-    </View>
+      <Feather name="chevron-right" size={18} color={colors.hairline} />
+    </Pressable>
   );
 }
 

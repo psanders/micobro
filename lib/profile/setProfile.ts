@@ -26,7 +26,7 @@ export function createSetProfile({ db }: SetProfileDeps) {
       name: params.name,
       avatarKey: params.avatarKey ?? null,
       businessName: params.businessName ?? null,
-      phone: params.phone ?? null,
+      phone: params.phone || null,
       createdAt: now,
       updatedAt: now
     };
