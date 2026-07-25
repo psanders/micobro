@@ -1,7 +1,7 @@
 # Ship checkpoint — payment-history-actions
 
 Started: 2026-07-24
-Current stage: 5 — Sync, awaiting gate
+Current stage: 6 — Archive, done
 
 **Scope:** Bundle GitHub #72 and #40 on one PR (branch
 `feat/payment-history-actions`). Replace Nuevo Préstamo's "Primer pago"
@@ -20,8 +20,8 @@ Storybook: yes (`.storybook/`) · E2E: yes (`.maestro/`)
 | 2 | Spec reconcile | done | Design matched delta specs exactly, no edits needed. |
 | 3 | Build | done | CalendarPicker ported + wired; getPaymentReceipt query + canonical receipt numbers; PaymentReceiptScreen + ReceiptSummary/ReceiptActions extraction; tappable history rows; new route. |
 | 4 | Test | done | 229/229 suites, 1352/1352 tests green; scoped lint clean; typecheck clean; Maestro flow written (not executed, no device). |
-| 5 | Sync | in-progress | Awaiting user gate before promoting delta specs. |
-| 6 | Archive | pending | |
+| 5 | Sync | done | Delta specs promoted into `openspec/specs/loan-configuration` and `openspec/specs/payment-history`. |
+| 6 | Archive | done | Moved to `openspec/changes/archive/2026-07-25-payment-history-actions/`. |
 
 Status values: `pending` · `in-progress` · `done` · `skipped` (with reason).
 
@@ -29,6 +29,12 @@ Status values: `pending` · `in-progress` · `done` · `skipped` (with reason).
 
 Newest first. One line per meaningful decision or stage transition.
 
+- 2026-07-25 — PR #73 opened, closes #72 and #40. CI's format:check caught
+  a prettier convergence gap in tasks.md (fixed, pushed, CI green). Synced
+  delta specs into `openspec/specs/loan-configuration` and
+  `openspec/specs/payment-history`, archived the change to
+  `openspec/changes/archive/2026-07-25-payment-history-actions/`. Ship
+  loop complete.
 - 2026-07-25 — `/code-review` pass (eye on scope creep) surfaced 7
   findings; verified each against the code before acting:
   1. **Fixed** — `NewLoanFormScreen`'s frequency-reset effect and the

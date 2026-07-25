@@ -113,6 +113,6 @@ lint` is polluted by pre-existing stale `.claude/worktrees/*`
       `formatPhoneInput`/hint into the screen, matching
       `NewCustomerFormScreen`'s pattern. New tests in
       `__tests__/profileRepo.test.ts`.
-- [ ] 5.3 Sync delta specs into `openspec/specs/loan-configuration` and
+- [x] 5.3 Synced delta specs into `openspec/specs/loan-configuration` and
       `openspec/specs/payment-history`.
-- [ ] 5.4 Archive the change; close #72 and #40.
+- [x] 5.4 Archive the change; close #72 and #40.
