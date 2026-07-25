@@ -20,7 +20,7 @@
 - [x] 2.2 Wire the "Primer pago" field to open `CalendarPicker` with
       `minDate = defaultFirstPaymentDate(frequency)` and
       `isDateDisabled = (d) => skipSundays && frequency === "daily" &&
-    d.getDay() === 0`. (Extracted the min-date logic as
+d.getDay() === 0`. (Extracted the min-date logic as
       `healthyFirstPaymentFloor` in `loanViews.ts` so it's unit-testable,
       matching the repo's lib-function test convention — no component
       testing infra exists in this repo.)
@@ -93,7 +93,7 @@
 - [x] 5.1 `openspec validate payment-history-actions` — valid.
 - [x] 5.2 Lint, typecheck, full test suite green (229/229 suites, 1352/1352
       tests, scoped lint clean on every touched file — full-repo `npm run
-    lint` is polluted by pre-existing stale `.claude/worktrees/*`
+lint` is polluted by pre-existing stale `.claude/worktrees/*`
       checkouts unrelated to this change, flagged separately).
 - [x] 5.2b Manual emulator verification (Android, mock repos): calendar
       picker opens on Nuevo Préstamo with the correct min-date disabled and
