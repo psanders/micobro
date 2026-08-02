@@ -160,17 +160,41 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
         });
         return lines;
       }
-      case "custom":
-        if (mora > 0 && customAmountCents > 0) {
-          const lines: ReceiptLine[] = [
-            { label: "Mora (prioridad)", amountCents: split.moraPortionCents }
-          ];
-          if (split.installmentPortionCents > 0) {
-            lines.push({ label: "Aplica a cuota", amountCents: split.installmentPortionCents });
-          }
-          return lines;
+      case "custom": {
+        if (customAmountCents <= 0 || cuota <= 0) {
+          return [{ label: "Monto personalizado", amountCents: customAmountCents }];
         }
-        return [{ label: "Monto personalizado", amountCents: customAmountCents }];
+        const lines: ReceiptLine[] = [];
+        if (mora > 0) {
+          lines.push({ label: "Mora (prioridad)", amountCents: split.moraPortionCents });
+        }
+        if (split.installmentPortionCents > 0) {
+          // Once the payment covers more than one cuota, this line becomes
+          // the numbered cuota label (e.g. "Cuota 8/24") to pair with the
+          // "Abono a la cuota N+1" line below; otherwise it keeps the
+          // original label for a payment that fits within one cuota.
+          lines.push({
+            label:
+              split.advancePortionCents > 0
+                ? cuotaLabel
+                : mora > 0
+                  ? "Aplica a cuota"
+                  : "Monto personalizado",
+            amountCents: split.installmentPortionCents
+          });
+        }
+        if (split.advancePortionCents > 0) {
+          const nextInstallmentNumber = ctx.currentInstallmentNumber + 1;
+          // No "cuota N+1" exists once the current cuota is the loan's
+          // last installment — fall back to a generic "extra" label.
+          const advanceLabel =
+            ctx.installmentsTotal > 0 && nextInstallmentNumber <= ctx.installmentsTotal
+              ? `Abono a la cuota ${nextInstallmentNumber}/${ctx.installmentsTotal}`
+              : "Abono adicional";
+          lines.push({ label: advanceLabel, amountCents: split.advancePortionCents });
+        }
+        return lines;
+      }
       default:
         return [{ label: cuotaLabel, amountCents: cuota }];
     }
