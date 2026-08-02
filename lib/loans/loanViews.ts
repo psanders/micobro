@@ -61,7 +61,7 @@ export function addFrequencyInterval(date: Date, frequency: LoanFrequency, count
     due.setMonth(due.getMonth() + count);
     return due;
   }
-  const days = frequency === "daily" ? 1 : frequency === "weekly" ? 7 : 14;
+  const days = frequency === "daily" ? 1 : frequency === "weekly" ? 7 : 15;
   return new Date(date.getTime() + count * days * DAY_MS);
 }
 
