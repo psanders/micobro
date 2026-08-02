@@ -49,5 +49,75 @@ describe("computePaymentSplit", () => {
     });
     expect(split.moraPortionCents).toBe(0);
     expect(split.installmentPortionCents).toBe(240000);
+    expect(split.advancePortionCents).toBe(0);
+  });
+
+  describe("advancePortionCents (issue #80 — over-cuota receipt split)", () => {
+    it("caps the installment portion at one cuota and breaks the rest out as an advance", () => {
+      const split = computePaymentSplit({
+        amountCents: 250000, // $2,500
+        expectedCuotaCents: 200000, // $2,000
+        accruedMoraCents: 0
+      });
+      expect(split.moraPortionCents).toBe(0);
+      expect(split.installmentPortionCents).toBe(200000);
+      expect(split.advancePortionCents).toBe(50000); // $500
+      expect(split.installmentStatus).toBe("completed");
+    });
+
+    it("caps the installment portion after mora is covered first", () => {
+      const split = computePaymentSplit({
+        amountCents: 300000,
+        expectedCuotaCents: 200000,
+        accruedMoraCents: 50000
+      });
+      expect(split.moraPortionCents).toBe(50000);
+      expect(split.installmentPortionCents).toBe(200000);
+      expect(split.advancePortionCents).toBe(50000);
+    });
+
+    it("does not cap or produce an advance when the payment exactly matches the cuota", () => {
+      const split = computePaymentSplit({
+        amountCents: 200000,
+        expectedCuotaCents: 200000,
+        accruedMoraCents: 0
+      });
+      expect(split.installmentPortionCents).toBe(200000);
+      expect(split.advancePortionCents).toBe(0);
+      expect(split.installmentStatus).toBe("completed");
+    });
+
+    it("does not produce an advance for a partial (under-cuota) payment", () => {
+      const split = computePaymentSplit({
+        amountCents: 150000,
+        expectedCuotaCents: 200000,
+        accruedMoraCents: 0
+      });
+      expect(split.installmentPortionCents).toBe(150000);
+      expect(split.advancePortionCents).toBe(0);
+      expect(split.installmentStatus).toBe("partial");
+    });
+
+    it("puts an advance spanning more than one future cuota into a single advancePortionCents figure", () => {
+      const split = computePaymentSplit({
+        amountCents: 450000, // 2.25x the cuota
+        expectedCuotaCents: 200000,
+        accruedMoraCents: 0
+      });
+      expect(split.installmentPortionCents).toBe(200000);
+      expect(split.advancePortionCents).toBe(250000);
+    });
+
+    it("late_fee kind never produces an advance, regardless of amount vs. cuota", () => {
+      const split = computePaymentSplit({
+        amountCents: 500000,
+        expectedCuotaCents: 200000,
+        accruedMoraCents: 500000,
+        kind: "late_fee"
+      });
+      expect(split.moraPortionCents).toBe(500000);
+      expect(split.installmentPortionCents).toBe(0);
+      expect(split.advancePortionCents).toBe(0);
+    });
   });
 });
