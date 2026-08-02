@@ -1,12 +1,13 @@
 /**
  * Copyright (C) 2026 by Pedro Sanders. MIT License.
  *
- * Bottom-sheet month calendar for picking a single date, with a hard minimum
- * (days before `minDate` are disabled) and an optional per-date disable
- * predicate (used for skip-Sundays on daily loans). Pure React Native — no
- * native date-picker dependency, matching the app's deliberate choice to
- * stay within already-installed packages. Ported from mikro's
- * `CalendarPicker.tsx`.
+ * Bottom-sheet month calendar for picking a single date, with an optional
+ * hard minimum (days before `minDate` are disabled, when provided — omit it
+ * to allow any date, past or future, e.g. for backdating a loan's first
+ * payment) and an optional per-date disable predicate (used for
+ * skip-Sundays on daily loans). Pure React Native — no native date-picker
+ * dependency, matching the app's deliberate choice to stay within
+ * already-installed packages. Ported from mikro's `CalendarPicker.tsx`.
  */
 import { useState } from "react";
 import { Modal, View, Text, Pressable, StyleSheet } from "react-native";
@@ -17,8 +18,12 @@ interface CalendarPickerProps {
   visible: boolean;
   title: string;
   value: Date;
-  /** Earliest selectable day (inclusive). Days before it are disabled. */
-  minDate: Date;
+  /**
+   * Earliest selectable day (inclusive). Days before it are disabled, and
+   * month navigation stops before reaching it. Omit for no lower bound —
+   * any past or future date is selectable and navigation is unrestricted.
+   */
+  minDate?: Date;
   /** Additional per-date disable rule, combined with `minDate`. */
   isDateDisabled?: (date: Date) => boolean;
   onSelect: (value: Date) => void;
@@ -57,16 +62,17 @@ export function CalendarPicker({
 }: CalendarPickerProps) {
   const [view, setView] = useState({ year: value.getFullYear(), month: value.getMonth() });
 
-  const min = atMidnight(minDate);
+  const min = minDate ? atMidnight(minDate) : null;
   const firstOfMonth = new Date(view.year, view.month, 1);
   // Monday-first offset (JS getDay is Sunday-first).
   const leading = (firstOfMonth.getDay() + 6) % 7;
   const daysInMonth = new Date(view.year, view.month + 1, 0).getDate();
 
-  // Disable navigating to months entirely before the minimum.
+  // Disable navigating to months entirely before the minimum, when one is set.
   const prevDisabled =
-    view.year < min.getFullYear() ||
-    (view.year === min.getFullYear() && view.month <= min.getMonth());
+    min !== null &&
+    (view.year < min.getFullYear() ||
+      (view.year === min.getFullYear() && view.month <= min.getMonth()));
 
   const cells: (Date | null)[] = [];
   for (let i = 0; i < leading; i++) cells.push(null);
@@ -119,7 +125,7 @@ export function CalendarPicker({
         <View style={styles.grid}>
           {cells.map((date, i) => {
             if (!date) return <View key={i} style={styles.cell} />;
-            const disabled = date < min || (isDateDisabled?.(date) ?? false);
+            const disabled = (min !== null && date < min) || (isDateDisabled?.(date) ?? false);
             const selected = sameDay(date, value);
             return (
               <Pressable

@@ -369,7 +369,9 @@ export function NewLoanFormScreen({ customerId: initialCustomerId }: { customerI
         visible={showCalendar}
         title="Primer pago"
         value={firstPaymentDate}
-        minDate={firstPaymentFloor}
+        // No `minDate`: `firstPaymentFloor` is only the suggested default
+        // (pre-fill + frequency-reset value, see above) — the lender can
+        // still pick a nearer date or backdate into the past.
         isDateDisabled={(d) => frequency === "daily" && skipSundays && d.getDay() === 0}
         onSelect={setFirstPaymentDate}
         onClose={() => setShowCalendar(false)}
