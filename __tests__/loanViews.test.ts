@@ -187,10 +187,24 @@ describe("addFrequencyInterval / defaultFirstPaymentDate", () => {
   it.each([
     ["daily", 1],
     ["weekly", 7],
-    ["biweekly", 14]
+    ["biweekly", 15]
   ] as [LoanFrequency, number][])("%s shifts by %d days per interval", (frequency, days) => {
     const shifted = addFrequencyInterval(now, frequency, 1);
     expect(shifted.getTime() - now.getTime()).toBe(days * DAY_MS);
+  });
+
+  it("biweekly (quincenal) installments land 15 days apart, not 14 — regression for #78", () => {
+    // First payment on Sep 15 (a 30-day month): installment 2 must fall on
+    // the 30th (15 + 15 = 30), and installment 3 on the 15th of the next
+    // month — not one day earlier each time, which is what a 14-day
+    // interval would silently drift toward.
+    const firstPayment = new Date("2026-09-15T12:00:00");
+    const installment2 = addFrequencyInterval(firstPayment, "biweekly", 1);
+    const installment3 = addFrequencyInterval(firstPayment, "biweekly", 2);
+    expect(installment2.getDate()).toBe(30);
+    expect(installment2.getMonth()).toBe(firstPayment.getMonth());
+    expect(installment3.getDate()).toBe(15);
+    expect(installment3.getMonth()).toBe((firstPayment.getMonth() + 1) % 12);
   });
 
   it("monthly shifts by calendar months, not a fixed day count", () => {
