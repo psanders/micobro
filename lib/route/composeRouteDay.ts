@@ -6,11 +6,14 @@
  * what order. This never recomputes loan math itself — it composes the
  * existing `lib/loans/loanViews.ts` (schedule + "Total a pagar hoy") and
  * `lib/loans/mora.ts` (accrued mora) builders per loan, the same way
- * `getLoanDetailView` does for the Préstamo Detalle screen. Amounts and
- * mora auto-correct if those builders change.
+ * `getLoanDetailView` does for the Préstamo Detalle screen — and, for an
+ * open-credit loan, `lib/loans/openCredit.ts`'s cycle-replay engine
+ * instead, since those two are term-only. Amounts and mora auto-correct if
+ * those builders change.
  *
- * Inclusion rule: an active loan gets a visit when its earliest unpaid
- * installment (as of *before* today's payments) is due today or overdue.
+ * Inclusion rule: an active loan gets a visit when its next payment (as of
+ * *before* today's payments) is due today or overdue — the earliest unpaid
+ * installment for a term loan, the current cycle's interest for open credit.
  * Payments made today are excluded from that "as of" snapshot on purpose —
  * otherwise a cobro collected this morning would erase the loan's
  * `nextDueDate` and the visit would vanish from the route instead of
@@ -32,6 +35,8 @@
  */
 import { buildLoanDetailView } from "../loans/loanViews";
 import { computeLoanMora, loanMoraPolicy } from "../loans/mora";
+import { effectiveLoanType } from "../loans/loan.schema";
+import { openCreditState } from "../loans/openCredit";
 import { composeUpcomingCustomers } from "./composeUpcomingCustomers";
 import type { Customer } from "../customers/customer.schema";
 import type { Loan } from "../loans/loan.schema";
@@ -86,26 +91,47 @@ export function composeRouteDay({
     const paymentsToday = loanPayments.filter((p) => isSameDay(p.paidAt, today));
 
     const customer = customersById.get(loan.customerId);
-    const { moraCents, moraDays } = computeLoanMora(
-      loan,
-      paymentsBeforeToday,
-      today,
-      loanMoraPolicy(loan)
-    );
-    const view = buildLoanDetailView({
-      loan,
-      customerName: customer?.name ?? "Cliente",
-      business: null,
-      payments: paymentsBeforeToday,
-      moraCents,
-      moraDays,
-      today
-    });
 
-    if (!view.nextDueDate) continue; // fully paid as of before today
+    // What's due, and when, per loan type. Open credit has no cuota
+    // schedule and never accrues mora — its due amount is the current
+    // cycle's interest from the same replay engine the detail and collect
+    // screens use. Running it through `buildLoanDetailView` instead (which
+    // is term-only) would report no next due date at all, since open-credit
+    // loans are stored with `termCount: 0` and the schedule loop never
+    // runs — the loan would silently never make it onto the route.
+    let dueDate: Date;
+    let amountCents: number;
+    let moraCents = 0;
+    let installmentLabel: string;
 
-    const dueDate = startOfDay(view.nextDueDate);
-    if (dueDate > startOfToday) continue; // next cuota isn't due yet
+    if (effectiveLoanType(loan) === "open_credit") {
+      const state = openCreditState(loan, paymentsBeforeToday, today);
+      if (state.isClosed) continue; // capital paid off as of before today
+
+      dueDate = startOfDay(state.nextDueDate);
+      amountCents = state.interestDueCents;
+      installmentLabel = "Interés del ciclo";
+    } else {
+      const mora = computeLoanMora(loan, paymentsBeforeToday, today, loanMoraPolicy(loan));
+      moraCents = mora.moraCents;
+      const view = buildLoanDetailView({
+        loan,
+        customerName: customer?.name ?? "Cliente",
+        business: null,
+        payments: paymentsBeforeToday,
+        moraCents,
+        moraDays: mora.moraDays,
+        today
+      });
+
+      if (!view.nextDueDate) continue; // fully paid as of before today
+
+      dueDate = startOfDay(view.nextDueDate);
+      amountCents = view.dueTodayCents;
+      installmentLabel = `Cuota ${view.installmentsPaid + 1}/${view.installmentsTotal}`;
+    }
+
+    if (dueDate > startOfToday) continue; // next payment isn't due yet
 
     const isOverdue = dueDate < startOfToday;
     const overdueDays = isOverdue
@@ -121,16 +147,14 @@ export function composeRouteDay({
       business: null,
       address: customer?.address ?? "",
       avatarKey: null,
-      amountCents: view.dueTodayCents,
+      amountCents,
       hasMora: moraCents > 0,
       status: collectedTodayCents > 0 ? "done" : isOverdue ? "overdue" : "pending",
       ...(isOverdue ? { overdueDays } : {}),
       ...(collectedTodayCents > 0
         ? { paidAt: paymentsToday.reduce((a, b) => (a.paidAt > b.paidAt ? a : b)).paidAt }
         : {}),
-      ...(!isOverdue && collectedTodayCents === 0
-        ? { installmentLabel: `Cuota ${view.installmentsPaid + 1}/${view.installmentsTotal}` }
-        : {})
+      ...(!isOverdue && collectedTodayCents === 0 ? { installmentLabel } : {})
     };
 
     candidates.push({ visit, dueDate, collectedTodayCents });

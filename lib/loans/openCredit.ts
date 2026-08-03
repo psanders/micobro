@@ -15,16 +15,25 @@
  *   - A payment recorded within the cycle's window covers interest first;
  *     any remainder pays down capital ("Interés + capital"). "Solo interés"
  *     is just a payment that happens to equal the interest due exactly.
- *   - A cycle that has ALREADY ENDED (its end date is on/before `today`)
- *     with interest not fully covered CAPITALIZES the shortfall: the unpaid
- *     interest is added to the balance, compounding it. This is open
- *     credit's only penalty — no mora ever applies (see the proposal's
- *     non-goals).
+ *   - A cycle that has ALREADY ENDED with interest not fully covered
+ *     CAPITALIZES the shortfall: the unpaid interest is added to the
+ *     balance, compounding it. This is open credit's only penalty — no mora
+ *     ever applies (see the proposal's non-goals).
  *   - The CURRENT in-progress cycle (started but not yet ended as of
  *     `today`) is never capitalized — it only capitalizes once it closes,
  *     on a later call made with a later `today`.
  *   - The loan closes (`isClosed`) the moment a payment brings the balance
  *     to zero or below; no further cycles are replayed past that point.
+ *
+ * Cycle windows are compared by CALENDAR DAY, not by instant. A cycle's end
+ * is the day its interest falls due, and the client has all of that day to
+ * pay: the cycle only counts as ended once that day is behind `today`, and
+ * a payment recorded ON the due date pays that cycle rather than the next
+ * one. Comparing raw timestamps instead would capitalize a cycle at 00:00
+ * of its own due date — a client paying on time every cycle would still
+ * watch their balance compound, and the loan would never surface on the
+ * day's route. This matches how a term loan treats due dates everywhere
+ * else (`dueDate < startOfToday` in `loanViews.ts` / `composeRouteDay.ts`).
  *
  * Nothing here is stored: balance and cycle history are derived fresh on
  * every call by replaying `payments` against the cycle timeline — the same
@@ -37,6 +46,12 @@
 import { addFrequencyInterval } from "./loanViews";
 import type { Loan } from "./loan.schema";
 import type { Payment } from "../payments/payment.schema";
+
+function startOfDay(date: Date): Date {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
 
 /**
  * One cycle's outcome once it has been replayed against `today`:
@@ -59,9 +74,9 @@ export type OpenCreditCycleStatus =
 export interface OpenCreditCycle {
   /** 1-based cycle number — cycle 1 is the first interest period after disbursement. */
   index: number;
-  /** Cycle window start (inclusive). */
+  /** Cycle window start. */
   start: Date;
-  /** Cycle window end (exclusive) — also the date interest for this cycle is due. */
+  /** The date interest for this cycle is due — payments made on this day still count toward it. */
   end: Date;
   /** Interest due for this cycle, computed on the balance as of the cycle's start. */
   interestDueCents: number;
@@ -75,9 +90,17 @@ export interface OpenCreditCycle {
 export interface OpenCreditState {
   /** Outstanding capital balance after replaying every completed cycle (and the current one). */
   balanceCents: number;
-  /** Interest due for the current (in-progress, or not-yet-started) cycle. Zero once closed. */
+  /**
+   * Interest still owed on the next payment — "Interés pendiente" in the UI.
+   * This is the current cycle's interest minus whatever it has already
+   * received, so a partial payment leaves only the remainder; once the
+   * cycle's interest is fully covered it becomes the FOLLOWING cycle's
+   * interest, charged on the balance the payment left behind (which is what
+   * makes a capital paydown lower the interest right away instead of after
+   * the cycle rolls over). Zero once closed.
+   */
   interestDueCents: number;
-  /** End of the current cycle — when `interestDueCents` is next due. */
+  /** The date `interestDueCents` is due — the end of whichever cycle it belongs to. */
   nextDueDate: Date;
   /** True once a payment has brought the balance to zero (or below). */
   isClosed: boolean;
@@ -102,19 +125,30 @@ export function openCreditState(
   today: Date = new Date()
 ): OpenCreditState {
   const rate = loan.interestRateBps / 10000;
+  const todayDay = startOfDay(today).getTime();
   let balance = loan.principalCents;
   const cycles: OpenCreditCycle[] = [];
 
   for (let index = 1; ; index++) {
     const start = addFrequencyInterval(loan.startDate, loan.frequency, index - 1);
     const end = addFrequencyInterval(loan.startDate, loan.frequency, index);
+    const startDay = startOfDay(start).getTime();
+    const dueDay = startOfDay(end).getTime();
     // Cycle hasn't started yet — nothing more to replay.
-    if (start.getTime() > today.getTime()) break;
+    if (startDay > todayDay) break;
 
-    const isCompleted = end.getTime() <= today.getTime();
+    // Over only once the due date itself has passed — see the day-boundary
+    // note at the top of this file.
+    const isCompleted = dueDay < todayDay;
 
     const paidThisCycle = payments
-      .filter((p) => p.paidAt.getTime() >= start.getTime() && p.paidAt.getTime() < end.getTime())
+      .filter((p) => {
+        const day = startOfDay(p.paidAt).getTime();
+        // A cycle owns the days after the previous cycle's due date through
+        // its own, inclusive. Cycle 1 also owns the disbursement day itself,
+        // so a same-day payment lands somewhere instead of being dropped.
+        return (index === 1 ? day >= startDay : day > startDay) && day <= dueDay;
+      })
       .reduce((sum, p) => sum + p.amountCents, 0);
 
     const interestDue = Math.round(balance * rate);
@@ -178,9 +212,19 @@ export function openCreditState(
       : addFrequencyInterval(loan.startDate, loan.frequency, 1);
   } else if (lastCycle) {
     // The loop only ever stops on an incomplete cycle (besides closing), so
-    // the last cycle recorded is always the current in-progress one.
-    interestDueCents = lastCycle.interestDueCents;
-    nextDueDate = lastCycle.end;
+    // the last cycle recorded is always the current in-progress one. What's
+    // owed next is whatever interest that cycle hasn't received yet — and
+    // once it has been covered in full, the next cycle's interest on the
+    // post-payment balance, so a capital paydown shows up as a lower
+    // interest immediately rather than only after the cycle rolls over.
+    const outstanding = lastCycle.interestDueCents - lastCycle.paidCents;
+    if (outstanding > 0) {
+      interestDueCents = outstanding;
+      nextDueDate = lastCycle.end;
+    } else {
+      interestDueCents = Math.round(balance * rate);
+      nextDueDate = addFrequencyInterval(loan.startDate, loan.frequency, lastCycle.index + 1);
+    }
   } else {
     // `today` precedes the loan's first cycle — report cycle 1's
     // not-yet-started interest without adding a cycle to the history.

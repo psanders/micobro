@@ -17,6 +17,8 @@
  * Ordering: ascending by next due date (soonest first).
  */
 import { buildLoanDetailView } from "../loans/loanViews";
+import { effectiveLoanType } from "../loans/loan.schema";
+import { openCreditState } from "../loans/openCredit";
 import type { Customer } from "../customers/customer.schema";
 import type { Loan } from "../loans/loan.schema";
 import type { Payment } from "../payments/payment.schema";
@@ -51,17 +53,35 @@ export function composeUpcomingCustomers({
 
     const loanPayments = payments.filter((p) => p.loanId === loan.id);
     const customer = customersById.get(loan.customerId);
-    const view = buildLoanDetailView({
-      loan,
-      customerName: customer?.name ?? "Cliente",
-      business: null,
-      payments: loanPayments,
-      today
-    });
 
-    if (!view.nextDueDate) continue; // fully paid
+    // Open credit has no cuota schedule — its next payment is the current
+    // cycle's interest, from the replay engine. See the same branch in
+    // `composeRouteDay.ts` for why `buildLoanDetailView` can't serve it.
+    let nextDueDate: Date;
+    let amountCents: number;
 
-    const dueDate = startOfDay(view.nextDueDate);
+    if (effectiveLoanType(loan) === "open_credit") {
+      const state = openCreditState(loan, loanPayments, today);
+      if (state.isClosed) continue; // capital paid off
+
+      nextDueDate = state.nextDueDate;
+      amountCents = state.interestDueCents;
+    } else {
+      const view = buildLoanDetailView({
+        loan,
+        customerName: customer?.name ?? "Cliente",
+        business: null,
+        payments: loanPayments,
+        today
+      });
+
+      if (!view.nextDueDate) continue; // fully paid
+
+      nextDueDate = view.nextDueDate;
+      amountCents = view.dueTodayCents;
+    }
+
+    const dueDate = startOfDay(nextDueDate);
     if (dueDate <= startOfToday) continue; // covered by composeRouteDay's visits instead
 
     const existing = byCustomer.get(loan.customerId);
@@ -73,8 +93,8 @@ export function composeUpcomingCustomers({
       avatarKey: customer?.avatarKey ?? null,
       address: customer?.address ?? "",
       business: null,
-      nextDueDate: view.nextDueDate,
-      amountCents: view.dueTodayCents
+      nextDueDate,
+      amountCents
     });
   }
 
