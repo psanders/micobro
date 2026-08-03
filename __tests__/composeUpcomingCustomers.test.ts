@@ -187,4 +187,29 @@ describe("composeUpcomingCustomers", () => {
     // Assert
     expect(upcoming.map((c) => c.customerId)).toEqual(["customer-b", "customer-a"]);
   });
+
+  // Issue #81 — same term-only-builder hole as composeRouteDay had.
+  it("includes an open-credit loan whose cycle interest isn't due yet", () => {
+    // RD$10,000 @ 5% weekly disbursed 3 days ago: RD$500 due in 4 days.
+    const openCreditLoan = loan({
+      id: "loan-oc",
+      principalCents: 1000000,
+      interestRateBps: 500,
+      termCount: 0,
+      frequency: "weekly",
+      loanType: "open_credit",
+      startDate: daysBeforeToday(3)
+    });
+
+    const upcoming = composeUpcomingCustomers({
+      customers: [customer({})],
+      loans: [openCreditLoan],
+      payments: [],
+      today: TODAY
+    });
+
+    expect(upcoming).toHaveLength(1);
+    expect(upcoming[0]).toMatchObject({ customerId: "customer-1", amountCents: 50000 });
+    expect(upcoming[0]?.nextDueDate.getTime()).toBe(TODAY.getTime() + 4 * DAY_MS);
+  });
 });

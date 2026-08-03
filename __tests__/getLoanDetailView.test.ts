@@ -38,12 +38,14 @@ const openCreditLoanRow = {
   interestRateBps: 500,
   termCount: 0,
   frequency: "weekly",
-  startDate: daysAgo(7),
+  // 8 days back, not 7: a cycle isn't over until its due date has passed,
+  // so a loan started exactly one week ago still has cycle 1 open today.
+  startDate: daysAgo(8),
   status: "active",
   notes: null,
   loanType: "open_credit",
-  createdAt: daysAgo(7),
-  updatedAt: daysAgo(7)
+  createdAt: daysAgo(8),
+  updatedAt: daysAgo(8)
 };
 
 function makeDbStub(paymentRows: unknown[] = [], loanRowOverride: unknown = loanRow) {
