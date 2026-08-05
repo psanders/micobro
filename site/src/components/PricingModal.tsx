@@ -42,14 +42,14 @@ export function PricingModal({ open, onClose }: PricingModalProps) {
         </h2>
 
         <p className="text-sm leading-relaxed text-ds-muted">
-          Hoy puedes usar Micobro sin pagar un peso. Más adelante sumaremos funciones nuevas y
-          algunas serán de pago, pero eso no cambiará mientras sigamos en esta etapa temprana.
+          Hoy puedes usar Micobro completo, sin pagar nada. Más adelante añadiremos funciones
+          nuevas y algunas de ellas serán de pago. Te avisaremos con tiempo antes de que eso pase.
         </p>
 
         <button
           type="button"
           onClick={onClose}
-          className="flex items-center justify-center rounded-full bg-brand-blue-deep px-6 py-4 text-[15px] font-bold text-white transition-colors hover:bg-[#0a4640]"
+          className="text-center text-[13px] font-bold text-ds-muted underline hover:text-brand-ink"
         >
           Entendido, seguir viendo
         </button>
