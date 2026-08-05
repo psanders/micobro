@@ -6,15 +6,22 @@
  */
 import { Alert, Platform, PermissionsAndroid } from "react-native";
 import { logger } from "./logger";
-import { formatPhone } from "./utils/text";
+import { formatPhone, encodeCp858 } from "./utils/text";
 
 const LINE_WIDTH = 32;
 
 const ESC = 0x1b;
 const GS = 0x1d;
 
+/** `n=19` selects CP858 (codepage 850 "Multilingual Latin I" + euro sign) —
+ * covers Dominican Spanish accented characters. Sent once during init so the
+ * printer renders the CP858 bytes `encodeCp858` produces below as the
+ * intended glyph instead of decoding them as (unsupported) UTF-8. */
+const SELECT_CODE_PAGE_CP858 = [ESC, 0x74, 19];
+
 const CMD = {
   INIT: [ESC, 0x40],
+  CODE_PAGE: SELECT_CODE_PAGE_CP858,
   CENTER: [ESC, 0x61, 0x01],
   LEFT: [ESC, 0x61, 0x00],
   BOLD_ON: [ESC, 0x45, 0x01],
@@ -43,7 +50,7 @@ export interface PrintReceiptData {
 }
 
 function text(s: string): number[] {
-  return Array.from(new TextEncoder().encode(s));
+  return encodeCp858(s);
 }
 
 function line(s: string): number[] {
@@ -69,6 +76,7 @@ export function buildReceiptBytes(data: PrintReceiptData): Uint8Array {
   const push = (...b: number[]) => bytes.push(...b);
 
   push(...CMD.INIT);
+  push(...CMD.CODE_PAGE);
   push(...CMD.CENTER);
   push(...CMD.BOLD_ON);
   push(...CMD.DOUBLE_HEIGHT);
