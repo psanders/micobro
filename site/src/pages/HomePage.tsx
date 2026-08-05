@@ -23,6 +23,7 @@ import { Nav } from "../components/Nav";
 import { Footer } from "../components/Footer";
 import { Banner } from "../components/Banner";
 import { DownloadModal } from "../components/DownloadModal";
+import { PricingModal } from "../components/PricingModal";
 import { PrimaryButton } from "../components/PrimaryButton";
 import { SecondaryButton } from "../components/SecondaryButton";
 import { CreativeMark } from "../components/CreativeMark";
@@ -112,15 +113,20 @@ const STEP_ICONS = [Sun, MapPin, HandCoins, Receipt, CircleCheckBig] as const;
 
 export function HomePage() {
   const [downloadModalOpen, setDownloadModalOpen] = useState(false);
+  const [pricingModalOpen, setPricingModalOpen] = useState(false);
 
   function handleDownloadClick() {
     setDownloadModalOpen(true);
   }
 
+  function handlePricingClick() {
+    setPricingModalOpen(true);
+  }
+
   return (
     <div className="min-h-screen bg-brand-white font-sans text-brand-ink">
       <Banner />
-      <Nav onDownloadClick={handleDownloadClick} />
+      <Nav onDownloadClick={handleDownloadClick} onPricingClick={handlePricingClick} />
 
       {/* Hero */}
       <section className="relative overflow-hidden bg-[linear-gradient(180deg,#FFFFFF_0%,#E2EDFC_100%)]">
@@ -366,9 +372,10 @@ export function HomePage() {
         </div>
       </section>
 
-      <Footer />
+      <Footer onPricingClick={handlePricingClick} />
 
       <DownloadModal open={downloadModalOpen} onClose={() => setDownloadModalOpen(false)} />
+      <PricingModal open={pricingModalOpen} onClose={() => setPricingModalOpen(false)} />
     </div>
   );
 }

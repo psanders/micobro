@@ -9,10 +9,7 @@ const SOCIAL = [
   { icon: FacebookIcon, label: "Facebook", href: "#" }
 ] as const;
 
-const PRODUCT_LINKS = [
-  { label: "Funcionalidades", href: "#funcionalidades" },
-  { label: "Precios", href: `${import.meta.env.BASE_URL}precios` }
-] as const;
+type FooterLink = { label: string; href: string } | { label: string; onClick: () => void };
 
 const COMPANY_LINKS = [
   { label: "Nosotros", href: "#" },
@@ -24,22 +21,26 @@ const LEGAL_LINKS = [
   { label: "Términos", href: "#" }
 ] as const;
 
-function LinkColumn({
-  title,
-  links
-}: {
-  title: string;
-  links: ReadonlyArray<{ label: string; href: string }>;
-}) {
+function LinkColumn({ title, links }: { title: string; links: ReadonlyArray<FooterLink> }) {
   return (
     <div>
       <p className="text-[11px] font-bold tracking-widest text-brand-mist">{title}</p>
       <ul className="mt-3 flex flex-col gap-3">
         {links.map((item) => (
           <li key={item.label}>
-            <a href={item.href} className="text-sm font-medium text-white/90 hover:text-white">
-              {item.label}
-            </a>
+            {"onClick" in item ? (
+              <button
+                type="button"
+                onClick={item.onClick}
+                className="text-left text-sm font-medium text-white/90 hover:text-white"
+              >
+                {item.label}
+              </button>
+            ) : (
+              <a href={item.href} className="text-sm font-medium text-white/90 hover:text-white">
+                {item.label}
+              </a>
+            )}
           </li>
         ))}
       </ul>
@@ -47,7 +48,16 @@ function LinkColumn({
   );
 }
 
-export function Footer() {
+interface FooterProps {
+  onPricingClick: () => void;
+}
+
+export function Footer({ onPricingClick }: FooterProps) {
+  const PRODUCT_LINKS: readonly FooterLink[] = [
+    { label: "Funcionalidades", href: "#funcionalidades" },
+    { label: "Precios", onClick: onPricingClick }
+  ];
+
   return (
     <footer className="bg-brand-blue-primary text-white">
       <div className="mx-auto max-w-[1440px] px-6 pb-8 pt-12 md:px-20 md:pb-10 md:pt-16">

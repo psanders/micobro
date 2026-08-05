@@ -6,18 +6,61 @@ import { Menu, X } from "lucide-react";
 import { Logo } from "./Logo";
 import { PrimaryButton } from "./PrimaryButton";
 
-const NAV_LINKS = [
+type NavLink = { label: string; href: string } | { label: string; onClick: () => void };
+
+const STATIC_NAV_LINKS: readonly NavLink[] = [
   { label: "Cómo funciona", href: "#como-funciona" },
-  { label: "Funcionalidades", href: "#funcionalidades" },
-  { label: "Precios", href: `${import.meta.env.BASE_URL}precios` }
-] as const;
+  { label: "Funcionalidades", href: "#funcionalidades" }
+];
+
+const NAV_LINK_CLASSNAME =
+  "text-left text-[15px] font-semibold text-brand-ink transition-colors hover:text-brand-blue-deep";
+const MOBILE_NAV_LINK_CLASSNAME =
+  "rounded-lg px-3 py-2.5 text-left text-[15px] font-semibold text-brand-ink hover:bg-brand-mist";
 
 interface NavProps {
   onDownloadClick: () => void;
+  onPricingClick: () => void;
 }
 
-export function Nav({ onDownloadClick }: NavProps) {
+function NavLinkItem({
+  link,
+  className,
+  onNavigate
+}: {
+  link: NavLink;
+  className: string;
+  onNavigate?: () => void;
+}) {
+  if ("onClick" in link) {
+    return (
+      <button
+        type="button"
+        onClick={() => {
+          onNavigate?.();
+          link.onClick();
+        }}
+        className={className}
+      >
+        {link.label}
+      </button>
+    );
+  }
+
+  return (
+    <a href={link.href} onClick={onNavigate} className={className}>
+      {link.label}
+    </a>
+  );
+}
+
+export function Nav({ onDownloadClick, onPricingClick }: NavProps) {
   const [open, setOpen] = useState(false);
+
+  const NAV_LINKS: readonly NavLink[] = [
+    ...STATIC_NAV_LINKS,
+    { label: "Precios", onClick: onPricingClick }
+  ];
 
   function close() {
     setOpen(false);
@@ -32,13 +75,7 @@ export function Nav({ onDownloadClick }: NavProps) {
 
         <div className="hidden items-center gap-8 md:flex">
           {NAV_LINKS.map((link) => (
-            <a
-              key={link.label}
-              href={link.href}
-              className="text-[15px] font-semibold text-brand-ink transition-colors hover:text-brand-blue-deep"
-            >
-              {link.label}
-            </a>
+            <NavLinkItem key={link.label} link={link} className={NAV_LINK_CLASSNAME} />
           ))}
         </div>
 
@@ -67,14 +104,12 @@ export function Nav({ onDownloadClick }: NavProps) {
         <div className="border-t border-ds-border bg-white px-5 pb-5 md:hidden">
           <div className="flex flex-col gap-1 pt-2">
             {NAV_LINKS.map((link) => (
-              <a
+              <NavLinkItem
                 key={link.label}
-                href={link.href}
-                onClick={close}
-                className="rounded-lg px-3 py-2.5 text-[15px] font-semibold text-brand-ink hover:bg-brand-mist"
-              >
-                {link.label}
-              </a>
+                link={link}
+                className={MOBILE_NAV_LINK_CLASSNAME}
+                onNavigate={close}
+              />
             ))}
           </div>
         </div>
