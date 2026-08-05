@@ -5,8 +5,12 @@ import { Logo } from "./Logo";
 import { FacebookIcon, InstagramIcon } from "./SocialIcons";
 
 const SOCIAL = [
-  { icon: InstagramIcon, label: "Instagram", href: "https://www.instagram.com/micobro.do/" },
-  { icon: FacebookIcon, label: "Facebook", href: "#" }
+  { icon: InstagramIcon, label: "Instagram", href: "https://www.instagram.com/mikro.do/" },
+  {
+    icon: FacebookIcon,
+    label: "Facebook",
+    href: "https://www.facebook.com/profile.php?id=61590218048106"
+  }
 ] as const;
 
 type FooterLink = { label: string; href: string } | { label: string; onClick: () => void };
