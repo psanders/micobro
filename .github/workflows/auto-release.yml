@@ -8,13 +8,22 @@ name: Auto Release
 #
 # Uses the default GITHUB_TOKEN, not a PAT. That's deliberate: tags/commits
 # pushed with GITHUB_TOKEN don't trigger other workflows, which keeps this
-# job from re-triggering itself (or CI) in a loop. The tradeoff is that the
-# on-demand Android APK workflow (release.yml, still workflow_dispatch-only)
-# does NOT auto-fire off these tags — wiring that up needs a RELEASE_TOKEN PAT
-# (see ../mikro's release.yaml for the pattern) and is a deliberate follow-up,
-# not done here: building/signing an APK for every patch-level release
-# (including copy/design-only ones) isn't obviously wanted, and adding a PAT
-# secret is a call for a repo admin, not this change.
+# job from re-triggering itself (or CI) in a loop.
+#
+# Because of that, no separate tag-triggered workflow can build the Android
+# APK off these releases — v0.3.2 through v0.3.4 shipped with no APK asset for
+# exactly that reason. So the APK build lives here, as a second job in this
+# same run: GITHUB_TOKEN can attach assets to a release it just created, which
+# is what makes this work without a RELEASE_TOKEN PAT. release.yml stays as
+# the workflow_dispatch escape hatch for cutting an off-cycle build from an
+# arbitrary branch.
+#
+# The apk job is gated on semantic-release actually publishing, so ordinary
+# pushes to main (docs, chores, refactors) skip the ~15 min Gradle build
+# entirely. Every release that DOES happen gets an APK — including
+# patch-level copy/design ones. That's the simple, predictable rule; if the
+# Gradle minutes ever start to hurt, narrow the gate here rather than going
+# back to building by hand.
 
 on:
   push:
@@ -30,6 +39,9 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
+    outputs:
+      released: ${{ steps.semantic.outputs.released }}
+      version: ${{ steps.semantic.outputs.version }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -54,6 +66,131 @@ jobs:
         run: npm run test
 
       - name: Release
+        id: semantic
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx semantic-release
+        run: |
+          npx semantic-release
+
+          # semantic-release tags the release commit it just created, so a
+          # vX.Y.Z tag sitting on HEAD is the signal that this push actually
+          # shipped a release — as opposed to one it analyzed and skipped.
+          TAG=$(git tag --points-at HEAD | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -1 || true)
+          if [ -n "$TAG" ]; then
+            echo "Published $TAG — the apk job will build and attach the APK."
+            {
+              echo "released=true"
+              echo "version=${TAG#v}"
+            } >> "$GITHUB_OUTPUT"
+          else
+            echo "No release published for this push — skipping the APK build."
+            echo "released=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  # Builds the Android APK for the release the job above just published and
+  # attaches it as an asset. Skipped entirely when nothing was released.
+  apk:
+    needs: release
+    if: needs.release.outputs.released == 'true'
+    runs-on: ubuntu-latest
+    env:
+      EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID: ${{ secrets.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID }}
+      EXPO_PUBLIC_GOOGLE_OAUTH_CLIENT_ID: ${{ secrets.EXPO_PUBLIC_GOOGLE_OAUTH_CLIENT_ID }}
+
+    steps:
+      # Build from the tag semantic-release just pushed rather than main's
+      # tip: that commit carries the bumped package.json, and app.config.ts
+      # reads the app version straight from it. It also pins the build to the
+      # exact code that was released, even if another push lands meanwhile.
+      #
+      # No lint/typecheck/test here — the release job ran them on this same
+      # tree moments ago, and the release commit on top only touches
+      # package.json, package-lock.json, and CHANGELOG.md.
+      - uses: actions/checkout@v4
+        with:
+          ref: v${{ needs.release.outputs.version }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      # Keyed on package.json + app.config.ts because expo prebuild generates
+      # build.gradle from those — we can't hash generated files that don't exist yet.
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ hashFiles('package.json', 'app.config.ts', 'package-lock.json') }}
+          restore-keys: gradle-
+
+      - name: Cache Maven local repository
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: m2-${{ hashFiles('package.json', 'package-lock.json') }}
+          restore-keys: m2-
+
+      - name: Install dependencies
+        run: npm ci
+
+      # --clean removes any stale android/ directory before regenerating.
+      - name: Generate native Android project
+        run: npx expo prebuild --platform android --clean
+
+      # The Expo template defaults to -Xmx2048m -XX:MaxMetaspaceSize=512m,
+      # which reliably OOMs on the expo-updates Kotlin/KSP compile step on a
+      # standard ubuntu-latest runner (16 GB). gradle.properties is generated
+      # by prebuild, so the bump lives here, not in the repo.
+      - name: Raise Gradle JVM memory
+        working-directory: android
+        run: |
+          sed -i 's/^org.gradle.jvmargs=.*/org.gradle.jvmargs=-Xmx5g -XX:MaxMetaspaceSize=1g/' gradle.properties
+
+      # assembleRelease bundles the JS into the APK so it runs standalone (no
+      # Metro server needed). Expo's prebuild template signs release builds
+      # with its own checked-in debug keystore, so every release is signed
+      # identically and upgrades never hit Android's "signatures don't match"
+      # error. Fine for direct-install distribution; not for the Play Store.
+      - name: Build release APK
+        working-directory: android
+        run: ./gradlew assembleRelease --no-daemon
+
+      - name: Rename APK
+        run: |
+          mkdir -p dist
+          cp android/app/build/outputs/apk/release/app-release.apk \
+            "dist/micobro-v${{ needs.release.outputs.version }}-android.apk"
+
+      # The release already exists (the job above published it), so this
+      # attaches to it. GITHUB_TOKEN is enough — no PAT needed — because
+      # uploading an asset is a plain contents:write operation.
+      - name: Attach APK to the GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload "v${{ needs.release.outputs.version }}" \
+            "dist/micobro-v${{ needs.release.outputs.version }}-android.apk" --clobber
+
+      # 30-day fallback in case the upload above needs to be redone.
+      - name: Upload APK as a workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: micobro-v${{ needs.release.outputs.version }}-android
+          path: dist/micobro-v${{ needs.release.outputs.version }}-android.apk
+          retention-days: 30
+
+      - name: Add download link to job summary
+        run: |
+          {
+            echo "### 📦 Micobro v${{ needs.release.outputs.version }} — Android APK"
+            echo "- [Download the APK](${{ github.server_url }}/${{ github.repository }}/releases/tag/v${{ needs.release.outputs.version }})"
+          } >> "$GITHUB_STEP_SUMMARY"

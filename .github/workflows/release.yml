@@ -11,6 +11,11 @@ name: Release Android APK
 #
 # Nothing is committed, tagged, or pushed until the build itself succeeds, so
 # a broken build never leaves a half-finished release behind.
+#
+# This is NOT the normal path anymore: releases off main are cut automatically
+# by auto-release.yml, which now builds and attaches the APK itself. Reach for
+# this workflow when you need an off-cycle build — a specific version number,
+# or an APK from a branch that hasn't merged yet.
 
 on:
   workflow_dispatch:
