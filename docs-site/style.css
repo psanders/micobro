@@ -1,0 +1,16 @@
+/* Micobro docs — custom styles.
+   Mintlify picks this file up automatically from the docs root; it is not
+   referenced from docs.json. */
+
+/* Logo prominence.
+   Mintlify ships the navbar logo as `.nav-logo` with Tailwind's `h-7` (28px)
+   inside a 64px-tall navbar, which reads small next to the wordmark. Raising it
+   to 44px, together with the tightly-cropped viewBox in logo/*.svg (the marks
+   used to carry ~25% vertical dead space), renders the logo roughly 2x its
+   previous size while still leaving 10px of breathing room in the bar.
+
+   `!important` is deliberate: `.nav-logo` and `.h-7` have identical specificity,
+   so without it the winner depends on stylesheet order. */
+.nav-logo {
+  height: 2.75rem !important;
+}
