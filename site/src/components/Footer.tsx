@@ -2,6 +2,7 @@
  * Copyright (C) 2026 by Pedro Sanders. MIT License.
  */
 import { Logo } from "./Logo";
+import { DOCS_URL } from "./Nav";
 import { FacebookIcon, InstagramIcon } from "./SocialIcons";
 
 const SOCIAL = [
@@ -59,7 +60,8 @@ interface FooterProps {
 export function Footer({ onPricingClick }: FooterProps) {
   const PRODUCT_LINKS: readonly FooterLink[] = [
     { label: "Funcionalidades", href: "#funcionalidades" },
-    { label: "Precios", onClick: onPricingClick }
+    { label: "Precios", onClick: onPricingClick },
+    { label: "Documentación", href: DOCS_URL }
   ];
 
   return (
