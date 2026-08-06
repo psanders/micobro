@@ -14,19 +14,29 @@ Entra al préstamo y ve a cobrar. La pantalla cambia según el tipo de préstamo
 
 En **TIPO DE COBRO** escoges qué le estás cobrando:
 
-| Opción                  | Cuándo la usas                                                 |
-| ----------------------- | -------------------------------------------------------------- |
-| **Cobrar cuota + mora** | El cliente está atrasado y te paga la cuota junto con la mora. |
-| **Cobrar cuota**        | El pago normal de la cuota.                                    |
-| **Saldar préstamo**     | El cliente te paga todo lo que queda y el préstamo se cierra.  |
-| **Monto personalizado** | Te dio otra cantidad. La escribes tú.                          |
+| Opción                  | Cuándo la usas                                                  |
+| ----------------------- | --------------------------------------------------------------- |
+| **Cobrar cuota + mora** | El cliente viene atrasado y te paga la cuota junto con la mora. |
+| **Solo mora**           | Te paga nada más la mora. La cuota queda pendiente.             |
+| **Cobrar cuota**        | El pago normal, cuando no hay mora.                             |
+| **Saldar préstamo**     | Te paga todo lo que queda y el préstamo se cierra.              |
+| **Otro monto**          | Te dio otra cantidad. La escribes tú.                           |
+
+<Frame caption="Un cliente con mora: la app ofrece cobrar la cuota con la mora, solo la mora, saldar, o escribir otro monto.">
+  <img
+    src="/images/guias/cobros/tipo-de-cobro.png"
+    alt="Pantalla Registrar cobro con las opciones de TIPO DE COBRO y el desglose de CÓMO SE APLICA"
+    width="320"
+  />
+</Frame>
 
 Debajo, en **CÓMO SE APLICA**, ves a qué se va el dinero. Si hay mora, aparece primero como
 **Mora (prioridad)**: se cubre la mora antes que la cuota.
 
 <Note>
-  Las opciones que ves dependen del préstamo. **Cobrar cuota + mora** solo aparece si el cliente
-  tiene mora acumulada.
+  No siempre ves las cinco opciones. **Cobrar cuota + mora** y **Solo mora** aparecen únicamente si
+  el cliente tiene mora; si no la tiene, en su lugar ves **Cobrar cuota**. **Saldar préstamo**
+  aparece cuando queda más de una cuota por pagar.
 </Note>
 
 ### En un Crédito Abierto
@@ -42,6 +52,14 @@ Arriba ves el **INTERÉS PENDIENTE**, y al escoger **Interés + capital** pones 
 pagar**. En **DESPUÉS DEL PAGO** la app te muestra cómo queda el préstamo antes de que
 confirmes.
 
+<Frame caption="En Crédito Abierto, DESPUÉS DEL PAGO te adelanta cómo queda el capital y cuánto será el próximo interés.">
+  <img
+    src="/images/guias/cobros/credito-abierto.png"
+    alt="Pantalla Cobrar Crédito Abierto con las opciones Solo interés e Interés + capital"
+    width="320"
+  />
+</Frame>
+
 ## Método de pago
 
 En **MÉTODO DE PAGO** marcas si fue **Efectivo** o **Transferencia**. Al final del día el
@@ -50,7 +68,18 @@ lo cobrado debe estar en efectivo en tu mano.
 
 ## El recibo
 
-Al confirmar el pago, la app te da un **Recibo de pago** con lo que acabas de registrar.
+Al confirmar el pago, la app te da un **Recibo de pago** con lo que acabas de registrar: el
+total cobrado, cómo se repartió y el método de pago.
+
+<Frame caption="El recibo desglosa la mora y la cuota por separado, y queda con su número y su hora.">
+  <img
+    src="/images/guias/cobros/recibo.png"
+    alt="Recibo de pago con el total cobrado, la mora aplicada, la cuota, el método y el número de recibo"
+    width="320"
+  />
+</Frame>
+
+Puedes enviárselo al cliente por **WhatsApp** desde el mismo recibo.
 
 Si tienes una impresora Bluetooth de las que se usan para recibos, puedes imprimirlo. La
 primera vez la app te pide el **Permiso de impresión** y que actives el Bluetooth. Si no
