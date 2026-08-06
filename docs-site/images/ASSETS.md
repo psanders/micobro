@@ -21,11 +21,11 @@ Written in English (internal build doc), unlike the `.mdx` pages themselves. See
 
 ## Registry
 
-| File | Used by | Source | Captured |
-| --- | --- | --- | --- |
+| File             | Used by                   | Source                                         | Captured   |
+| ---------------- | ------------------------- | ---------------------------------------------- | ---------- |
 | `logo/light.svg` | `docs.json` (light theme) | Hand-built from `site/src/components/Logo.tsx` | 2026-08-05 |
-| `logo/dark.svg` | `docs.json` (dark theme) | Hand-built from `site/src/components/Logo.tsx` | 2026-08-05 |
-| `favicon.svg` | `docs.json` | Copied from `site/public/favicon.svg` | 2026-08-05 |
+| `logo/dark.svg`  | `docs.json` (dark theme)  | Hand-built from `site/src/components/Logo.tsx` | 2026-08-05 |
+| `favicon.svg`    | `docs.json`               | Copied from `site/public/favicon.svg`          | 2026-08-05 |
 
 No page screenshots yet. The guides currently describe the screens in words; add screenshots
 per page as they are captured, and register each one above.
