@@ -13,6 +13,9 @@ const STATIC_NAV_LINKS: readonly NavLink[] = [
   { label: "Funcionalidades", href: "#funcionalidades" }
 ];
 
+/** The Mintlify docs site, deployed from `docs-site/` on main. */
+export const DOCS_URL = "https://docs.micobro.app";
+
 const NAV_LINK_CLASSNAME =
   "text-left text-[15px] font-semibold text-brand-ink transition-colors hover:text-brand-blue-deep";
 const MOBILE_NAV_LINK_CLASSNAME =
@@ -59,7 +62,8 @@ export function Nav({ onDownloadClick, onPricingClick }: NavProps) {
 
   const NAV_LINKS: readonly NavLink[] = [
     ...STATIC_NAV_LINKS,
-    { label: "Precios", onClick: onPricingClick }
+    { label: "Precios", onClick: onPricingClick },
+    { label: "Documentación", href: DOCS_URL }
   ];
 
   function close() {
