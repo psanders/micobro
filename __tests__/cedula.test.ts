@@ -38,30 +38,30 @@ describe("formatCedulaInput", () => {
   });
 
   it("inserts the first delimiter once a 4th digit is typed", () => {
-    expect(formatCedulaInput("0370")).toBe("037-0");
+    expect(formatCedulaInput("0011")).toBe("001-1");
   });
 
   it("keeps the second group ungrouped until an 11th digit is typed", () => {
-    expect(formatCedulaInput("0370089330")).toBe("037-0089330");
+    expect(formatCedulaInput("0011234567")).toBe("001-1234567");
   });
 
   it("inserts the second delimiter once the 11th digit is typed", () => {
-    expect(formatCedulaInput("03700893302")).toBe("037-0089330-2");
+    expect(formatCedulaInput("00112345673")).toBe("001-1234567-3");
   });
 
   it("formats raw digits typed with existing delimiters (idempotent)", () => {
-    expect(formatCedulaInput("037-0089330-2")).toBe("037-0089330-2");
+    expect(formatCedulaInput("001-1234567-3")).toBe("001-1234567-3");
   });
 
   it("drops digits beyond the 11th", () => {
-    expect(formatCedulaInput("037008933029999")).toBe("037-0089330-2");
+    expect(formatCedulaInput("001123456739999")).toBe("001-1234567-3");
   });
 
   it("regroups gracefully after a backspace removes a digit", () => {
-    // "037-0089330-2" with the trailing "2" backspaced away becomes
-    // "037-0089330-" as raw TextInput text; formatCedulaInput re-derives
+    // "001-1234567-3" with the trailing "3" backspaced away becomes
+    // "001-1234567-" as raw TextInput text; formatCedulaInput re-derives
     // from digits only, so the now-empty last group drops its delimiter.
-    expect(formatCedulaInput("037-0089330-")).toBe("037-0089330");
+    expect(formatCedulaInput("001-1234567-")).toBe("001-1234567");
   });
 
   it("handles an empty string", () => {
