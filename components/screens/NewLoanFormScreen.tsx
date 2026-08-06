@@ -79,7 +79,10 @@ export function NewLoanFormScreen({ customerId: initialCustomerId }: { customerI
   const [interestRate, setInterestRate] = useState("");
   const [termCount, setTermCount] = useState("");
   const [frequency, setFrequency] = useState<LoanFrequency>("weekly");
-  const [skipSundays, setSkipSundays] = useState(false);
+  // On by default: prestamistas don't collect on Sundays, so a daily loan
+  // almost always wants them skipped. Only affects loans created from here —
+  // existing loans keep whatever they were stored with (`null` reads as off).
+  const [skipSundays, setSkipSundays] = useState(true);
   // `firstPaymentFloor` is the single source of truth for "the healthy
   // default right now" — both the initial state below and the
   // frequency-reset effect reuse this exact value (rather than each
