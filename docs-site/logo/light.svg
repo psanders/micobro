@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="108" height="24" viewBox="0 0 108 24" role="img" aria-label="Micobro">
   <rect x="0" y="0" width="24" height="24" rx="7" fill="#0B4F4A" />
-  <text x="12" y="12" text-anchor="middle" dominant-baseline="central" font-family="Sora, 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif" font-weight="700" font-size="15" fill="#FFFFFF">m</text>
-  <text x="32" y="12" dominant-baseline="central" font-family="Sora, 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif" font-weight="700" font-size="18" letter-spacing="-0.4" fill="#0B4F4A">micobro</text>
+  <text x="12" y="16.1" text-anchor="middle" font-family="Sora, 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif" font-weight="700" font-size="15" fill="#FFFFFF">m</text>
+  <text x="32" y="18.9" font-family="Sora, 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif" font-weight="700" font-size="18" letter-spacing="-0.4" fill="#0B4F4A">micobro</text>
 </svg>

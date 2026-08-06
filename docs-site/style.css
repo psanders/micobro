@@ -2,15 +2,17 @@
    Mintlify picks this file up automatically from the docs root; it is not
    referenced from docs.json. */
 
-/* Logo prominence.
+/* Logo size.
    Mintlify ships the navbar logo as `.nav-logo` with Tailwind's `h-7` (28px)
-   inside a 64px-tall navbar, which reads small next to the wordmark. Raising it
-   to 44px, together with the tightly-cropped viewBox in logo/*.svg (the marks
-   used to carry ~25% vertical dead space), renders the logo roughly 2x its
-   previous size while still leaving 10px of breathing room in the bar.
+   inside a 64px-tall navbar. The logo/*.svg viewBox is cropped tight to the
+   artwork (108x24, no dead space), so the mark fills whatever height is set
+   here — unlike the original files, which wasted ~25% of the box on padding.
 
-   `!important` is deliberate: `.nav-logo` and `.h-7` have identical specificity,
-   so without it the winner depends on stylesheet order. */
+   At 22px the artwork renders at about the size the pre-crop logo did at
+   Mintlify's default 28px, since that version only used 24 of its 32 units.
+
+   `!important` is deliberate: `.nav-logo` and `.h-7` have identical
+   specificity, so without it the winner depends on stylesheet order. */
 .nav-logo {
-  height: 2.75rem !important;
+  height: 1.375rem !important;
 }
