@@ -21,14 +21,14 @@ Written in English (internal build doc), unlike the `.mdx` pages themselves. See
 
 ## Registry
 
-| File | Used by | Source | Captured |
-| --- | --- | --- | --- |
-| `logo/light.svg` | `docs.json` (light theme) | Hand-built from `site/src/components/Logo.tsx` | 2026-08-05 |
-| `logo/dark.svg` | `docs.json` (dark theme) | Hand-built from `site/src/components/Logo.tsx` | 2026-08-05 |
-| `favicon.svg` | `docs.json` | Copied from `site/public/favicon.svg` | 2026-08-05 |
-| `guias/cobros/tipo-de-cobro.png` | `guias/cobros` | `pencil.pen` → `07 Cobrar Pago` (`qoaNg`), exported 2× | 2026-08-06 |
-| `guias/cobros/credito-abierto.png` | `guias/cobros` | `pencil.pen` → `07c Cobrar Crédito Abierto` (`gH1rr`), exported 2× | 2026-08-06 |
-| `guias/cobros/recibo.png` | `guias/cobros` | `pencil.pen` → `12 Recibo de Pago` (`htxyb`), exported 2× | 2026-08-06 |
+| File                               | Used by                   | Source                                                             | Captured   |
+| ---------------------------------- | ------------------------- | ------------------------------------------------------------------ | ---------- |
+| `logo/light.svg`                   | `docs.json` (light theme) | Hand-built from `site/src/components/Logo.tsx`                     | 2026-08-05 |
+| `logo/dark.svg`                    | `docs.json` (dark theme)  | Hand-built from `site/src/components/Logo.tsx`                     | 2026-08-05 |
+| `favicon.svg`                      | `docs.json`               | Copied from `site/public/favicon.svg`                              | 2026-08-05 |
+| `guias/cobros/tipo-de-cobro.png`   | `guias/cobros`            | `pencil.pen` → `07 Cobrar Pago` (`qoaNg`), exported 2×             | 2026-08-06 |
+| `guias/cobros/credito-abierto.png` | `guias/cobros`            | `pencil.pen` → `07c Cobrar Crédito Abierto` (`gH1rr`), exported 2× | 2026-08-06 |
+| `guias/cobros/recibo.png`          | `guias/cobros`            | `pencil.pen` → `12 Recibo de Pago` (`htxyb`), exported 2×          | 2026-08-06 |
 
 ## Screenshots come from Pencil, and Pencil can go stale
 
