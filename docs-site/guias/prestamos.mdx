@@ -1,0 +1,86 @@
+---
+title: "Préstamos"
+description: "Crea un préstamo Tradicional o de Crédito Abierto y revisa la cuota antes de guardar."
+---
+
+Un préstamo se le crea a un cliente que ya registraste. Lo que escojas al crearlo define
+cuánto te paga, cada cuánto y hasta cuándo.
+
+## Los dos tipos de préstamo
+
+Al crear el préstamo, lo primero que escoges es el **Tipo de préstamo**.
+
+<CardGroup cols={2}>
+  <Card title="Tradicional" icon="calendar-check">
+    Un monto que se paga en un número fijo de cuotas. Cada cuota baja la deuda hasta que el
+    préstamo queda saldado.
+  </Card>
+  <Card title="Crédito Abierto" icon="rotate">
+    El cliente paga el interés del ciclo y el capital sigue ahí. No hay una fecha en que se
+    acabe: sigue mientras el cliente pague y hasta que salde.
+  </Card>
+</CardGroup>
+
+Escoger **Crédito Abierto** esconde los campos que solo tienen sentido en un préstamo con
+plazo: **Plazo**, la mora y **Saltar domingos**.
+
+## Los campos
+
+Estos son los campos comunes a los dos tipos:
+
+| Campo | Qué es |
+| --- | --- |
+| **Cliente** | A quién le prestas. Viene ya seleccionado si entraste desde su ficha. |
+| **Monto del préstamo** | El dinero que entregas. |
+| **Frecuencia de pago** | **Diario**, **Semanal**, **Quincenal** o **Mensual**. |
+| **Primer pago** | La fecha del primer cobro. Toca la fecha para cambiarla. |
+
+En un préstamo **Tradicional** además pones:
+
+| Campo | Qué es |
+| --- | --- |
+| **Tasa de interés (%)** | El interés del préstamo. |
+| **Plazo (número de cuotas)** | Cuántas cuotas hasta saldar. |
+
+En un **Crédito Abierto** en lugar de la tasa pones **Interés por ciclo (%)**: lo que te
+paga cada vez, sin tocar el capital.
+
+### Saltar domingos
+
+Si la frecuencia es **Diario**, aparece **Saltar domingos**. Actívalo si no cobras los
+domingos: las cuotas se corren y ningún cobro te cae en domingo.
+
+## Cobrar mora por atraso
+
+En un préstamo **Tradicional** puedes activar **Cobrar mora por atraso**. Al activarlo pones:
+
+- **Período de gracia (días)**: cuántos días de atraso perdonas antes de que empiece a
+  correr la mora.
+- **Tasa de mora (%)**: cuánto se le suma por atrasarse.
+
+Si no lo activas, un cliente atrasado sigue apareciendo como atrasado, pero no se le suma
+nada.
+
+## Revisa antes de guardar
+
+Antes de guardar, la app calcula y te muestra:
+
+- **Cuota estimada**, y la **Última cuota** si le toca distinta por el redondeo.
+- **Interés total**.
+- **Total a pagar**.
+
+<Tip>
+  Mira la **Cuota estimada** antes de darle a guardar. Es la forma más rápida de darte cuenta
+  de que escribiste un cero de más en el monto o pusiste la tasa donde iba el plazo.
+</Tip>
+
+## Después de crearlo
+
+Desde el día del primer pago, el préstamo aparece en **Hoy** y en tu **Ruta**. Desde el
+préstamo puedes registrar los cobros y ver el historial de todo lo que te ha pagado.
+
+## Qué sigue
+
+<Card title="Cobros" icon="money-bill" href="/guias/cobros">
+  Registra lo que te pagó, cobra la mora o salda el préstamo.
+</Card>

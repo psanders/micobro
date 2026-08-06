@@ -1,0 +1,61 @@
+---
+title: "Cómo funciona Micobro"
+description: "Clientes, préstamos, cobros, visitas y cuadre: cómo encaja todo."
+---
+
+Micobro tiene pocas piezas y todas se conectan en un orden fijo. Si entiendes ese orden,
+entiendes la app entera.
+
+## Las piezas
+
+**Cliente.** La persona a la que le prestas. Se registra una vez y se queda.
+
+**Préstamo.** El dinero que le entregaste a un cliente, con su interés y cada cuánto te paga.
+Un cliente puede tener varios.
+
+**Cobro.** Cada vez que te pagan. Se registra sobre el préstamo y deja un recibo.
+
+**Visita.** El día que pasaste y no cobraste. Anotas qué pasó: prometió pagar, no lo
+encontraste, o se negó.
+
+**Cuadre.** Al final del día, comparas lo que la app dice que cobraste con lo que traes en la
+mano, y cierras.
+
+## El orden
+
+```
+Cliente  →  Préstamo  →  Ruta del día  →  Cobro o Visita  →  Cuadre
+```
+
+Registras al cliente. Le creas el préstamo. Desde ahí la app arma sola tu ruta de cada día.
+Sales a cobrar: lo que cobras queda como cobro, lo que no, queda como visita. Al final del
+día cuadras la caja.
+
+## De dónde salen Hoy y Ruta
+
+No las armas tú. Salen de los préstamos activos y de sus fechas de pago.
+
+Cuando creas un préstamo escoges el **Primer pago** y la **Frecuencia**. Con eso la app sabe
+qué días te toca cobrarle a quién, y va poniendo a cada cliente en **Hoy** y en la **Ruta**
+el día que le corresponde. Si el cliente se atrasa, sigue apareciendo hasta que se resuelva.
+
+## Por qué se anotan las visitas
+
+Un cobro que no ocurrió también es información. Tres "sin contacto" seguidos y un "no quiere
+pagar" son dos problemas distintos, y se atienden distinto. Anotar la visita es lo que te
+deja ver la diferencia semanas después, cuando ya no te acuerdas.
+
+## Dónde vive tu información
+
+En tu teléfono, primero y siempre. La app no necesita internet para funcionar.
+
+Si conectas el respaldo en Google, además se guarda una copia en una hoja de cálculo tuya.
+
+<CardGroup cols={2}>
+  <Card title="Micobro sin internet" icon="wifi-slash" href="/conceptos/sin-internet">
+    Qué pasa cuando no hay señal.
+  </Card>
+  <Card title="Respaldo en Google" icon="cloud-arrow-up" href="/guias/google-sheets">
+    Cómo conectar tu cuenta.
+  </Card>
+</CardGroup>

@@ -1,0 +1,63 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
+  "name": "Micobro",
+  "description": "Guía de Micobro, la app offline-first para prestamistas dominicanos: clientes, préstamos, cobros y respaldo en Google Sheets.",
+  "favicon": "/favicon.svg",
+  "colors": {
+    "primary": "#0e7c6b",
+    "light": "#34c9a6",
+    "dark": "#0b4f4a"
+  },
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg"
+  },
+  "appearance": {
+    "default": "light"
+  },
+  "navigation": {
+    "groups": [
+      {
+        "group": "Empieza aquí",
+        "pages": ["index", "guias/primeros-pasos"]
+      },
+      {
+        "group": "Guías",
+        "pages": [
+          "guias/clientes",
+          "guias/prestamos",
+          "guias/cobros",
+          "guias/ruta",
+          "guias/cuadre",
+          "guias/google-sheets"
+        ]
+      },
+      {
+        "group": "Conceptos",
+        "pages": ["conceptos/como-funciona", "conceptos/sin-internet"]
+      },
+      {
+        "group": "Novedades",
+        "pages": ["novedades"]
+      }
+    ]
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "Sitio web",
+        "href": "https://micobro.app"
+      },
+      {
+        "label": "Soporte",
+        "href": "mailto:team@fonoster.com"
+      }
+    ]
+  },
+  "footer": {
+    "socials": {
+      "instagram": "https://www.instagram.com/mikro.do/"
+    }
+  }
+}

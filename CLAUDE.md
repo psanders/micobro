@@ -28,9 +28,12 @@ Single package — mobile is the only surface, so there's no monorepo/`common` s
 - `lib/sync/` — Google Sheets integration: OAuth (`googleAuth.ts`, Google Sign-In
   per lender via PKCE — no service-account secret ships in the app), a REST
   client over Sheets API v4 (`sheetsClient.ts`, plain `fetch` — not the
-  `googleapis` SDK, which assumes a Node runtime), and the push queue
-  (`push.ts`) that replays `pending_mutations` rows. Pull/two-way sync and
-  conflict resolution are not built yet — see `openspec/` for proposing that.
+  `googleapis` SDK, which assumes a Node runtime), the push queue
+  (`push.ts`) that replays `pending_mutations` rows, and the pull half
+  (`pull.ts`) chained after it in `syncNow()` — `SyncProvider.tsx` runs
+  push-only on mutation/reconnect and push-then-pull for manual and
+  auto-sync. `provisionSheet.ts` creates the lender's `Micobro/Datos`
+  spreadsheet in their Drive.
 - `lib/<domain>/` (e.g. `lib/customers/`) — one `create<Name>.ts` file per
   business operation, its Zod schema, and a barrel `index.ts`. `lib/customers/`
   is the reference implementation.
@@ -40,6 +43,11 @@ Single package — mobile is the only surface, so there's no monorepo/`common` s
   it pulls in `winston`/`fluent-logger`, both Node-only and unusable under Hermes.
 - `__tests__/` — one Jest test file per function.
 - `.maestro/` — E2E smoke flows (machine-level Maestro CLI, not an npm dep).
+- `site/` — the Vite marketing site served at `micobro.app`.
+- `docs-site/` — the Mintlify docs (`docs.json` + `.mdx`), authored with
+  `/ps:docs`. Its own `docs-site/CLAUDE.md` is the editorial policy: audience,
+  Spanish authoring language, and what must never be documented. Deployed by
+  Mintlify from this directory — there is no docs CI workflow.
 
 ## Coding conventions
 
