@@ -116,13 +116,13 @@ export function EditCustomerFormScreen({ customerId }: { customerId: string }) {
             <TextInput
               style={styles.input}
               keyboardType="number-pad"
-              placeholder="037-0089330-2"
+              placeholder="001-1234567-3"
               maxLength={13}
               value={cedula}
               onChangeText={(v) => setCedula(formatCedulaInput(v))}
             />
             <Text style={styles.hint}>
-              {formatHint(normalizeCedula(cedula), 11, "037-0089330-2")}
+              {formatHint(normalizeCedula(cedula), 11, "001-1234567-3")}
             </Text>
           </View>
 

@@ -16,7 +16,7 @@ import { normalizePhone } from "../utils/text";
 const cedulaSchema = z
   .string()
   .transform((v) => normalizeCedula(v))
-  .refine((v) => v.length === 11, "La cédula debe tener 11 dígitos (formato 037-0089330-2)")
+  .refine((v) => v.length === 11, "La cédula debe tener 11 dígitos (formato 001-1234567-3)")
   .optional();
 
 /**
