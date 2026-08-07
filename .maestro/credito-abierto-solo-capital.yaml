@@ -1,0 +1,105 @@
+# Covers: Crédito Abierto -> Cobrar -> "Solo capital" unlocking once the
+# cycle's interest is covered (openspec change 103-solo-capital).
+#
+# Requires a mock-repo build (EXPO_PUBLIC_USE_MOCK_REPOS=true) — see the
+# comment in pin-unlock.yaml. Uses Luis Pérez's loan-11
+# (lib/repo/mock/fixtures.ts): crédito abierto, principal 1,000,000 cents at
+# 500 bps weekly, started 21 days ago with interest-only payments on cycles 1
+# and 2. That leaves the CURRENT cycle's interest UNPAID, so the flow starts
+# with "Solo capital" locked, collects "Solo interés" to cover it, then comes
+# back and finds "Solo capital" available — which is the whole behavior under
+# test, reached through the app rather than by seeding a special fixture.
+appId: ${APP_ID}
+---
+- launchApp:
+    clearState: true
+- runFlow:
+    when:
+      true: ${DEV_URL}
+    commands:
+      - extendedWaitUntil:
+          visible: "Development Build"
+          timeout: 20000
+      - openLink: ${DEV_URL}
+      - extendedWaitUntil:
+          visible: "Continue"
+          timeout: 45000
+      - back
+- extendedWaitUntil:
+    visible: "Crea tu PIN"
+    timeout: 30000
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- extendedWaitUntil:
+    visible: "Confirma tu PIN"
+    timeout: 10000
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- extendedWaitUntil:
+    visible: "Ahora no, tal vez después"
+    timeout: 15000
+- tapOn: "Ahora no, tal vez después"
+- extendedWaitUntil:
+    visible: "Hola, Carlos."
+    timeout: 15000
+
+- tapOn:
+    id: "tab-buscar"
+- extendedWaitUntil:
+    visible: "Buscar cliente"
+    timeout: 15000
+- tapOn: "Nombre, teléfono o cédula…"
+- inputText: "Luis"
+- extendedWaitUntil:
+    visible: "Luis Pérez"
+    timeout: 15000
+- tapOn: "Luis Pérez"
+- extendedWaitUntil:
+    visible: "PRÉSTAMOS ACTIVOS"
+    timeout: 15000
+- tapOn: "Préstamo #L-00011"
+
+# Open-credit loan detail shows the cycle history, not "TOTAL A PAGAR HOY".
+- extendedWaitUntil:
+    visible: "CAPITAL PENDIENTE"
+    timeout: 15000
+- tapOn: "Cobrar"
+
+# The cycle's interest is still owed, so Solo capital is locked and says why.
+- extendedWaitUntil:
+    visible: "OPCIONES DE PAGO"
+    timeout: 15000
+- assertVisible: "Solo capital"
+- assertVisible: "Disponible al cubrir el interés del ciclo"
+
+# Collect the cycle's interest with the default option.
+- tapOn: "Confirmar y cobrar"
+- extendedWaitUntil:
+    visible: "¡Pago registrado!"
+    timeout: 15000
+- tapOn: "Listo"
+
+# Back on the loan, collect again — now the interest is covered.
+- extendedWaitUntil:
+    visible: "CAPITAL PENDIENTE"
+    timeout: 15000
+- tapOn: "Cobrar"
+- extendedWaitUntil:
+    visible: "OPCIONES DE PAGO"
+    timeout: 15000
+
+# The note appears, the interest options are spent, and Solo capital is live.
+- assertVisible: "El interés de este ciclo ya fue pagado"
+- assertVisible: "Ya cubierto en este ciclo"
+- tapOn: "Solo capital"
+- assertVisible: "Monto a capital"
+- tapOn: "0"
+- inputText: "2000"
+- tapOn: "Confirmar y cobrar"
+- extendedWaitUntil:
+    visible: "¡Pago registrado!"
+    timeout: 15000

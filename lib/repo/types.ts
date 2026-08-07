@@ -84,7 +84,7 @@ export interface CustomerRepo {
 export interface OpenCreditView {
   /** Capital pendiente. */
   balanceCents: number;
-  /** Current-cycle Interés pendiente. */
+  /** Current-cycle interest — "Interés del próximo pago" in the UI. */
   interestDueCents: number;
   /** Próx. pago. */
   nextDueDate: Date;

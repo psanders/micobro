@@ -141,10 +141,15 @@ export function LoanDetailScreen({ loanId }: { loanId: string }) {
                   <View style={styles.divider} />
                   <KvRow label="Próx. pago" value={formatShortDate(loan.openCredit.nextDueDate)} />
                   <View style={styles.divider} />
+                  {/*
+                    Not "pendiente": during an in-progress cycle this interest
+                    isn't owed yet, it's what the next payment will cost. Kept
+                    neutral rather than amber for the same reason — amber is
+                    the mora/saltado colour here and would read as overdue.
+                  */}
                   <KvRow
-                    label="Interés pendiente"
+                    label="Interés del próximo pago"
                     value={formatCurrency(loan.openCredit.interestDueCents)}
-                    valueColor={colors.amber}
                   />
                 </View>
 
