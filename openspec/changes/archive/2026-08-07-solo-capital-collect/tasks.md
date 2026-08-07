@@ -47,8 +47,8 @@
 
 ## 4. Ship
 
-- [ ] 4.1 Sync the delta into `openspec/specs/collect-payment`
-- [ ] 4.2 Archive the change
+- [x] 4.1 Sync the delta into `openspec/specs/collect-payment` and `loan-detail`
+- [x] 4.2 Archive the change (`2026-08-07-solo-capital-collect`)
 
 ## Decisions taken during build
 

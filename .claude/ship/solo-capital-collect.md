@@ -1,7 +1,7 @@
 # Ship checkpoint — 103-solo-capital
 
 Started: 2026-08-06
-Current stage: 4 — Test (done); gate before Sync
+Current stage: done — archived as 2026-08-07-solo-capital-collect
 
 **Scope:** Adds a **Solo capital** payment option to the Crédito Abierto cobrar
 screen, enabled only once the current cycle's interest is covered in full, and
@@ -18,8 +18,8 @@ only — the cycle engine, the payment schema, and the sync layer are untouched.
 | 2 | Spec reconcile | done | Added the no-preselection rule + 4 scenarios; `openspec validate` passes |
 | 3 | Build | done | Logic extracted to `lib/payments/openCreditPayOptions.ts`; screen wired to it |
 | 4 | Test | done (e2e unrun) | 478 tests / 80 suites green. Maestro flow written but NOT executed — needs a demo build on the emulator |
-| 5 | Sync | pending | |
-| 6 | Archive | pending | |
+| 5 | Sync | done | `collect-payment` + `loan-detail` promoted into `openspec/specs/` |
+| 6 | Archive | done | `openspec/changes/archive/2026-08-07-solo-capital-collect` |
 
 Status values: `pending` · `in-progress` · `done` · `skipped` (with reason).
 
@@ -27,6 +27,8 @@ Status values: `pending` · `in-progress` · `done` · `skipped` (with reason).
 
 Newest first. One line per meaningful decision or stage transition.
 
+- 2026-08-07 — Renamed the change `103-solo-capital` -> `solo-capital-collect`: the CLI's `status`/`archive` reject a name starting with a digit, though `validate` accepts it. Don't name future changes after an issue number alone.
+- 2026-08-07 — Folded the "Interés pendiente" -> "Interés del próximo pago" rename into this change on Pedro's call, including dropping the amber colour on loan detail and regenerating the docs screenshot.
 - 2026-08-06 — Receipt drops its Interés line on a capital-only payment instead of printing RD$0.
 - 2026-08-06 — Zero-interest cycle counts as covered (design.md's open question resolved): nothing to collect, so capital is all that's left.
 - 2026-08-06 — Pedro corrected the design mid-build: Solo capital must NOT be preselected, since paying capital without interest isn't the typical case. Spec, code and Pencil state B all updated.

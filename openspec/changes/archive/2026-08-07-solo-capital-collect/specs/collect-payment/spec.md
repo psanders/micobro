@@ -3,15 +3,14 @@
 ### Requirement: Collect an open-credit payment
 
 For an open-credit loan, the cobrar screen SHALL present the current cycle's
-interest under the label **Interés del próximo pago** — not "pendiente", since
-during an in-progress cycle that interest is not owed yet — and three payment
-options — **Solo interés** (pay exactly the
-cycle interest, capital unchanged), **Interés + capital** (pay the interest plus
-a lender-entered capital amount), and **Solo capital** (pay a lender-entered
-amount that goes entirely to capital) — with a "Después del pago" preview of the
-resulting Capital restante and next Interés. Recording the payment stores an
-ordinary amount+date row; when the payment brings the capital balance to zero
-the loan is marked paid/finished.
+interest under the label **Interés del próximo pago** (not "pendiente": while a
+cycle is in progress that interest is not owed yet), and three payment options.
+**Solo interés** pays exactly the cycle interest, leaving capital unchanged.
+**Interés + capital** pays the interest plus a lender-entered capital amount.
+**Solo capital** pays a lender-entered amount that goes entirely to capital.
+A "Después del pago" preview SHALL show the resulting Capital restante and next
+Interés. Recording the payment stores an ordinary amount+date row; when the
+payment brings the capital balance to zero the loan is marked paid/finished.
 
 Which options are selectable SHALL depend on whether the current cycle's
 interest has been covered in full by payments already recorded inside that
