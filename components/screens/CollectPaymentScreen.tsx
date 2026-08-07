@@ -6,7 +6,7 @@
  * the loan's state (cuota + mora / cuota / solo mora / saldar / otro
  * monto) and the mora-first split previews exactly what gets recorded.
  */
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -23,6 +23,8 @@ import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { usePaymentRepo } from "../../lib/repo/RepoProvider";
 import { useAsync } from "../../lib/hooks/useAsync";
 import { computePaymentSplit } from "../../lib/payments/paymentSplit";
+import { resolveOpenCreditPayOptions } from "../../lib/payments/openCreditPayOptions";
+import type { OpenCreditPayOption } from "../../lib/payments/openCreditPayOptions";
 import { cuotaLabel as formatCuotaLabel } from "../../lib/loans/loanViews";
 import { formatCurrency } from "../../lib/utils/money";
 import { formatShortDate, formatTime } from "../../lib/utils/dates";
@@ -36,7 +38,6 @@ import type { PaymentMethod } from "../../lib/payments/payment.schema";
 import type { ReceiptLine } from "../../lib/repo/types";
 
 type PayOption = "arrears" | "cuota" | "mora" | "settle" | "custom";
-type OpenCreditPayOption = "interest" | "interest_capital";
 
 export function CollectPaymentScreen({ loanId }: { loanId: string }) {
   const router = useRouter();
@@ -51,7 +52,7 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
 
   // Crédito abierto (07c): "Solo interés" vs "Interés + capital", with a
   // lender-entered capital amount for the latter.
-  const [ocOption, setOcOption] = useState<OpenCreditPayOption>("interest");
+  const [ocOption, setOcOption] = useState<OpenCreditPayOption | null>("interest");
   const [ocCapitalText, setOcCapitalText] = useState("");
 
   const context = useAsync(() => paymentRepo.getCollectContext(loanId), [loanId]);
@@ -62,17 +63,45 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
     const n = Number(ocCapitalText.replace(/[,.]/g, ""));
     return Number.isFinite(n) && n > 0 ? Math.round(n * 100) : 0;
   }, [ocCapitalText]);
-  const ocInterestCents = oc?.interestDueCents ?? 0;
-  // Only actually applied to the total/preview when "Interés + capital" is
-  // the selected option — the input stays live either way so its pill
+  const ocCurrentCycle = oc && oc.cycles.length > 0 ? oc.cycles[oc.cycles.length - 1]! : null;
+  // Which options this loan may be collected with right now — see
+  // `resolveOpenCreditPayOptions` for why a covered cycle locks the interest
+  // options instead of offering the next cycle's amount.
+  const ocView = useMemo(
+    () =>
+      oc
+        ? resolveOpenCreditPayOptions(oc)
+        : {
+            interestCovered: false,
+            dueInterestCents: 0,
+            interestEnabled: true,
+            interestCapitalEnabled: true,
+            capitalEnabled: false,
+            defaultOption: "interest" as const
+          },
+    [oc]
+  );
+  const ocInterestCovered = ocView.interestCovered;
+  const ocDueInterestCents = ocView.dueInterestCents;
+  // Only actually applied to the total/preview when the selected option
+  // includes that part — the capital input stays live either way so its pill
   // preview updates as the lender types.
-  const ocCapitalPortion = ocOption === "interest_capital" ? ocCapitalCents : 0;
-  const ocAmountCents = ocInterestCents + ocCapitalPortion;
+  const ocInterestPortion =
+    ocOption === "interest" || ocOption === "interest_capital" ? ocDueInterestCents : 0;
+  const ocCapitalPortion =
+    ocOption === "interest_capital" || ocOption === "capital" ? ocCapitalCents : 0;
+  const ocAmountCents = ocInterestPortion + ocCapitalPortion;
   const ocBalanceAfterCents = Math.max(0, (oc?.balanceCents ?? 0) - ocCapitalPortion);
   const ocNextInterestCents = oc
     ? Math.round((ocBalanceAfterCents * oc.interestRateBps) / 10000)
     : 0;
-  const ocCurrentCycle = oc && oc.cycles.length > 0 ? oc.cycles[oc.cycles.length - 1]! : null;
+
+  // Land on whatever the loan's state says should start selected — `null` once
+  // the interest is covered, so "Solo capital" is chosen deliberately rather
+  // than inherited.
+  useEffect(() => {
+    setOcOption(ocView.defaultOption);
+  }, [ocView.defaultOption]);
 
   const cuota = ctx?.cuotaCents ?? 0;
   const mora = ctx?.moraCents ?? 0;
@@ -215,7 +244,11 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
     try {
       const lines: ReceiptLine[] = isOpenCredit
         ? [
-            { label: "Interés", amountCents: ocInterestCents },
+            // "Solo capital" collects no interest, so the receipt shouldn't
+            // carry an Interés line reading RD$0.
+            ...(ocInterestPortion > 0
+              ? [{ label: "Interés", amountCents: ocInterestPortion }]
+              : []),
             ...(ocCapitalPortion > 0 ? [{ label: "Capital", amountCents: ocCapitalPortion }] : [])
           ]
         : breakdown;
@@ -277,7 +310,13 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
 
             <View style={styles.ocInterestCard}>
               <SectionLabel>INTERÉS PENDIENTE</SectionLabel>
-              <Text style={styles.ocInterestAmount}>{formatCurrency(ocInterestCents)}</Text>
+              <Text style={styles.ocInterestAmount}>{formatCurrency(ocDueInterestCents)}</Text>
+              {ocInterestCovered ? (
+                <View style={styles.ocPaidNote}>
+                  <Feather name="check" size={13} color={colors.green} />
+                  <Text style={styles.ocPaidNoteText}>El interés de este ciclo ya fue pagado</Text>
+                </View>
+              ) : null}
             </View>
 
             <View style={styles.section}>
@@ -286,14 +325,32 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
                 <Pressable
                   style={[
                     styles.ocOptionCard,
-                    ocOption === "interest" && styles.ocOptionCardSelected
+                    ocOption === "interest" && styles.ocOptionCardSelected,
+                    ocInterestCovered && styles.ocOptionCardDisabled
                   ]}
+                  disabled={ocInterestCovered}
                   onPress={() => setOcOption("interest")}
                 >
                   <View style={styles.ocOptionHeader}>
                     <View style={styles.ocOptionTextWrap}>
-                      <Text style={styles.ocOptionTitle}>Solo interés</Text>
-                      <Text style={styles.ocOptionSubtitle}>Mantiene el capital pendiente</Text>
+                      <Text
+                        style={[
+                          styles.ocOptionTitle,
+                          ocInterestCovered && styles.ocOptionTextDisabled
+                        ]}
+                      >
+                        Solo interés
+                      </Text>
+                      <Text
+                        style={[
+                          styles.ocOptionSubtitle,
+                          ocInterestCovered && styles.ocOptionTextDisabled
+                        ]}
+                      >
+                        {ocInterestCovered
+                          ? "Ya cubierto en este ciclo"
+                          : "Mantiene el capital pendiente"}
+                      </Text>
                     </View>
                     <View
                       style={[styles.ocRadio, ocOption === "interest" && styles.ocRadioSelected]}
@@ -305,22 +362,45 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
                   </View>
                   <View style={styles.ocPayPill}>
                     <Text style={styles.ocPayPillLabel}>A pagar</Text>
-                    <Text style={styles.ocPayPillValue}>{formatCurrency(ocInterestCents)}</Text>
+                    <Text
+                      style={[
+                        styles.ocPayPillValue,
+                        ocInterestCovered && styles.ocOptionTextDisabled
+                      ]}
+                    >
+                      {formatCurrency(ocDueInterestCents)}
+                    </Text>
                   </View>
                 </Pressable>
 
                 <Pressable
                   style={[
                     styles.ocOptionCard,
-                    ocOption === "interest_capital" && styles.ocOptionCardSelected
+                    ocOption === "interest_capital" && styles.ocOptionCardSelected,
+                    ocInterestCovered && styles.ocOptionCardDisabled
                   ]}
+                  disabled={ocInterestCovered}
                   onPress={() => setOcOption("interest_capital")}
                 >
                   <View style={styles.ocOptionHeader}>
                     <View style={styles.ocOptionTextWrap}>
-                      <Text style={styles.ocOptionTitle}>Interés + capital</Text>
-                      <Text style={styles.ocOptionSubtitle}>
-                        Reduce el capital y siguiente interés
+                      <Text
+                        style={[
+                          styles.ocOptionTitle,
+                          ocInterestCovered && styles.ocOptionTextDisabled
+                        ]}
+                      >
+                        Interés + capital
+                      </Text>
+                      <Text
+                        style={[
+                          styles.ocOptionSubtitle,
+                          ocInterestCovered && styles.ocOptionTextDisabled
+                        ]}
+                      >
+                        {ocInterestCovered
+                          ? "Ya cubierto en este ciclo"
+                          : "Reduce el capital y siguiente interés"}
                       </Text>
                     </View>
                     <View
@@ -334,24 +414,90 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
                       ) : null}
                     </View>
                   </View>
-                  <Text style={styles.ocCapitalLabel}>Capital a pagar</Text>
-                  <View style={styles.customInputCard}>
-                    <Text style={styles.customInputLabel}>RD$</Text>
-                    <TextInput
-                      style={styles.customInput}
-                      value={ocCapitalText}
-                      onChangeText={setOcCapitalText}
-                      keyboardType="numeric"
-                      placeholder="0"
-                      placeholderTextColor={colors.slate}
-                    />
+                  {ocInterestCovered ? null : (
+                    <>
+                      <Text style={styles.ocCapitalLabel}>Capital a pagar</Text>
+                      <View style={styles.customInputCard}>
+                        <Text style={styles.customInputLabel}>RD$</Text>
+                        <TextInput
+                          style={styles.customInput}
+                          value={ocCapitalText}
+                          onChangeText={setOcCapitalText}
+                          keyboardType="numeric"
+                          placeholder="0"
+                          placeholderTextColor={colors.slate}
+                        />
+                      </View>
+                      <View style={[styles.ocPayPill, styles.ocPayPillGreen]}>
+                        <Text style={styles.ocPayPillLabel}>A pagar</Text>
+                        <Text style={[styles.ocPayPillValue, styles.ocPayPillValueGreen]}>
+                          {formatCurrency(ocDueInterestCents + ocCapitalCents)}
+                        </Text>
+                      </View>
+                    </>
+                  )}
+                </Pressable>
+
+                <Pressable
+                  style={[
+                    styles.ocOptionCard,
+                    ocOption === "capital" && styles.ocOptionCardSelected,
+                    !ocInterestCovered && styles.ocOptionCardDisabled
+                  ]}
+                  disabled={!ocInterestCovered}
+                  onPress={() => setOcOption("capital")}
+                >
+                  <View style={styles.ocOptionHeader}>
+                    <View style={styles.ocOptionTextWrap}>
+                      <Text
+                        style={[
+                          styles.ocOptionTitle,
+                          !ocInterestCovered && styles.ocOptionTextDisabled
+                        ]}
+                      >
+                        Solo capital
+                      </Text>
+                      <Text
+                        style={[
+                          styles.ocOptionSubtitle,
+                          !ocInterestCovered && styles.ocOptionTextDisabled
+                        ]}
+                      >
+                        {ocInterestCovered
+                          ? "Todo el monto baja el capital"
+                          : "Disponible al cubrir el interés del ciclo"}
+                      </Text>
+                    </View>
+                    <View
+                      style={[styles.ocRadio, ocOption === "capital" && styles.ocRadioSelected]}
+                    >
+                      {ocOption === "capital" ? (
+                        <Feather name="check" size={14} color={colors.white} />
+                      ) : null}
+                    </View>
                   </View>
-                  <View style={[styles.ocPayPill, styles.ocPayPillGreen]}>
-                    <Text style={styles.ocPayPillLabel}>A pagar</Text>
-                    <Text style={[styles.ocPayPillValue, styles.ocPayPillValueGreen]}>
-                      {formatCurrency(ocInterestCents + ocCapitalCents)}
-                    </Text>
-                  </View>
+                  {ocInterestCovered ? (
+                    <>
+                      <Text style={styles.ocCapitalLabel}>Monto a capital</Text>
+                      <View style={styles.customInputCard}>
+                        <Text style={styles.customInputLabel}>RD$</Text>
+                        <TextInput
+                          style={styles.customInput}
+                          value={ocCapitalText}
+                          onChangeText={setOcCapitalText}
+                          keyboardType="numeric"
+                          placeholder="0"
+                          placeholderTextColor={colors.slate}
+                        />
+                      </View>
+                      <View style={[styles.ocPayPill, styles.ocPayPillGreen]}>
+                        <Text style={styles.ocPayPillLabel}>A pagar</Text>
+                        <Text style={[styles.ocPayPillValue, styles.ocPayPillValueGreen]}>
+                          {formatCurrency(ocCapitalCents)}
+                        </Text>
+                      </View>
+                    </>
+                  ) : null}
                 </Pressable>
               </View>
             </View>
@@ -649,6 +795,16 @@ const styles = StyleSheet.create({
     gap: 10
   },
   ocInterestAmount: { fontSize: 32, fontFamily: fonts.bold, color: "#1A1A1A" },
+  ocPaidNote: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    backgroundColor: colors.greenBg,
+    borderRadius: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 12
+  },
+  ocPaidNoteText: { fontSize: 12, fontFamily: fonts.semiBold, color: colors.green },
   ocOptions: { gap: 12 },
   ocOptionCard: {
     backgroundColor: colors.white,
@@ -659,6 +815,10 @@ const styles = StyleSheet.create({
     borderColor: colors.actionBarBorder
   },
   ocOptionCardSelected: { borderWidth: 2, borderColor: colors.brandDeep },
+  // Locked out for this cycle — greyed but still on screen, so the lender can
+  // see the option exists and read why it isn't available.
+  ocOptionCardDisabled: { backgroundColor: "#F9FAFB", borderColor: colors.border },
+  ocOptionTextDisabled: { color: "#9AA8C2" },
   ocOptionHeader: {
     flexDirection: "row",
     alignItems: "flex-start",
