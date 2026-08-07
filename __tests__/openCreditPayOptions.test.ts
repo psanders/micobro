@@ -100,8 +100,8 @@ describe("resolveOpenCreditPayOptions — interest covered", () => {
     expect(resolveOpenCreditPayOptions(state).dueInterestCents).toBe(0);
   });
 
-  it("selects nothing by default, so Solo capital is chosen deliberately", () => {
-    expect(resolve(covered).defaultOption).toBeNull();
+  it("defaults to Solo capital, the only thing left to collect", () => {
+    expect(resolve(covered).defaultOption).toBe("capital");
   });
 
   it("counts interest covered by two smaller payments in the same cycle", () => {
@@ -156,6 +156,7 @@ describe("resolveOpenCreditPayOptions — edge cases", () => {
     expect(view.dueInterestCents).toBe(0);
     expect(view.capitalEnabled).toBe(true);
     expect(view.interestEnabled).toBe(false);
+    expect(view.defaultOption).toBe("capital");
   });
 
   it("offers nothing at all once the loan is closed", () => {

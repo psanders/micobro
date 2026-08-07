@@ -136,11 +136,11 @@ cycle:
   capital** SHALL be disabled, and **Solo capital** SHALL be selectable.
 
 Disabled options SHALL remain visible, with a note stating the interest for
-this cycle has already been paid. **Solo capital** SHALL NOT be preselected:
-paying capital without interest is not the ordinary case, so when the cycle's
-interest is covered the screen SHALL open with no option selected and the
-lender SHALL choose **Solo capital** deliberately. Confirming SHALL stay
-unavailable until an option is selected and its amount is greater than zero.
+this cycle has already been paid. An option SHALL always start selected,
+whichever one covers the main case for the loan's current state: **Solo
+interés** while there is interest to collect, and **Solo capital** once there
+is not. Confirming SHALL stay unavailable until the selected option's amount is
+greater than zero.
 
 #### Scenario: Solo interés
 
@@ -174,12 +174,17 @@ unavailable until an option is selected and its amount is greater than zero.
 - **THEN** RD$5,000 is recorded, Capital restante becomes RD$5,000, and the
   next cycle's Interés drops accordingly
 
-#### Scenario: Solo capital is never preselected
+#### Scenario: The default selection follows the cycle's state
 
-- **WHEN** the cycle's interest is covered and the lender opens the cobrar
-  screen
-- **THEN** no payment option is selected and confirming is unavailable until
-  the lender picks "Solo capital" and enters an amount
+- **WHEN** the lender opens the cobrar screen while the cycle's interest is
+  still owed
+- **THEN** "Solo interés" starts selected
+
+#### Scenario: Solo capital becomes the default once the interest is covered
+
+- **WHEN** the lender opens the cobrar screen and the cycle's interest is
+  already covered
+- **THEN** "Solo capital" starts selected, so there is always a live option
 
 #### Scenario: Solo capital stays disabled while interest is only partly covered
 

@@ -96,9 +96,9 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
     ? Math.round((ocBalanceAfterCents * oc.interestRateBps) / 10000)
     : 0;
 
-  // Land on whatever the loan's state says should start selected — `null` once
-  // the interest is covered, so "Solo capital" is chosen deliberately rather
-  // than inherited.
+  // Land on whichever option covers the main case right now — Solo interés
+  // while interest is owed, Solo capital once it isn't — so the lender always
+  // arrives at a live selection instead of an empty form.
   useEffect(() => {
     setOcOption(ocView.defaultOption);
   }, [ocView.defaultOption]);

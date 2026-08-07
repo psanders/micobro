@@ -31,9 +31,11 @@ export interface OpenCreditPayOptionsView {
   interestCapitalEnabled: boolean;
   capitalEnabled: boolean;
   /**
-   * What to select on entering the screen. `null` once the interest is
-   * covered: paying capital without interest is not the ordinary case, so
-   * "Solo capital" is never inherited — the lender picks it deliberately.
+   * What to select on entering the screen: whichever option covers the main
+   * case for this loan right now — "Solo interés" while there is interest to
+   * collect, "Solo capital" once there isn't. `null` only when nothing is
+   * collectible at all (a closed loan), so the lender always lands on a live
+   * selection rather than an empty form.
    */
   defaultOption: OpenCreditPayOption | null;
 }
@@ -77,6 +79,6 @@ export function resolveOpenCreditPayOptions(state: OpenCreditState): OpenCreditP
     interestEnabled: !interestCovered,
     interestCapitalEnabled: !interestCovered,
     capitalEnabled: interestCovered,
-    defaultOption: interestCovered ? null : "interest"
+    defaultOption: interestCovered ? "capital" : "interest"
   };
 }
