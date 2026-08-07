@@ -3,7 +3,9 @@
 ### Requirement: Collect an open-credit payment
 
 For an open-credit loan, the cobrar screen SHALL present the current cycle's
-Interés pendiente and three payment options — **Solo interés** (pay exactly the
+interest under the label **Interés del próximo pago** — not "pendiente", since
+during an in-progress cycle that interest is not owed yet — and three payment
+options — **Solo interés** (pay exactly the
 cycle interest, capital unchanged), **Interés + capital** (pay the interest plus
 a lender-entered capital amount), and **Solo capital** (pay a lender-entered
 amount that goes entirely to capital) — with a "Después del pago" preview of the

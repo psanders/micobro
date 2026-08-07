@@ -309,7 +309,7 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
             </View>
 
             <View style={styles.ocInterestCard}>
-              <SectionLabel>INTERÉS PENDIENTE</SectionLabel>
+              <SectionLabel>INTERÉS DEL PRÓXIMO PAGO</SectionLabel>
               <Text style={styles.ocInterestAmount}>{formatCurrency(ocDueInterestCents)}</Text>
               {ocInterestCovered ? (
                 <View style={styles.ocPaidNote}>

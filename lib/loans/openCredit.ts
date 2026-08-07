@@ -91,7 +91,7 @@ export interface OpenCreditState {
   /** Outstanding capital balance after replaying every completed cycle (and the current one). */
   balanceCents: number;
   /**
-   * Interest still owed on the next payment — "Interés pendiente" in the UI.
+   * Interest the next payment will cost — "Interés del próximo pago" in the UI.
    * This is the current cycle's interest minus whatever it has already
    * received, so a partial payment leaves only the remainder; once the
    * cycle's interest is fully covered it becomes the FOLLOWING cycle's
