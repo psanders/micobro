@@ -14,6 +14,7 @@ export {
   cycleIndexForPayment,
   loanCode,
   installmentDueDate,
+  loanEndDate,
   addFrequencyInterval,
   addNonSundayDays,
   defaultFirstPaymentDate,

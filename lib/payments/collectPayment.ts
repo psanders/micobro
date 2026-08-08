@@ -81,10 +81,12 @@ export function createCollectPayment({ db }: CollectPaymentDeps) {
       method: input.method,
       customerName: customer?.name ?? "Cliente",
       lines: input.lines,
-      // Fall back to paidAt/false when the loan couldn't be found (mirrors
-      // the "Cliente" fallback above) — shouldn't happen given loanId is
-      // validated, but keeps this defensive like the rest of the function.
-      loanStartDate: loan?.startDate ?? paidAt,
+      // `null`, not paidAt: a substituted date would print "Inicio: <hoy>" on
+      // a receipt the customer keeps for months, asserting the loan started
+      // the day of the cobro. The renderers drop the row instead — see the
+      // `collect-payment` spec. Unlike the "Cliente" fallback above, there is
+      // no honest placeholder for a date.
+      loanStartDate: loan?.startDate ?? null,
       loanEndDate: loan ? loanEndDate(loan) : null,
       isOpenCredit: loan ? effectiveLoanType(loan) === "open_credit" : false
     };

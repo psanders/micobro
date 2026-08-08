@@ -272,7 +272,7 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
           // Every router param is a string — dates cross as ISO, the
           // open-credit flag as "true"/"false"; app/pago-confirmado.tsx
           // parses them back.
-          loanStartDate: receipt.loanStartDate.toISOString(),
+          loanStartDate: receipt.loanStartDate ? receipt.loanStartDate.toISOString() : "",
           loanEndDate: receipt.loanEndDate ? receipt.loanEndDate.toISOString() : "",
           isOpenCredit: String(receipt.isOpenCredit)
         }

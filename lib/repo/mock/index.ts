@@ -456,7 +456,8 @@ export function createMockRepos(): Repos {
           method: input.method,
           customerName: customer?.name ?? "Cliente",
           lines: input.lines,
-          loanStartDate: loan?.startDate ?? paidAt,
+          // `null`, not paidAt — see the note in lib/payments/collectPayment.ts.
+          loanStartDate: loan?.startDate ?? null,
           loanEndDate: loan ? loanEndDate(loan) : null,
           isOpenCredit: loan ? effectiveLoanType(loan) === "open_credit" : false
         };
