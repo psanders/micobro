@@ -262,6 +262,115 @@ describe("addFrequencyInterval / defaultFirstPaymentDate", () => {
   });
 });
 
+// Spec: loan-configuration "First payment date" — monthly cuota/cycle dates
+// clamp to the target month's last day when it's shorter than the anchor
+// day, and return to the anchor day in a later month long enough for it
+// (issue #110). Before this fix, a bare `setMonth` normalized an invalid
+// date (e.g. Sep 31) forward into the next month instead of clamping.
+describe("addFrequencyInterval — monthly month-end clamp (issue #110)", () => {
+  it.each([
+    // [start ISO, count, expected result ISO, why]
+    ["2026-01-31T00:00:00", 1, "2026-02-28T00:00:00"], // Jan 31 +1 → Feb 28 (2026 is not a leap year)
+    ["2026-01-31T00:00:00", 2, "2026-03-31T00:00:00"], // +2 → Mar 31, anchor restored (Mar has 31 days)
+    ["2026-01-30T00:00:00", 1, "2026-02-28T00:00:00"], // regression: 30 Jan lands on Feb 28, not Mar 02
+    ["2026-07-31T00:00:00", 1, "2026-08-31T00:00:00"], // Aug has 31 days — no clamp needed
+    ["2026-07-31T00:00:00", 2, "2026-09-30T00:00:00"], // Sep has 30 — clamps
+    ["2026-07-31T00:00:00", 3, "2026-10-31T00:00:00"], // Oct has 31 — anchor restored, not sticky at 30
+    ["2026-07-31T00:00:00", 4, "2026-11-30T00:00:00"], // Nov has 30 — clamps again
+    ["2026-07-31T00:00:00", 5, "2026-12-31T00:00:00"], // Dec has 31 — restored again
+    ["2028-01-31T00:00:00", 1, "2028-02-29T00:00:00"] // leap year: Feb 2028 has 29 days
+  ])("%s + %d month(s) -> %s", (isoDate, count, expectedIso) => {
+    const result = addFrequencyInterval(new Date(isoDate), "monthly", count as number);
+    expect(result.toDateString()).toBe(new Date(expectedIso).toDateString());
+  });
+
+  it("negative counts clamp correctly too (backward from a long month into a short one)", () => {
+    const oct31 = new Date("2026-10-31T00:00:00");
+    // Sep has 30 days.
+    expect(addFrequencyInterval(oct31, "monthly", -1).toDateString()).toBe(
+      new Date("2026-09-30T00:00:00").toDateString()
+    );
+    // Aug has 31 — anchor restored going backward too.
+    expect(addFrequencyInterval(oct31, "monthly", -2).toDateString()).toBe(
+      new Date("2026-08-31T00:00:00").toDateString()
+    );
+    // 8 months back from Oct 2026 is Feb 2026 (non-leap, 28 days) — clamps.
+    expect(addFrequencyInterval(oct31, "monthly", -8).toDateString()).toBe(
+      new Date("2026-02-28T00:00:00").toDateString()
+    );
+  });
+
+  it("preserves time-of-day through the clamp", () => {
+    const withTime = new Date("2026-07-31T15:42:07");
+    const result = addFrequencyInterval(withTime, "monthly", 2);
+    expect(result.getHours()).toBe(15);
+    expect(result.getMinutes()).toBe(42);
+    expect(result.getSeconds()).toBe(7);
+  });
+});
+
+// Spec: loan-configuration "First payment date" — NewLoanFormScreen derives
+// the stored `startDate` by going backward one interval from the lender's
+// chosen first-payment date (`addFrequencyInterval(firstPaymentDate,
+// frequency, -1)`), so that `installmentDueDate(loan, 1)` lands back on
+// exactly what the lender picked, per the spec's "loan created SHALL have
+// its first cuota due exactly on the date the lender lands on" line.
+describe("NewLoanFormScreen startDate round-trip (monthly)", () => {
+  function loanWithStartDate(startDate: Date): Loan {
+    return {
+      id: "loan-rt",
+      customerId: "customer-rt",
+      principalCents: 100000,
+      interestRateBps: 1000,
+      termCount: 6,
+      frequency: "monthly",
+      startDate,
+      status: "active",
+      notes: null,
+      graceDays: null,
+      moraEnabled: null,
+      moraRateBps: null,
+      skipSundays: null,
+      loanType: null,
+      createdAt: startDate,
+      updatedAt: startDate
+    };
+  }
+
+  it.each([
+    ["2026-01-31T12:00:00", "31 Jan — December (the preceding month) also has 31 days"],
+    ["2026-04-30T12:00:00", "30 Apr — March has 31 days, so no clamp either direction"],
+    ["2028-02-29T12:00:00", "29 Feb (leap) — January has 31 days"]
+  ])("round-trips exactly for %s (%s)", (isoDate) => {
+    const firstPaymentDate = new Date(isoDate);
+    const startDate = addFrequencyInterval(firstPaymentDate, "monthly", -1);
+    const loan = loanWithStartDate(startDate);
+    expect(installmentDueDate(loan, 1).getTime()).toBe(firstPaymentDate.getTime());
+  });
+
+  // KNOWN LIMITATION (not introduced by the #110 clamp fix, and not fixed by
+  // it either): when the chosen first-payment day doesn't exist in the
+  // PRECEDING month, going back one interval clamps the day away, and a
+  // bare `Date` startDate has no way to carry the original anchor ("31")
+  // through that clamp — it only remembers whatever day it landed on. The
+  // forward step then re-anchors on that clamped day, not the lender's
+  // original pick. Closing this would need a persisted "anchor day of
+  // month" separate from `startDate`, which is a schema change out of scope
+  // for this fix (see the captain's brief for issue #110).
+  it("KNOWN LIMITATION: round-trip breaks when the chosen day doesn't exist in the preceding month (31 Mar -> Feb has 28 days)", () => {
+    const firstPaymentDate = new Date("2026-03-31T12:00:00");
+    const startDate = addFrequencyInterval(firstPaymentDate, "monthly", -1);
+    expect(startDate.toDateString()).toBe(new Date("2026-02-28T12:00:00").toDateString());
+
+    const loan = loanWithStartDate(startDate);
+    const roundTripped = installmentDueDate(loan, 1);
+    // Falls on Mar 28, not the lender's chosen Mar 31 — a narrower gap than
+    // the pre-fix behavior (which landed on Apr 03), but not closed.
+    expect(roundTripped.toDateString()).toBe(new Date("2026-03-28T12:00:00").toDateString());
+    expect(roundTripped.getTime()).not.toBe(firstPaymentDate.getTime());
+  });
+});
+
 // Spec: loan-configuration "First payment date" — the calendar picker's
 // minimum date and the value the form resets to on a frequency change.
 describe("healthyFirstPaymentFloor", () => {
