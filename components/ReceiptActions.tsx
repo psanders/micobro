@@ -17,6 +17,7 @@ import { printReceiptWithUI, requestBluetoothPermission } from "../lib/printer";
 import { ReceiptView, type ReceiptViewData } from "./ReceiptView";
 import { useProfileRepo } from "../lib/repo/RepoProvider";
 import { useAsync } from "../lib/hooks/useAsync";
+import { formatFullDate } from "../lib/utils/dates";
 
 export interface ReceiptActionsProps {
   customerName: string;
@@ -25,6 +26,15 @@ export interface ReceiptActionsProps {
   receiptNumber: string;
   paidAtLabel: string;
   lines: ReceiptLine[];
+  /** The loan's start date — each surface (digital/printed) derives its own
+   * label ("Fecha Inicio"/"Inicio" or, for crédito abierto, "Fecha
+   * Inicia"/"Inicia") from `isOpenCredit`. `null` only when a stale deep link
+   * reaches `/pago-confirmado` without the param; the row is then omitted
+   * rather than filled with a fabricated date. */
+  loanStartDate: Date | null;
+  /** `null` for crédito abierto — rendered as "Crédito abierto" instead of a date. */
+  loanEndDate: Date | null;
+  isOpenCredit: boolean;
 }
 
 export function ReceiptActions({
@@ -33,7 +43,10 @@ export function ReceiptActions({
   methodLabel,
   receiptNumber,
   paidAtLabel,
-  lines
+  lines,
+  loanStartDate,
+  loanEndDate,
+  isOpenCredit
 }: ReceiptActionsProps) {
   const router = useRouter();
   const [printing, setPrinting] = useState(false);
@@ -45,6 +58,11 @@ export function ReceiptActions({
   const lenderName = profile.data?.businessName || profile.data?.name || "MICOBRO";
   const phone = profile.data?.phone ?? null;
 
+  // dd/mm/yyyy, shared by both surfaces — only the labels differ per surface
+  // (see ReceiptView.tsx / lib/printer.ts), driven by isOpenCredit.
+  const loanStartDateLabel = loanStartDate ? formatFullDate(loanStartDate) : null;
+  const loanEndDateLabel = loanEndDate ? formatFullDate(loanEndDate) : null;
+
   const receiptViewData = useMemo<ReceiptViewData>(
     () => ({
       lenderName,
@@ -54,9 +72,24 @@ export function ReceiptActions({
       method: methodLabel,
       lines,
       totalCents,
-      phone
+      phone,
+      loanStartDate: loanStartDateLabel,
+      loanEndDate: loanEndDateLabel,
+      isOpenCredit
     }),
-    [lenderName, receiptNumber, customerName, paidAtLabel, methodLabel, lines, totalCents, phone]
+    [
+      lenderName,
+      receiptNumber,
+      customerName,
+      paidAtLabel,
+      methodLabel,
+      lines,
+      totalCents,
+      phone,
+      loanStartDateLabel,
+      loanEndDateLabel,
+      isOpenCredit
+    ]
   );
 
   const handlePrint = async () => {
@@ -75,7 +108,10 @@ export function ReceiptActions({
         method: methodLabel,
         lines,
         totalCents,
-        phone
+        phone,
+        loanStartDate: loanStartDateLabel,
+        loanEndDate: loanEndDateLabel,
+        isOpenCredit
       });
     } finally {
       setPrinting(false);

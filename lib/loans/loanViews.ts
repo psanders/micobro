@@ -11,6 +11,7 @@
  */
 import { methodLabels } from "../payments/labels";
 import { cuotaCents, lastCuotaCents, totalInterestCents, totalRepayCents } from "./loanMath";
+import { effectiveLoanType } from "./loan.schema";
 import type { Loan, LoanFrequency } from "./loan.schema";
 import type { Customer } from "../customers/customer.schema";
 import type { Payment } from "../payments/payment.schema";
@@ -103,6 +104,18 @@ export function installmentDueDate(loan: Loan, number: number): Date {
     return addNonSundayDays(new Date(loan.startDate), number);
   }
   return addFrequencyInterval(new Date(loan.startDate), loan.frequency, number);
+}
+
+/**
+ * The loan's end date — the last scheduled cuota's due date, same as
+ * `buildLoanDetailView`'s `endDate`. `null` for a crédito abierto loan,
+ * which has no fixed term (empty schedule) — shared by `buildPaymentReceipt`
+ * and `collectPayment`/the mock repo's `collect`, both of which need it
+ * without building the whole schedule.
+ */
+export function loanEndDate(loan: Loan): Date | null {
+  if (effectiveLoanType(loan) !== "term" || loan.termCount <= 0) return null;
+  return installmentDueDate(loan, loan.termCount);
 }
 
 /**
@@ -395,7 +408,10 @@ export function buildPaymentReceipt(
     totalCents: siblings.reduce((sum, p) => sum + p.amountCents, 0),
     method: target.method ?? "cash",
     customerName: customer.name,
-    lines
+    lines,
+    loanStartDate: loan.startDate,
+    loanEndDate: loanEndDate(loan),
+    isOpenCredit: effectiveLoanType(loan) === "open_credit"
   };
 }
 
