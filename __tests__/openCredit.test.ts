@@ -346,3 +346,37 @@ describe("openCreditState — payments outside the loan's cycle windows", () => 
     });
   });
 });
+
+// Regression for issue #110: a monthly open-credit loan's cycle windows are
+// built by `addFrequencyInterval(loan.startDate, "monthly", index)`, so the
+// same month-end clamp bug that broke term-loan due dates also broke every
+// open-credit cycle boundary — oscillating (Oct 01 instead of Sep 30) rather
+// than clamping and drifting back to the anchor.
+describe("openCreditState — month-end monthly loan cycles (issue #110)", () => {
+  it("tiles cycle windows contiguously across month-end without skipping or oscillating a month", () => {
+    const monthlyToday = new Date("2026-12-15T00:00:00");
+    const loan = baseLoan({
+      frequency: "monthly",
+      startDate: new Date("2026-07-31T00:00:00")
+    });
+
+    const state = openCreditState(loan, [], monthlyToday);
+
+    // Anchor day 31, clamped to each month's last day, restored whenever
+    // the month is long enough — never an Oct 01 / Dec 01 skip.
+    const cycleEndDates = state.cycles.map((c) => c.end.toDateString());
+    expect(cycleEndDates).toEqual([
+      new Date("2026-08-31T00:00:00").toDateString(),
+      new Date("2026-09-30T00:00:00").toDateString(),
+      new Date("2026-10-31T00:00:00").toDateString(),
+      new Date("2026-11-30T00:00:00").toDateString(),
+      new Date("2026-12-31T00:00:00").toDateString()
+    ]);
+
+    // Contiguous: cycle N's start is exactly cycle N-1's end — no gap, no
+    // overlap, no month silently skipped in between.
+    for (let i = 1; i < state.cycles.length; i++) {
+      expect(state.cycles[i]!.start.toDateString()).toBe(state.cycles[i - 1]!.end.toDateString());
+    }
+  });
+});
