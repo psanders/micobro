@@ -1,47 +1,4 @@
-# customer-detail
-
-## Purpose
-
-The Cliente Detalle screen — a customer's profile card, contact actions,
-active loans, and recent visit/payment history.
-
-## Requirements
-
-### Requirement: Customer profile card
-
-The Cliente Detalle screen SHALL show a profile card with the customer's
-avatar, name, a standing pill ("Al día" green or "En mora" orange, plus
-"Cliente desde <year>" when known), and contact rows for phone, address,
-and cédula (rows without data are omitted). The avatar and cédula SHALL
-reflect what was captured for that customer (see `customer-form`) in both
-mock and real mode — not a hardcoded fallback.
-
-#### Scenario: Profile from mock data
-
-- **WHEN** the detail of a mock customer opens
-- **THEN** the card shows their avatar, name, standing pill, and contact rows
-
-#### Scenario: Real customer with minimal data
-
-- **WHEN** a real-mode customer has no cédula recorded
-- **THEN** the cédula row is omitted and the rest of the card renders
-
-#### Scenario: Real customer with a captured avatar and cédula
-
-- **WHEN** a real-mode customer was created or edited with an avatar and a cédula
-- **THEN** the card shows that avatar image (not the initials fallback) and the cédula row formatted "XXX-XXXXXXX-X"
-
-### Requirement: Contact actions
-
-The profile card SHALL offer Llamar, WhatsApp, and Mapa actions that open
-`tel:`, `wa.me`, and `geo:` links for the customer's phone/address via the
-system. If a link cannot be opened, an informational dialog SHALL explain
-it instead of failing silently.
-
-#### Scenario: Call the customer
-
-- **WHEN** the user taps Llamar
-- **THEN** the system dialer opens with the customer's phone number
+## MODIFIED Requirements
 
 ### Requirement: Active loans section
 
@@ -128,13 +85,3 @@ in, and a mora payment reads "Pago de mora · <amount>".
 
 - **WHEN** a customer has a recorded visit outcome
 - **THEN** it appears alongside payments with its outcome and date/time
-
-### Requirement: Unknown customer
-
-Opening a customer id that does not exist SHALL show a friendly
-not-found message instead of a blank or crashed screen.
-
-#### Scenario: Stale deep link
-
-- **WHEN** the screen opens with an id that matches no customer
-- **THEN** a Spanish not-found message renders with a way back

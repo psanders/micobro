@@ -28,16 +28,40 @@ export interface CustomerSearchResult {
 
 export type CustomerStanding = "al_dia" | "mora";
 
+/**
+ * Crédito abierto projection for the Cliente Detalle loan card, in place of
+ * a term loan's cuota count — `null` on `CustomerLoanSummary` for a term
+ * loan. `capitalPaidRatio` is `1 - balanceCents / principalCents`, already
+ * clamped to `[0, 1]` (see `buildCustomerLoanSummary`) so capitalized
+ * interest that grows the balance past the original principal never reads
+ * as a negative percentage. `interestRateBps` is the per-cycle rate, for
+ * the "5% semanal" sub-line (same vocabulary as `LoanDetailScreen`'s
+ * open-credit branch). The card's `nextDueDate`/`nextAmountCents` fields
+ * above already carry the next cycle's due date and interest in this case.
+ */
+export interface CustomerOpenCreditSummary {
+  /** Per-cycle rate — for "5% semanal" in the sub-line. */
+  interestRateBps: number;
+  /** Outstanding capital balance — not rendered directly today (the card
+   * shows `capitalPaidRatio`), kept for parity with `OpenCreditView`. */
+  balanceCents: number;
+  /** 1 - balanceCents/principalCents, clamped to [0, 1]. */
+  capitalPaidRatio: number;
+}
+
 /** One active loan as summarized on the Cliente Detalle screen. */
 export interface CustomerLoanSummary {
   loanId: string;
   code: string;
   principalCents: number;
   frequency: LoanFrequency;
+  /** Cuota count — meaningless (0) for an open-credit loan; use `openCredit` instead. */
   installmentsPaid: number;
   installmentsTotal: number;
   nextDueDate: Date | null;
   nextAmountCents: number;
+  /** Present only for a crédito abierto loan; `null` for a term loan. */
+  openCredit: CustomerOpenCreditSummary | null;
 }
 
 /** A recent-history entry ("Pago cuota 3 · RD$2,400"). */

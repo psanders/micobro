@@ -21,18 +21,15 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { useCustomerRepo } from "../../lib/repo/RepoProvider";
 import { useAsync } from "../../lib/hooks/useAsync";
-import { formatCurrency } from "../../lib/utils/money";
 import { formatCedula } from "../../lib/utils/cedula";
 import { formatPhone } from "../../lib/utils/text";
-import { formatShortDate, formatTime, isToday } from "../../lib/utils/dates";
-import { frequencyLabels } from "../../lib/loans/labels";
+import { formatShortDate, formatTime } from "../../lib/utils/dates";
 import { Avatar } from "../Avatar";
 import { ScreenHeader } from "../ScreenHeader";
 import { InfoRow } from "../InfoRow";
 import { SectionLabel } from "../SectionLabel";
-import { ProgressBar } from "../ProgressBar";
+import { LoanSummaryCard } from "../LoanSummaryCard";
 import { colors, fonts } from "../../lib/ui/theme";
-import type { CustomerLoanSummary } from "../../lib/repo/types";
 
 async function openLink(url: string, failMessage: string) {
   try {
@@ -40,12 +37,6 @@ async function openLink(url: string, failMessage: string) {
   } catch {
     Alert.alert("No se pudo abrir", failMessage);
   }
-}
-
-function nextDueLabel(loan: CustomerLoanSummary): string {
-  if (!loan.nextDueDate) return "Al día";
-  const when = isToday(loan.nextDueDate) ? "hoy" : formatShortDate(loan.nextDueDate);
-  return `Próxima ${when} · ${formatCurrency(loan.nextAmountCents)}`;
 }
 
 export function CustomerDetailScreen({ customerId }: { customerId: string }) {
@@ -187,36 +178,11 @@ export function CustomerDetailScreen({ customerId }: { customerId: string }) {
             <Text style={styles.empty}>No tiene préstamos activos.</Text>
           ) : (
             customer.activeLoans.map((loan) => (
-              <Pressable
+              <LoanSummaryCard
                 key={loan.loanId}
-                style={styles.loanCard}
+                loan={loan}
                 onPress={() => router.push(`/loans/${loan.loanId}`)}
-              >
-                <View style={styles.loanTop}>
-                  <View style={styles.loanTitleWrap}>
-                    <Text style={styles.loanTitle}>Préstamo #{loan.code}</Text>
-                    <Text style={styles.loanSub}>
-                      {formatCurrency(loan.principalCents)} · Pago{" "}
-                      {frequencyLabels[loan.frequency].toLowerCase()}
-                    </Text>
-                  </View>
-                  <Feather name="chevron-right" size={18} color={colors.slate} />
-                </View>
-                <ProgressBar
-                  progress={
-                    loan.installmentsTotal > 0 ? loan.installmentsPaid / loan.installmentsTotal : 0
-                  }
-                  trackColor={colors.actionBarBorder}
-                  fillColor={colors.brandPrimary}
-                />
-                <View style={styles.loanMeta}>
-                  <Text style={styles.loanMetaLeft}>
-                    Cuota {Math.min(loan.installmentsPaid + 1, loan.installmentsTotal)} de{" "}
-                    {loan.installmentsTotal}
-                  </Text>
-                  <Text style={styles.loanMetaRight}>{nextDueLabel(loan)}</Text>
-                </View>
-              </Pressable>
+              />
             ))
           )}
 
@@ -298,14 +264,6 @@ const styles = StyleSheet.create({
     padding: 10
   },
   actionText: { fontSize: 13, fontFamily: fonts.semiBold, color: colors.brandDeep },
-  loanCard: { backgroundColor: colors.white, borderRadius: 14, padding: 16, gap: 12 },
-  loanTop: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  loanTitleWrap: { gap: 2 },
-  loanTitle: { fontSize: 14, fontFamily: fonts.semiBold, color: colors.ink },
-  loanSub: { fontSize: 12, fontFamily: fonts.medium, color: colors.slate },
-  loanMeta: { flexDirection: "row", justifyContent: "space-between" },
-  loanMetaLeft: { fontSize: 12, fontFamily: fonts.semiBold, color: colors.ink },
-  loanMetaRight: { fontSize: 12, fontFamily: fonts.bold, color: colors.brandDeep },
   histList: { gap: 8 },
   histRow: {
     flexDirection: "row",

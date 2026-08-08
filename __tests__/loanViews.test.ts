@@ -7,6 +7,8 @@
  */
 import {
   buildLoanDetailView,
+  buildCustomerLoanSummary,
+  cycleIndexForPayment,
   loanCode,
   cuotaLabel,
   installmentDueDate,
@@ -16,6 +18,7 @@ import {
   defaultFirstPaymentDate,
   healthyFirstPaymentFloor
 } from "../lib/loans/loanViews";
+import { openCreditState } from "../lib/loans/openCredit";
 import type { Loan, LoanFrequency } from "../lib/loans/loan.schema";
 import type { Payment } from "../lib/payments/payment.schema";
 import type { Customer } from "../lib/customers/customer.schema";
@@ -433,5 +436,135 @@ describe("buildPaymentReceipt", () => {
     expect(fromCuota!.lines).toEqual(fromMora!.lines);
     // Tapping either sibling row opens the same receipt, same number.
     expect(fromCuota!.receiptNumber).toBe(fromMora!.receiptNumber);
+  });
+});
+
+// Spec: customer-detail "Active loans section" — the Cliente Detalle loan
+// card's summary, term (cuota count) vs. open-credit (capital-paid ratio).
+describe("buildCustomerLoanSummary", () => {
+  // RD$10,000 @ 5% per cycle (500 bps), weekly, disbursed exactly one cycle
+  // before `today` — cycle 1 is completed as of `today` (see
+  // lib/loans/openCredit.ts and getLoanDetailView.test.ts's matching fixture).
+  const openCreditLoan: Loan = {
+    id: "loan-oc",
+    customerId: "customer-3",
+    principalCents: 1000000,
+    interestRateBps: 500,
+    termCount: 0,
+    frequency: "weekly",
+    startDate: new Date(today.getTime() - 8 * DAY_MS),
+    status: "active",
+    notes: null,
+    graceDays: null,
+    moraEnabled: null,
+    moraRateBps: null,
+    skipSundays: null,
+    loanType: "open_credit",
+    createdAt: today,
+    updatedAt: today
+  };
+
+  it("term loan: cuota fields drive the summary, openCredit stays null", () => {
+    const view = buildLoanDetailView({
+      loan,
+      customerName: "José Núñez",
+      business: null,
+      payments: threePaid,
+      today
+    });
+
+    const summary = buildCustomerLoanSummary(view, loan);
+
+    expect(summary.openCredit).toBeNull();
+    expect(summary.installmentsPaid).toBe(3);
+    expect(summary.installmentsTotal).toBe(12);
+    expect(summary.nextDueDate?.getTime()).toBe(installmentDueDate(loan, 4).getTime());
+  });
+
+  it("open-credit loan: capital-paid ratio + next-cycle interest replace the cuota count", () => {
+    // RD$500 interest + RD$2,000 capital paid within cycle 1: balance drops
+    // to RD$8,000 — 20% of principal repaid.
+    const ocPayments: Payment[] = [
+      {
+        id: "p1",
+        loanId: "loan-oc",
+        amountCents: 250000,
+        paidAt: new Date(today.getTime() - 4 * DAY_MS),
+        method: "cash",
+        notes: null,
+        createdAt: today
+      }
+    ];
+    const state = openCreditState(openCreditLoan, ocPayments, today);
+    const view = buildLoanDetailView({
+      loan: openCreditLoan,
+      customerName: "Cliente",
+      business: null,
+      payments: ocPayments,
+      today
+    });
+
+    const summary = buildCustomerLoanSummary(view, openCreditLoan, state);
+
+    expect(summary.installmentsPaid).toBe(0);
+    expect(summary.installmentsTotal).toBe(0);
+    expect(summary.openCredit?.interestRateBps).toBe(500);
+    expect(summary.openCredit?.capitalPaidRatio).toBeCloseTo(0.2);
+    expect(summary.nextAmountCents).toBe(40000); // 5% of the RD$8,000 balance
+    expect(summary.nextDueDate?.getTime()).toBe(
+      addFrequencyInterval(openCreditLoan.startDate, "weekly", 2).getTime()
+    );
+  });
+
+  it("clamps the capital-paid ratio to 0 when a skipped cycle capitalizes interest past principal", () => {
+    // No payments: cycle 1's RD$500 interest capitalizes, growing the
+    // balance to RD$10,500 — above the RD$10,000 principal.
+    const state = openCreditState(openCreditLoan, [], today);
+    const view = buildLoanDetailView({
+      loan: openCreditLoan,
+      customerName: "Cliente",
+      business: null,
+      payments: [],
+      today
+    });
+
+    const summary = buildCustomerLoanSummary(view, openCreditLoan, state);
+
+    expect(state.balanceCents).toBeGreaterThan(openCreditLoan.principalCents);
+    expect(summary.openCredit?.capitalPaidRatio).toBe(0);
+  });
+
+  describe("cycleIndexForPayment", () => {
+    it("matches a payment to the cycle whose window it falls in", () => {
+      const paidWithinCycle1: Payment = {
+        id: "p1",
+        loanId: "loan-oc",
+        amountCents: 50000,
+        paidAt: new Date(today.getTime() - 4 * DAY_MS),
+        method: "cash",
+        notes: null,
+        createdAt: today
+      };
+      const state = openCreditState(openCreditLoan, [paidWithinCycle1], today);
+
+      expect(cycleIndexForPayment(state.cycles, paidWithinCycle1)).toBe(1);
+    });
+
+    it("falls back to the last cycle for a payment outside every replayed window", () => {
+      const state = openCreditState(openCreditLoan, [], today);
+      const strayPayment: Payment = {
+        id: "stray",
+        loanId: "loan-oc",
+        amountCents: 1000,
+        paidAt: new Date(today.getTime() + 30 * DAY_MS),
+        method: "cash",
+        notes: null,
+        createdAt: today
+      };
+
+      expect(cycleIndexForPayment(state.cycles, strayPayment)).toBe(
+        state.cycles[state.cycles.length - 1]!.index
+      );
+    });
   });
 });

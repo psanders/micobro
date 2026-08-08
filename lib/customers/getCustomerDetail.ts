@@ -5,8 +5,15 @@ import { eq } from "drizzle-orm";
 import { z } from "zod/v4";
 import { withErrorHandlingAndValidation } from "../utils/withErrorHandlingAndValidation";
 import { customers, loans, payments, visits } from "../db/schema";
-import { buildLoanDetailView, buildCustomerLoanSummary, MORA_NOTE } from "../loans/loanViews";
+import {
+  buildLoanDetailView,
+  buildCustomerLoanSummary,
+  cycleIndexForPayment,
+  MORA_NOTE
+} from "../loans/loanViews";
 import { computeLoanMora, loanMoraPolicy } from "../loans/mora";
+import { effectiveLoanType } from "../loans/loan.schema";
+import { openCreditState } from "../loans/openCredit";
 import { formatCurrency } from "../utils/money";
 import { visitDescription } from "../visits/visitDescription";
 import type { Customer } from "./customer.schema";
@@ -49,38 +56,71 @@ export function createGetCustomerDetail({ db }: GetCustomerDetailDeps) {
         .from(payments)
         .where(eq(payments.loanId, loan.id))) as Payment[];
 
+      const isOpenCredit = effectiveLoanType(loan) === "open_credit";
+      // Open credit has no cuota schedule or mora — its balance/interest
+      // come from the cycle-replay engine, not computeLoanMora (term-only).
+      // It must never drive `standing` to "mora" (capitalization replaces
+      // mora entirely for this loan type — see change 55).
+      const ocState = isOpenCredit ? openCreditState(loan, loanPayments, new Date()) : null;
+
       if (loan.status === "active") {
-        const { moraCents, moraDays } = computeLoanMora(
-          loan,
-          loanPayments,
-          new Date(),
-          loanMoraPolicy(loan)
-        );
-        if (moraCents > 0) inMora = true;
-        const view = buildLoanDetailView({
-          loan,
-          customerName: customer.name,
-          business: null,
-          payments: loanPayments,
-          moraCents,
-          moraDays
-        });
-        activeLoans.push(buildCustomerLoanSummary(view, loan));
+        if (isOpenCredit && ocState) {
+          const view = buildLoanDetailView({
+            loan,
+            customerName: customer.name,
+            business: null,
+            payments: loanPayments,
+            moraCents: 0,
+            moraDays: 0
+          });
+          activeLoans.push(buildCustomerLoanSummary(view, loan, ocState));
+        } else {
+          const { moraCents, moraDays } = computeLoanMora(
+            loan,
+            loanPayments,
+            new Date(),
+            loanMoraPolicy(loan)
+          );
+          if (moraCents > 0) inMora = true;
+          const view = buildLoanDetailView({
+            loan,
+            customerName: customer.name,
+            business: null,
+            payments: loanPayments,
+            moraCents,
+            moraDays
+          });
+          activeLoans.push(buildCustomerLoanSummary(view, loan));
+        }
       }
 
-      let cuotaNumber = 0;
-      for (const payment of [...loanPayments].sort(
-        (a, b) => a.paidAt.getTime() - b.paidAt.getTime()
-      )) {
-        const isMora = payment.notes === MORA_NOTE;
-        if (!isMora) cuotaNumber += 1;
-        activity.push({
-          id: payment.id,
-          description: isMora
-            ? `Pago de mora · ${formatCurrency(payment.amountCents)}`
-            : `Pago cuota ${cuotaNumber} · ${formatCurrency(payment.amountCents)}`,
-          at: payment.paidAt
-        });
+      if (isOpenCredit && ocState) {
+        // Open credit never records mora rows (see lib/loans/openCredit.ts),
+        // so every payment reads "Pago ciclo N" — the cycle it falls in.
+        for (const payment of [...loanPayments].sort(
+          (a, b) => a.paidAt.getTime() - b.paidAt.getTime()
+        )) {
+          activity.push({
+            id: payment.id,
+            description: `Pago ciclo ${cycleIndexForPayment(ocState.cycles, payment)} · ${formatCurrency(payment.amountCents)}`,
+            at: payment.paidAt
+          });
+        }
+      } else {
+        let cuotaNumber = 0;
+        for (const payment of [...loanPayments].sort(
+          (a, b) => a.paidAt.getTime() - b.paidAt.getTime()
+        )) {
+          const isMora = payment.notes === MORA_NOTE;
+          if (!isMora) cuotaNumber += 1;
+          activity.push({
+            id: payment.id,
+            description: isMora
+              ? `Pago de mora · ${formatCurrency(payment.amountCents)}`
+              : `Pago cuota ${cuotaNumber} · ${formatCurrency(payment.amountCents)}`,
+            at: payment.paidAt
+          });
+        }
       }
     }
 
