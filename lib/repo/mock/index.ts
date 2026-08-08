@@ -28,6 +28,7 @@ import {
   buildLoanDetailView,
   buildPaymentHistoryView,
   buildPaymentReceipt,
+  cycleIndexForPayment,
   loanCode,
   MORA_NOTE
 } from "../../loans/loanViews";
@@ -256,14 +257,40 @@ export function createMockRepos(): Repos {
         const customerLoans = loans.filter((l) => l.customerId === id);
         const activeLoans = customerLoans
           .filter((l) => l.status === "active")
-          .map((l) => buildCustomerLoanSummary(viewOf(l), l));
+          .map((l) => {
+            const isOpenCredit = effectiveLoanType(l) === "open_credit";
+            const ocState = isOpenCredit
+              ? openCreditState(
+                  l,
+                  payments.filter((p) => p.loanId === l.id),
+                  new Date()
+                )
+              : undefined;
+            return buildCustomerLoanSummary(viewOf(l), l, ocState);
+          });
 
         const activity: CustomerActivityItem[] = [];
         for (const loan of customerLoans) {
-          let cuotaNumber = 0;
-          for (const payment of payments
+          const loanPayments = payments
             .filter((p) => p.loanId === loan.id)
-            .sort((a, b) => a.paidAt.getTime() - b.paidAt.getTime())) {
+            .sort((a, b) => a.paidAt.getTime() - b.paidAt.getTime());
+
+          if (effectiveLoanType(loan) === "open_credit") {
+            // Open credit never records mora rows (see lib/loans/openCredit.ts),
+            // so every payment reads "Pago ciclo N" — the cycle it falls in.
+            const ocState = openCreditState(loan, loanPayments, new Date());
+            for (const payment of loanPayments) {
+              activity.push({
+                id: payment.id,
+                description: `Pago ciclo ${cycleIndexForPayment(ocState.cycles, payment)} · ${formatCurrency(payment.amountCents)}`,
+                at: payment.paidAt
+              });
+            }
+            continue;
+          }
+
+          let cuotaNumber = 0;
+          for (const payment of loanPayments) {
             const isMora = payment.notes === MORA_NOTE;
             if (!isMora) cuotaNumber += 1;
             activity.push({

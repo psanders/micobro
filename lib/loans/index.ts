@@ -11,6 +11,7 @@ export {
   buildLoanDetailView,
   buildPaymentHistoryView,
   buildCustomerLoanSummary,
+  cycleIndexForPayment,
   loanCode,
   installmentDueDate,
   addFrequencyInterval,

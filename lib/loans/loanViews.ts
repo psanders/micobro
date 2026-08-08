@@ -14,6 +14,7 @@ import { cuotaCents, lastCuotaCents, totalInterestCents, totalRepayCents } from 
 import type { Loan, LoanFrequency } from "./loan.schema";
 import type { Customer } from "../customers/customer.schema";
 import type { Payment } from "../payments/payment.schema";
+import type { OpenCreditCycle, OpenCreditState } from "./openCredit";
 import type {
   CustomerLoanSummary,
   DueTodayLine,
@@ -384,7 +385,77 @@ export function buildPaymentReceipt(
   };
 }
 
-export function buildCustomerLoanSummary(view: LoanDetailView, loan: Loan): CustomerLoanSummary {
+/**
+ * Which cycle (1-based `OpenCreditCycle.index`) a payment falls in, by the
+ * same `[start, end]` calendar-day window `openCreditState` matches
+ * internally (cycle 1 also owns the disbursement day itself — see
+ * `lib/loans/openCredit.ts`). Shared by `getCustomerDetail.ts` and the mock
+ * repo's `getDetail` for the "Pago ciclo N" activity label; `cycles` should
+ * already be the loan's own `openCreditState(...).cycles`. Falls back to
+ * the last cycle for a payment that (in principle) shouldn't land outside
+ * every replayed window.
+ */
+export function cycleIndexForPayment(cycles: OpenCreditCycle[], payment: Payment): number {
+  const day = startOfDayMs(payment.paidAt);
+  for (const cycle of cycles) {
+    const startDay = startOfDayMs(cycle.start);
+    const dueDay = startOfDayMs(cycle.end);
+    const ownsDay = (cycle.index === 1 ? day >= startDay : day > startDay) && day <= dueDay;
+    if (ownsDay) return cycle.index;
+  }
+  return cycles[cycles.length - 1]?.index ?? 1;
+}
+
+function startOfDayMs(date: Date): number {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  return d.getTime();
+}
+
+/**
+ * Ratio of capital repaid, clamped to `[0, 1]` — capitalized interest can
+ * grow the balance past the original principal (negative raw ratio) or, in
+ * principle, a zero-principal loan (division guard); both must read 0%,
+ * never negative or NaN.
+ */
+function capitalPaidRatio(principalCents: number, balanceCents: number): number {
+  if (principalCents <= 0) return 0;
+  const raw = 1 - balanceCents / principalCents;
+  return Math.min(1, Math.max(0, raw));
+}
+
+/**
+ * The Cliente Detalle loan-card summary. For a term loan, `installmentsPaid`/
+ * `installmentsTotal` drive the "Cuota N de Total" vocabulary as before. For
+ * an open-credit loan — signaled by passing its `openCredit` state (from
+ * `openCreditState`, see `lib/loans/openCredit.ts`) — the term-only cuota
+ * fields are meaningless and left at 0; `nextDueDate`/`nextAmountCents`
+ * instead carry the next cycle's due date/interest, and `openCredit` carries
+ * the rate and capital-paid ratio the card renders instead of a cuota count.
+ */
+export function buildCustomerLoanSummary(
+  view: LoanDetailView,
+  loan: Loan,
+  openCredit?: OpenCreditState
+): CustomerLoanSummary {
+  if (openCredit) {
+    return {
+      loanId: view.id,
+      code: view.code,
+      principalCents: loan.principalCents,
+      frequency: loan.frequency,
+      installmentsPaid: 0,
+      installmentsTotal: 0,
+      nextDueDate: openCredit.nextDueDate,
+      nextAmountCents: openCredit.interestDueCents,
+      openCredit: {
+        interestRateBps: loan.interestRateBps,
+        balanceCents: openCredit.balanceCents,
+        capitalPaidRatio: capitalPaidRatio(loan.principalCents, openCredit.balanceCents)
+      }
+    };
+  }
+
   const nextLine = view.dueTodayLines.find((line) => line.kind === "installment");
   return {
     loanId: view.id,
@@ -394,6 +465,7 @@ export function buildCustomerLoanSummary(view: LoanDetailView, loan: Loan): Cust
     installmentsPaid: view.installmentsPaid,
     installmentsTotal: view.installmentsTotal,
     nextDueDate: view.nextDueDate,
-    nextAmountCents: nextLine ? view.dueTodayCents : 0
+    nextAmountCents: nextLine ? view.dueTodayCents : 0,
+    openCredit: null
   };
 }
