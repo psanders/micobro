@@ -23,6 +23,14 @@ export interface ReceiptViewData {
   totalCents: number;
   /** Lender's contact phone, shown after the thank-you line — omitted entirely when unset. */
   phone?: string | null;
+  /** dd/mm/yyyy, already formatted — see `formatFullDate`. `null` only when
+   * the date didn't survive the router-param hop (see `app/pago-confirmado.tsx`),
+   * in which case the row is omitted rather than shown blank. */
+  loanStartDate: string | null;
+  /** dd/mm/yyyy, already formatted; `null` for crédito abierto, rendered as "Crédito abierto". */
+  loanEndDate: string | null;
+  /** Picks "Fecha Inicia" over "Fecha Inicio" and the "Crédito abierto" end-date wording. */
+  isOpenCredit: boolean;
 }
 
 function Row({ label, value }: { label: string; value: string }) {
@@ -35,10 +43,24 @@ function Row({ label, value }: { label: string; value: string }) {
 }
 
 export const ReceiptView = forwardRef<View, { data: ReceiptViewData }>(({ data }, ref) => {
+  // A loan-date row is dropped, never blanked: this receipt is kept for
+  // months, so an empty "Vencimiento" reads as a broken field, and inventing
+  // a date would be worse still.
+  const vencimiento = data.isOpenCredit ? "Crédito abierto" : data.loanEndDate;
+
   const fields: [string, string][] = [
     ["Recibo", `#${data.receiptNumber}`],
     ["Cliente", data.customerName],
-    ["Fecha", data.paidAtLabel],
+    ["Fecha de pago", data.paidAtLabel],
+    ...(data.loanStartDate
+      ? [
+          [data.isOpenCredit ? "Fecha Inicia" : "Fecha Inicio", data.loanStartDate] as [
+            string,
+            string
+          ]
+        ]
+      : []),
+    ...(vencimiento ? [["Vencimiento", vencimiento] as [string, string]] : []),
     ["Método", data.method],
     ...data.lines.map<[string, string]>((line) => [line.label, formatCurrency(line.amountCents)])
   ];

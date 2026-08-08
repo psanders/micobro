@@ -59,8 +59,57 @@ const sampleReceipt: PrintReceiptData = {
     { label: "Mora (prioridad)", amountCents: 15000 },
     { label: "Cuota", amountCents: 500000 }
   ],
-  totalCents: 515000
+  totalCents: 515000,
+  loanStartDate: "20/01/2026",
+  loanEndDate: "20/07/2026",
+  isOpenCredit: false
 };
+
+const openCreditReceipt: PrintReceiptData = {
+  ...sampleReceipt,
+  loanStartDate: "20/01/2026",
+  loanEndDate: null,
+  isOpenCredit: true
+};
+
+/** ESC/POS command lengths for the sequences `buildReceiptBytes` emits (see
+ * `CMD` in lib/printer.ts) — used to strip commands out of the raw byte
+ * stream so line-width assertions measure only what actually prints,
+ * not the surrounding control bytes. */
+function stripCommands(bytes: number[]): number[] {
+  const GS = 0x1d;
+  const out: number[] = [];
+  let i = 0;
+  while (i < bytes.length) {
+    const b = bytes[i];
+    if (b === ESC) {
+      // ESC @ is 2 bytes; every other ESC command this file emits (ESC t/a/E/!/d n) is 3.
+      i += bytes[i + 1] === 0x40 ? 2 : 3;
+      continue;
+    }
+    if (b === GS) {
+      // GS V m n — the feed/cut command — is 4 bytes.
+      i += 4;
+      continue;
+    }
+    out.push(b);
+    i += 1;
+  }
+  return out;
+}
+
+/** The text lines `buildReceiptBytes` actually prints, one per `line()`
+ * call, with ESC/POS commands stripped out first (see `stripCommands`) so a
+ * command byte glued onto a text run's segment doesn't inflate its length. */
+function printedLines(data: PrintReceiptData): string[] {
+  const stripped = stripCommands(Array.from(buildReceiptBytes(data)));
+  const segments: number[][] = [[]];
+  for (const b of stripped) {
+    if (b === 0x0a) segments.push([]);
+    else segments[segments.length - 1]!.push(b);
+  }
+  return segments.map((seg) => cp858ToString(seg));
+}
 
 describe("buildReceiptBytes", () => {
   it("returns a non-empty Uint8Array", () => {
@@ -116,5 +165,58 @@ describe("buildReceiptBytes", () => {
     const bytes = buildReceiptBytes(sampleReceipt);
     const text = cp858ToString(Array.from(bytes));
     expect(text).not.toContain("Tel:");
+  });
+
+  // Issue #108 — loan start/end dates on the printed receipt, short-labeled
+  // (Pago/Inicio/Inicia/Vencimiento) to fit LINE_WIDTH; see the digital
+  // surface's fuller labels in ReceiptView.test-equivalent coverage.
+  it("relabels the payment-date row Pago and prints Inicio/Vencimiento for a term loan", () => {
+    const lines = printedLines(sampleReceipt);
+    expect(lines).toContain("Pago: 17/07/2026");
+    expect(lines).toContain("Inicio: 20/01/2026");
+    expect(lines).toContain("Vencimiento: 20/07/2026");
+    expect(lines).not.toContain("Inicia: 20/01/2026");
+  });
+
+  it("labels the start row Inicia and prints Vencimiento as Crédito abierto for open credit", () => {
+    const lines = printedLines(openCreditReceipt);
+    expect(lines).toContain("Inicia: 20/01/2026");
+    expect(lines).toContain("Vencimiento: Crédito abierto");
+    expect(lines).not.toContain("Inicio: 20/01/2026");
+  });
+
+  // The thermal printer wraps overflow onto its own line rather than
+  // failing, which looks broken — this is the safety net for that. Uses a
+  // short customer name deliberately: `Cliente: <long name>` can already
+  // overflow today (pre-existing, out of scope for this issue).
+  it("keeps every printed line within the 32-character LINE_WIDTH, for both loan types", () => {
+    const allLines = [...printedLines(sampleReceipt), ...printedLines(openCreditReceipt)];
+    for (const l of allLines) {
+      expect(l.length).toBeLessThanOrEqual(32);
+    }
+  });
+
+  // A blank "Vencimiento:" on thermal paper reads as a misprint, so a missing
+  // date drops its row entirely. `loanStartDate` goes null only when a stale
+  // deep link reaches /pago-confirmado without the param; `loanEndDate` goes
+  // null for a term loan with no schedule (termCount <= 0).
+  it("omits the start row entirely when the start date is unknown", () => {
+    const lines = printedLines({ ...sampleReceipt, loanStartDate: null });
+    expect(lines.some((l) => l.startsWith("Inicio:"))).toBe(false);
+    expect(lines.some((l) => l.startsWith("Inicia:"))).toBe(false);
+    // The rest of the header survives.
+    expect(lines).toContain("Pago: 17/07/2026");
+    expect(lines).toContain("Vencimiento: 20/07/2026");
+  });
+
+  it("omits the Vencimiento row for a term loan with no end date, rather than printing it blank", () => {
+    const lines = printedLines({ ...sampleReceipt, loanEndDate: null });
+    expect(lines.some((l) => l.startsWith("Vencimiento"))).toBe(false);
+    expect(lines).toContain("Inicio: 20/01/2026");
+  });
+
+  it("still prints Vencimiento for open credit even though its end date is null", () => {
+    const lines = printedLines({ ...openCreditReceipt, loanEndDate: null });
+    expect(lines).toContain("Vencimiento: Crédito abierto");
   });
 });

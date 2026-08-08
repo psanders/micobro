@@ -30,6 +30,7 @@ import {
   buildPaymentReceipt,
   cycleIndexForPayment,
   loanCode,
+  loanEndDate,
   MORA_NOTE
 } from "../../loans/loanViews";
 import { cuotaCents, totalRepayCents } from "../../loans/loanMath";
@@ -454,7 +455,10 @@ export function createMockRepos(): Repos {
           totalCents: input.amountCents,
           method: input.method,
           customerName: customer?.name ?? "Cliente",
-          lines: input.lines
+          lines: input.lines,
+          loanStartDate: loan?.startDate ?? paidAt,
+          loanEndDate: loan ? loanEndDate(loan) : null,
+          isOpenCredit: loan ? effectiveLoanType(loan) === "open_credit" : false
         };
       },
       getReceipt: async (paymentId) => {

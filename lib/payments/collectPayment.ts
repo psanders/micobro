@@ -7,7 +7,8 @@ import { withErrorHandlingAndValidation } from "../utils/withErrorHandlingAndVal
 import { createCreatePayment } from "./createPayment";
 import { paymentMethods } from "./payment.schema";
 import { customers, loans, payments } from "../db/schema";
-import { MORA_NOTE } from "../loans/loanViews";
+import { MORA_NOTE, loanEndDate } from "../loans/loanViews";
+import { effectiveLoanType } from "../loans/loan.schema";
 import { fromCents } from "../utils/money";
 import type { Customer } from "../customers/customer.schema";
 import type { Loan } from "../loans/loan.schema";
@@ -79,7 +80,13 @@ export function createCollectPayment({ db }: CollectPaymentDeps) {
       totalCents: input.amountCents,
       method: input.method,
       customerName: customer?.name ?? "Cliente",
-      lines: input.lines
+      lines: input.lines,
+      // Fall back to paidAt/false when the loan couldn't be found (mirrors
+      // the "Cliente" fallback above) — shouldn't happen given loanId is
+      // validated, but keeps this defensive like the rest of the function.
+      loanStartDate: loan?.startDate ?? paidAt,
+      loanEndDate: loan ? loanEndDate(loan) : null,
+      isOpenCredit: loan ? effectiveLoanType(loan) === "open_credit" : false
     };
   };
 

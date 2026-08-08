@@ -12,6 +12,17 @@ export function formatShortDate(date: Date): string {
   return `${day}/${month}`;
 }
 
+/** "31/07/2026" — full dd/mm/yyyy, used where a date is kept for months (a
+ * receipt's loan start/end dates) and `formatShortDate`'s no-year output
+ * would be ambiguous. Built manually for the same reason as its neighbour —
+ * Hermes ignores Intl's `2-digit` option and won't zero-pad. Do not use this
+ * in place of `formatShortDate`, which the collection screens depend on. */
+export function formatFullDate(date: Date): string {
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  return `${day}/${month}/${date.getFullYear()}`;
+}
+
 /** "9:41 AM" */
 export function formatTime(date: Date): string {
   return date.toLocaleTimeString("es-DO", { hour: "numeric", minute: "2-digit", hour12: true });

@@ -13,6 +13,9 @@ export default function PagoConfirmadoRoute() {
     receiptNumber: string;
     paidAtLabel: string;
     lines: string;
+    loanStartDate: string;
+    loanEndDate: string;
+    isOpenCredit: string;
   }>();
 
   let lines: ReceiptLine[] = [];
@@ -30,6 +33,9 @@ export default function PagoConfirmadoRoute() {
       receiptNumber={params.receiptNumber ?? ""}
       paidAtLabel={params.paidAtLabel ?? ""}
       lines={lines}
+      loanStartDate={params.loanStartDate ? new Date(params.loanStartDate) : null}
+      loanEndDate={params.loanEndDate ? new Date(params.loanEndDate) : null}
+      isOpenCredit={params.isOpenCredit === "true"}
     />
   );
 }

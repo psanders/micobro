@@ -268,7 +268,13 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
           method: receipt.method,
           receiptNumber: receipt.receiptNumber,
           paidAtLabel: `${formatShortDate(receipt.paidAt)}, ${formatTime(receipt.paidAt)}`,
-          lines: JSON.stringify(receipt.lines)
+          lines: JSON.stringify(receipt.lines),
+          // Every router param is a string — dates cross as ISO, the
+          // open-credit flag as "true"/"false"; app/pago-confirmado.tsx
+          // parses them back.
+          loanStartDate: receipt.loanStartDate.toISOString(),
+          loanEndDate: receipt.loanEndDate ? receipt.loanEndDate.toISOString() : "",
+          isOpenCredit: String(receipt.isOpenCredit)
         }
       });
     } catch {

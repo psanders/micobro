@@ -8,6 +8,7 @@
  */
 import { createGetPaymentReceipt } from "../lib/payments/getPaymentReceipt";
 import { ValidationError } from "../lib/errors/ValidationError";
+import { addFrequencyInterval } from "../lib/loans/loanViews";
 import { loans, payments } from "../lib/db/schema";
 import type { Database } from "../lib/db/client";
 
@@ -71,6 +72,12 @@ describe("createGetPaymentReceipt", () => {
     expect(receipt!.customerName).toBe("María Rosa Peralta");
     expect(receipt!.totalCents).toBe(264000);
     expect(receipt!.lines).toEqual([{ label: "Cuota 1/12", amountCents: 264000 }]);
+    // Issue #108 — the receipt's loan-lifetime rows, from the loan row.
+    expect(receipt!.loanStartDate).toEqual(loanRow.startDate);
+    expect(receipt!.loanEndDate?.getTime()).toBe(
+      addFrequencyInterval(loanRow.startDate, "weekly", loanRow.termCount).getTime()
+    );
+    expect(receipt!.isOpenCredit).toBe(false);
   });
 
   it("returns null when no payment matches the id", async () => {
