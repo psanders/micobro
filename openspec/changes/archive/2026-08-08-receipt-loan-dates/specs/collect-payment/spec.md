@@ -22,9 +22,10 @@ described in the vocabulary of the loan's type:
   the vencimiento row reads "Crédito abierto", since the loan has no
   maturity date. It SHALL NOT be left blank or read as an error.
 
-Loan dates SHALL carry their year, because a receipt is kept far longer
-than the month it was printed in. The payment-date row SHALL remain
-distinguishable from the two loan-date rows.
+Every date on the receipt — the payment date as well as both loan dates —
+SHALL carry its year, because a receipt is kept far longer than the month
+it was printed in. The payment-date row SHALL remain distinguishable from
+the two loan-date rows.
 
 A loan date that is not known SHALL have its row omitted entirely rather
 than rendered blank or filled with a substituted date.
@@ -53,6 +54,12 @@ rather than reporting an error.
 - **THEN** both receipts show the start row labelled "Fecha Inicia" and a
   vencimiento row reading "Crédito abierto", with no blank value and no
   date
+
+#### Scenario: The payment date carries its year too
+
+- **WHEN** a receipt is rendered for a payment collected on 14 Aug 2026
+- **THEN** the payment-date row includes 2026, so no date on the receipt is
+  ambiguous once the month has passed
 
 #### Scenario: The payment date stays distinguishable from the loan dates
 

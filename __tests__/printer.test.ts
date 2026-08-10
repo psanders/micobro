@@ -53,12 +53,13 @@ const sampleReceipt: PrintReceiptData = {
   lenderName: "Colmado Pérez",
   receiptNumber: "R-00042",
   customerName: "Juana Pérez",
-  // Production passes `paidAtLabel` — `${formatShortDate}, ${formatTime}` —
+  // Production passes `paidAtLabel` — `${formatFullDate}, ${formatTime}` —
   // never a bare date (CollectPaymentScreen.tsx, PaymentReceiptScreen.tsx).
   // The 12-hour a. m. form is the widest it gets, and it's the whole reason
-  // the printed label is "Pago" and not "Fecha de pago" (which would be 33
-  // chars here). A bare date would make the LINE_WIDTH test below vacuous.
-  date: "14/08, 12:14 a. m.",
+  // the printed label is "Pago" (29 chars here) and not "Fecha de pago",
+  // which would be 38. Anything shorter would make the LINE_WIDTH test
+  // below vacuous — it was, until this fixture stopped being a bare date.
+  date: "14/08/2026, 12:14 a. m.",
   method: "Efectivo",
   lines: [
     { label: "Mora (prioridad)", amountCents: 15000 },
@@ -177,7 +178,7 @@ describe("buildReceiptBytes", () => {
   // surface's fuller labels in ReceiptView.test-equivalent coverage.
   it("relabels the payment-date row Pago and prints Inicio/Vencimiento for a term loan", () => {
     const lines = printedLines(sampleReceipt);
-    expect(lines).toContain("Pago: 14/08, 12:14 a. m.");
+    expect(lines).toContain("Pago: 14/08/2026, 12:14 a. m.");
     expect(lines).toContain("Inicio: 20/01/2026");
     expect(lines).toContain("Vencimiento: 20/07/2026");
     expect(lines).not.toContain("Inicia: 20/01/2026");
@@ -210,7 +211,7 @@ describe("buildReceiptBytes", () => {
     expect(lines.some((l) => l.startsWith("Inicio:"))).toBe(false);
     expect(lines.some((l) => l.startsWith("Inicia:"))).toBe(false);
     // The rest of the header survives.
-    expect(lines).toContain("Pago: 14/08, 12:14 a. m.");
+    expect(lines).toContain("Pago: 14/08/2026, 12:14 a. m.");
     expect(lines).toContain("Vencimiento: 20/07/2026");
   });
 
