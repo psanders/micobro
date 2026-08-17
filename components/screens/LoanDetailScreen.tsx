@@ -308,6 +308,8 @@ export function LoanDetailScreen({ loanId }: { loanId: string }) {
                 name="notebook-edit-outline"
                 size={16}
                 color={colors.brandDeep}
+                accessibilityElementsHidden
+                importantForAccessibility="no"
               />
               <Text style={styles.actionSecondaryText}>Anotar visita</Text>
             </Pressable>
@@ -315,7 +317,13 @@ export function LoanDetailScreen({ loanId }: { loanId: string }) {
               style={styles.actionPrimary}
               onPress={() => router.push(`/loans/${loan.id}/cobrar`)}
             >
-              <MaterialCommunityIcons name="cash" size={16} color={colors.white} />
+              <MaterialCommunityIcons
+                name="cash"
+                size={16}
+                color={colors.white}
+                accessibilityElementsHidden
+                importantForAccessibility="no"
+              />
               <Text style={styles.actionPrimaryText}>Cobrar</Text>
             </Pressable>
           </View>

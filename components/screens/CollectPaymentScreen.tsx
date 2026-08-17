@@ -526,6 +526,8 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
                     name="cash"
                     size={18}
                     color={method === "cash" ? colors.white : colors.brandDeep}
+                    accessibilityElementsHidden
+                    importantForAccessibility="no"
                   />
                   <Text style={[styles.methodText, method === "cash" && styles.methodTextActive]}>
                     Efectivo
@@ -539,6 +541,8 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
                     name="swap-horizontal"
                     size={18}
                     color={method === "transfer" ? colors.white : colors.brandDeep}
+                    accessibilityElementsHidden
+                    importantForAccessibility="no"
                   />
                   <Text
                     style={[styles.methodText, method === "transfer" && styles.methodTextActive]}
@@ -647,6 +651,8 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
                     name="cash"
                     size={18}
                     color={method === "cash" ? colors.white : colors.brandDeep}
+                    accessibilityElementsHidden
+                    importantForAccessibility="no"
                   />
                   <Text style={[styles.methodText, method === "cash" && styles.methodTextActive]}>
                     Efectivo
@@ -660,6 +666,8 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
                     name="swap-horizontal"
                     size={18}
                     color={method === "transfer" ? colors.white : colors.brandDeep}
+                    accessibilityElementsHidden
+                    importantForAccessibility="no"
                   />
                   <Text
                     style={[styles.methodText, method === "transfer" && styles.methodTextActive]}

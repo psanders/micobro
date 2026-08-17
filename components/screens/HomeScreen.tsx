@@ -197,6 +197,8 @@ export function HomeScreen() {
                   name="calculator-variant-outline"
                   size={18}
                   color={colors.brandDeep}
+                  accessibilityElementsHidden
+                  importantForAccessibility="no"
                 />
               }
               label="Cuadre"
