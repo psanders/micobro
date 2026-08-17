@@ -140,7 +140,6 @@ appId: ${APP_ID}
     waitToSettleTimeoutMs: 500
     visibilityPercentage: 90
 - assertVisible: ".*Monto a capital.*"
-
 # This is where the flow stops: the "Solo capital" unlocking behavior this
 # flow exists to prove is now confirmed end-to-end. Completing an actual
 # custom-amount capital payment from here would need typing into the
