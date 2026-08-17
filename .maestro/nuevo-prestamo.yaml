@@ -88,20 +88,18 @@ appId: ${APP_ID}
     visible: "Nuevo préstamo"
     timeout: 15000
 - tapOn:
-    below: "Monto (RD$)"
+    below: "Monto del préstamo"
 - inputText: "20000"
 - tapOn:
     below: "Tasa de interés (%)"
 - inputText: "10"
 - tapOn:
-    below: "Cantidad de pagos"
+    below: "Plazo (número de cuotas)"
 - inputText: "12"
-# Anchored regex — "weekly" alone would also match the "biweekly" chip,
-# since Maestro's text selector does a substring/regex search.
-- tapOn: "^weekly$"
+# "Frecuencia de pago" (SelectField) already defaults to "weekly" — no tap needed.
 - tapOn: "Crear préstamo"
 
 # router.back() on save returns to Cliente Detalle.
 - extendedWaitUntil:
-    visible: ".*Felipe Taveras.*"
+    visible: "Felipe Taveras"
     timeout: 15000

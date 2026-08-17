@@ -76,7 +76,7 @@ appId: ${APP_ID}
 
 # Her only active loan card (components/screens/CustomerDetailScreen.tsx
 # loanTitle: "Préstamo #<code>").
-- tapOn: "Préstamo #L-00001"
+- tapOn: ".*Préstamo #L-00001.*"
 
 # LoanDetailScreen (components/screens/LoanDetailScreen.tsx).
 - extendedWaitUntil:

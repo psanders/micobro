@@ -75,7 +75,7 @@ appId: ${APP_ID}
 - extendedWaitUntil:
     visible: "PRÉSTAMOS ACTIVOS"
     timeout: 15000
-- tapOn: "Préstamo #L-00011"
+- tapOn: ".*Préstamo #L-00011.*"
 
 # Open-credit loan detail shows the cycle history, not "TOTAL A PAGAR HOY".
 - extendedWaitUntil:

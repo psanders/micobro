@@ -77,7 +77,7 @@ appId: ${APP_ID}
 - extendedWaitUntil:
     visible: "PRÉSTAMOS ACTIVOS"
     timeout: 15000
-- tapOn: "Préstamo #L-00003"
+- tapOn: ".*Préstamo #L-00003.*"
 - extendedWaitUntil:
     visible: "TOTAL A PAGAR HOY"
     timeout: 15000
