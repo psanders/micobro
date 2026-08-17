@@ -4,6 +4,18 @@ Ordered so that every externally-blocked step (Apple Developer Program,
 Google Cloud Console) sits as late as possible — groups 1 through 5 are fully
 implementable today with no external accounts.
 
+**Archived 2026-08-16 with 29/40 tasks complete.** The remaining 11 — task
+0.2, 1.5, 4.3, 6.7, 7.1–7.3, and the `runtimeVersion`/scheme-collision half
+of 8.4 — all need a physical device, external accounts, or a real TestFlight
+submission, none of which were available in this session; tracked in
+[issue #118](https://github.com/psanders/micobro/issues/118). Task 5.2 (full
+Maestro suite) is 3/10 green with the remainder tracked in
+[issue #119](https://github.com/psanders/micobro/issues/119), mostly
+downstream of [issue #117](https://github.com/psanders/micobro/issues/117).
+Tasks 3.5 and 6.6 (component test coverage) are tracked as a scope decision
+in [issue #120](https://github.com/psanders/micobro/issues/120). Merged to
+`main` directly in `60dbe36` per explicit direction, rather than via PR.
+
 ## 0. External prerequisites (not code — confirm before group 6)
 
 - [x] 0.1 Confirm whether an active Apple Developer Program membership exists, and whether an App Store Connect app record for `com.micobro.app` has been created. Blocks group 7 entirely; record the answer in this change. **Confirmed 2026-08-16 (Pedro): active membership + App Store Connect record exist.** Group 7 is unblocked.
