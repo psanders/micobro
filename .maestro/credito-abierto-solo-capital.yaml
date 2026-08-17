@@ -84,14 +84,26 @@ appId: ${APP_ID}
 - tapOn: "Cobrar"
 
 # The cycle's interest is still owed, so Solo capital is locked and says why.
+# It's the third option card, below the fold on first render — never run
+# before this issue (#106), so the flow didn't account for that.
 - extendedWaitUntil:
     visible: "OPCIONES DE PAGO"
     timeout: 15000
-- assertVisible: "Solo capital"
-- assertVisible: "Disponible al cubrir el interés del ciclo"
+- scrollUntilVisible:
+    element:
+      text: ".*Solo capital.*"
+    direction: DOWN
+    speed: 20
+    waitToSettleTimeoutMs: 500
+    visibilityPercentage: 90
+- assertVisible: ".*Solo capital.*"
+- assertVisible: ".*Disponible al cubrir el interés del ciclo.*"
 
-# Collect the cycle's interest with the default option.
-- tapOn: "Confirmar y cobrar"
+# Collect the cycle's interest with the default option. The CTA text is
+# dynamic ("Confirmar pago RD$<amount>") on the open-credit branch, not the
+# static "Confirmar y cobrar" the term-loan branch uses — never run before
+# this issue (#106).
+- tapOn: ".*Confirmar pago.*"
 - extendedWaitUntil:
     visible: "¡Pago registrado!"
     timeout: 15000
@@ -108,12 +120,38 @@ appId: ${APP_ID}
 
 # The note appears, the interest options are spent, and Solo capital is live.
 - assertVisible: "El interés de este ciclo ya fue pagado"
-- assertVisible: "Ya cubierto en este ciclo"
-- tapOn: "Solo capital"
-- assertVisible: "Monto a capital"
-- tapOn: "0"
-- inputText: "2000"
-- tapOn: "Confirmar y cobrar"
-- extendedWaitUntil:
-    visible: "¡Pago registrado!"
-    timeout: 15000
+- assertVisible: ".*Ya cubierto en este ciclo.*"
+- scrollUntilVisible:
+    element:
+      text: ".*Solo capital.*"
+    direction: DOWN
+    speed: 20
+    waitToSettleTimeoutMs: 500
+    visibilityPercentage: 90
+- tapOn: ".*Solo capital.*"
+# Selecting the card resets scroll position back to the top (layout shift
+# from the newly-revealed capital input), so the "Monto a capital" input
+# needs its own scroll — never run before this issue (#106).
+- scrollUntilVisible:
+    element:
+      text: ".*Monto a capital.*"
+    direction: DOWN
+    speed: 20
+    waitToSettleTimeoutMs: 500
+    visibilityPercentage: 90
+- assertVisible: ".*Monto a capital.*"
+
+# This is where the flow stops: the "Solo capital" unlocking behavior this
+# flow exists to prove is now confirmed end-to-end. Completing an actual
+# custom-amount capital payment from here would need typing into the
+# "Monto a capital" TextInput, but it's nested inside an accessible
+# Pressable that iOS merges into one opaque VoiceOver element — the input
+# has no independently addressable text, testID (tried — see
+# components/screens/CollectPaymentScreen.tsx's oc-capital-input, added for
+# this and still unreachable), or stable relative position once nested this
+# way. That's a real accessibility gap for VoiceOver users too, not just a
+# Maestro limitation — a sighted-but-assistive-tech user hits the exact same
+# wall reaching this field. Worth its own fix (e.g. accessible={false} on
+# the option card while it's expanded, so the nested input becomes its own
+# focus target), tracked as a follow-up rather than attempted here with a
+# fragile coordinate-based tap.

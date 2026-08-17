@@ -430,6 +430,7 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
                       <View style={styles.customInputCard}>
                         <Text style={styles.customInputLabel}>RD$</Text>
                         <TextInput
+                          testID="oc-capital-input"
                           style={styles.customInput}
                           value={ocCapitalText}
                           onChangeText={setOcCapitalText}
@@ -492,6 +493,7 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
                       <View style={styles.customInputCard}>
                         <Text style={styles.customInputLabel}>RD$</Text>
                         <TextInput
+                          testID="oc-capital-input"
                           style={styles.customInput}
                           value={ocCapitalText}
                           onChangeText={setOcCapitalText}

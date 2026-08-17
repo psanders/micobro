@@ -46,8 +46,15 @@ export function SelectField<T>({ label, value, options, onChange }: SelectFieldP
       </Pressable>
 
       <Modal visible={open} transparent animationType="fade" onRequestClose={() => setOpen(false)}>
-        <Pressable style={styles.backdrop} onPress={() => setOpen(false)}>
-          <Pressable style={styles.sheet} onPress={() => {}}>
+        {/* accessible={false} on both this and the nested sheet Pressable:
+         * without it, iOS treats the nearest accessible=true ancestor (this
+         * one, by default) as one opaque VoiceOver element and merges the
+         * title and every OptionRow's label into a single unreadable
+         * string, making individual options unreachable. Neither Pressable
+         * needs to itself be a VoiceOver-focusable unit — they only exist
+         * to stop the backdrop's close-on-tap from bubbling up. */}
+        <Pressable style={styles.backdrop} onPress={() => setOpen(false)} accessible={false}>
+          <Pressable style={styles.sheet} onPress={() => {}} accessible={false}>
             <Text style={styles.sheetTitle}>{label}</Text>
             <ScrollView contentContainerStyle={styles.optionsList}>
               {options.map((option) => (
