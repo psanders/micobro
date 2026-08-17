@@ -23,10 +23,17 @@ appId: ${APP_ID}
           visible: "Development Build"
           timeout: 20000
       - openLink: ${DEV_URL}
+      - tapOn:
+          text: "Open"
+          optional: true
       - extendedWaitUntil:
           visible: "Continue"
           timeout: 45000
-      - back
+      - runFlow:
+          when:
+            true: ${DEV_MENU_DISMISS}
+          commands:
+            - back
 - extendedWaitUntil:
     visible: "Crea tu PIN"
     timeout: 30000

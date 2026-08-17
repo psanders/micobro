@@ -3,6 +3,14 @@
  *
  * Bluetooth thermal receipt printer (58mm ESC/POS).
  * Requires react-native-ble-plx and a development build to function.
+ *
+ * Authorization differs by platform: Android needs the runtime permission
+ * request in `requestBluetoothPermission()` below (BLUETOOTH_SCAN/CONNECT on
+ * API 31+, location on older versions). iOS has no equivalent runtime
+ * request API — `requestBluetoothPermission()` is a no-op there, and the
+ * system prompts on first CoreBluetooth use instead, driven by the
+ * NSBluetoothAlwaysUsageDescription / NSBluetoothPeripheralUsageDescription
+ * strings declared in `app.config.ts`'s `ios.infoPlist`.
  */
 import { Alert, Platform, PermissionsAndroid } from "react-native";
 import { logger } from "./logger";

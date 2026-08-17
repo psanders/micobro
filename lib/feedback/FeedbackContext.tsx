@@ -4,9 +4,13 @@
  * Ports mikro's feedback state machine (idle/recording/processing/result/
  * error) and its native-recorder calls — mikro's server pipeline
  * (transcription, LLM structuring, GitHub filing) is not ported; see
- * `FeedbackRepo` for why. Micobro is Android-only, so only the global
- * recording API is used (MediaProjection has no in-app-only mode — this
- * is the same reason mikro's Android side uses it too).
+ * `FeedbackRepo` for why. Only the global recording API is used
+ * (MediaProjection has no in-app-only mode — this is the same reason
+ * mikro's Android side uses it too). This context is Android-only for now:
+ * the "Enviar feedback" entry point is disabled on iOS in
+ * `ProfileScreen.tsx` rather than routing here, since real iOS in-app
+ * recording (a different API — see `startInAppRecording`) is deferred to
+ * https://github.com/psanders/micobro/issues/116.
  */
 import { createContext, useCallback, useContext, useRef, useState, type ReactNode } from "react";
 import {

@@ -21,10 +21,24 @@ appId: ${APP_ID}
           visible: "Development Build"
           timeout: 20000
       - openLink: ${DEV_URL}
+      - tapOn:
+          text: "Open"
+          optional: true
       - extendedWaitUntil:
           visible: "Continue"
           timeout: 45000
-      - back
+      - runFlow:
+          when:
+            true: ${DEV_MENU_DISMISS}
+          commands:
+            - back
+      - runFlow:
+          when:
+            true: ${DEV_MENU_CONTINUE}
+          commands:
+            - tapOn:
+                text: "Continue"
+                optional: true
 - extendedWaitUntil:
     visible: "Crea tu PIN"
     timeout: 30000
@@ -55,9 +69,9 @@ appId: ${APP_ID}
 - tapOn: "Nombre, teléfono o cédula…"
 - inputText: "Luis"
 - extendedWaitUntil:
-    visible: "Luis Pérez"
+    visible: ".*Luis Pérez.*"
     timeout: 15000
-- tapOn: "Luis Pérez"
+- tapOn: ".*Luis Pérez.*"
 - extendedWaitUntil:
     visible: "PRÉSTAMOS ACTIVOS"
     timeout: 15000

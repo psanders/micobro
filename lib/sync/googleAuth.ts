@@ -12,12 +12,20 @@
  * signing SHA-1 (the Android OAuth client), and takes the Web OAuth client id
  * as `webClientId` so Google returns tokens usable against the Sheets API.
  *
+ * On iOS the same rejection does not apply: the custom-scheme redirect is the
+ * *sanctioned* mechanism for an iOS-type OAuth client, so the native module's
+ * ASWebAuthenticationSession flow (against `iosClientId` below) needs no
+ * equivalent workaround. `GoogleSignin.hasPlayServices()` already no-ops with
+ * an immediate `true` on iOS, so `signInWithGoogle()` needs no platform
+ * branch either.
+ *
  * Each lender authorizes the app against their own Google account and grants
  * the least-privilege `drive.file` scope — access only to spreadsheets this
  * app creates or the user explicitly opens. GoogleSignin stores and silently
  * refreshes tokens natively, so getValidAccessToken() just asks it for a fresh
  * access token.
  */
+import { Platform } from "react-native";
 import Constants from "expo-constants";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 
@@ -41,18 +49,52 @@ function getWebClientId(): string {
   return webClientId as string;
 }
 
+function getIosClientId(): string {
+  const iosClientId = Constants.expoConfig?.extra?.googleIosClientId;
+  if (!iosClientId) {
+    throw new Error(
+      "Missing EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID. Set it in .env before signing in with Google on iOS."
+    );
+  }
+  return iosClientId as string;
+}
+
+/**
+ * Whether this platform's required OAuth client id(s) are present — checked
+ * without throwing so passive status checks (isSignedInToGoogle,
+ * getValidAccessToken) can report "not signed in" instead of erroring
+ * whenever setup is incomplete. Web client id is required on both platforms;
+ * iOS also needs its own client id.
+ */
+export function isGoogleAuthConfigured(): boolean {
+  const hasWebClientId = Boolean(Constants.expoConfig?.extra?.googleWebClientId);
+  const hasIosClientId = Boolean(Constants.expoConfig?.extra?.googleIosClientId);
+  return hasWebClientId && (Platform.OS !== "ios" || hasIosClientId);
+}
+
 /** Idempotent: safe (and cheap) to call before any GoogleSignin operation. */
 export function configureGoogleSignin(): void {
   if (configured) return;
   GoogleSignin.configure({
     webClientId: getWebClientId(),
+    // Only iOS's native SDK consults this; harmless to omit on Android, where
+    // the Android OAuth client is matched by Play Services instead (package
+    // name + signing SHA-1, no id needed here).
+    ...(Platform.OS === "ios" ? { iosClientId: getIosClientId() } : {}),
     scopes: [SHEETS_SCOPE]
   });
   configured = true;
 }
 
-/** Whether this device has a Google session for the app. Synchronous, no network. */
+/**
+ * Whether this device has a Google session for the app. Synchronous, no
+ * network. Called on every sync-status refresh (SyncProvider), not just from
+ * the connect screen — so it must never throw just because setup is
+ * incomplete; "not configured" reads as "not signed in", same as it would
+ * for a lender who simply hasn't connected yet.
+ */
 export function isSignedInToGoogle(): boolean {
+  if (!isGoogleAuthConfigured()) return false;
   configureGoogleSignin();
   return GoogleSignin.hasPreviousSignIn();
 }
@@ -67,6 +109,7 @@ export async function signInWithGoogle(): Promise<boolean> {
 
 /** A fresh access token for the Sheets API, refreshed silently. Null if not signed in. */
 export async function getValidAccessToken(): Promise<string | null> {
+  if (!isGoogleAuthConfigured()) return null;
   configureGoogleSignin();
   if (!GoogleSignin.getCurrentUser()) {
     const restored = await GoogleSignin.signInSilently();

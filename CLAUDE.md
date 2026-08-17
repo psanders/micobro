@@ -1,9 +1,9 @@
 # Micobro — Agent Guide
 
-Offline-first Android app (Expo/React Native) for independent, informal lenders
-(prestamistas) in the Dominican Republic to track customers, loans, and payments —
-no backend server; local SQLite is the source of truth on-device, synced to a
-Google Sheet each lender owns.
+Offline-first mobile app (Expo/React Native; Android and iOS) for independent,
+informal lenders (prestamistas) in the Dominican Republic to track customers,
+loans, and payments — no backend server; local SQLite is the source of truth
+on-device, synced to a Google Sheet each lender owns.
 
 ## How work is organized
 

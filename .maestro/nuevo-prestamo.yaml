@@ -22,10 +22,24 @@ appId: ${APP_ID}
           visible: "Development Build"
           timeout: 20000
       - openLink: ${DEV_URL}
+      - tapOn:
+          text: "Open"
+          optional: true
       - extendedWaitUntil:
           visible: "Continue"
           timeout: 45000
-      - back
+      - runFlow:
+          when:
+            true: ${DEV_MENU_DISMISS}
+          commands:
+            - back
+      - runFlow:
+          when:
+            true: ${DEV_MENU_CONTINUE}
+          commands:
+            - tapOn:
+                text: "Continue"
+                optional: true
 - extendedWaitUntil:
     visible: "Crea tu PIN"
     timeout: 30000
@@ -56,9 +70,9 @@ appId: ${APP_ID}
 - tapOn: "Nombre, teléfono o cédula…"
 - inputText: "Felipe"
 - extendedWaitUntil:
-    visible: "Felipe Taveras"
+    visible: ".*Felipe Taveras.*"
     timeout: 15000
-- tapOn: "Felipe Taveras"
+- tapOn: ".*Felipe Taveras.*"
 - extendedWaitUntil:
     visible: "PRÉSTAMOS ACTIVOS"
     timeout: 15000
@@ -89,5 +103,5 @@ appId: ${APP_ID}
 
 # router.back() on save returns to Cliente Detalle.
 - extendedWaitUntil:
-    visible: "Felipe Taveras"
+    visible: ".*Felipe Taveras.*"
     timeout: 15000

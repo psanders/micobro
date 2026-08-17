@@ -1,13 +1,19 @@
 # Minimal smoke flow: a clean install boots to PIN onboarding (no PIN set yet).
-# APP_ID must be passed explicitly (-e APP_ID=com.micobro.app on Android).
+# APP_ID must be passed explicitly (-e APP_ID=com.micobro.app on Android,
+# the bundle id on iOS — also com.micobro.app here).
 #
 # Dev-client builds only: clearState also wipes the saved Metro server, so the
 # JS app never loads on its own. Pass the dev-client deep link to reconnect:
-#   adb reverse tcp:8081 tcp:8081
+#   Android: adb reverse tcp:8081 tcp:8081
+#   iOS simulator: no port-forward needed, the simulator reaches localhost directly.
 #   maestro test .maestro -e APP_ID=com.micobro.app \
 #     -e DEV_URL="micobro://expo-development-client/?url=http%3A%2F%2Flocalhost%3A8081"
 # The extra steps wait for the dev launcher, deep-link into Metro, and dismiss
-# the first-run dev menu (back key — tapping "Continue" opens the full menu).
+# the first-run dev menu (tapping "Continue" opens the full menu). Dismissal
+# uses the Android back key, gated behind DEV_MENU_DISMISS — Maestro's `back`
+# has no iOS equivalent, so iOS dev-client runs should omit that variable and
+# dismiss the dev menu manually; this only affects local dev-client testing,
+# not release/simulator runs, which skip the whole DEV_URL branch.
 # Release builds embed the bundle: omit DEV_URL and the branch is skipped.
 appId: ${APP_ID}
 ---
@@ -21,10 +27,24 @@ appId: ${APP_ID}
           visible: "Development Build"
           timeout: 20000
       - openLink: ${DEV_URL}
+      - tapOn:
+          text: "Open"
+          optional: true
       - extendedWaitUntil:
           visible: "Continue"
           timeout: 45000
-      - back
+      - runFlow:
+          when:
+            true: ${DEV_MENU_DISMISS}
+          commands:
+            - back
+      - runFlow:
+          when:
+            true: ${DEV_MENU_CONTINUE}
+          commands:
+            - tapOn:
+                text: "Continue"
+                optional: true
 - extendedWaitUntil:
     visible: "Crea tu PIN"
     timeout: 30000

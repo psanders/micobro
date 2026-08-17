@@ -7,7 +7,16 @@
  * but the pill reflects real backup status via SyncRepo, replacing the
  * earlier employee-style "ID #COB-0042" placeholder.
  */
-import { View, Text, Pressable, ScrollView, Alert, Linking, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  Pressable,
+  ScrollView,
+  Alert,
+  Linking,
+  Platform,
+  StyleSheet
+} from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Constants from "expo-constants";
@@ -38,6 +47,18 @@ function syncPillText(status: { connected: boolean; lastPushedAt: Date | null } 
   if (!status || !status.connected) return "Respaldo no conectado";
   if (!status.lastPushedAt) return "Respaldo activo · esperando envío";
   return `Respaldo activo · ${formatRelativeTime(status.lastPushedAt)}`;
+}
+
+// Feedback capture has no path that doesn't depend on screen recording (the
+// consent screen's only action starts one) — see issue #116 for real iOS
+// in-app recording. Until then this is a full-feature no-op on iOS, not a
+// degraded recording mode.
+function handleFeedbackPress(router: ReturnType<typeof useRouter>) {
+  if (Platform.OS === "ios") {
+    Alert.alert("Muy pronto", "Enviar feedback todavía no está disponible en iOS.");
+    return;
+  }
+  router.push("/feedback/consentimiento");
 }
 
 function openSupportTicket() {
@@ -151,7 +172,7 @@ export function ProfileScreen() {
             icon="message-square"
             iconColor={colors.brandPrimary}
             label="Enviar feedback"
-            onPress={() => router.push("/feedback/consentimiento")}
+            onPress={() => handleFeedbackPress(router)}
           />
         </View>
 

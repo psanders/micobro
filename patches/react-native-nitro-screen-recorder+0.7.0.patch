@@ -1,0 +1,25 @@
+diff --git a/node_modules/react-native-nitro-screen-recorder/lib/commonjs/expo-plugin/withScreenRecorder.js b/node_modules/react-native-nitro-screen-recorder/lib/commonjs/expo-plugin/withScreenRecorder.js
+index ab7d3f6..d056570 100644
+--- a/node_modules/react-native-nitro-screen-recorder/lib/commonjs/expo-plugin/withScreenRecorder.js
++++ b/node_modules/react-native-nitro-screen-recorder/lib/commonjs/expo-plugin/withScreenRecorder.js
+@@ -23,7 +23,19 @@ const withScreenRecorder = (config, props = {}) => {
+         config.ios.infoPlist.NSMicrophoneUsageDescription =
+             (_d = (_c = props.microphonePermissionText) !== null && _c !== void 0 ? _c : config.ios.infoPlist.NSMicrophoneUsageDescription) !== null && _d !== void 0 ? _d : MICROPHONE_USAGE;
+     }
+-    config = (0, withBroadcastExtension_1.withBroadcastExtension)(config, props);
++    // PATCHED (micobro, patches/react-native-nitro-screen-recorder+0.7.0.patch):
++    // skip the BroadcastExtension target on iOS. The extension (and its App
++    // Group entitlement) only backs `startGlobalRecording`, which micobro
++    // never calls on iOS — Android uses it instead (MediaProjection has no
++    // in-app-only mode), and iOS feedback recording is deferred entirely to
++    // https://github.com/psanders/micobro/issues/116. Wiring the extension
++    // anyway hits an unresolved upstream EAS managed-credentials bug
++    // (https://github.com/expo/expo/issues/40851): the BroadcastExtension
++    // target's provisioning profile never picks up its App Group. Since the
++    // extension is unused, the robust fix is to never create it rather than
++    // fight EAS into provisioning something inert.
++    //
++    // config = (0, withBroadcastExtension_1.withBroadcastExtension)(config, props);
+     /*---------------ANDROID-------------------- */
+     const androidPermissions = [
+         // already conditionally added

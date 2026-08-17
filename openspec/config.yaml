@@ -1,9 +1,9 @@
 schema: spec-driven
 
 context: |
-  Micobro: an offline-first Android app (Expo/React Native) for independent,
-  informal lenders (prestamistas) in the Dominican Republic to track customers,
-  loans, and payments.
+  Micobro: an offline-first mobile app (Expo/React Native; Android and iOS)
+  for independent, informal lenders (prestamistas) in the Dominican Republic
+  to track customers, loans, and payments.
 
   No separate backend. Local SQLite (expo-sqlite + drizzle-orm) is the source
   of truth on-device; each lender's data syncs to a Google Sheet they own via

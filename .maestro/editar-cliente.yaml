@@ -24,10 +24,24 @@ appId: ${APP_ID}
           visible: "Development Build"
           timeout: 20000
       - openLink: ${DEV_URL}
+      - tapOn:
+          text: "Open"
+          optional: true
       - extendedWaitUntil:
           visible: "Continue"
           timeout: 45000
-      - back
+      - runFlow:
+          when:
+            true: ${DEV_MENU_DISMISS}
+          commands:
+            - back
+      - runFlow:
+          when:
+            true: ${DEV_MENU_CONTINUE}
+          commands:
+            - tapOn:
+                text: "Continue"
+                optional: true
 - extendedWaitUntil:
     visible: "Crea tu PIN"
     timeout: 30000
@@ -58,9 +72,9 @@ appId: ${APP_ID}
 - tapOn: "Nombre, teléfono o cédula…"
 - inputText: "Pedro"
 - extendedWaitUntil:
-    visible: "Pedro Cabrera"
+    visible: ".*Pedro Cabrera.*"
     timeout: 15000
-- tapOn: "Pedro Cabrera"
+- tapOn: ".*Pedro Cabrera.*"
 - extendedWaitUntil:
     visible: "PRÉSTAMOS ACTIVOS"
     timeout: 15000
@@ -81,11 +95,11 @@ appId: ${APP_ID}
 - tapOn:
     below: "Nombre completo"
 - eraseText
-- inputText: "Pedro Cabrera Actualizado"
+- inputText: ".*Pedro Cabrera Actualizado.*"
 - tapOn: "Guardar cambios"
 
 # router.back() on save returns to Cliente Detalle, whose useFocusEffect
 # reloads the customer — the new name should be visible again.
 - extendedWaitUntil:
-    visible: "Pedro Cabrera Actualizado"
+    visible: ".*Pedro Cabrera Actualizado.*"
     timeout: 15000

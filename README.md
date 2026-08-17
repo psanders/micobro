@@ -47,35 +47,49 @@ npm install
 npm run db:generate   # generates lib/db/migrations from lib/db/schema.ts
 npm start             # expo start --clear
 npm run android       # expo run:android
+npm run ios           # expo run:ios — needs Xcode + a simulator (or a device with an Apple Developer account)
 ```
+
+Cloud builds go through EAS (`eas.json`): `npm run build:android` /
+`npm run build:ios` (profile `preview`, ad-hoc/internal distribution) or the
+`:dev` variants (dev-client, `ios.simulator: true` — no Apple account needed
+for the simulator build). `npm run build:ios` + `eas submit` is the path to
+TestFlight.
 
 ### Prerequisites
 
 - **Maestro CLI** (E2E, not an npm dependency):
   `curl -fsSL https://get.maestro.mobile.dev | bash`, then
-  `npm run test:e2e` (needs a running emulator/device and `-e APP_ID=com.micobro.app`
-  passed to the underlying `maestro test` invocation on Android).
-- **Google OAuth client IDs** for Sheets sign-in, both with the
+  `npm run test:e2e` (needs a running emulator/device or simulator and
+  `-e APP_ID=com.micobro.app` passed to the underlying `maestro test`
+  invocation — same bundle id on both platforms). See `.maestro/launch.yaml`'s
+  header comment for the dev-client-only steps, which differ slightly by
+  platform (`adb reverse` on Android; not needed on the iOS simulator).
+- **Google OAuth client IDs** for Sheets sign-in, all with the
   `https://www.googleapis.com/auth/drive.file` scope (least-privilege —
   access only to spreadsheets this app creates): the native Google Sign-In
-  flow needs **two** OAuth clients in Google Cloud Console, not one — an
-  **Android** client (package name + signing SHA-1, verified by Play
-  Services at runtime, no id needed in the app) and a **Web** client, whose
-  id is passed as `webClientId` so Google returns tokens usable against the
-  Sheets API. Set the Web client's id as `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID`
-  in a local `.env` (gitignored). Without it, the "Continuar con Google"
-  button is disabled with an inline note; "Ahora no" / staying local still
-  works fully offline.
+  flow needs OAuth clients in Google Cloud Console per platform, not one —
+  an **Android** client (package name + signing SHA-1, verified by Play
+  Services at runtime, no id needed in the app), an **iOS** client (bundle
+  id `com.micobro.app`, passed as `iosClientId`, also reversed into an
+  Info.plist URL scheme via the google-signin Expo plugin — see
+  `app.config.ts`), and a **Web** client, whose id is passed as
+  `webClientId` on both platforms so Google returns tokens usable against
+  the Sheets API. Set the Web client's id as
+  `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` and the iOS client's as
+  `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID` in a local `.env` (gitignored). Without
+  the platform-relevant id(s), the "Continuar con Google" button is disabled
+  with an inline note; "Ahora no" / staying local still works fully offline.
 - App icon/adaptive-icon assets are in place (`assets/icon.png`,
   `assets/android-icon-foreground.png`, `assets/android-icon-monochrome.png`).
   A splash screen still isn't configured — no `expo-splash-screen` plugin/config
   yet.
 - **Web preview bundles**, now that `react-native-web` is a listed dependency
   (`expo start --web` serves and Metro bundles the app), but the app targets
-  Android — screens haven't been checked for web-specific behavior, and
-  native-only modules (`expo-sqlite`, `expo-secure-store`, BLE printing) may
-  not work there. Use an Android emulator/device (`npm run android`) as the
-  supported way to run the app.
+  Android and iOS — screens haven't been checked for web-specific behavior,
+  and native-only modules (`expo-sqlite`, `expo-secure-store`, BLE printing)
+  may not work there. Use an Android or iOS emulator/simulator/device
+  (`npm run android` / `npm run ios`) as the supported way to run the app.
 
 ## Scripts
 

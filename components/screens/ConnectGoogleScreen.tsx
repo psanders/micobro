@@ -8,7 +8,7 @@
  * on the mock client it simulates a successful connection instead.
  */
 import { useState } from "react";
-import { View, Text, Pressable, StyleSheet, ActivityIndicator } from "react-native";
+import { View, Text, Pressable, StyleSheet, ActivityIndicator, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Constants from "expo-constants";
 import { Feather } from "@expo/vector-icons";
@@ -32,7 +32,12 @@ export function ConnectGoogleScreen({ onDone }: ConnectGoogleScreenProps) {
 
   const useMockRepos = Boolean(Constants.expoConfig?.extra?.useMockRepos);
   const webClientId = Constants.expoConfig?.extra?.googleWebClientId as string | undefined;
-  const googleConfigured = useMockRepos || Boolean(webClientId);
+  const iosClientId = Constants.expoConfig?.extra?.googleIosClientId as string | undefined;
+  // iOS needs both the Web and iOS client ids configured (lib/sync/googleAuth.ts);
+  // Android only needs the Web one — its OAuth client is matched by Play
+  // Services via package name + signing SHA-1, no id required here.
+  const googleConfigured =
+    useMockRepos || (Boolean(webClientId) && (Platform.OS !== "ios" || Boolean(iosClientId)));
 
   // Both mock and real sync repos run their own connect flow: the real one
   // triggers the native Google sign-in (@react-native-google-signin), the mock
@@ -89,7 +94,9 @@ export function ConnectGoogleScreen({ onDone }: ConnectGoogleScreenProps) {
 
         {!googleConfigured && (
           <Text style={styles.note}>
-            Falta configurar EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID para habilitar esta opción.
+            {Platform.OS === "ios" && webClientId && !iosClientId
+              ? "Falta configurar EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID para habilitar esta opción."
+              : "Falta configurar EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID para habilitar esta opción."}
           </Text>
         )}
         {errorMessage && <Text style={styles.error}>{errorMessage}</Text>}
