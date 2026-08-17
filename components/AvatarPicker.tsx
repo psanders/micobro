@@ -7,7 +7,7 @@
  * tapping the selected one again clears the pick back to initials.
  */
 import { View, Pressable, StyleSheet } from "react-native";
-import { Feather } from "@expo/vector-icons";
+import { Icon } from "./Icon";
 import { Avatar } from "./Avatar";
 import { AVATAR_KEYS, type AvatarKey } from "./avatars";
 import { colors } from "../lib/ui/theme";
@@ -28,11 +28,13 @@ export function AvatarPicker({ name, value, onChange }: AvatarPickerProps) {
             key={key}
             onPress={() => onChange(selected ? null : key)}
             style={[styles.cell, selected && styles.cellSelected]}
+            accessibilityLabel={`Avatar ${key}`}
+            accessibilityState={{ selected }}
           >
             <Avatar avatarKey={key} name={name} size={48} />
             {selected && (
               <View style={styles.check}>
-                <Feather name="check" size={12} color={colors.white} />
+                <Icon name="check" size={12} color={colors.white} />
               </View>
             )}
           </Pressable>

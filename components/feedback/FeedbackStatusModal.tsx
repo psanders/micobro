@@ -9,7 +9,7 @@
  */
 import { View, Text, Pressable, ActivityIndicator, Modal, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Feather } from "@expo/vector-icons";
+import { Icon } from "../Icon";
 import { useFeedback } from "../../lib/feedback/FeedbackContext";
 import { colors, fonts } from "../../lib/ui/theme";
 
@@ -44,7 +44,7 @@ export function FeedbackStatusModal() {
             {stage === "processing" ? (
               <ActivityIndicator color={colors.brandDeep} />
             ) : (
-              <Feather
+              <Icon
                 name={stage === "result" ? "check" : "alert-triangle"}
                 size={28}
                 color={stage === "result" ? "#0E7C5F" : colors.red}
@@ -71,7 +71,7 @@ export function FeedbackStatusModal() {
         {stage === "error" ? (
           <View style={styles.actionBar}>
             <Pressable style={styles.primaryBtn} onPress={retrySubmit}>
-              <Feather name="rotate-cw" size={16} color={colors.white} />
+              <Icon name="rotate-cw" size={16} color={colors.white} />
               <Text style={styles.primaryBtnText}>Intentar de nuevo</Text>
             </Pressable>
             <Pressable onPress={reset} hitSlop={8}>

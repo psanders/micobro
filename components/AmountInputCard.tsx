@@ -5,7 +5,7 @@
  * amount input with a live match/mismatch badge against what's expected.
  */
 import { View, Text, TextInput, StyleSheet } from "react-native";
-import { Feather } from "@expo/vector-icons";
+import { Icon } from "./Icon";
 import { colors, fonts } from "../lib/ui/theme";
 
 interface AmountInputCardProps {
@@ -37,7 +37,7 @@ export function AmountInputCard({
           placeholderTextColor={colors.slate}
         />
         <View style={[styles.badge, matches ? styles.badgeOk : styles.badgeOff]}>
-          <Feather
+          <Icon
             name={matches ? "check" : "alert-triangle"}
             size={12}
             color={matches ? colors.green : colors.amber}

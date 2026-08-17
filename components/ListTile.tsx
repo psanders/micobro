@@ -7,6 +7,7 @@
 import type { ComponentProps } from "react";
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import { Feather } from "@expo/vector-icons";
+import { Icon } from "./Icon";
 import { colors, fonts } from "../lib/ui/theme";
 
 type FeatherIconName = ComponentProps<typeof Feather>["name"];
@@ -16,6 +17,8 @@ interface ListTileProps {
   label: string;
   iconColor?: string;
   trailingIcon?: FeatherIconName;
+  /** Required whenever trailingIcon is set — the trailing button has no text of its own. */
+  trailingAccessibilityLabel?: string;
   onPress?: () => void;
   onTrailingPress?: () => void;
 }
@@ -25,6 +28,7 @@ export function ListTile({
   label,
   iconColor = colors.slate,
   trailingIcon,
+  trailingAccessibilityLabel,
   onPress,
   onTrailingPress
 }: ListTileProps) {
@@ -33,11 +37,16 @@ export function ListTile({
       onPress={onPress}
       style={({ pressed }) => [styles.tile, pressed && onPress ? { opacity: 0.7 } : null]}
     >
-      <Feather name={icon} size={18} color={iconColor} />
+      <Icon name={icon} size={18} color={iconColor} />
       <Text style={styles.label}>{label}</Text>
       {trailingIcon ? (
-        <Pressable onPress={onTrailingPress} hitSlop={10} disabled={!onTrailingPress}>
-          <Feather name={trailingIcon} size={18} color={colors.slate} />
+        <Pressable
+          onPress={onTrailingPress}
+          hitSlop={10}
+          disabled={!onTrailingPress}
+          accessibilityLabel={trailingAccessibilityLabel}
+        >
+          <Icon name={trailingIcon} size={18} color={colors.slate} />
         </Pressable>
       ) : (
         <View style={styles.trailSpacer} />

@@ -9,7 +9,7 @@
  * vocabularies are derived.
  */
 import { View, Text, Pressable, StyleSheet } from "react-native";
-import { Feather } from "@expo/vector-icons";
+import { Icon } from "./Icon";
 import { formatCurrency } from "../lib/utils/money";
 import { formatShortDate, isToday } from "../lib/utils/dates";
 import { frequencyLabels } from "../lib/loans/labels";
@@ -66,7 +66,7 @@ export function LoanSummaryCard({ loan, onPress }: LoanSummaryCardProps) {
           <Text style={styles.title}>Préstamo #{loan.code}</Text>
           <Text style={styles.sub}>{subLine(loan)}</Text>
         </View>
-        <Feather name="chevron-right" size={18} color={colors.slate} />
+        <Icon name="chevron-right" size={18} color={colors.slate} />
       </View>
       <ProgressBar
         progress={progressOf(loan)}

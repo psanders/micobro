@@ -8,7 +8,8 @@ import { useCallback } from "react";
 import { View, Text, Pressable, ScrollView, ActivityIndicator, StyleSheet } from "react-native";
 import { useRouter, useFocusEffect } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { Icon } from "../Icon";
 import { useProfileRepo, useRouteRepo } from "../../lib/repo/RepoProvider";
 import { useAsync } from "../../lib/hooks/useAsync";
 import { formatCurrency } from "../../lib/utils/money";
@@ -125,7 +126,7 @@ export function HomeScreen() {
           <View style={styles.headerTopRow}>
             <Text style={styles.date}>{formatDayLabel(new Date())}</Text>
             <View style={[styles.connPill, { backgroundColor: STATUS_STYLE[syncLabel].bg }]}>
-              <Feather
+              <Icon
                 name={STATUS_STYLE[syncLabel].icon}
                 size={10}
                 color={STATUS_STYLE[syncLabel].color}
@@ -141,11 +142,12 @@ export function HomeScreen() {
           testID="home-avatar-button"
           style={styles.avatarButton}
           onPress={() => router.push("/perfil")}
+          accessibilityLabel="Perfil"
         >
           {name ? (
             <Text style={styles.avatarInitials}>{initialsOf(name)}</Text>
           ) : (
-            <Feather name="user" size={18} color={colors.yellowAccent} />
+            <Icon name="user" size={18} color={colors.yellowAccent} />
           )}
         </Pressable>
       </View>
@@ -180,12 +182,12 @@ export function HomeScreen() {
 
           <View style={styles.quickRow}>
             <QuickAction
-              icon={<Feather name="map-pin" size={18} color={colors.orangeDeep} />}
+              icon={<Icon name="map-pin" size={18} color={colors.orangeDeep} />}
               label="Mi ruta"
               onPress={() => router.push("/(tabs)/ruta")}
             />
             <QuickAction
-              icon={<Feather name="search" size={18} color={colors.brandPrimary} />}
+              icon={<Icon name="search" size={18} color={colors.brandPrimary} />}
               label="Buscar"
               onPress={() => router.push("/(tabs)/buscar")}
             />

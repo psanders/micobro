@@ -20,7 +20,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Feather } from "@expo/vector-icons";
+import { Icon } from "../Icon";
 import { usePaymentRepo, useVisitRepo } from "../../lib/repo/RepoProvider";
 import { useAsync } from "../../lib/hooks/useAsync";
 import { formatShortDate, formatTime } from "../../lib/utils/dates";
@@ -144,14 +144,14 @@ export function VisitOutcomeScreen({ loanId }: { loanId: string }) {
                     style={styles.dateBtn}
                     onPress={() => setDatePresetIndex((i) => (i + 1) % DATE_PRESETS.length)}
                   >
-                    <Feather name="calendar" size={18} color={colors.brandPrimary} />
+                    <Icon name="calendar" size={18} color={colors.brandPrimary} />
                     <Text style={styles.dateBtnText}>{dateLabel(new Date(promiseDate))}</Text>
                   </Pressable>
                   <Pressable
                     style={styles.dateBtn}
                     onPress={() => setTimePresetIndex((i) => (i + 1) % TIME_PRESETS.length)}
                   >
-                    <Feather name="clock" size={18} color={colors.brandPrimary} />
+                    <Icon name="clock" size={18} color={colors.brandPrimary} />
                     <Text style={styles.dateBtnText}>{formatTime(promiseDate)}</Text>
                   </Pressable>
                 </View>
@@ -199,7 +199,7 @@ export function VisitOutcomeScreen({ loanId }: { loanId: string }) {
             {submitting ? (
               <ActivityIndicator color={colors.white} />
             ) : (
-              <Feather name="check" size={20} color={colors.white} />
+              <Icon name="check" size={20} color={colors.white} />
             )}
             <Text style={styles.ctaText}>{submitting ? "Guardando..." : "Guardar visita"}</Text>
           </Pressable>

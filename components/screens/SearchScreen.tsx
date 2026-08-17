@@ -8,7 +8,7 @@ import { useCallback, useEffect, useState } from "react";
 import { View, Text, Pressable, ScrollView, ActivityIndicator, StyleSheet } from "react-native";
 import { useRouter, useFocusEffect } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Feather } from "@expo/vector-icons";
+import { Icon } from "../Icon";
 import { useCustomerRepo } from "../../lib/repo/RepoProvider";
 import {
   getRecentSearches,
@@ -88,6 +88,7 @@ export function SearchScreen() {
                   icon="clock"
                   label={entry}
                   trailingIcon="x"
+                  trailingAccessibilityLabel="Quitar de búsquedas recientes"
                   onPress={() => setQuery(entry)}
                   onTrailingPress={async () => setRecents(await removeRecentSearch(entry))}
                 />
@@ -114,7 +115,7 @@ export function SearchScreen() {
                   }
                   metaColor={customer.inMora ? colors.orangeDeep : colors.slate}
                   compact
-                  trailing={<Feather name="chevron-right" size={18} color={colors.slate} />}
+                  trailing={<Icon name="chevron-right" size={18} color={colors.slate} />}
                   onPress={() => router.push(`/customers/${customer.id}`)}
                 />
               ))}
@@ -134,8 +135,9 @@ export function SearchScreen() {
         style={[styles.fab, { bottom: 24 + insets.bottom }]}
         onPress={() => router.push("/customers/new")}
         hitSlop={8}
+        accessibilityLabel="Agregar cliente"
       >
-        <Feather name="plus" size={28} color={colors.white} />
+        <Icon name="plus" size={28} color={colors.white} />
       </Pressable>
     </View>
   );

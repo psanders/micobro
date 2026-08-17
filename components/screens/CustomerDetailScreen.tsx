@@ -18,7 +18,7 @@ import {
 } from "react-native";
 import { useRouter, useFocusEffect } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Feather } from "@expo/vector-icons";
+import { Icon } from "../Icon";
 import { useCustomerRepo } from "../../lib/repo/RepoProvider";
 import { useAsync } from "../../lib/hooks/useAsync";
 import { formatCedula } from "../../lib/utils/cedula";
@@ -77,14 +77,16 @@ export function CustomerDetailScreen({ customerId }: { customerId: string }) {
                 testID="customer-detail-edit-button"
                 hitSlop={10}
                 onPress={() => router.push(`/customers/${customerId}/editar`)}
+                accessibilityLabel="Editar cliente"
               >
-                <Feather name="edit-2" size={20} color={colors.brandDeep} />
+                <Icon name="edit-2" size={20} color={colors.brandDeep} />
               </Pressable>
               <Pressable
                 hitSlop={10}
                 onPress={() => openLink(`tel:${phoneDigits}`, "Revisa el número del cliente.")}
+                accessibilityLabel="Llamar al cliente"
               >
-                <Feather name="phone" size={22} color={colors.brandDeep} />
+                <Icon name="phone" size={22} color={colors.brandDeep} />
               </Pressable>
             </View>
           ) : undefined
@@ -115,18 +117,18 @@ export function CustomerDetailScreen({ customerId }: { customerId: string }) {
 
             <View style={styles.info}>
               <InfoRow
-                icon={<Feather name="phone" size={16} color={colors.brandPrimary} />}
+                icon={<Icon name="phone" size={16} color={colors.brandPrimary} />}
                 text={formatPhone(customer.phone)}
               />
               {customer.address ? (
                 <InfoRow
-                  icon={<Feather name="map-pin" size={16} color={colors.brandPrimary} />}
+                  icon={<Icon name="map-pin" size={16} color={colors.brandPrimary} />}
                   text={customer.address}
                 />
               ) : null}
               {customer.cedula ? (
                 <InfoRow
-                  icon={<Feather name="credit-card" size={16} color={colors.brandPrimary} />}
+                  icon={<Icon name="credit-card" size={16} color={colors.brandPrimary} />}
                   text={`Cédula ${formatCedula(customer.cedula)}`}
                 />
               ) : null}
@@ -137,7 +139,7 @@ export function CustomerDetailScreen({ customerId }: { customerId: string }) {
                 style={styles.action}
                 onPress={() => openLink(`tel:${phoneDigits}`, "Revisa el número del cliente.")}
               >
-                <Feather name="phone" size={16} color={colors.brandDeep} />
+                <Icon name="phone" size={16} color={colors.brandDeep} />
                 <Text style={styles.actionText}>Llamar</Text>
               </Pressable>
               <Pressable
@@ -146,7 +148,7 @@ export function CustomerDetailScreen({ customerId }: { customerId: string }) {
                   openLink(`https://wa.me/1${phoneDigits}`, "WhatsApp no está disponible.")
                 }
               >
-                <Feather name="message-circle" size={16} color={colors.brandDeep} />
+                <Icon name="message-circle" size={16} color={colors.brandDeep} />
                 <Text style={styles.actionText}>WhatsApp</Text>
               </Pressable>
               <Pressable
@@ -158,7 +160,7 @@ export function CustomerDetailScreen({ customerId }: { customerId: string }) {
                   )
                 }
               >
-                <Feather name="map" size={16} color={colors.brandDeep} />
+                <Icon name="map" size={16} color={colors.brandDeep} />
                 <Text style={styles.actionText}>Mapa</Text>
               </Pressable>
             </View>
@@ -170,8 +172,9 @@ export function CustomerDetailScreen({ customerId }: { customerId: string }) {
               testID="customer-detail-new-loan-button"
               hitSlop={10}
               onPress={() => router.push({ pathname: "/loans/new", params: { customerId } })}
+              accessibilityLabel="Agregar préstamo"
             >
-              <Feather name="plus" size={20} color={colors.brandDeep} />
+              <Icon name="plus" size={20} color={colors.brandDeep} />
             </Pressable>
           </View>
           {customer.activeLoans.length === 0 ? (
@@ -194,7 +197,7 @@ export function CustomerDetailScreen({ customerId }: { customerId: string }) {
               {customer.recentActivity.map((item) => (
                 <View key={item.id} style={styles.histRow}>
                   <View style={styles.histIcon}>
-                    <Feather name="check" size={14} color={colors.brandPrimary} />
+                    <Icon name="check" size={14} color={colors.brandPrimary} />
                   </View>
                   <View style={styles.histText}>
                     <Text style={styles.histTitle}>{item.description}</Text>

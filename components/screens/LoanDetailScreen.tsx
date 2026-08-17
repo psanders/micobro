@@ -17,7 +17,8 @@ import {
 } from "react-native";
 import { useRouter, useFocusEffect } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { MaterialCommunityIcons, Feather } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { Icon } from "../Icon";
 import { useLoanRepo } from "../../lib/repo/RepoProvider";
 import { useAsync } from "../../lib/hooks/useAsync";
 import { formatCurrency } from "../../lib/utils/money";
@@ -111,8 +112,15 @@ export function LoanDetailScreen({ loanId }: { loanId: string }) {
           <Pressable
             hitSlop={10}
             onPress={() => Alert.alert("Muy pronto", "Esta función todavía no está disponible.")}
+            accessibilityLabel="Más opciones"
           >
-            <MaterialCommunityIcons name="dots-vertical" size={22} color={colors.brandDeep} />
+            <MaterialCommunityIcons
+              name="dots-vertical"
+              size={22}
+              color={colors.brandDeep}
+              accessibilityElementsHidden
+              importantForAccessibility="no"
+            />
           </Pressable>
         }
       />
@@ -173,9 +181,9 @@ export function LoanDetailScreen({ loanId }: { loanId: string }) {
                             {cycleAmountLabel(cycle)}
                           </Text>
                           {settled ? (
-                            <Feather name="check" size={16} color="#10B981" />
+                            <Icon name="check" size={16} color="#10B981" />
                           ) : (
-                            <Feather name="alert-circle" size={16} color={colors.amber} />
+                            <Icon name="alert-circle" size={16} color={colors.amber} />
                           )}
                         </View>
                       </View>

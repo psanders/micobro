@@ -9,7 +9,7 @@
  */
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Feather } from "@expo/vector-icons";
+import { Icon } from "../Icon";
 import { useFeedback } from "../../lib/feedback/FeedbackContext";
 import { colors, fonts } from "../../lib/ui/theme";
 
@@ -27,11 +27,15 @@ export function RecordingPill() {
           <Text style={styles.label}>Grabando feedback…</Text>
         </View>
         <View style={styles.actions}>
-          <Pressable hitSlop={10} onPress={discardRecording}>
-            <Feather name="trash-2" size={18} color="#F2B8B8" />
+          <Pressable
+            hitSlop={10}
+            onPress={discardRecording}
+            accessibilityLabel="Descartar grabación"
+          >
+            <Icon name="trash-2" size={18} color="#F2B8B8" />
           </Pressable>
-          <Pressable hitSlop={10} onPress={stopRecording}>
-            <Feather name="square" size={18} color={colors.white} />
+          <Pressable hitSlop={10} onPress={stopRecording} accessibilityLabel="Detener grabación">
+            <Icon name="square" size={18} color={colors.white} />
           </Pressable>
         </View>
       </View>

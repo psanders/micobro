@@ -12,7 +12,7 @@
  */
 import { useState } from "react";
 import { View, Text, Pressable, Modal, ScrollView, StyleSheet } from "react-native";
-import { Feather } from "@expo/vector-icons";
+import { Icon } from "./Icon";
 import { OptionRow } from "./OptionRow";
 import { colors } from "../lib/ui/theme";
 
@@ -42,7 +42,7 @@ export function SelectField<T>({ label, value, options, onChange }: SelectFieldP
       <Text style={styles.label}>{label}</Text>
       <Pressable style={styles.input} onPress={() => setOpen(true)}>
         <Text style={styles.inputText}>{selectedOption?.label ?? "Seleccionar"}</Text>
-        <Feather name="chevron-down" size={18} color={colors.muted} />
+        <Icon name="chevron-down" size={18} color={colors.muted} />
       </Pressable>
 
       <Modal visible={open} transparent animationType="fade" onRequestClose={() => setOpen(false)}>

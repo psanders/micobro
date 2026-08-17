@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Feather } from "@expo/vector-icons";
+import { Icon } from "../Icon";
 import { useCustomerRepo, useLoanRepo } from "../../lib/repo/RepoProvider";
 import { useAsync } from "../../lib/hooks/useAsync";
 import {
@@ -196,7 +196,7 @@ export function NewLoanFormScreen({ customerId: initialCustomerId }: { customerI
               avatarKey={selectedCustomer.avatarKey}
               name={selectedCustomer.name}
               meta="Cliente seleccionado"
-              trailing={<Feather name="chevron-right" size={18} color={colors.slate} />}
+              trailing={<Icon name="chevron-right" size={18} color={colors.slate} />}
               onPress={initialCustomerId ? undefined : () => setShowClientPicker(true)}
             />
           ) : (

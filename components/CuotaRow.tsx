@@ -6,7 +6,7 @@
  * ATRASO treatment; upcoming rows render muted.
  */
 import { View, Text, StyleSheet } from "react-native";
-import { Feather } from "@expo/vector-icons";
+import { Icon } from "./Icon";
 import { colors, fonts } from "../lib/ui/theme";
 
 export type CuotaRowStatus = "paid" | "overdue" | "upcoming";
@@ -28,10 +28,8 @@ export function CuotaRow({ name, date, amount, status }: CuotaRowProps) {
           status === "overdue" && styles.markOverdue
         ]}
       >
-        {status === "paid" ? <Feather name="check" size={14} color={colors.white} /> : null}
-        {status === "overdue" ? (
-          <Feather name="alert-circle" size={14} color={colors.white} />
-        ) : null}
+        {status === "paid" ? <Icon name="check" size={14} color={colors.white} /> : null}
+        {status === "overdue" ? <Icon name="alert-circle" size={14} color={colors.white} /> : null}
       </View>
       <Text
         style={[

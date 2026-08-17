@@ -8,7 +8,7 @@
 import { useMemo, useRef, useState } from "react";
 import { View, Text, Pressable, Alert, ActivityIndicator, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
-import { Feather } from "@expo/vector-icons";
+import { Icon } from "./Icon";
 import { captureRef } from "react-native-view-shot";
 import * as Sharing from "expo-sharing";
 import { colors, fonts } from "../lib/ui/theme";
@@ -113,7 +113,7 @@ export function ReceiptActions({
           {printing ? (
             <ActivityIndicator size="small" color={colors.white} />
           ) : (
-            <Feather name="printer" size={18} color={colors.white} />
+            <Icon name="printer" size={18} color={colors.white} />
           )}
           <Text style={styles.actionText}>Imprimir</Text>
         </Pressable>
@@ -125,7 +125,7 @@ export function ReceiptActions({
           {sharing ? (
             <ActivityIndicator size="small" color={colors.white} />
           ) : (
-            <Feather name="message-circle" size={18} color={colors.white} />
+            <Icon name="message-circle" size={18} color={colors.white} />
           )}
           <Text style={styles.actionText}>WhatsApp</Text>
         </Pressable>

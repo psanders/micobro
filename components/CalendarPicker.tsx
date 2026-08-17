@@ -11,7 +11,7 @@
  */
 import { useState } from "react";
 import { Modal, View, Text, Pressable, StyleSheet } from "react-native";
-import { Feather } from "@expo/vector-icons";
+import { Icon } from "./Icon";
 import { colors, fonts, radius } from "../lib/ui/theme";
 
 interface CalendarPickerProps {
@@ -90,8 +90,13 @@ export function CalendarPicker({
       <View style={styles.sheet}>
         <View style={styles.header}>
           <Text style={styles.title}>{title}</Text>
-          <Pressable onPress={onClose} hitSlop={8} testID="calendar-close">
-            <Feather name="x" size={20} color={colors.slate} />
+          <Pressable
+            onPress={onClose}
+            hitSlop={8}
+            testID="calendar-close"
+            accessibilityLabel="Cerrar"
+          >
+            <Icon name="x" size={20} color={colors.slate} />
           </Pressable>
         </View>
 
@@ -101,16 +106,22 @@ export function CalendarPicker({
             hitSlop={8}
             disabled={prevDisabled}
             testID="calendar-prev"
+            accessibilityLabel="Mes anterior"
           >
-            <Feather
+            <Icon
               name="chevron-left"
               size={22}
               color={prevDisabled ? colors.hairline : colors.brandDeep}
             />
           </Pressable>
           <Text style={styles.monthLabel}>{monthTitle(view.year, view.month)}</Text>
-          <Pressable onPress={() => shiftMonth(1)} hitSlop={8} testID="calendar-next">
-            <Feather name="chevron-right" size={22} color={colors.brandDeep} />
+          <Pressable
+            onPress={() => shiftMonth(1)}
+            hitSlop={8}
+            testID="calendar-next"
+            accessibilityLabel="Mes siguiente"
+          >
+            <Icon name="chevron-right" size={22} color={colors.brandDeep} />
           </Pressable>
         </View>
 

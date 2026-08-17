@@ -20,7 +20,7 @@ import {
 } from "react-native";
 import { useFocusEffect } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Feather } from "@expo/vector-icons";
+import { Icon } from "../Icon";
 import { usePaymentRepo, useCashCloseRepo } from "../../lib/repo/RepoProvider";
 import { useAsync } from "../../lib/hooks/useAsync";
 import { formatCurrency } from "../../lib/utils/money";
@@ -143,7 +143,7 @@ export function CuadreScreen() {
               {closing ? (
                 <ActivityIndicator color={colors.white} />
               ) : (
-                <Feather name="check" size={16} color={colors.yellowAccent} />
+                <Icon name="check" size={16} color={colors.yellowAccent} />
               )}
               <Text style={styles.closeBtnText}>{closing ? "Cerrando..." : "Cerrar caja"}</Text>
             </Pressable>
