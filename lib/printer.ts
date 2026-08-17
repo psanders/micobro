@@ -67,8 +67,17 @@ function text(s: string): number[] {
   return encodeCp858(s);
 }
 
+/** Truncates to LINE_WIDTH with an ASCII "..." marker rather than letting the
+ * printer hard-wrap the overflow onto its own line, which reads as a
+ * misprint (issue #115). Plain ASCII, not a single "…" glyph — CP858 has no
+ * ellipsis codepoint, so encodeCp858 would fall back to "?" for U+2026. */
+function truncateToWidth(s: string): string {
+  if (s.length <= LINE_WIDTH) return s;
+  return `${s.slice(0, LINE_WIDTH - 3)}...`;
+}
+
 function line(s: string): number[] {
-  return [...text(s), 0x0a];
+  return [...text(truncateToWidth(s)), 0x0a];
 }
 
 function pad(label: string, value: string): string {
