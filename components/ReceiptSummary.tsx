@@ -7,7 +7,7 @@
  * Imprimir/WhatsApp actions.
  */
 import { View, Text, StyleSheet } from "react-native";
-import { Feather } from "@expo/vector-icons";
+import { Icon } from "./Icon";
 import { formatCurrency } from "../lib/utils/money";
 import { KvRow } from "./KvRow";
 import { colors, fonts } from "../lib/ui/theme";
@@ -35,7 +35,7 @@ export function ReceiptSummary({
   return (
     <>
       <View style={styles.icon}>
-        <Feather name="check" size={48} color={colors.brandDeep} />
+        <Icon name="check" size={48} color={colors.brandDeep} />
       </View>
       <View style={styles.headline}>
         <Text style={styles.title}>{title}</Text>

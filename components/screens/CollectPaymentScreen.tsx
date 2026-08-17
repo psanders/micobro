@@ -19,7 +19,8 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { Icon } from "../Icon";
 import { usePaymentRepo } from "../../lib/repo/RepoProvider";
 import { useAsync } from "../../lib/hooks/useAsync";
 import { computePaymentSplit } from "../../lib/payments/paymentSplit";
@@ -322,7 +323,7 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
               <Text style={styles.ocInterestAmount}>{formatCurrency(ocDueInterestCents)}</Text>
               {ocInterestCovered ? (
                 <View style={styles.ocPaidNote}>
-                  <Feather name="check" size={13} color={colors.green} />
+                  <Icon name="check" size={13} color={colors.green} />
                   <Text style={styles.ocPaidNoteText}>El interés de este ciclo ya fue pagado</Text>
                 </View>
               ) : null}
@@ -365,7 +366,7 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
                       style={[styles.ocRadio, ocOption === "interest" && styles.ocRadioSelected]}
                     >
                       {ocOption === "interest" ? (
-                        <Feather name="check" size={14} color={colors.white} />
+                        <Icon name="check" size={14} color={colors.white} />
                       ) : null}
                     </View>
                   </View>
@@ -419,7 +420,7 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
                       ]}
                     >
                       {ocOption === "interest_capital" ? (
-                        <Feather name="check" size={14} color={colors.white} />
+                        <Icon name="check" size={14} color={colors.white} />
                       ) : null}
                     </View>
                   </View>
@@ -481,7 +482,7 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
                       style={[styles.ocRadio, ocOption === "capital" && styles.ocRadioSelected]}
                     >
                       {ocOption === "capital" ? (
-                        <Feather name="check" size={14} color={colors.white} />
+                        <Icon name="check" size={14} color={colors.white} />
                       ) : null}
                     </View>
                   </View>
@@ -534,6 +535,8 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
                     name="cash"
                     size={18}
                     color={method === "cash" ? colors.white : colors.brandDeep}
+                    accessibilityElementsHidden
+                    importantForAccessibility="no"
                   />
                   <Text style={[styles.methodText, method === "cash" && styles.methodTextActive]}>
                     Efectivo
@@ -547,6 +550,8 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
                     name="swap-horizontal"
                     size={18}
                     color={method === "transfer" ? colors.white : colors.brandDeep}
+                    accessibilityElementsHidden
+                    importantForAccessibility="no"
                   />
                   <Text
                     style={[styles.methodText, method === "transfer" && styles.methodTextActive]}
@@ -570,7 +575,7 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
             {submitting ? (
               <ActivityIndicator color={colors.white} />
             ) : (
-              <Feather name="check" size={20} color={colors.white} />
+              <Icon name="check" size={20} color={colors.white} />
             )}
             <Text style={styles.ctaText}>
               {submitting ? "Procesando..." : `Confirmar pago ${formatCurrency(ocAmountCents)}`}
@@ -655,6 +660,8 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
                     name="cash"
                     size={18}
                     color={method === "cash" ? colors.white : colors.brandDeep}
+                    accessibilityElementsHidden
+                    importantForAccessibility="no"
                   />
                   <Text style={[styles.methodText, method === "cash" && styles.methodTextActive]}>
                     Efectivo
@@ -668,6 +675,8 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
                     name="swap-horizontal"
                     size={18}
                     color={method === "transfer" ? colors.white : colors.brandDeep}
+                    accessibilityElementsHidden
+                    importantForAccessibility="no"
                   />
                   <Text
                     style={[styles.methodText, method === "transfer" && styles.methodTextActive]}
@@ -691,7 +700,7 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
             {submitting ? (
               <ActivityIndicator color={colors.white} />
             ) : (
-              <Feather name="check" size={20} color={colors.white} />
+              <Icon name="check" size={20} color={colors.white} />
             )}
             <Text style={styles.ctaText}>
               {submitting ? "Procesando..." : "Confirmar y cobrar"}

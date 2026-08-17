@@ -11,7 +11,7 @@ import { useState } from "react";
 import { View, Text, Pressable, StyleSheet, ActivityIndicator, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Constants from "expo-constants";
-import { Feather } from "@expo/vector-icons";
+import { Icon } from "../Icon";
 import { useSyncRepo } from "../../lib/repo/RepoProvider";
 import { useSyncContext } from "../../lib/sync/SyncProvider";
 import { friendlySyncErrorMessage } from "../../lib/sync/friendlySyncError";
@@ -72,8 +72,8 @@ export function ConnectGoogleScreen({ onDone }: ConnectGoogleScreenProps) {
     <View style={[styles.screen, { paddingTop: insets.top }]}>
       <View style={styles.header}>
         <View style={styles.headerLeft}>
-          <Pressable onPress={onDone} hitSlop={12}>
-            <Feather name="x" size={24} color={colors.brandDeep} />
+          <Pressable onPress={onDone} hitSlop={12} accessibilityLabel="Cerrar">
+            <Icon name="x" size={24} color={colors.brandDeep} />
           </Pressable>
           <View style={styles.titleWrap}>
             <Text style={styles.headerTitle}>Conectar con Google</Text>
@@ -84,7 +84,7 @@ export function ConnectGoogleScreen({ onDone }: ConnectGoogleScreenProps) {
 
       <View style={styles.body}>
         <View style={styles.iconWrap}>
-          <Feather name="cloud" size={32} color={colors.brandDeep} />
+          <Icon name="cloud" size={32} color={colors.brandDeep} />
         </View>
         <Text style={styles.headline}>Guarda un respaldo en la nube.</Text>
         <Text style={styles.description}>
@@ -113,7 +113,7 @@ export function ConnectGoogleScreen({ onDone }: ConnectGoogleScreenProps) {
               onPress={handleConnectPress}
             >
               <Text style={styles.ctaText}>Continuar con Google</Text>
-              <Feather name="arrow-right" size={18} color={colors.white} />
+              <Icon name="arrow-right" size={18} color={colors.white} />
             </Pressable>
             <Pressable onPress={onDone} hitSlop={8}>
               <Text style={styles.skipLink}>Ahora no, tal vez después</Text>

@@ -80,5 +80,5 @@ appId: ${APP_ID}
 - extendedWaitUntil:
     visible: "PRÉSTAMOS ACTIVOS"
     timeout: 15000
-- assertVisible: ".*María Rosa Peralta.*"
-- assertVisible: "Al día"
+- assertVisible: "María Rosa Peralta"
+- assertVisible: ".*Al día.*"

@@ -7,7 +7,7 @@
  */
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import type { ReactNode } from "react";
-import { Feather } from "@expo/vector-icons";
+import { Icon } from "./Icon";
 import { colors, fonts } from "../lib/ui/theme";
 
 interface ScreenHeaderProps {
@@ -28,8 +28,12 @@ export function ScreenHeader({
   return (
     <View style={styles.header}>
       <View style={styles.left}>
-        <Pressable onPress={onBack} hitSlop={10}>
-          <Feather
+        <Pressable
+          onPress={onBack}
+          hitSlop={10}
+          accessibilityLabel={backIcon === "close" ? "Cerrar" : "Volver"}
+        >
+          <Icon
             name={backIcon === "close" ? "x" : "chevron-left"}
             size={24}
             color={colors.brandDeep}

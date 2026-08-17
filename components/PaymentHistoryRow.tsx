@@ -5,7 +5,7 @@
  * sub-line, and the trailing amount, used on Histórico de Pagos.
  */
 import { View, Text, Pressable, StyleSheet } from "react-native";
-import { Feather } from "@expo/vector-icons";
+import { Icon } from "./Icon";
 import { colors, fonts } from "../lib/ui/theme";
 
 interface PaymentHistoryRowProps {
@@ -36,7 +36,7 @@ export function PaymentHistoryRow({
         <Text style={styles.subLabel}>{subLabel}</Text>
       </View>
       <Text style={styles.amount}>{amount}</Text>
-      <Feather name="chevron-right" size={18} color={colors.hairline} />
+      <Icon name="chevron-right" size={18} color={colors.hairline} />
     </Pressable>
   );
 }

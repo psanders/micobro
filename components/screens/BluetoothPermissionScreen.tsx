@@ -10,7 +10,7 @@
  */
 import { View, Text, Pressable, StyleSheet, Linking } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Feather } from "@expo/vector-icons";
+import { Icon } from "../Icon";
 import { logger } from "../../lib/logger";
 import { colors, fonts } from "../../lib/ui/theme";
 
@@ -35,8 +35,8 @@ export function BluetoothPermissionScreen({ onClose }: BluetoothPermissionScreen
   return (
     <View style={[styles.screen, { paddingTop: insets.top }]}>
       <View style={styles.header}>
-        <Pressable onPress={onClose} hitSlop={12}>
-          <Feather name="x" size={24} color={colors.brandDeep} />
+        <Pressable onPress={onClose} hitSlop={12} accessibilityLabel="Cerrar">
+          <Icon name="x" size={24} color={colors.brandDeep} />
         </Pressable>
         <View style={styles.titleWrap}>
           <Text style={styles.headerTitle}>Permiso de impresión</Text>
@@ -46,7 +46,7 @@ export function BluetoothPermissionScreen({ onClose }: BluetoothPermissionScreen
 
       <View style={styles.body}>
         <View style={styles.iconWrap}>
-          <Feather name="printer" size={32} color={colors.brandDeep} />
+          <Icon name="printer" size={32} color={colors.brandDeep} />
         </View>
         <Text style={styles.headline}>Activa el Bluetooth para imprimir</Text>
         <Text style={styles.description}>
@@ -69,7 +69,7 @@ export function BluetoothPermissionScreen({ onClose }: BluetoothPermissionScreen
       <View style={[styles.actionBar, { paddingBottom: 14 + insets.bottom }]}>
         <Pressable style={styles.ctaButton} onPress={handleOpenSettings}>
           <Text style={styles.ctaText}>Abrir Ajustes</Text>
-          <Feather name="arrow-right" size={18} color={colors.white} />
+          <Icon name="arrow-right" size={18} color={colors.white} />
         </Pressable>
         <Pressable onPress={onClose} hitSlop={8}>
           <Text style={styles.skipLink}>Ahora no</Text>

@@ -6,7 +6,7 @@
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Feather } from "@expo/vector-icons";
+import { Icon } from "../Icon";
 import { useFeedback } from "../../lib/feedback/FeedbackContext";
 import { ScreenHeader } from "../ScreenHeader";
 import { colors, fonts } from "../../lib/ui/theme";
@@ -27,7 +27,7 @@ export function FeedbackConsentScreen() {
 
       <View style={styles.body}>
         <View style={styles.iconWrap}>
-          <Feather name="message-square" size={28} color={colors.brandDeep} />
+          <Icon name="message-square" size={28} color={colors.brandDeep} />
         </View>
         <Text style={styles.consentBody}>
           Esto va a grabar tu pantalla mientras muestras lo que quieres compartir — un problema,
@@ -38,7 +38,7 @@ export function FeedbackConsentScreen() {
 
       <View style={[styles.actionBar, { paddingBottom: 14 + insets.bottom }]}>
         <Pressable style={styles.startBtn} onPress={handleStart}>
-          <Feather name="circle" size={16} color={colors.white} />
+          <Icon name="circle" size={16} color={colors.white} />
           <Text style={styles.startBtnText}>Empezar a grabar</Text>
         </Pressable>
         <Pressable onPress={() => router.back()} hitSlop={8}>

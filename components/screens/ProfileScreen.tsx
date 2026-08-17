@@ -20,7 +20,7 @@ import {
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Constants from "expo-constants";
-import { Feather } from "@expo/vector-icons";
+import { Icon } from "../Icon";
 import { useProfileRepo, useRouteRepo, useSyncRepo } from "../../lib/repo/RepoProvider";
 import { useAsync } from "../../lib/hooks/useAsync";
 import { useAuthGate } from "../../lib/security/AuthGateProvider";
@@ -116,20 +116,21 @@ export function ProfileScreen() {
               onPress={() => router.push("/perfil/editar")}
               hitSlop={10}
               style={styles.editBtn}
+              accessibilityLabel="Editar perfil"
             >
-              <Feather name="edit-2" size={16} color={colors.white} />
+              <Icon name="edit-2" size={16} color={colors.white} />
             </Pressable>
           </View>
         ) : !profile.loading ? (
           <Pressable style={styles.setupCard} onPress={() => router.push("/perfil/editar")}>
             <View style={styles.setupIconWrap}>
-              <Feather name="user-plus" size={22} color={colors.white} />
+              <Icon name="user-plus" size={22} color={colors.white} />
             </View>
             <View style={styles.profileText}>
               <Text style={styles.name}>Configura tu perfil</Text>
               <Text style={styles.role}>Agrega tu nombre y avatar para personalizar la app.</Text>
             </View>
-            <Feather name="chevron-right" size={20} color={colors.white} />
+            <Icon name="chevron-right" size={20} color={colors.white} />
           </Pressable>
         ) : (
           <View style={styles.profileCard} />
@@ -177,7 +178,7 @@ export function ProfileScreen() {
         </View>
 
         <Pressable style={styles.logoutBtn} onPress={lock}>
-          <Feather name="log-out" size={16} color={colors.orangeDeep} />
+          <Icon name="log-out" size={16} color={colors.orangeDeep} />
           <Text style={styles.logoutText}>Cerrar sesión</Text>
         </Pressable>
 

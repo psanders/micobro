@@ -10,7 +10,7 @@
 import { View, Text, ScrollView, ActivityIndicator, Pressable, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Feather } from "@expo/vector-icons";
+import { Icon } from "../Icon";
 import { usePaymentRepo } from "../../lib/repo/RepoProvider";
 import { useAsync } from "../../lib/hooks/useAsync";
 import { formatFullDate, formatTime } from "../../lib/utils/dates";
@@ -34,8 +34,8 @@ export function PaymentReceiptScreen({ paymentId }: { paymentId: string }) {
   return (
     <View style={[styles.screen, { paddingTop: insets.top }]}>
       <View style={styles.header}>
-        <Pressable onPress={() => router.back()} hitSlop={10}>
-          <Feather name="chevron-left" size={24} color={colors.white} />
+        <Pressable onPress={() => router.back()} hitSlop={10} accessibilityLabel="Volver">
+          <Icon name="chevron-left" size={24} color={colors.white} />
         </Pressable>
         <Text style={styles.headerTitle}>Recibo de pago</Text>
         <View style={styles.headerSpacer} />

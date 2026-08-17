@@ -77,9 +77,9 @@ appId: ${APP_ID}
 - tapOn:
     id: "home-avatar-button"
 - extendedWaitUntil:
-    visible: ".*Cerrar sesión.*"
+    visible: "Cerrar sesión"
     timeout: 15000
-- tapOn: ".*Cerrar sesión.*"
+- tapOn: "Cerrar sesión"
 
 # UnlockScreen (app/desbloquear.tsx): same PIN keypad, "Ingresa tu PIN para
 # continuar" subtitle (components/screens/UnlockScreen.tsx) confirms we

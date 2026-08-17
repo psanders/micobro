@@ -15,7 +15,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Feather } from "@expo/vector-icons";
+import { Icon } from "../Icon";
 import { useLoanRepo } from "../../lib/repo/RepoProvider";
 import { useAsync } from "../../lib/hooks/useAsync";
 import { formatCurrency } from "../../lib/utils/money";
@@ -106,7 +106,7 @@ export function PaymentHistoryScreen({ loanId }: { loanId: string }) {
               Alert.alert("Muy pronto", "Imprimir el histórico estará disponible pronto.")
             }
           >
-            <Feather name="printer" size={16} color={colors.brandDeep} />
+            <Icon name="printer" size={16} color={colors.brandDeep} />
             <Text style={styles.printText}>Imprime el historial completo para el cliente.</Text>
           </Pressable>
         </ScrollView>

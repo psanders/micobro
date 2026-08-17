@@ -4,7 +4,7 @@
  * m/input (search variant) from pencil.pen: mist box, leading icon, value.
  */
 import { View, TextInput, StyleSheet } from "react-native";
-import { Feather } from "@expo/vector-icons";
+import { Icon } from "./Icon";
 import { colors, fonts } from "../lib/ui/theme";
 
 interface SearchInputProps {
@@ -17,7 +17,7 @@ interface SearchInputProps {
 export function SearchInput({ value, placeholder, onChangeText, onSubmit }: SearchInputProps) {
   return (
     <View style={styles.box}>
-      <Feather name="search" size={18} color={colors.brandPrimary} />
+      <Icon name="search" size={18} color={colors.brandPrimary} />
       <TextInput
         style={styles.input}
         value={value}
