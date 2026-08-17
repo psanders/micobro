@@ -7,7 +7,15 @@
  * matches the rest of the app pending a design pass.
  */
 import { useEffect, useState } from "react";
-import { View, Text, TextInput, Pressable, ActivityIndicator, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  ScrollView,
+  ActivityIndicator,
+  StyleSheet
+} from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useCustomerRepo } from "../../lib/repo/RepoProvider";
@@ -87,7 +95,11 @@ export function EditCustomerFormScreen({ customerId }: { customerId: string }) {
       {detail.loading || !customer ? (
         <ActivityIndicator color={colors.brandDeep} style={styles.loading} />
       ) : (
-        <View style={styles.content}>
+        <ScrollView
+          contentContainerStyle={styles.content}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+        >
           <View style={styles.field}>
             <Text style={styles.label}>Nombre completo</Text>
             <TextInput style={styles.input} value={name} onChangeText={setName} />
@@ -138,7 +150,7 @@ export function EditCustomerFormScreen({ customerId }: { customerId: string }) {
               {submitting ? "Guardando..." : "Guardar cambios"}
             </Text>
           </Pressable>
-        </View>
+        </ScrollView>
       )}
     </View>
   );

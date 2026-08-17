@@ -97,6 +97,11 @@ appId: ${APP_ID}
     below: "Plazo (número de cuotas)"
 - inputText: "12"
 # "Frecuencia de pago" (SelectField) already defaults to "weekly" — no tap needed.
+# Same keyboard-covers-the-submit-button issue as #119's New/Edit customer
+# forms — a plain `scroll` (real drag gesture) dismisses the keyboard via
+# keyboardDismissMode="on-drag"; scrollUntilVisible's internal micro-scrolls
+# don't count as one.
+- scroll
 - tapOn: "Crear préstamo"
 
 # router.back() on save returns to Cliente Detalle.
