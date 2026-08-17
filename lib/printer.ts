@@ -55,6 +55,12 @@ export interface PrintReceiptData {
   totalCents: number;
   /** Lender's contact phone, printed after the thank-you line — omitted entirely when unset. */
   phone?: string | null;
+  /** dd/mm/yyyy, already formatted — see `formatFullDate`. `null` omits the row. */
+  loanStartDate: string | null;
+  /** dd/mm/yyyy, already formatted; `null` for crédito abierto, printed as "Crédito abierto". */
+  loanEndDate: string | null;
+  /** Picks "Inicia" over "Inicio" and the "Crédito abierto" end-date wording. */
+  isOpenCredit: boolean;
 }
 
 function text(s: string): number[] {
@@ -97,7 +103,14 @@ export function buildReceiptBytes(data: PrintReceiptData): Uint8Array {
 
   push(...line(`Recibo: #${data.receiptNumber}`));
   push(...line(`Cliente: ${data.customerName}`));
-  push(...line(`Fecha: ${data.date}`));
+  push(...line(`Pago: ${data.date}`));
+  // Dropped rather than blanked when absent — an empty "Vencimiento:" on
+  // thermal paper reads as a misprint. Mirrors `components/ReceiptView.tsx`.
+  if (data.loanStartDate) {
+    push(...line(`${data.isOpenCredit ? "Inicia" : "Inicio"}: ${data.loanStartDate}`));
+  }
+  const vencimiento = data.isOpenCredit ? "Crédito abierto" : data.loanEndDate;
+  if (vencimiento) push(...line(`Vencimiento: ${vencimiento}`));
   push(...line(""));
 
   for (const item of data.lines) {

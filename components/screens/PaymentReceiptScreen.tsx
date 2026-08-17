@@ -13,7 +13,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { usePaymentRepo } from "../../lib/repo/RepoProvider";
 import { useAsync } from "../../lib/hooks/useAsync";
-import { formatShortDate, formatTime } from "../../lib/utils/dates";
+import { formatFullDate, formatTime } from "../../lib/utils/dates";
 import { methodLabels } from "../../lib/payments/labels";
 import { colors, fonts } from "../../lib/ui/theme";
 import { ReceiptSummary } from "../ReceiptSummary";
@@ -27,7 +27,9 @@ export function PaymentReceiptScreen({ paymentId }: { paymentId: string }) {
   const receipt = useAsync(() => paymentRepo.getReceipt(paymentId), [paymentId]);
   const data = receipt.data;
   const methodLabel = data ? methodLabels[data.method] : "";
-  const paidAtLabel = data ? `${formatShortDate(data.paidAt)}, ${formatTime(data.paidAt)}` : "";
+  // Full date, not formatShortDate: this feeds the receipt, which is kept for
+  // months, so the payment date carries its year like the loan dates do.
+  const paidAtLabel = data ? `${formatFullDate(data.paidAt)}, ${formatTime(data.paidAt)}` : "";
 
   return (
     <View style={[styles.screen, { paddingTop: insets.top }]}>
@@ -65,6 +67,9 @@ export function PaymentReceiptScreen({ paymentId }: { paymentId: string }) {
               receiptNumber={data.receiptNumber}
               paidAtLabel={paidAtLabel}
               lines={data.lines}
+              loanStartDate={data.loanStartDate}
+              loanEndDate={data.loanEndDate}
+              isOpenCredit={data.isOpenCredit}
             />
           </View>
         </>

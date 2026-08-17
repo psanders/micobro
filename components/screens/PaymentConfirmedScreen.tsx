@@ -23,6 +23,11 @@ export interface PaymentConfirmedParams {
   receiptNumber: string;
   paidAtLabel: string;
   lines: ReceiptLine[];
+  /** `null` when a stale deep link lands here without the param — the row is
+   * then omitted rather than filled with a fabricated date. */
+  loanStartDate: Date | null;
+  loanEndDate: Date | null;
+  isOpenCredit: boolean;
 }
 
 export function PaymentConfirmedScreen({
@@ -31,7 +36,10 @@ export function PaymentConfirmedScreen({
   method,
   receiptNumber,
   paidAtLabel,
-  lines
+  lines,
+  loanStartDate,
+  loanEndDate,
+  isOpenCredit
 }: PaymentConfirmedParams) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -59,6 +67,9 @@ export function PaymentConfirmedScreen({
           receiptNumber={receiptNumber}
           paidAtLabel={paidAtLabel}
           lines={lines}
+          loanStartDate={loanStartDate}
+          loanEndDate={loanEndDate}
+          isOpenCredit={isOpenCredit}
         />
         <Pressable style={styles.doneBtn} onPress={() => router.back()}>
           <Text style={styles.doneText}>Listo</Text>

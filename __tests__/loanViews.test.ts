@@ -546,6 +546,44 @@ describe("buildPaymentReceipt", () => {
     // Tapping either sibling row opens the same receipt, same number.
     expect(fromCuota!.receiptNumber).toBe(fromMora!.receiptNumber);
   });
+
+  // Spec: this issue (#108) — the receipt's loan-lifetime rows, populated
+  // from whatever `Loan` buildPaymentReceipt already receives.
+  it("term loan: carries the loan's start date and the last cuota's due date as the end date", () => {
+    const receipt = buildPaymentReceipt("p2", loan, customer, threePaid);
+
+    expect(receipt).not.toBeNull();
+    expect(receipt!.loanStartDate).toEqual(loan.startDate);
+    expect(receipt!.loanEndDate?.getTime()).toBe(
+      installmentDueDate(loan, loan.termCount).getTime()
+    );
+    expect(receipt!.isOpenCredit).toBe(false);
+  });
+
+  it("crédito abierto loan: end date is null and isOpenCredit is set (no fixed schedule)", () => {
+    const openCreditLoan: Loan = {
+      ...loan,
+      id: "loan-oc",
+      termCount: 0,
+      loanType: "open_credit"
+    };
+    const ocPayment: Payment = {
+      id: "oc-p1",
+      loanId: "loan-oc",
+      amountCents: 50000,
+      paidAt: daysAgo(3),
+      method: "cash",
+      notes: null,
+      createdAt: daysAgo(3)
+    };
+
+    const receipt = buildPaymentReceipt("oc-p1", openCreditLoan, customer, [ocPayment]);
+
+    expect(receipt).not.toBeNull();
+    expect(receipt!.loanStartDate).toEqual(openCreditLoan.startDate);
+    expect(receipt!.loanEndDate).toBeNull();
+    expect(receipt!.isOpenCredit).toBe(true);
+  });
 });
 
 // Spec: customer-detail "Active loans section" — the Cliente Detalle loan

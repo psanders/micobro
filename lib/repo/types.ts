@@ -247,6 +247,18 @@ export interface PaymentReceipt {
   method: PaymentMethod;
   customerName: string;
   lines: ReceiptLine[];
+  /** The loan's start date — "Fecha Inicio"/"Inicio" (term) or "Fecha
+   * Inicia"/"Inicia" (crédito abierto) on the two receipt surfaces. `null`
+   * when the loan row couldn't be resolved, so the row is dropped rather than
+   * filled with a substituted date — see the `collect-payment` spec. */
+  loanStartDate: Date | null;
+  /** The loan's end date (last scheduled cuota's due date). `null` for a
+   * crédito abierto loan, which has no fixed term — rendered as
+   * "Crédito abierto" instead of a date. */
+  loanEndDate: Date | null;
+  /** Whether this is a crédito abierto loan — picks the start-date label
+   * and the "Crédito abierto" end-date wording on both receipt surfaces. */
+  isOpenCredit: boolean;
 }
 
 export interface PaymentRepo {

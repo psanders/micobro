@@ -27,7 +27,7 @@ import { resolveOpenCreditPayOptions } from "../../lib/payments/openCreditPayOpt
 import type { OpenCreditPayOption } from "../../lib/payments/openCreditPayOptions";
 import { cuotaLabel as formatCuotaLabel } from "../../lib/loans/loanViews";
 import { formatCurrency } from "../../lib/utils/money";
-import { formatShortDate, formatTime } from "../../lib/utils/dates";
+import { formatFullDate, formatShortDate, formatTime } from "../../lib/utils/dates";
 import { Avatar } from "../Avatar";
 import { ScreenHeader } from "../ScreenHeader";
 import { SectionLabel } from "../SectionLabel";
@@ -267,8 +267,17 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
           totalCents: String(receipt.totalCents),
           method: receipt.method,
           receiptNumber: receipt.receiptNumber,
-          paidAtLabel: `${formatShortDate(receipt.paidAt)}, ${formatTime(receipt.paidAt)}`,
-          lines: JSON.stringify(receipt.lines)
+          // Full date, not formatShortDate: this feeds the receipt, which is
+          // kept for months, so the payment date carries its year like the
+          // loan dates do.
+          paidAtLabel: `${formatFullDate(receipt.paidAt)}, ${formatTime(receipt.paidAt)}`,
+          lines: JSON.stringify(receipt.lines),
+          // Every router param is a string — dates cross as ISO, the
+          // open-credit flag as "true"/"false"; app/pago-confirmado.tsx
+          // parses them back.
+          loanStartDate: receipt.loanStartDate ? receipt.loanStartDate.toISOString() : "",
+          loanEndDate: receipt.loanEndDate ? receipt.loanEndDate.toISOString() : "",
+          isOpenCredit: String(receipt.isOpenCredit)
         }
       });
     } catch {

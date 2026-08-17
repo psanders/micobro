@@ -7,7 +7,8 @@ import { withErrorHandlingAndValidation } from "../utils/withErrorHandlingAndVal
 import { createCreatePayment } from "./createPayment";
 import { paymentMethods } from "./payment.schema";
 import { customers, loans, payments } from "../db/schema";
-import { MORA_NOTE } from "../loans/loanViews";
+import { MORA_NOTE, loanEndDate } from "../loans/loanViews";
+import { effectiveLoanType } from "../loans/loan.schema";
 import { fromCents } from "../utils/money";
 import type { Customer } from "../customers/customer.schema";
 import type { Loan } from "../loans/loan.schema";
@@ -79,7 +80,15 @@ export function createCollectPayment({ db }: CollectPaymentDeps) {
       totalCents: input.amountCents,
       method: input.method,
       customerName: customer?.name ?? "Cliente",
-      lines: input.lines
+      lines: input.lines,
+      // `null`, not paidAt: a substituted date would print "Inicio: <hoy>" on
+      // a receipt the customer keeps for months, asserting the loan started
+      // the day of the cobro. The renderers drop the row instead — see the
+      // `collect-payment` spec. Unlike the "Cliente" fallback above, there is
+      // no honest placeholder for a date.
+      loanStartDate: loan?.startDate ?? null,
+      loanEndDate: loan ? loanEndDate(loan) : null,
+      isOpenCredit: loan ? effectiveLoanType(loan) === "open_credit" : false
     };
   };
 
