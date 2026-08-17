@@ -192,14 +192,24 @@ describe("buildReceiptBytes", () => {
   });
 
   // The thermal printer wraps overflow onto its own line rather than
-  // failing, which looks broken — this is the safety net for that. Uses a
-  // short customer name deliberately: `Cliente: <long name>` can already
-  // overflow today (pre-existing, out of scope for this issue).
+  // failing, which looks broken — every line() call is truncated to
+  // LINE_WIDTH as a shared guard (issue #115), so this holds for any input,
+  // not just this fixture's short customer name.
   it("keeps every printed line within the 32-character LINE_WIDTH, for both loan types", () => {
     const allLines = [...printedLines(sampleReceipt), ...printedLines(openCreditReceipt)];
     for (const l of allLines) {
       expect(l.length).toBeLessThanOrEqual(32);
     }
+  });
+
+  // Issue #115 — a two-surname Dominican name routinely pushes "Cliente: "
+  // past LINE_WIDTH; the printer's own overflow-wrap looks like a misprint.
+  it("truncates a customer name that would overflow the Cliente line", () => {
+    const lines = printedLines({ ...sampleReceipt, customerName: "Yolanda Peguero Rodríguez" });
+    const clienteLine = lines.find((l) => l.startsWith("Cliente:"));
+    expect(clienteLine).toBeDefined();
+    expect(clienteLine!.length).toBeLessThanOrEqual(32);
+    expect(clienteLine).toBe("Cliente: Yolanda Peguero Rodr...");
   });
 
   // A blank "Vencimiento:" on thermal paper reads as a misprint, so a missing
