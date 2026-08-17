@@ -1,0 +1,110 @@
+name: iOS E2E Smoke Test
+
+# Builds an embedded-bundle Release configuration locally (npx expo run:ios)
+# and runs a small, known-green subset of .maestro/ against the iOS
+# Simulator — no EAS build, no Apple signing, no EXPO_TOKEN needed, since
+# simulator builds are unsigned. See build-ios.yaml for the signed,
+# EAS-based build used for TestFlight.
+#
+# Scoped to launch.yaml + pin-unlock.yaml only ("grow from green", same
+# philosophy as ../mikro's mobile-e2e.yaml): as of #119, only 5/10 flows in
+# .maestro/ pass reliably on iOS. Add more here as they're fixed rather than
+# running the whole directory and accepting known failures as noise.
+#
+# Manual trigger only for now, not on every push — a local iOS build ties up
+# a macOS runner for several minutes, and this repo's iOS build/E2E path is
+# still stabilizing (#118, #119). Promote to push-triggered once the full
+# suite (or a larger subset) is reliably green.
+
+on:
+  workflow_dispatch: {}
+
+concurrency:
+  group: ios-e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e-ios:
+    # Pinned, not -latest: avoid a surprise Xcode/OS bump breaking the build
+    # out from under this job. Bump deliberately alongside the local dev
+    # environment.
+    runs-on: macos-26
+    timeout-minutes: 45
+    env:
+      # Bakes fixture data (Carlos, María Rosa Peralta, etc. — see
+      # .maestro/pin-unlock.yaml's header comment) into the JS bundle so the
+      # flows have known data to assert against, with no real backend.
+      EXPO_PUBLIC_USE_MOCK_REPOS: "true"
+      EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID: ${{ secrets.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID }}
+      EXPO_PUBLIC_GOOGLE_OAUTH_CLIENT_ID: ${{ secrets.EXPO_PUBLIC_GOOGLE_OAUTH_CLIENT_ID }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Keyed on the Podfile that `expo prebuild` generates from
+      # package.json/app.config.ts — can't hash it before it exists, so key
+      # on its inputs instead, same approach as release.yml's Gradle cache.
+      - name: Cache CocoaPods
+        uses: actions/cache@v6
+        with:
+          path: |
+            ~/Library/Caches/CocoaPods
+            ios/Pods
+          key: pods-${{ hashFiles('package.json', 'package-lock.json', 'app.config.ts') }}
+          restore-keys: pods-
+
+      - name: Cache Maestro CLI
+        id: maestro-cache
+        uses: actions/cache@v6
+        with:
+          path: ~/.maestro
+          key: maestro-${{ runner.os }}-v1
+
+      - name: Install Maestro
+        if: steps.maestro-cache.outputs.cache-hit != 'true'
+        run: curl -Ls "https://get.maestro.mobile.dev" | bash
+
+      - name: Add Maestro to PATH
+        run: echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+
+      # Picks the first available iPhone simulator rather than hardcoding a
+      # model name, so this doesn't break when GitHub's macOS image rotates
+      # its default device set.
+      - name: Boot iOS Simulator
+        run: |
+          UDID=$(xcrun simctl list devices available iPhone --json \
+            | jq -r '.devices | to_entries[].value[] | select(.isAvailable) | .udid' | head -1)
+          if [ -z "$UDID" ]; then
+            echo "::error::No available iPhone simulator found on this runner"
+            exit 1
+          fi
+          xcrun simctl boot "$UDID"
+          echo "SIMULATOR_UDID=$UDID" >> "$GITHUB_ENV"
+
+      # Embedded bundle, no dev-client/Metro dependency — the same command
+      # verified manually against this exact simulator setup while fixing
+      # #117/#119.
+      - name: Build and install (Release configuration)
+        run: npx expo run:ios --configuration Release --device "$SIMULATOR_UDID"
+
+      - name: Run Maestro smoke flows
+        run: |
+          maestro --device "$SIMULATOR_UDID" test \
+            .maestro/launch.yaml .maestro/pin-unlock.yaml \
+            -e APP_ID=com.micobro.app
+
+      - name: Upload Maestro artifacts
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: maestro-ios-artifacts
+          path: ~/.maestro/tests/
+          retention-days: 7

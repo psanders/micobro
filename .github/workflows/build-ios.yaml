@@ -1,0 +1,131 @@
+name: Build iOS (EAS local)
+
+# Compiles iOS ON the runner with `eas build --local` — no EAS cloud build,
+# so runs consume zero EAS build quota. EAS still owns Apple signing: --local
+# pulls the credentials already registered with EAS (via EXPO_TOKEN), so no
+# certs live in this repo. Mirrors ../mikro's build-ios.yaml.
+#
+# Requires two things this repo doesn't have yet (#118):
+#   - an EXPO_TOKEN repo secret (an Expo access token — expo.dev account
+#     settings -> Access Tokens)
+#   - EAS iOS credentials actually configured for com.micobro.app (run
+#     `eas credentials` once interactively, or let the first `eas build`
+#     walk you through generating them)
+# Until both exist, this workflow will fail at the "Build iOS locally" step
+# with an EAS auth/credentials error — that's expected, not a bug in the
+# workflow itself.
+#
+# micobro is a public repo, so GitHub-hosted macOS runners are free (the 10x
+# minutes multiplier only bills private repos) — reconfirm this if the repo
+# ever goes private.
+#
+# - workflow_dispatch: pick a profile (default preview = internal
+#   distribution, installable on registered devices)
+# - v* tag (pushed by release.yml/auto-release.yml): production build; the
+#   IPA is attached to the same GitHub Release the Android APK lands on.
+#
+# Deliberately not run on every main push (unlike ci.yml): a local iOS build
+# ties up a macOS runner for ~40-60 min, so keep it on-demand + per-release.
+
+on:
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: "EAS build profile"
+        type: choice
+        options: [preview, development, production]
+        default: preview
+  push:
+    tags:
+      - "v*"
+
+# Queue rather than cancel: a tag build racing a dispatch build should not
+# kill it — each run's artifact is independent and cheap to wait for.
+concurrency:
+  group: build-ios-${{ github.ref }}
+  cancel-in-progress: false
+
+# contents: write lets tag builds attach the IPA to the GitHub Release.
+permissions:
+  contents: write
+
+jobs:
+  build-ios:
+    runs-on: macos-26
+    # Local iOS builds (pod install + xcodebuild) regularly take 40-60 min.
+    timeout-minutes: 90
+    env:
+      EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID: ${{ secrets.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID }}
+      EXPO_PUBLIC_GOOGLE_OAUTH_CLIENT_ID: ${{ secrets.EXPO_PUBLIC_GOOGLE_OAUTH_CLIENT_ID }}
+      EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID: ${{ secrets.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      # Tag builds are releases -> production profile; dispatch uses the
+      # input. The development profile builds for the simulator (see
+      # eas.json's ios.simulator: true), which produces a .tar.gz'd .app
+      # instead of an .ipa.
+      - name: Resolve build profile
+        run: |
+          if [ "${{ github.ref_type }}" = "tag" ]; then
+            echo "PROFILE=production" >> "$GITHUB_ENV"
+          else
+            echo "PROFILE=${{ inputs.profile }}" >> "$GITHUB_ENV"
+          fi
+          if [ "${{ inputs.profile }}" = "development" ] && [ "${{ github.ref_type }}" != "tag" ]; then
+            echo "ARTIFACT=micobro-ios-simulator.tar.gz" >> "$GITHUB_ENV"
+          else
+            echo "ARTIFACT=micobro-ios.ipa" >> "$GITHUB_ENV"
+          fi
+          grep -E 'PROFILE|ARTIFACT' "$GITHUB_ENV"
+
+      - name: Build iOS locally
+        run: |
+          eas build --platform ios --profile "$PROFILE" --local \
+            --non-interactive --output "$PWD/$ARTIFACT"
+
+      # Consolidated release page: attach the IPA next to the Android APK
+      # release.yml/auto-release.yml already publish there.
+      - name: Attach IPA to GitHub Release (tag builds only)
+        if: github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          cp "$ARTIFACT" "micobro-$TAG-ios.ipa"
+          gh release upload "$TAG" "micobro-$TAG-ios.ipa" --clobber
+
+      # Dispatch builds have no Release to land on; keep the artifact
+      # downloadable from the run for 30 days (same policy as the Android
+      # workflow artifact fallback in release.yml).
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: micobro-ios-${{ github.run_number }}-${{ github.sha }}
+          path: ${{ env.ARTIFACT }}
+          retention-days: 30
+
+      - name: Add build links to job summary
+        run: |
+          {
+            echo "### 📦 iOS build ($PROFILE, local)"
+            echo "- Retention: 30 days"
+            if [ "${{ github.ref_type }}" = "tag" ]; then
+              echo "- Release: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/releases/tag/${{ github.ref_name }}"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

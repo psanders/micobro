@@ -120,6 +120,24 @@ ship with Google Sign-In enabled — without it, the APK still builds fine, it
 just disables "Continuar con Google" the same way a missing local `.env`
 does.
 
+## iOS CI
+
+Two workflows, both manually triggered (`workflow_dispatch`):
+
+- `.github/workflows/ios-e2e.yaml` builds an unsigned Release configuration
+  locally and runs a small, known-green subset of `.maestro/` against the iOS
+  Simulator — no EAS, no Apple signing needed. Currently scoped to
+  `launch.yaml` + `pin-unlock.yaml`; grow it as more flows pass reliably
+  (tracked in #119).
+- `.github/workflows/build-ios.yaml` compiles a signed build via
+  `eas build --local` (also on the runner, zero EAS quota use), triggered
+  on-demand or on a `v*` release tag. Needs an `EXPO_TOKEN` repo secret and
+  EAS iOS credentials for `com.micobro.app` to actually be configured first
+  (tracked in #118) — until then it fails at the build step with an EAS auth
+  error.
+
+Both mirror `../mikro`'s `build-ios.yaml`/`mobile-e2e.yaml` patterns.
+
 ## How the app is put together
 
 - **No username/password, ever.** The only local "auth" is a 4-digit PIN
