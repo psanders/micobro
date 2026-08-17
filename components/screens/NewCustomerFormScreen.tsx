@@ -2,7 +2,7 @@
  * Copyright (C) 2026 by Pedro Sanders. MIT License.
  */
 import { useState } from "react";
-import { View, Text, TextInput, Pressable, StyleSheet } from "react-native";
+import { View, Text, TextInput, Pressable, ScrollView, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import { useCustomerRepo } from "../../lib/repo/RepoProvider";
 import { ValidationError } from "../../lib/errors/ValidationError";
@@ -51,7 +51,12 @@ export function NewCustomerFormScreen() {
   }
 
   return (
-    <View style={styles.screen}>
+    <ScrollView
+      style={styles.screen}
+      contentContainerStyle={styles.content}
+      keyboardShouldPersistTaps="handled"
+      keyboardDismissMode="on-drag"
+    >
       <View style={styles.field}>
         <Text style={styles.label}>Nombre completo</Text>
         <TextInput style={styles.input} value={name} onChangeText={setName} />
@@ -100,12 +105,13 @@ export function NewCustomerFormScreen() {
           {submitting ? "Guardando..." : "Guardar cliente"}
         </Text>
       </Pressable>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.white, padding: 16, gap: 20 },
+  screen: { flex: 1, backgroundColor: colors.white },
+  content: { padding: 16, gap: 20 },
   field: { gap: 8 },
   label: { fontSize: 13, fontFamily: fonts.semiBold, color: colors.muted },
   input: {

@@ -189,7 +189,12 @@ export function NewLoanFormScreen({ customerId: initialCustomerId }: { customerI
   return (
     <View style={[styles.screen, { paddingTop: insets.top }]}>
       <ScreenHeader title="Nuevo préstamo" subtitle={headerSubtitle} onBack={() => router.back()} />
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+      >
         <View style={styles.field}>
           {selectedCustomer && !showClientPicker ? (
             <ClientRow

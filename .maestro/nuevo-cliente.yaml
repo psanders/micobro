@@ -77,6 +77,12 @@ appId: ${APP_ID}
 - tapOn:
     below: "Teléfono"
 - inputText: "8095550199"
+# The form had no ScrollView until #119 — Guardar was unreachable behind
+# the keyboard on iOS. keyboardDismissMode="on-drag" dismisses it on a real
+# drag gesture, but scrollUntilVisible's internal micro-scrolls don't count
+# as one (keyboard stayed up, button stayed covered) — a plain `scroll`
+# does the job in a single swipe.
+- scroll
 - tapOn: "Guardar cliente"
 
 # router.back() on save returns to Buscar.

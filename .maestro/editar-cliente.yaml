@@ -96,6 +96,12 @@ appId: ${APP_ID}
     below: "Nombre completo"
 - eraseText
 - inputText: "Pedro Cabrera Actualizado"
+# The form had no ScrollView until #119 — Guardar was unreachable behind
+# the keyboard on iOS. keyboardDismissMode="on-drag" dismisses it on a real
+# drag gesture, but scrollUntilVisible's internal micro-scrolls don't count
+# as one (keyboard stayed up, button stayed covered) — a plain `scroll`
+# does the job in a single swipe.
+- scroll
 - tapOn: "Guardar cambios"
 
 # router.back() on save returns to Cliente Detalle, whose useFocusEffect
