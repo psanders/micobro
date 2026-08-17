@@ -18,6 +18,7 @@ export {
   addFrequencyInterval,
   addNonSundayDays,
   defaultFirstPaymentDate,
+  monthlyAnchorAtRisk,
   MORA_NOTE
 } from "./loanViews";
 export {

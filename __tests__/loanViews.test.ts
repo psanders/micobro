@@ -16,7 +16,8 @@ import {
   addNonSundayDays,
   buildPaymentReceipt,
   defaultFirstPaymentDate,
-  healthyFirstPaymentFloor
+  healthyFirstPaymentFloor,
+  monthlyAnchorAtRisk
 } from "../lib/loans/loanViews";
 import { openCreditState } from "../lib/loans/openCredit";
 import type { Loan, LoanFrequency } from "../lib/loans/loan.schema";
@@ -368,6 +369,25 @@ describe("NewLoanFormScreen startDate round-trip (monthly)", () => {
     // the pre-fix behavior (which landed on Apr 03), but not closed.
     expect(roundTripped.toDateString()).toBe(new Date("2026-03-28T12:00:00").toDateString());
     expect(roundTripped.getTime()).not.toBe(firstPaymentDate.getTime());
+  });
+});
+
+// Issue #112 — the cheap workaround: flag the same KNOWN LIMITATION picks
+// above so NewLoanFormScreen can warn the lender, without changing any date
+// math (the real fix needs a persisted anchor day, tracked separately).
+describe("monthlyAnchorAtRisk", () => {
+  it.each([
+    ["2026-03-31T12:00:00", true, "31 Mar — Feb (28 days) doesn't have a 31st"],
+    ["2026-05-31T12:00:00", true, "31 May — Apr has 30 days"],
+    ["2026-07-31T12:00:00", true, "31 Jul — Jun has 30 days"],
+    ["2026-10-31T12:00:00", true, "31 Oct — Sep has 30 days"],
+    ["2026-12-31T12:00:00", true, "31 Dec — Nov has 30 days"],
+    ["2026-01-31T12:00:00", false, "31 Jan — Dec has 31 days"],
+    ["2026-04-30T12:00:00", false, "30 Apr — Mar has 31 days"],
+    ["2028-02-29T12:00:00", false, "29 Feb (leap) — Jan has 31 days"],
+    ["2026-03-15T12:00:00", false, "15 Mar — every month has at least 15 days"]
+  ])("%s -> %s (%s)", (isoDate, expected) => {
+    expect(monthlyAnchorAtRisk(new Date(isoDate))).toBe(expected);
   });
 });
 

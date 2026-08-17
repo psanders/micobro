@@ -82,6 +82,24 @@ export function addFrequencyInterval(date: Date, frequency: LoanFrequency, count
 }
 
 /**
+ * True when a monthly loan's chosen "primer pago" date lands on a
+ * day-of-month (29–31) that doesn't exist in the *preceding* month — the
+ * scenario in issue #112, where `startDate` (derived by going back one
+ * interval) gets silently clamped and the first cuota ends up 1–3 days
+ * earlier than the date the lender picked. `date.getDate()` is compared
+ * against the preceding month's actual length (`new Date(y, m, 0)` is the
+ * last day of the month before `m`).
+ *
+ * A real fix needs a persisted anchor day, independent of `startDate`
+ * (tracked in #112) — this only flags the picks it affects so the lender
+ * isn't surprised, rather than changing any date math.
+ */
+export function monthlyAnchorAtRisk(date: Date): boolean {
+  const daysInPrecedingMonth = new Date(date.getFullYear(), date.getMonth(), 0).getDate();
+  return date.getDate() > daysInPrecedingMonth;
+}
+
+/**
  * `date` shifted forward by `count` non-Sunday calendar days: Sundays are
  * walked over (never counted, never returned) so the result always lands
  * on a Monday–Saturday. Used for daily loans with `skipSundays` on, where
