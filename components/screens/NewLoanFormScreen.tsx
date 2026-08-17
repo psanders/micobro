@@ -23,7 +23,11 @@ import {
   type LoanType
 } from "../../lib/loans/loan.schema";
 import { loanCostSummary } from "../../lib/loans/loanMath";
-import { addFrequencyInterval, healthyFirstPaymentFloor } from "../../lib/loans/loanViews";
+import {
+  addFrequencyInterval,
+  healthyFirstPaymentFloor,
+  monthlyAnchorAtRisk
+} from "../../lib/loans/loanViews";
 import { ValidationError } from "../../lib/errors/ValidationError";
 import { formatCurrency, toCents } from "../../lib/utils/money";
 import { formatShortDate } from "../../lib/utils/dates";
@@ -122,6 +126,16 @@ export function NewLoanFormScreen({ customerId: initialCustomerId }: { customerI
   }, [skipSundays]);
 
   const isFirstPaymentDefault = firstPaymentDate.getTime() === firstPaymentFloor.getTime();
+
+  // Issue #112: a monthly loan whose Primer pago day doesn't exist in the
+  // preceding month gets its first cuota due a few days early — the full
+  // fix needs a persisted anchor day, so this just warns on the affected
+  // picks with the actual date rather than changing any date math.
+  const monthlyAnchorWarningDate = useMemo(() => {
+    if (frequency !== "monthly" || !monthlyAnchorAtRisk(firstPaymentDate)) return null;
+    const startDate = addFrequencyInterval(firstPaymentDate, frequency, -1);
+    return addFrequencyInterval(startDate, frequency, 1);
+  }, [frequency, firstPaymentDate]);
 
   const principalValue = Number(principal);
   const interestRateValue = Number(interestRate);
@@ -254,6 +268,12 @@ export function NewLoanFormScreen({ customerId: initialCustomerId }: { customerI
             </Text>
             <Text style={styles.dateInputHint}>Toca para cambiar</Text>
           </Pressable>
+          {monthlyAnchorWarningDate && (
+            <Text style={styles.anchorWarning}>
+              El mes anterior no tiene el día {firstPaymentDate.getDate()}, así que la primera cuota
+              caerá el {formatShortDate(monthlyAnchorWarningDate)}.
+            </Text>
+          )}
         </View>
 
         {frequency === "daily" && !isOpenCredit && (
@@ -415,6 +435,7 @@ const styles = StyleSheet.create({
   },
   dateInputText: { fontSize: 15, color: colors.ink, fontWeight: "600" },
   dateInputHint: { fontSize: 12, color: colors.muted },
+  anchorWarning: { fontSize: 12, color: colors.amber, marginTop: 6 },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   chip: {
     paddingHorizontal: 14,
