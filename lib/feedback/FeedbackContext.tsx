@@ -4,24 +4,29 @@
  * Ports mikro's feedback state machine (idle/recording/processing/result/
  * error) and its native-recorder calls — mikro's server pipeline
  * (transcription, LLM structuring, GitHub filing) is not ported; see
- * `FeedbackRepo` for why. Only the global recording API is used
- * (MediaProjection has no in-app-only mode — this is the same reason
- * mikro's Android side uses it too). This context is Android-only for now:
- * the "Enviar feedback" entry point is disabled on iOS in
- * `ProfileScreen.tsx` rather than routing here, since real iOS in-app
- * recording (a different API — see `startInAppRecording`) is deferred to
- * https://github.com/psanders/micobro/issues/116.
+ * `FeedbackRepo` for why. Recording API differs by platform: Android uses
+ * the global recorder (MediaProjection has no in-app-only mode), iOS uses
+ * the in-app recorder (ReplayKit's global/broadcast API needs a
+ * BroadcastExtension target that hits a known EAS provisioning bug — see
+ * `patches/react-native-nitro-screen-recorder+0.7.0.patch` — and in-app
+ * capture is a better fit anyway, since feedback here is always about
+ * something inside Micobro). The one real UX difference: iOS in-app
+ * recording is scoped to this app, so it stops if the lender backgrounds
+ * the app mid-capture — expected and acceptable for this use case.
  */
 import { createContext, useCallback, useContext, useRef, useState, type ReactNode } from "react";
 import {
   getMicrophonePermissionStatus,
-  requestMicrophonePermission,
-  startGlobalRecording,
-  stopGlobalRecording
+  requestMicrophonePermission
 } from "react-native-nitro-screen-recorder";
 import type { ScreenRecordingFile } from "react-native-nitro-screen-recorder";
 import { useFeedbackRepo } from "../repo/RepoProvider";
 import { finishFeedbackRecording } from "./finishFeedbackRecording";
+import {
+  startFeedbackRecording,
+  stopFeedbackRecording,
+  discardFeedbackRecording
+} from "./recorder";
 
 export type FeedbackStage = "idle" | "recording" | "processing" | "result" | "error";
 
@@ -39,9 +44,6 @@ const FeedbackContext = createContext<FeedbackContextValue | null>(null);
 
 const START_ERROR = "No se pudo iniciar la grabación. Revisa los permisos de pantalla y micrófono.";
 const SUBMIT_ERROR = "No se pudo enviar el feedback. Intenta de nuevo más tarde.";
-
-/** Grace window to catch an immediate `onRecordingError` before declaring "started". */
-const START_GRACE_MS = 300;
 
 export function FeedbackProvider({ children }: { children: ReactNode }) {
   const feedbackRepo = useFeedbackRepo();
@@ -70,22 +72,7 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
         const response = await requestMicrophonePermission();
         if (!response.granted) throw new Error("microphone permission denied");
       }
-      await new Promise<void>((resolve, reject) => {
-        let settled = false;
-        startGlobalRecording({
-          options: { enableMic: true },
-          onRecordingError: (error) => {
-            if (settled) return;
-            settled = true;
-            reject(error);
-          }
-        });
-        setTimeout(() => {
-          if (settled) return;
-          settled = true;
-          resolve();
-        }, START_GRACE_MS);
-      });
+      await startFeedbackRecording();
       setErrorMessage(null);
       setStage("recording");
     } catch {
@@ -95,12 +82,12 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const stopRecording = useCallback(async () => {
-    const file = await stopGlobalRecording();
+    const file = await stopFeedbackRecording();
     await submit(file);
   }, [submit]);
 
   const discardRecording = useCallback(() => {
-    stopGlobalRecording().catch(() => {});
+    discardFeedbackRecording().catch(() => {});
     pendingFileRef.current = undefined;
     setStage("idle");
   }, []);
