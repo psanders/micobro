@@ -20,33 +20,25 @@ interface PinScreenProps {
   /** Small caption under the dots, e.g. "Se guarda solo en este teléfono". */
   hint?: string;
   onKey: (key: string) => void;
-  /** Bottom slot, e.g. the "¿Olvidaste tu PIN?" link. Switches the layout
-   *  from centered (setup) to space-between (unlock). */
+  /** Bottom slot, e.g. the "¿Olvidaste tu PIN?" link. Renders right under
+   *  the keypad — the content always centers as one block, real users
+   *  never see the avatar+greeting variant that used to justify pinning
+   *  this to the screen edge (no profile-capture flow exists yet). */
   footer?: ReactNode;
 }
 
 export function PinScreen({ header, filled, error, hint, onKey, footer }: PinScreenProps) {
-  const content = (
-    <>
+  return (
+    <View style={styles.screen}>
       {header}
       <View style={styles.pinGroup}>
         <PinInput length={4} filled={filled} error={error} />
         {hint ? <Text style={styles.hint}>{hint}</Text> : null}
       </View>
       <PinKeypad onPress={onKey} />
-    </>
+      {footer ? <View style={styles.footer}>{footer}</View> : null}
+    </View>
   );
-
-  if (footer) {
-    return (
-      <View style={[styles.screen, styles.screenSpread]}>
-        <View style={styles.topGroup}>{content}</View>
-        <View style={styles.footer}>{footer}</View>
-      </View>
-    );
-  }
-
-  return <View style={[styles.screen, styles.screenCentered]}>{content}</View>;
 }
 
 const styles = StyleSheet.create({
@@ -55,11 +47,11 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     paddingTop: 48,
     paddingHorizontal: 32,
-    paddingBottom: 32
+    paddingBottom: 32,
+    justifyContent: "center",
+    gap: 32,
+    alignItems: "center"
   },
-  screenCentered: { justifyContent: "center", gap: 32, alignItems: "center" },
-  screenSpread: { justifyContent: "space-between" },
-  topGroup: { gap: 24, alignItems: "center", alignSelf: "stretch" },
   pinGroup: { gap: 14, alignItems: "center", alignSelf: "stretch" },
   hint: { fontSize: 11, fontFamily: fonts.medium, color: colors.slate },
   footer: { alignItems: "center", gap: 14 }

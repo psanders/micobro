@@ -5,7 +5,15 @@
  * meta-de-hoy hero card, quick actions, and próximas visitas.
  */
 import { useCallback } from "react";
-import { View, Text, Pressable, ScrollView, ActivityIndicator, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  Pressable,
+  ScrollView,
+  ActivityIndicator,
+  StyleSheet,
+  Platform
+} from "react-native";
 import { useRouter, useFocusEffect } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -52,6 +60,10 @@ function formatDayLabel(date: Date): string {
 function formatShortDate(date: Date): string {
   return date.toLocaleDateString("es-DO", { day: "numeric", month: "short" });
 }
+
+// Same iOS-only vertical-centering nudge as Avatar.tsx (includeFontPadding/
+// textAlignVertical are Android-only, so fonts.bold's glyphs sit high on iOS).
+const avatarNudgeStyle = Platform.OS === "ios" ? { transform: [{ translateY: 14 * 0.055 }] } : null;
 
 function initialsOf(name: string): string {
   return name
@@ -145,7 +157,7 @@ export function HomeScreen() {
           accessibilityLabel="Perfil"
         >
           {name ? (
-            <Text style={styles.avatarInitials}>{initialsOf(name)}</Text>
+            <Text style={[styles.avatarInitials, avatarNudgeStyle]}>{initialsOf(name)}</Text>
           ) : (
             <Icon name="user" size={18} color={colors.yellowAccent} />
           )}

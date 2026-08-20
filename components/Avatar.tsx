@@ -4,7 +4,7 @@
  * m/avatar from pencil.pen: bundled avatar image by key, or an
  * initials circle when there's no image.
  */
-import { View, Text, Image, StyleSheet } from "react-native";
+import { View, Text, Image, StyleSheet, Platform } from "react-native";
 import { avatarSource } from "./avatars";
 import { colors, fonts } from "../lib/ui/theme";
 
@@ -31,9 +31,19 @@ export function Avatar({ avatarKey, name, size = 42 }: AvatarProps) {
     return <Image source={source} style={{ width: size, height: size, borderRadius: radius }} />;
   }
 
+  const fontSize = size / 3;
+  // Same fontSize-proportional iOS nudge as BrandLogo.tsx's markM/word.
+  const iosNudge = Platform.OS === "ios" ? fontSize * 0.13 : 0;
+
   return (
     <View style={[styles.fallback, { width: size, height: size, borderRadius: radius }]}>
-      <Text style={[styles.initials, { fontSize: size / 3, lineHeight: size / 3 }]}>
+      <Text
+        style={[
+          styles.initials,
+          { fontSize, lineHeight: fontSize },
+          iosNudge ? { transform: [{ translateY: iosNudge }] } : null
+        ]}
+      >
         {initialsOf(name)}
       </Text>
     </View>
@@ -49,6 +59,7 @@ const styles = StyleSheet.create({
   initials: {
     fontFamily: fonts.bold,
     color: colors.brandDeep,
+    // includeFontPadding/textAlignVertical only affect Android — see BrandLogo.tsx
     includeFontPadding: false,
     textAlignVertical: "center"
   }
