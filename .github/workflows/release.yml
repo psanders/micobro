@@ -1,66 +1,184 @@
-name: Release Android APK
+name: Release
 
-# Manual, on-demand release: you pick the version, the workflow verifies the
-# build is green, builds a release APK, then bumps package.json, tags, and
-# publishes a GitHub Release with the APK attached — one link to download.
+# One release pipeline for both platforms.
 #
-# Runs against whichever branch you select in the "Run workflow" dropdown, so
-# you can cut a build from main or from any feature branch (e.g. to share a
-# pre-merge build with a customer). The version bump and tag land on that same
-# branch, not on a hardcoded main.
+# On every push to main, semantic-release inspects the commits since the last
+# vX.Y.Z tag and, if any are releasable (feat -> minor, fix/copy/design ->
+# patch, BREAKING CHANGE -> major — see release.config.js), bumps
+# package.json, writes CHANGELOG.md, commits "chore(release): vX.Y.Z
+# [skip ci]", tags it, and publishes a GitHub Release. The `android` and
+# `ios` jobs then build the store bundles for that exact tag and attach them
+# to that same Release:
 #
-# Nothing is committed, tagged, or pushed until the build itself succeeds, so
-# a broken build never leaves a half-finished release behind.
+#   - micobro-vX.Y.Z-android.aab  — Play Store (upload key: EAS-managed)
+#   - micobro-vX.Y.Z-android.apk  — direct install / sideload
+#   - micobro-vX.Y.Z-ios.ipa      — App Store distribution
 #
-# This is NOT the normal path anymore: releases off main are cut automatically
-# by auto-release.yml, which now builds and attaches the APK itself. Reach for
-# this workflow when you need an off-cycle build — a specific version number,
-# or an APK from a branch that hasn't merged yet.
+# Store submission is manual: download the bundle from the Release and upload
+# it to Play Console / App Store Connect (or `eas submit --path <file>`).
+#
+# Why one workflow with platform jobs, not a tag-triggered build: the release
+# tag is pushed with the default GITHUB_TOKEN, and GitHub does not run
+# workflows for tags pushed by GITHUB_TOKEN. Keeping the builds as jobs in
+# this same run sidesteps that entirely — no PAT needed.
+#
+# workflow_dispatch builds the same store bundles off an arbitrary branch or
+# tag (e.g. to hand a customer a pre-merge build). It does not bump the
+# version or create a Release — the bundles are uploaded as 30-day workflow
+# artifacts instead. This replaces the old standalone "Release Android APK"
+# workflow.
+#
+# The builds use `eas build --local`: they compile on the runner and consume
+# zero EAS build quota, but EAS still owns Apple/Android signing — --local
+# pulls the credentials registered with EAS via EXPO_TOKEN, so no certs or
+# keystores live in this repo.
 
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
     inputs:
       version:
-        description: "Version to release, e.g. 0.2.0 (no leading v)"
-        required: true
-
-permissions:
-  contents: write
+        description: "X.Y.Z to cut a release at (no leading v). Blank = build store bundles from `ref` only, no tag/Release."
+        required: false
+        default: ""
+      ref:
+        description: "Branch or tag to build store bundles from (blank = default branch). Ignored when `version` is set — that always releases from main."
+        required: false
+        default: ""
 
 concurrency:
   group: release
   cancel-in-progress: false
 
+permissions:
+  contents: write
+
 jobs:
-  release:
+  # ---------------------------------------------------------------------------
+  # Cut the release. Two paths:
+  #   - push to main         -> semantic-release decides from the commits
+  #   - workflow_dispatch +  -> cut exactly that version (the off-cycle escape
+  #     a `version` input        hatch; validates, bumps, tags, publishes)
+  # On a workflow_dispatch with no `version`, this job is skipped and the
+  # android/ios jobs just build store bundles as run artifacts.
+  # ---------------------------------------------------------------------------
+  version:
+    if: github.event_name == 'push' || inputs.version != ''
     runs-on: ubuntu-latest
-    env:
-      EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID: ${{ secrets.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID }}
-      EXPO_PUBLIC_GOOGLE_OAUTH_CLIENT_ID: ${{ secrets.EXPO_PUBLIC_GOOGLE_OAUTH_CLIENT_ID }}
-
+    outputs:
+      released: ${{ steps.out.outputs.released }}
+      version: ${{ steps.out.outputs.version }}
     steps:
-      - name: Validate version format
-        run: |
-          if ! [[ "${{ inputs.version }}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "::error::Version must be X.Y.Z (got '${{ inputs.version }}')"
-            exit 1
-          fi
-
-      - name: Check tag doesn't already exist
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          if git ls-remote --tags "https://github.com/${{ github.repository }}" "refs/tags/v${{ inputs.version }}" | grep -q .; then
-            echo "::error::Tag v${{ inputs.version }} already exists"
-            exit 1
-          fi
-
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-          # workflow_dispatch checks out the branch picked in the Run workflow
-          # dropdown; being explicit keeps the release ref unambiguous.
-          ref: ${{ github.ref }}
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Test
+        run: npm run test
+
+      # ---- push: let semantic-release analyse the commits ----
+      - name: Semantic release
+        if: github.event_name == 'push'
+        id: semantic
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          npx semantic-release
+
+          # semantic-release tags the release commit it just created, so a
+          # vX.Y.Z tag sitting on HEAD is the signal that this push actually
+          # shipped a release — as opposed to one it analysed and skipped.
+          TAG=$(git tag --points-at HEAD | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -1 || true)
+          if [ -n "$TAG" ]; then
+            echo "Published $TAG — the android and ios jobs will build and attach the bundles."
+            {
+              echo "released=true"
+              echo "version=${TAG#v}"
+            } >> "$GITHUB_OUTPUT"
+          else
+            echo "No release published for this push — skipping the platform builds."
+            echo "released=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      # ---- workflow_dispatch + version: cut exactly that version off main ----
+      - name: Manual release
+        if: github.event_name == 'workflow_dispatch' && inputs.version != ''
+        id: manual
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          V: ${{ inputs.version }}
+        run: |
+          if ! echo "$V" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::version must be X.Y.Z (got '$V')"; exit 1
+          fi
+          if git ls-remote --tags origin "refs/tags/v$V" | grep -q .; then
+            echo "::error::tag v$V already exists"; exit 1
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          npm version "$V" --no-git-tag-version --allow-same-version
+          git add package.json package-lock.json
+          git commit -m "chore(release): v$V [skip ci]"
+          git tag "v$V"
+          git push origin HEAD:main
+          git push origin "v$V"
+          gh release create "v$V" --verify-tag --title "Micobro v$V" --generate-notes
+          {
+            echo "released=true"
+            echo "version=$V"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Collect release outputs
+        id: out
+        run: |
+          RELEASED="${{ steps.semantic.outputs.released || steps.manual.outputs.released || 'false' }}"
+          VERSION="${{ steps.semantic.outputs.version || steps.manual.outputs.version }}"
+          {
+            echo "released=$RELEASED"
+            echo "version=$VERSION"
+          } >> "$GITHUB_OUTPUT"
+
+  # ---------------------------------------------------------------------------
+  # Android: AAB (Play Store) + APK (sideload), signed with the EAS-managed
+  # upload key. Attached to the Release on push builds; uploaded as a 30-day
+  # artifact on dispatch builds.
+  # ---------------------------------------------------------------------------
+  android:
+    needs: version
+    if: >-
+      !cancelled() &&
+      (needs.version.result == 'success' || needs.version.result == 'skipped') &&
+      (needs.version.outputs.released == 'true' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID: ${{ secrets.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID }}
+      EXPO_PUBLIC_GOOGLE_OAUTH_CLIENT_ID: ${{ secrets.EXPO_PUBLIC_GOOGLE_OAUTH_CLIENT_ID }}
+      # eas build --local runs sharp on the runner; use its prebuilt binary
+      # rather than a global libvips (mirrors ../mikro's eas.json profiles).
+      SHARP_IGNORE_GLOBAL_LIBVIPS: "1"
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # A cut release (push or manual `version`) always builds from its
+          # tag; a bare dispatch builds from `ref`, else the default branch.
+          ref: ${{ (needs.version.outputs.version && format('v{0}', needs.version.outputs.version)) || inputs.ref || github.ref }}
 
       - uses: actions/setup-node@v7
         with:
@@ -73,8 +191,8 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      # Keyed on package.json + app.config.ts because expo prebuild generates
-      # build.gradle from those — we can't hash generated files that don't exist yet.
+      # Keyed on package.json + app.config.ts because expo prebuild (run
+      # inside `eas build --local`) generates build.gradle from those.
       - name: Cache Gradle
         uses: actions/cache@v6
         with:
@@ -94,92 +212,172 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Lint
-        run: npm run lint
+      - name: Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
 
-      - name: Typecheck
-        run: npm run typecheck
-
-      - name: Test
-        run: npm run test
-
-      # Bumps package.json in the working tree only — nothing committed yet.
-      # app.config.ts reads its `version` from package.json, so the built APK
-      # picks this up automatically once prebuild runs below.
-      - name: Bump version (working tree only)
-        run: npm version ${{ inputs.version }} --no-git-tag-version --allow-same-version
-
-      # --clean removes any stale android/ directory before regenerating.
-      - name: Generate native Android project
-        run: npx expo prebuild --platform android --clean
-
-      # The Expo template defaults to -Xmx2048m -XX:MaxMetaspaceSize=512m,
-      # which reliably OOMs on the expo-updates Kotlin/KSP compile step on a
-      # standard ubuntu-latest runner (16 GB). gradle.properties is generated
-      # by prebuild, so the bump lives here, not in the repo.
+      # The Expo template's Gradle memory defaults (-Xmx2048m / metaspace
+      # 512m) OOM on the expo-updates Kotlin/KSP compile on a 16 GB runner.
+      # `eas build --local` runs prebuild in a managed dir we can't sed after
+      # the fact, so raise the limits in the user-level gradle.properties
+      # Gradle merges on top of the generated project file.
       - name: Raise Gradle JVM memory
-        working-directory: android
         run: |
-          sed -i 's/^org.gradle.jvmargs=.*/org.gradle.jvmargs=-Xmx5g -XX:MaxMetaspaceSize=1g/' gradle.properties
+          mkdir -p ~/.gradle
+          echo 'org.gradle.jvmargs=-Xmx5g -XX:MaxMetaspaceSize=1g' >> ~/.gradle/gradle.properties
 
-      # assembleRelease bundles the JS into the APK so it runs standalone (no
-      # Metro server needed). Expo's prebuild template signs release builds
-      # with its own checked-in debug keystore (same static file every
-      # prebuild, on every machine) — good enough for direct-install/personal
-      # distribution, and it means every release is signed identically, so
-      # installing a newer release over an older one never hits Android's
-      # "signatures don't match" error. This is not suitable for Play Store
-      # distribution, which needs a real upload key.
-      - name: Build release APK
-        working-directory: android
-        run: ./gradlew assembleRelease --no-daemon
-
-      - name: Rename APK
+      - name: Resolve tag
         run: |
-          mkdir -p dist
-          cp android/app/build/outputs/apk/release/app-release.apk "dist/micobro-v${{ inputs.version }}-android.apk"
-
-      - name: Configure git
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-      # Only reached once the build above has actually succeeded. The bump and
-      # tag land on the branch this workflow was dispatched from
-      # (github.ref_name) — main, or any feature branch you're cutting from.
-      # If that branch already carries the target version (e.g. it was bumped
-      # in the PR), there's nothing to commit and we just tag the current HEAD.
-      - name: Commit version bump, tag, and push
-        run: |
-          if git diff --quiet -- package.json package-lock.json; then
-            echo "package.json already at v${{ inputs.version }} — skipping bump commit"
+          if [ -n "${{ needs.version.outputs.version }}" ]; then
+            echo "TAG=v${{ needs.version.outputs.version }}" >> "$GITHUB_ENV"
           else
-            git add package.json package-lock.json
-            git commit -m "chore(release): v${{ inputs.version }}"
+            REF="${{ inputs.ref || github.ref_name }}"
+            echo "TAG=${REF//\//-}-$(date +%Y%m%d-%H%M)" >> "$GITHUB_ENV"
           fi
-          git tag "v${{ inputs.version }}"
-          git push origin HEAD:"${{ github.ref_name }}"
-          git push origin "v${{ inputs.version }}"
 
-      - name: Create GitHub Release and attach APK
+      - name: Build AAB (Play Store)
+        run: |
+          eas build --platform android --profile production --local \
+            --non-interactive --output "$RUNNER_TEMP/micobro-$TAG-android.aab"
+
+      - name: Build APK (sideload)
+        run: |
+          eas build --platform android --profile production-apk --local \
+            --non-interactive --output "$RUNNER_TEMP/micobro-$TAG-android.apk"
+
+      - name: Attach bundles to the GitHub Release
+        if: github.event_name == 'push'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create "v${{ inputs.version }}" "dist/micobro-v${{ inputs.version }}-android.apk" \
-            --title "Micobro v${{ inputs.version }}" \
-            --generate-notes
+          for attempt in 1 2 3 4 5; do
+            if gh release upload "$TAG" \
+              "$RUNNER_TEMP/micobro-$TAG-android.aab" \
+              "$RUNNER_TEMP/micobro-$TAG-android.apk" --clobber; then
+              exit 0
+            fi
+            echo "Release $TAG not ready yet (attempt $attempt); retrying in 30s"
+            sleep 30
+          done
+          echo "::error::Could not attach Android bundles to release $TAG"
+          exit 1
 
-      # 30-day fallback in case the Release step above needs to be redone.
-      - name: Upload APK as a workflow artifact
+      - name: Upload bundles as workflow artifacts
         uses: actions/upload-artifact@v7
         with:
-          name: micobro-v${{ inputs.version }}-android
-          path: dist/micobro-v${{ inputs.version }}-android.apk
+          name: micobro-${{ env.TAG }}-android
+          path: |
+            ${{ runner.temp }}/micobro-${{ env.TAG }}-android.aab
+            ${{ runner.temp }}/micobro-${{ env.TAG }}-android.apk
           retention-days: 30
 
-      - name: Add download link to job summary
+      - name: Job summary
         run: |
           {
-            echo "### 📦 Micobro v${{ inputs.version }} — Android APK"
-            echo "- [Download the APK](${{ github.server_url }}/${{ github.repository }}/releases/tag/v${{ inputs.version }})"
+            echo "### 📦 Android — $TAG"
+            echo "- \`micobro-$TAG-android.aab\` — Play Store upload"
+            echo "- \`micobro-$TAG-android.apk\` — direct install / sideload"
+            if [ "${{ github.event_name }}" = "push" ]; then
+              echo "- Release: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/releases/tag/${TAG}"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # ---------------------------------------------------------------------------
+  # iOS: App Store distribution IPA, signed with the EAS-managed distribution
+  # certificate + provisioning profile for com.micobro.app.
+  # ---------------------------------------------------------------------------
+  ios:
+    needs: version
+    if: >-
+      !cancelled() &&
+      (needs.version.result == 'success' || needs.version.result == 'skipped') &&
+      (needs.version.outputs.released == 'true' || github.event_name == 'workflow_dispatch')
+    runs-on: macos-26
+    # pod install + xcodebuild via eas build --local regularly take 40-60 min.
+    timeout-minutes: 90
+    env:
+      EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID: ${{ secrets.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID }}
+      EXPO_PUBLIC_GOOGLE_OAUTH_CLIENT_ID: ${{ secrets.EXPO_PUBLIC_GOOGLE_OAUTH_CLIENT_ID }}
+      EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID: ${{ secrets.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID }}
+      SHARP_IGNORE_GLOBAL_LIBVIPS: "1"
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # A cut release (push or manual `version`) always builds from its
+          # tag; a bare dispatch builds from `ref`, else the default branch.
+          ref: ${{ (needs.version.outputs.version && format('v{0}', needs.version.outputs.version)) || inputs.ref || github.ref }}
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      # Keyed on the inputs `expo prebuild` generates the Podfile from — the
+      # Podfile itself doesn't exist until the build runs.
+      - name: Cache CocoaPods
+        uses: actions/cache@v6
+        with:
+          path: |
+            ~/Library/Caches/CocoaPods
+            ~/.cocoapods/repos
+          key: pods-${{ hashFiles('package.json', 'package-lock.json', 'app.config.ts') }}
+          restore-keys: pods-
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Resolve tag
+        run: |
+          if [ -n "${{ needs.version.outputs.version }}" ]; then
+            echo "TAG=v${{ needs.version.outputs.version }}" >> "$GITHUB_ENV"
+          else
+            REF="${{ inputs.ref || github.ref_name }}"
+            echo "TAG=${REF//\//-}-$(date +%Y%m%d-%H%M)" >> "$GITHUB_ENV"
+          fi
+
+      - name: Build IPA (App Store distribution)
+        run: |
+          eas build --platform ios --profile production --local \
+            --non-interactive --output "$RUNNER_TEMP/micobro-$TAG-ios.ipa"
+
+      - name: Attach IPA to the GitHub Release
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          for attempt in 1 2 3 4 5; do
+            if gh release upload "$TAG" "$RUNNER_TEMP/micobro-$TAG-ios.ipa" --clobber; then
+              exit 0
+            fi
+            echo "Release $TAG not ready yet (attempt $attempt); retrying in 30s"
+            sleep 30
+          done
+          echo "::error::Could not attach the IPA to release $TAG"
+          exit 1
+
+      - name: Upload IPA as a workflow artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: micobro-${{ env.TAG }}-ios
+          path: ${{ runner.temp }}/micobro-${{ env.TAG }}-ios.ipa
+          retention-days: 30
+
+      - name: Job summary
+        run: |
+          {
+            echo "### 📦 iOS — $TAG"
+            echo "- \`micobro-$TAG-ios.ipa\` — App Store distribution"
+            echo "- Submit: \`eas submit --platform ios --path <ipa>\` or upload in App Store Connect"
+            if [ "${{ github.event_name }}" = "push" ]; then
+              echo "- Release: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/releases/tag/${TAG}"
+            fi
           } >> "$GITHUB_STEP_SUMMARY"

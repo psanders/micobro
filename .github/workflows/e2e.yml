@@ -1,10 +1,14 @@
-name: iOS E2E Smoke Test
+name: E2E
 
 # Builds an embedded-bundle Release configuration locally (npx expo run:ios)
 # and runs a small, known-green subset of .maestro/ against the iOS
 # Simulator — no EAS build, no Apple signing, no EXPO_TOKEN needed, since
-# simulator builds are unsigned. See build-ios.yaml for the signed,
-# EAS-based build used for TestFlight.
+# simulator builds are unsigned. See release.yml for the signed, EAS-based
+# builds that produce the store bundles.
+#
+# iOS only for now. Next steps: add an `android` job for parity (Maestro
+# against an emulator on ubuntu-latest), and promote both to push-triggered
+# once the full .maestro/ suite is reliably green on each platform.
 #
 # Scoped to launch.yaml + pin-unlock.yaml only ("grow from green", same
 # philosophy as ../mikro's mobile-e2e.yaml): as of #119, only 5/10 flows in
@@ -20,7 +24,7 @@ on:
   workflow_dispatch: {}
 
 concurrency:
-  group: ios-e2e-${{ github.ref }}
+  group: e2e-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:

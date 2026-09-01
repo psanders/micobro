@@ -1,20 +1,64 @@
 name: CI
 
+# Every gate that must pass before code lands on main:
+#   - pr-title: the PR title is a valid Conventional Commit. PRs here are
+#     squash-merged, so the title becomes the commit on main that
+#     release.yml's semantic-release reads to derive the version bump. The
+#     husky commit-msg hook only guards local commits, not the squash title,
+#     so this is the check that actually protects the release.
+#   - verify: lint, typecheck, unit tests, formatting.
+#
+# Runs on every PR and on every push to main. A newer push to the same ref
+# cancels the older in-flight run.
+
 on:
+  pull_request:
   push:
     branches: [main]
-  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: read
 
 jobs:
-  ci:
+  pr-title:
+    name: PR title is a valid Conventional Commit
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: amannn/action-semantic-pull-request@v6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          # Keep in sync with commitlint.config.js and release.config.js —
+          # `copy` and `design` are this repo's two non-standard types.
+          types: |
+            build
+            chore
+            ci
+            copy
+            design
+            docs
+            feat
+            fix
+            perf
+            refactor
+            revert
+            style
+            test
+          requireScope: false
+
+  verify:
     name: Lint, typecheck, test, format
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v7
+      - uses: actions/checkout@v7
 
-      - name: Setup Node
-        uses: actions/setup-node@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
