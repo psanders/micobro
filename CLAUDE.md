@@ -80,9 +80,11 @@ worked example. Full guide: `/ps:create-validated-function`.
 Use **Conventional Commits** (`type(scope): subject`, e.g. `feat(customers): add phone validation`).
 Enforced by a `husky` `commit-msg` hook running `commitlint` (see `commitlint.config.js`
 for the allowed types, including the non-standard `copy` and `design`), and by
-`pr-title-lint.yml` on PR titles — PRs are squash-merged, so the title is what
-actually lands as the commit on `main`. `release.config.js` derives version bumps
-from these commits via `semantic-release` (`.github/workflows/auto-release.yml`).
+the `pr-title` job in `ci.yml` on PR titles — PRs are squash-merged, so the title
+is what actually lands as the commit on `main`. `release.config.js` derives version
+bumps from these commits via `semantic-release` (the `version` job in
+`.github/workflows/release.yml`), which then builds and attaches the Android
+`.aab`/`.apk` and iOS `.ipa` store bundles to the GitHub Release.
 
 ## Branch hygiene
 

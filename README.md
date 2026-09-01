@@ -103,40 +103,52 @@ TestFlight.
 | `npm run start:storybook:native` | Component dev in Storybook                                            |
 | `npm run start:demo`             | App with in-memory mock data, no real device DB or Google auth needed |
 
-## Releasing an APK
+## CI/CD pipeline
 
-`.github/workflows/release.yml` is a manual, on-demand release: trigger it
-from the Actions tab (or `gh workflow run release.yml -f version=0.2.0`) with
-a version number, and it lints/typechecks/tests, builds a standalone release
-APK (`expo prebuild` + `gradlew assembleRelease`, signed with Expo's
-template debug keystore — fine for direct-install distribution, not Play
-Store), then — only once that build has actually succeeded — bumps
-`package.json`'s version, tags `vX.Y.Z`, and publishes a GitHub Release with
-the APK attached. The release page is the one link to send/download from;
-the build also uploads a 30-day workflow-artifact copy as a fallback.
+Four workflows, named by role:
 
-Set the `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` repo secret for release builds to
-ship with Google Sign-In enabled — without it, the APK still builds fine, it
-just disables "Continuar con Google" the same way a missing local `.env`
-does.
+| Workflow                        | Trigger                             | What it does                                                                                                                         |
+| ------------------------------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| **CI** (`ci.yml`)               | every PR, push to `main`            | Conventional-Commit PR title check + lint/typecheck/test/format.                                                                     |
+| **Release** (`release.yml`)     | push to `main`; `workflow_dispatch` | `semantic-release` bumps the version, tags, and publishes a GitHub Release, then builds and attaches the store bundles for that tag. |
+| **E2E** (`e2e.yml`)             | `workflow_dispatch`                 | Unsigned iOS Simulator build + a known-green subset of `.maestro/`. No EAS/Apple signing.                                            |
+| **Marketing Site** (`site.yml`) | push to `main` touching `site/**`   | Builds `site/` and deploys it to GitHub Pages.                                                                                       |
 
-## iOS CI
+### Releasing
 
-Two workflows, both manually triggered (`workflow_dispatch`):
+On every push to `main`, **Release** runs `semantic-release` (feat → minor,
+`fix`/`copy`/`design` → patch, `BREAKING CHANGE` → major — see
+`release.config.js`). If a release is cut, the `android` and `ios` jobs build
+the store bundles for that exact tag with `eas build --local` (compiled on
+the runner, zero EAS build quota; signing stays EAS-managed) and attach them
+to the same GitHub Release:
 
-- `.github/workflows/ios-e2e.yaml` builds an unsigned Release configuration
-  locally and runs a small, known-green subset of `.maestro/` against the iOS
-  Simulator — no EAS, no Apple signing needed. Currently scoped to
-  `launch.yaml` + `pin-unlock.yaml`; grow it as more flows pass reliably
-  (tracked in #119).
-- `.github/workflows/build-ios.yaml` compiles a signed build via
-  `eas build --local` (also on the runner, zero EAS quota use), triggered
-  on-demand or on a `v*` release tag. Needs an `EXPO_TOKEN` repo secret and
-  EAS iOS credentials for `com.micobro.app` to actually be configured first
-  (tracked in #118) — until then it fails at the build step with an EAS auth
-  error.
+- `micobro-vX.Y.Z-android.aab` — Play Store upload
+- `micobro-vX.Y.Z-android.apk` — direct install / sideload
+- `micobro-vX.Y.Z-ios.ipa` — App Store distribution
 
-Both mirror `../mikro`'s `build-ios.yaml`/`mobile-e2e.yaml` patterns.
+**Store submission is manual**: download the bundle from the Release and
+upload it to Play Console / App Store Connect, or run
+`eas submit --platform <p> --path <file>`.
+
+`workflow_dispatch` (`gh workflow run release.yml -f ref=<branch>`) builds
+the same bundles off any branch or tag without bumping the version — the
+artifacts are attached to the run for 30 days instead of a Release. Use it
+for pre-merge builds.
+
+### Required repo secrets
+
+| Secret                               | Used by         | Notes                                                                                                            |
+| ------------------------------------ | --------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `EXPO_TOKEN`                         | Release         | expo.dev → Account settings → Access tokens. Lets `eas build --local` pull the signing credentials.              |
+| `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID`   | Release, E2E    | Google Sign-In (`webClientId`, both platforms).                                                                  |
+| `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID`   | Release (`ios`) | iOS OAuth client for `com.micobro.app`. Without it the IPA builds but "Continuar con Google" is disabled on iOS. |
+| `EXPO_PUBLIC_GOOGLE_OAUTH_CLIENT_ID` | Release, E2E    | Android OAuth client (kept for reference).                                                                       |
+
+One-time EAS credential setup (per platform): `eas credentials -p android`
+generates the upload keystore; `eas credentials -p ios` generates the
+distribution certificate + provisioning profile for `com.micobro.app` (needs
+an Apple Developer account).
 
 ## How the app is put together
 

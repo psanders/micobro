@@ -1,11 +1,15 @@
-name: Deploy Site
+name: Marketing Site
+
+# Builds site/ (the Vite marketing site served at micobro.app) and deploys
+# it to GitHub Pages. Unrelated to the app build/release pipeline — only
+# runs when site/ itself changes.
 
 on:
   push:
     branches: [main]
     paths:
       - "site/**"
-      - ".github/workflows/deploy-site.yaml"
+      - ".github/workflows/site.yml"
   workflow_dispatch:
 
 # GitHub Pages deploys from whichever run reaches "deploy" last; cancelling
