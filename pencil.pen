@@ -84715,8 +84715,8 @@
     {
       "type": "frame",
       "id": "I5ASY",
-      "x": 4430,
-      "y": 0,
+      "x": 6872,
+      "y": 4994,
       "name": "07c Cobrar Crédito Abierto — interés ya cubierto",
       "clip": true,
       "width": 390,
@@ -85333,6 +85333,801 @@
                   "fontFamily": "$font-family",
                   "fontSize": 14,
                   "fontWeight": "700"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "xwGqK",
+      "x": -812,
+      "y": 13719,
+      "name": "WhatsApp Story · Micobro",
+      "clip": true,
+      "width": 1080,
+      "height": 1920,
+      "fill": "$brand.white",
+      "layout": "none",
+      "children": [
+        {
+          "type": "ellipse",
+          "id": "k9GtjJ",
+          "x": -300,
+          "y": -200,
+          "opacity": 0.12,
+          "fill": "$brand.orange.primary-2",
+          "width": 1400,
+          "height": 1400,
+          "effect": {
+            "type": "blur",
+            "radius": 250
+          }
+        },
+        {
+          "type": "ellipse",
+          "id": "w3qDM",
+          "x": 200,
+          "y": 1000,
+          "opacity": 0.12,
+          "fill": "$brand.blue.sky",
+          "width": 1400,
+          "height": 1400,
+          "effect": {
+            "type": "blur",
+            "radius": 250
+          }
+        },
+        {
+          "type": "frame",
+          "id": "aP7ZW",
+          "x": 0,
+          "y": 0,
+          "width": 1080,
+          "height": 1920,
+          "layout": "vertical",
+          "padding": [
+            100,
+            80,
+            120,
+            80
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "G8wjUw",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 40,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "Xf6XJ",
+                  "name": "component/logo",
+                  "gap": 21,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "n2umi1",
+                      "name": "component/logo-mark",
+                      "width": 60,
+                      "height": 60,
+                      "fill": "$brand.blue.deep",
+                      "cornerRadius": 15,
+                      "layout": "vertical",
+                      "padding": [
+                        0,
+                        0,
+                        6,
+                        0
+                      ],
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "w9k4W",
+                          "name": "logoM",
+                          "rotation": 0.2685392692845832,
+                          "fill": "$brand.white",
+                          "content": "m",
+                          "lineHeight": 1,
+                          "textAlign": "center",
+                          "textAlignVertical": "middle",
+                          "fontFamily": "Geist",
+                          "fontSize": 36,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "qH2qs",
+                      "name": "logoWord",
+                      "fill": "$brand.blue.deep",
+                      "content": "micobro",
+                      "fontFamily": "Geist",
+                      "fontSize": 48,
+                      "fontWeight": "700",
+                      "letterSpacing": -0.5
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "YVnDH",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 32,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "R7HZm8",
+                      "width": 180,
+                      "height": 12,
+                      "fill": {
+                        "type": "gradient",
+                        "gradientType": "linear",
+                        "enabled": true,
+                        "rotation": 90,
+                        "size": {
+                          "height": 1
+                        },
+                        "colors": [
+                          {
+                            "color": "$brand.orange.primary-2",
+                            "position": 0
+                          },
+                          {
+                            "color": "$brand.yellow.accent-2",
+                            "position": 1
+                          }
+                        ]
+                      },
+                      "cornerRadius": 6
+                    },
+                    {
+                      "type": "text",
+                      "id": "S2BHf",
+                      "fill": "$brand.blue.deep",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Lleva tus préstamos al día, aunque no haya señal.",
+                      "lineHeight": 1.05,
+                      "fontFamily": "Geist",
+                      "fontSize": 90,
+                      "fontWeight": "700",
+                      "letterSpacing": -2.4
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "oavRq",
+              "width": 672,
+              "height": 672,
+              "layout": "none",
+              "children": [
+                {
+                  "type": "ellipse",
+                  "id": "rFEAE",
+                  "x": 51.2,
+                  "y": 51.2,
+                  "fill": "#FFFFFF00",
+                  "width": 569.6,
+                  "height": 569.6,
+                  "stroke": "$brand.orange.primary-2",
+                  "strokeWidth": 9.600000000000001,
+                  "strokeAlignment": "inner",
+                  "strokeLinecap": "round"
+                },
+                {
+                  "type": "frame",
+                  "id": "hXLgN",
+                  "x": 128,
+                  "y": 128,
+                  "width": 416,
+                  "height": 416,
+                  "fill": {
+                    "type": "gradient",
+                    "gradientType": "linear",
+                    "enabled": true,
+                    "rotation": 135,
+                    "size": {
+                      "height": 1
+                    },
+                    "colors": [
+                      {
+                        "color": "$brand.blue.sky",
+                        "position": 0
+                      },
+                      {
+                        "color": "$brand.blue.deep",
+                        "position": 1
+                      }
+                    ]
+                  },
+                  "cornerRadius": 108.80000000000001,
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "#0B4F4A66",
+                    "offset": {
+                      "x": 0,
+                      "y": 51.2
+                    },
+                    "blur": 108.80000000000001
+                  },
+                  "layout": "vertical",
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "N7jkq8",
+                      "name": "component/logo-mark",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "fill": {
+                        "type": "color",
+                        "color": "#ffffff",
+                        "enabled": false
+                      },
+                      "cornerRadius": 10,
+                      "layout": "vertical",
+                      "padding": [
+                        0,
+                        0,
+                        42,
+                        0
+                      ],
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "LStEB",
+                          "name": "logoM",
+                          "rotation": 0.2685392692845832,
+                          "fill": "$brand.white",
+                          "content": "m",
+                          "lineHeight": 1,
+                          "textAlign": "center",
+                          "textAlignVertical": "middle",
+                          "fontFamily": "Geist",
+                          "fontSize": 256,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "ellipse",
+                      "id": "VkDlW",
+                      "layoutPosition": "absolute",
+                      "x": 64,
+                      "y": 51.2,
+                      "opacity": 0.22,
+                      "fill": "$brand.white",
+                      "width": 230.4,
+                      "height": 147.20000000000002,
+                      "effect": {
+                        "type": "blur",
+                        "radius": 24
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "ellipse",
+                  "id": "nQkaX",
+                  "x": 569.6,
+                  "y": 204.8,
+                  "fill": "$brand.orange.deep-2",
+                  "width": 64,
+                  "height": 64
+                },
+                {
+                  "type": "ellipse",
+                  "id": "t7DEBh",
+                  "x": 147.20000000000002,
+                  "y": 544,
+                  "fill": "$brand.yellow.accent-2",
+                  "width": 51.2,
+                  "height": 51.2
+                },
+                {
+                  "type": "ellipse",
+                  "id": "Fc1X6",
+                  "x": 48,
+                  "y": 220.8,
+                  "fill": "$brand.blue.sky",
+                  "width": 38.400000000000006,
+                  "height": 38.400000000000006
+                },
+                {
+                  "type": "icon",
+                  "id": "No8tj",
+                  "x": 480,
+                  "y": -12.8,
+                  "width": 147.20000000000002,
+                  "height": 147.20000000000002,
+                  "icon": "sparkles",
+                  "library": "lucide",
+                  "fill": "$brand.yellow.accent-2"
+                },
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 8,
+                  "id": "xfIia",
+                  "x": 16,
+                  "y": 448,
+                  "opacity": 0.9,
+                  "rotation": 18,
+                  "fill": "$brand.orange.primary-2",
+                  "width": 44.800000000000004,
+                  "height": 44.800000000000004
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "gv4Vc",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 48,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "N2uC3",
+                  "fill": "#5B6B8C",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Somos la plataforma de microfinanzas nativa de IA. Proveemos un software unificado de cobranzas, evaluación y notificaciones de seguimiento a clientes.",
+                  "lineHeight": 1.4,
+                  "textAlign": "center",
+                  "fontFamily": "Geist",
+                  "fontSize": 32,
+                  "fontWeight": "500"
+                },
+                {
+                  "type": "frame",
+                  "id": "rVnDr",
+                  "fill": "$brand.blue.deep",
+                  "cornerRadius": 9999,
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "#0B4F4A66",
+                    "offset": {
+                      "x": 0,
+                      "y": 12
+                    },
+                    "blur": 32
+                  },
+                  "gap": 18,
+                  "padding": [
+                    24,
+                    48
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "smNO5",
+                      "width": 36,
+                      "height": 36,
+                      "icon": "globe",
+                      "library": "lucide",
+                      "fill": "$brand.white"
+                    },
+                    {
+                      "type": "text",
+                      "id": "q1a7tR",
+                      "fill": "$brand.white",
+                      "content": "micobro.app",
+                      "fontFamily": "Geist",
+                      "fontSize": 36,
+                      "fontWeight": "700"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "OnyAC",
+      "x": 1391,
+      "y": 12289,
+      "name": "Instagram Post (4:5) · Lanzamiento · Micobro",
+      "clip": true,
+      "width": 1080,
+      "height": 1350,
+      "fill": "$brand.white",
+      "layout": "none",
+      "children": [
+        {
+          "type": "ellipse",
+          "id": "E4CLzN",
+          "x": -200,
+          "y": -100,
+          "opacity": 0.12,
+          "fill": "$brand.orange.primary-2",
+          "width": 1000,
+          "height": 1000,
+          "effect": {
+            "type": "blur",
+            "radius": 250
+          }
+        },
+        {
+          "type": "ellipse",
+          "id": "jIMHr",
+          "x": 300,
+          "y": 700,
+          "opacity": 0.12,
+          "fill": "$brand.blue.sky",
+          "width": 1000,
+          "height": 1000,
+          "effect": {
+            "type": "blur",
+            "radius": 250
+          }
+        },
+        {
+          "type": "frame",
+          "id": "iLIA8",
+          "x": 0,
+          "y": 0,
+          "width": 1080,
+          "height": 1350,
+          "layout": "vertical",
+          "padding": [
+            140,
+            80
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "KD9QR",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 40,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "uyBQZ",
+                  "name": "component/logo",
+                  "gap": 21,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "Cs10R",
+                      "name": "component/logo-mark",
+                      "width": 60,
+                      "height": 60,
+                      "fill": "$brand.blue.deep",
+                      "cornerRadius": 15,
+                      "layout": "vertical",
+                      "padding": [
+                        0,
+                        0,
+                        6,
+                        0
+                      ],
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "e7F9tP",
+                          "name": "logoM",
+                          "rotation": 0.2685392692845832,
+                          "fill": "$brand.white",
+                          "content": "m",
+                          "lineHeight": 1,
+                          "textAlign": "center",
+                          "textAlignVertical": "middle",
+                          "fontFamily": "Geist",
+                          "fontSize": 36,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "HgbCa",
+                      "name": "logoWord",
+                      "fill": "$brand.blue.deep",
+                      "content": "micobro",
+                      "fontFamily": "Geist",
+                      "fontSize": 48,
+                      "fontWeight": "700",
+                      "letterSpacing": -0.5
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "LShfo",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 32,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "hXEEG",
+                      "width": 180,
+                      "height": 12,
+                      "fill": {
+                        "type": "gradient",
+                        "gradientType": "linear",
+                        "enabled": true,
+                        "rotation": 90,
+                        "size": {
+                          "height": 1
+                        },
+                        "colors": [
+                          {
+                            "color": "$brand.orange.primary-2",
+                            "position": 0
+                          },
+                          {
+                            "color": "$brand.yellow.accent-2",
+                            "position": 1
+                          }
+                        ]
+                      },
+                      "cornerRadius": 6
+                    },
+                    {
+                      "type": "text",
+                      "id": "d13Au1",
+                      "fill": "$brand.blue.deep",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Nace Micobro: la plataforma de microfinanzas con IA para tu negocio.",
+                      "lineHeight": 1.1,
+                      "fontFamily": "Geist",
+                      "fontSize": 64,
+                      "fontWeight": "700",
+                      "letterSpacing": -2
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "Hd55W",
+              "width": 462,
+              "height": 462,
+              "layout": "none",
+              "children": [
+                {
+                  "type": "ellipse",
+                  "id": "uUpCT",
+                  "x": 35,
+                  "y": 35,
+                  "fill": "#FFFFFF00",
+                  "width": 392,
+                  "height": 392,
+                  "stroke": "$brand.orange.primary-2",
+                  "strokeWidth": 7,
+                  "strokeAlignment": "inner",
+                  "strokeLinecap": "round"
+                },
+                {
+                  "type": "frame",
+                  "id": "pC2lw",
+                  "x": 88,
+                  "y": 88,
+                  "width": 286,
+                  "height": 286,
+                  "fill": {
+                    "type": "gradient",
+                    "gradientType": "linear",
+                    "enabled": true,
+                    "rotation": 135,
+                    "size": {
+                      "height": 1
+                    },
+                    "colors": [
+                      {
+                        "color": "$brand.blue.sky",
+                        "position": 0
+                      },
+                      {
+                        "color": "$brand.blue.deep",
+                        "position": 1
+                      }
+                    ]
+                  },
+                  "cornerRadius": 75,
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "#0B4F4A66",
+                    "offset": {
+                      "x": 0,
+                      "y": 32
+                    },
+                    "blur": 68
+                  },
+                  "layout": "vertical",
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "dZDdU",
+                      "name": "component/logo-mark",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "fill": {
+                        "type": "color",
+                        "color": "#ffffff",
+                        "enabled": false
+                      },
+                      "cornerRadius": 10,
+                      "layout": "vertical",
+                      "padding": [
+                        0,
+                        0,
+                        29,
+                        0
+                      ],
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "zimoR",
+                          "name": "logoM",
+                          "rotation": 0.2685392692845832,
+                          "fill": "$brand.white",
+                          "content": "m",
+                          "lineHeight": 1,
+                          "textAlign": "center",
+                          "textAlignVertical": "middle",
+                          "fontFamily": "Geist",
+                          "fontSize": 176,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "ellipse",
+                      "id": "wLDR1",
+                      "layoutPosition": "absolute",
+                      "x": 44,
+                      "y": 35,
+                      "opacity": 0.22,
+                      "fill": "$brand.white",
+                      "width": 158,
+                      "height": 101,
+                      "effect": {
+                        "type": "blur",
+                        "radius": 24
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "ellipse",
+                  "id": "SIVKs",
+                  "x": 392,
+                  "y": 141,
+                  "fill": "$brand.orange.deep-2",
+                  "width": 44,
+                  "height": 44
+                },
+                {
+                  "type": "ellipse",
+                  "id": "VIg7g",
+                  "x": 101,
+                  "y": 374,
+                  "fill": "$brand.yellow.accent-2",
+                  "width": 35,
+                  "height": 35
+                },
+                {
+                  "type": "ellipse",
+                  "id": "LTCGK",
+                  "x": 33,
+                  "y": 152,
+                  "fill": "$brand.blue.sky",
+                  "width": 26,
+                  "height": 26
+                },
+                {
+                  "type": "icon",
+                  "id": "sMIiW",
+                  "x": 330,
+                  "y": -9,
+                  "width": 101,
+                  "height": 101,
+                  "icon": "sparkles",
+                  "library": "lucide",
+                  "fill": "$brand.yellow.accent-2"
+                },
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 9,
+                  "id": "nWWR7",
+                  "x": 11,
+                  "y": 308,
+                  "opacity": 0.9,
+                  "rotation": 18,
+                  "fill": "$brand.orange.primary-2",
+                  "width": 31,
+                  "height": 31
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "Py1C6",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 48,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "JLdVJ",
+                  "fill": "$brand.blue.deep",
+                  "cornerRadius": 9999,
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "#0B4F4A66",
+                    "offset": {
+                      "x": 0,
+                      "y": 12
+                    },
+                    "blur": 32
+                  },
+                  "gap": 18,
+                  "padding": [
+                    32,
+                    64
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "JJZwV",
+                      "width": 48,
+                      "height": 48,
+                      "icon": "globe",
+                      "library": "lucide",
+                      "fill": "$brand.white"
+                    },
+                    {
+                      "type": "text",
+                      "id": "qAGK2",
+                      "fill": "$brand.white",
+                      "content": "micobro.app",
+                      "fontFamily": "Geist",
+                      "fontSize": 48,
+                      "fontWeight": "700"
+                    }
+                  ]
                 }
               ]
             }
