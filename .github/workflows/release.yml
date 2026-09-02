@@ -156,8 +156,8 @@ jobs:
 
   # ---------------------------------------------------------------------------
   # Android: AAB (Play Store) + APK (sideload), signed with the EAS-managed
-  # upload key. Attached to the Release on push builds; uploaded as a 30-day
-  # artifact on dispatch builds.
+  # upload key. Always uploaded as 30-day run artifacts; also attached to the
+  # GitHub Release whenever one exists for the resolved tag.
   # ---------------------------------------------------------------------------
   android:
     needs: version
@@ -166,7 +166,8 @@ jobs:
       (needs.version.result == 'success' || needs.version.result == 'skipped') &&
       (needs.version.outputs.released == 'true' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    # Two sequential `eas build --local` runs (AAB then APK) take ~65 min.
+    timeout-minutes: 120
     env:
       EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID: ${{ secrets.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID }}
       EXPO_PUBLIC_GOOGLE_OAUTH_CLIENT_ID: ${{ secrets.EXPO_PUBLIC_GOOGLE_OAUTH_CLIENT_ID }}
@@ -228,14 +229,21 @@ jobs:
           mkdir -p ~/.gradle
           echo 'org.gradle.jvmargs=-Xmx5g -XX:MaxMetaspaceSize=1g' >> ~/.gradle/gradle.properties
 
+      # A cut release (push or manual `version`) -> its tag. A dispatch whose
+      # `ref` is itself a vX.Y.Z tag -> that tag verbatim, so re-running the
+      # build for an existing release re-attaches to it. Anything else -> a
+      # timestamped label; the bundles stay as run artifacts only.
       - name: Resolve tag
         run: |
           if [ -n "${{ needs.version.outputs.version }}" ]; then
-            echo "TAG=v${{ needs.version.outputs.version }}" >> "$GITHUB_ENV"
+            TAG="v${{ needs.version.outputs.version }}"
+          elif printf '%s' "${{ inputs.ref }}" | grep -qE '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
+            TAG="${{ inputs.ref }}"
           else
             REF="${{ inputs.ref || github.ref_name }}"
-            echo "TAG=${REF//\//-}-$(date +%Y%m%d-%H%M)" >> "$GITHUB_ENV"
+            TAG="${REF//\//-}-$(date +%Y%m%d-%H%M)"
           fi
+          echo "TAG=$TAG" >> "$GITHUB_ENV"
 
       - name: Build AAB (Play Store)
         run: |
@@ -247,24 +255,10 @@ jobs:
           eas build --platform android --profile production-apk --local \
             --non-interactive --output "$RUNNER_TEMP/micobro-$TAG-android.apk"
 
-      - name: Attach bundles to the GitHub Release
-        if: github.event_name == 'push'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          for attempt in 1 2 3 4 5; do
-            if gh release upload "$TAG" \
-              "$RUNNER_TEMP/micobro-$TAG-android.aab" \
-              "$RUNNER_TEMP/micobro-$TAG-android.apk" --clobber; then
-              exit 0
-            fi
-            echo "Release $TAG not ready yet (attempt $attempt); retrying in 30s"
-            sleep 30
-          done
-          echo "::error::Could not attach Android bundles to release $TAG"
-          exit 1
-
+      # Runs on success or failure (not on cancel) so a finished AAB still
+      # gets saved even if the APK build later fails.
       - name: Upload bundles as workflow artifacts
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v7
         with:
           name: micobro-${{ env.TAG }}-android
@@ -272,14 +266,41 @@ jobs:
             ${{ runner.temp }}/micobro-${{ env.TAG }}-android.aab
             ${{ runner.temp }}/micobro-${{ env.TAG }}-android.apk
           retention-days: 30
+          if-no-files-found: warn
+
+      # Attach whenever a GitHub Release exists for this tag — covers both a
+      # freshly cut release and a re-run against an existing tag.
+      - name: Attach bundles to the GitHub Release
+        if: ${{ !cancelled() }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if ! gh release view "$TAG" >/dev/null 2>&1; then
+            echo "No GitHub Release '$TAG' — leaving the bundles as run artifacts only."
+            exit 0
+          fi
+          for attempt in 1 2 3 4 5; do
+            if gh release upload "$TAG" \
+              "$RUNNER_TEMP/micobro-$TAG-android.aab" \
+              "$RUNNER_TEMP/micobro-$TAG-android.apk" --clobber; then
+              exit 0
+            fi
+            echo "Upload to $TAG failed (attempt $attempt); retrying in 30s"
+            sleep 30
+          done
+          echo "::error::Could not attach Android bundles to release $TAG"
+          exit 1
 
       - name: Job summary
+        if: ${{ !cancelled() }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           {
             echo "### 📦 Android — $TAG"
             echo "- \`micobro-$TAG-android.aab\` — Play Store upload"
             echo "- \`micobro-$TAG-android.apk\` — direct install / sideload"
-            if [ "${{ github.event_name }}" = "push" ]; then
+            if gh release view "$TAG" >/dev/null 2>&1; then
               echo "- Release: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/releases/tag/${TAG}"
             fi
           } >> "$GITHUB_STEP_SUMMARY"
@@ -335,49 +356,62 @@ jobs:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
+      # See the android job's Resolve tag step for the rationale.
       - name: Resolve tag
         run: |
           if [ -n "${{ needs.version.outputs.version }}" ]; then
-            echo "TAG=v${{ needs.version.outputs.version }}" >> "$GITHUB_ENV"
+            TAG="v${{ needs.version.outputs.version }}"
+          elif printf '%s' "${{ inputs.ref }}" | grep -qE '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
+            TAG="${{ inputs.ref }}"
           else
             REF="${{ inputs.ref || github.ref_name }}"
-            echo "TAG=${REF//\//-}-$(date +%Y%m%d-%H%M)" >> "$GITHUB_ENV"
+            TAG="${REF//\//-}-$(date +%Y%m%d-%H%M)"
           fi
+          echo "TAG=$TAG" >> "$GITHUB_ENV"
 
       - name: Build IPA (App Store distribution)
         run: |
           eas build --platform ios --profile production --local \
             --non-interactive --output "$RUNNER_TEMP/micobro-$TAG-ios.ipa"
 
-      - name: Attach IPA to the GitHub Release
-        if: github.event_name == 'push'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          for attempt in 1 2 3 4 5; do
-            if gh release upload "$TAG" "$RUNNER_TEMP/micobro-$TAG-ios.ipa" --clobber; then
-              exit 0
-            fi
-            echo "Release $TAG not ready yet (attempt $attempt); retrying in 30s"
-            sleep 30
-          done
-          echo "::error::Could not attach the IPA to release $TAG"
-          exit 1
-
       - name: Upload IPA as a workflow artifact
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v7
         with:
           name: micobro-${{ env.TAG }}-ios
           path: ${{ runner.temp }}/micobro-${{ env.TAG }}-ios.ipa
           retention-days: 30
+          if-no-files-found: warn
+
+      - name: Attach IPA to the GitHub Release
+        if: ${{ !cancelled() }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if ! gh release view "$TAG" >/dev/null 2>&1; then
+            echo "No GitHub Release '$TAG' — leaving the IPA as a run artifact only."
+            exit 0
+          fi
+          for attempt in 1 2 3 4 5; do
+            if gh release upload "$TAG" "$RUNNER_TEMP/micobro-$TAG-ios.ipa" --clobber; then
+              exit 0
+            fi
+            echo "Upload to $TAG failed (attempt $attempt); retrying in 30s"
+            sleep 30
+          done
+          echo "::error::Could not attach the IPA to release $TAG"
+          exit 1
 
       - name: Job summary
+        if: ${{ !cancelled() }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           {
             echo "### 📦 iOS — $TAG"
             echo "- \`micobro-$TAG-ios.ipa\` — App Store distribution"
             echo "- Submit: \`eas submit --platform ios --path <ipa>\` or upload in App Store Connect"
-            if [ "${{ github.event_name }}" = "push" ]; then
+            if gh release view "$TAG" >/dev/null 2>&1; then
               echo "- Release: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/releases/tag/${TAG}"
             fi
           } >> "$GITHUB_STEP_SUMMARY"
