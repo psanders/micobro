@@ -2,6 +2,7 @@
  * Copyright (C) 2026 by Pedro Sanders. MIT License.
  */
 import { HeartHandshake, MessageCircle, X } from "lucide-react";
+import { trackLead } from "../lib/metaPixel";
 
 export const WHATSAPP_GROUP_URL = "https://chat.whatsapp.com/Dh0lEeocwVj65T9xNyTCNC";
 
@@ -52,6 +53,7 @@ export function DownloadModal({ open, onClose }: DownloadModalProps) {
           href={WHATSAPP_GROUP_URL}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={trackLead}
           className="flex items-center justify-center gap-2.5 rounded-full bg-brand-blue-deep px-6 py-4 text-[15px] font-bold text-white no-underline transition-colors hover:bg-[#0a4640]"
         >
           <MessageCircle className="h-[18px] w-[18px]" strokeWidth={2} />
