@@ -18,6 +18,10 @@
   --color-brand-night-muted: #8ab3a6;
   --color-ds-muted: #697a93;
   --color-ds-border: #e5eaf1;
+  --color-ds-red: #dc2626;
+  --color-ds-red-bg: #fcebeb;
+  --color-ds-green: #16a34a;
+  --color-ds-green-bg: #e8f7ee;
 
   --radius-card: 20px;
   --radius-pill: 9999px;

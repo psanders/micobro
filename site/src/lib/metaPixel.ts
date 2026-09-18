@@ -45,3 +45,7 @@ export function initMetaPixel() {
 export function trackLead() {
   window.fbq?.("track", "Lead");
 }
+
+export function trackCustom(eventName: string) {
+  window.fbq?.("trackCustom", eventName);
+}
