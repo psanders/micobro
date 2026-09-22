@@ -13,7 +13,10 @@ interface DownloadModalProps {
 
 type Status = "idle" | "submitting" | "success" | "error";
 
-const VALIDATION_ERROR = "Escribe tu nombre y un WhatsApp válido, por ejemplo 809-555-1234.";
+const NOMBRE_ERROR = "Escribe tu nombre.";
+// One error per field: a blank name used to raise a WhatsApp-flavoured message
+// whose only example was an 809 number, which read as "829 is not accepted".
+const WHATSAPP_ERROR = "Escribe tu WhatsApp, por ejemplo 829 111 1111.";
 const SUBMIT_ERROR = "No pudimos enviar tu solicitud. Intenta de nuevo.";
 
 export function DownloadModal({ open, onClose }: DownloadModalProps) {
@@ -45,9 +48,15 @@ export function DownloadModal({ open, onClose }: DownloadModalProps) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
+    if (!nombre.trim()) {
+      setErrorMessage(NOMBRE_ERROR);
+      setStatus("error");
+      return;
+    }
+
     const normalized = normalizeWhatsapp(whatsapp);
-    if (!nombre.trim() || !normalized) {
-      setErrorMessage(VALIDATION_ERROR);
+    if (!normalized) {
+      setErrorMessage(WHATSAPP_ERROR);
       setStatus("error");
       return;
     }
@@ -142,7 +151,7 @@ export function DownloadModal({ open, onClose }: DownloadModalProps) {
                   autoComplete="tel"
                   value={whatsapp}
                   onChange={(e) => setWhatsapp(e.target.value)}
-                  placeholder="809-000-0000"
+                  placeholder="829 111 1111"
                   disabled={isSubmitting}
                   className="w-full bg-transparent text-[15px] font-medium text-brand-ink outline-none placeholder:text-[#7888A8]"
                 />
