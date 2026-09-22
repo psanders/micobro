@@ -1,5 +1,5 @@
 {
-  "version": "2.17",
+  "version": "2.18",
   "children": [
     {
       "type": "frame",
@@ -84398,7 +84398,7 @@
               "name": "icon",
               "width": 16,
               "height": 16,
-              "icon": "users",
+              "icon": "lock",
               "library": "lucide",
               "fill": "$brand.white"
             },
@@ -84424,7 +84424,7 @@
                   "id": "Dp6W2",
                   "name": "detail",
                   "fill": "$brand.mist",
-                  "content": "por ahora, Micobro es solo para familiares y amigos.",
+                  "content": "Micobro es solo por invitación.",
                   "fontFamily": "$font-family",
                   "fontSize": 13,
                   "fontWeight": "normal"
@@ -84526,7 +84526,7 @@
           "fill": "$brand.ink",
           "textGrowth": "fixed-width",
           "width": "fill_container",
-          "content": "Por ahora, solo para familiares y amigos",
+          "content": "Solo por invitación, por ahora",
           "lineHeight": 1.2,
           "fontFamily": "$font-family",
           "fontSize": 22,
@@ -84539,11 +84539,57 @@
           "fill": "$ds.muted",
           "textGrowth": "fixed-width",
           "width": "fill_container",
-          "content": "Micobro todavía está en pruebas cerradas. Muy pronto abriremos la descarga para todos. Mientras tanto, si quieres ser parte de la prueba, escríbenos.",
+          "content": "Déjanos tu nombre y tu WhatsApp y te enviamos tu invitación.",
           "lineHeight": 1.5,
           "fontFamily": "$font-family",
           "fontSize": 14,
           "fontWeight": "normal"
+        },
+        {
+          "type": "frame",
+          "id": "zWrHs",
+          "name": "Fields",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 14,
+          "children": [
+            {
+              "id": "LEIKK",
+              "type": "ref",
+              "ref": "XHaAT",
+              "name": "nombre",
+              "width": "fill_container",
+              "descendants": {
+                "flbLp": {
+                  "content": "Nombre"
+                },
+                "lPkAM": {
+                  "icon": "user"
+                },
+                "iaYYl": {
+                  "content": "Tu nombre"
+                }
+              }
+            },
+            {
+              "id": "HFoTZ",
+              "type": "ref",
+              "ref": "XHaAT",
+              "name": "whatsapp",
+              "width": "fill_container",
+              "descendants": {
+                "flbLp": {
+                  "content": "WhatsApp"
+                },
+                "lPkAM": {
+                  "icon": "phone"
+                },
+                "iaYYl": {
+                  "content": "829 111 1111"
+                }
+              }
+            }
+          ]
         },
         {
           "type": "frame",
@@ -84566,7 +84612,7 @@
               "name": "i",
               "width": 18,
               "height": 18,
-              "icon": "message-circle",
+              "icon": "send",
               "library": "lucide",
               "fill": "$brand.white"
             },
@@ -84575,7 +84621,7 @@
               "id": "jASPT",
               "name": "t",
               "fill": "$brand.white",
-              "content": "Unirme al grupo de WhatsApp",
+              "content": "Pedir mi invitación",
               "fontFamily": "$font-family",
               "fontSize": 15,
               "fontWeight": "700"
