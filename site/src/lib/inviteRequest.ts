@@ -41,15 +41,24 @@ export async function submitInviteRequest({
     user_agent: navigator.userAgent
   };
 
-  // Apps Script answers /exec with a 302 to script.googleusercontent.com, and
-  // that redirect target sends no CORS headers — so a normal fetch runs the
-  // script (the row is written) and then rejects on the redirect, which the
-  // caller reads as failure. "no-cors" keeps this a simple request, still
-  // delivers the POST, and resolves with an opaque response instead of
-  // throwing. The response was never read anyway.
-  await fetch(APPS_SCRIPT_URL, {
+  // Apps Script cold-starts: the first request after an idle spell takes ~9s
+  // to answer, and it answers /exec with a 302 to script.googleusercontent.com
+  // that carries no CORS headers, so awaiting it both stalls the person and
+  // then rejects on the redirect. Nothing here reads the response, so hand the
+  // POST to the browser and return: sendBeacon queues it, survives the page
+  // being closed, and reports only whether it was accepted for sending.
+  const body = new Blob([JSON.stringify(payload)], { type: "text/plain;charset=UTF-8" });
+
+  if (navigator.sendBeacon?.(APPS_SCRIPT_URL, body)) {
+    return;
+  }
+
+  // No sendBeacon (or it refused the payload): fall back to an unawaited POST.
+  // "no-cors" keeps it a simple request and stops the redirect from throwing.
+  void fetch(APPS_SCRIPT_URL, {
     method: "POST",
     mode: "no-cors",
-    body: JSON.stringify(payload)
+    keepalive: true,
+    body
   });
 }
