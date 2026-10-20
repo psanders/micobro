@@ -3,7 +3,7 @@
  */
 import * as Crypto from "expo-crypto";
 import { withErrorHandlingAndValidation } from "../utils/withErrorHandlingAndValidation";
-import { createLoanSchema, type CreateLoanInput, type Loan } from "./loan.schema";
+import { createLoanSchema, loanTermsFields, type CreateLoanInput, type Loan } from "./loan.schema";
 import { loans, pendingMutations } from "../db/schema";
 import { logger } from "../logger";
 import type { Database } from "../db/client";
@@ -22,26 +22,12 @@ export function createCreateLoan({ db }: CreateLoanDeps) {
     logger.verbose("creating loan", { customerId: params.customerId });
 
     const now = new Date();
-    const isOpenCredit = params.loanType === "open_credit";
     const loan: Loan = {
       id: Crypto.randomUUID(),
       customerId: params.customerId,
-      principalCents: params.principal,
-      interestRateBps: Math.round(params.interestRate * 100),
-      // Open credit has no fixed term (validated by createLoanSchema's
-      // .refine, which requires termCount only for a term loan) — 0 is a
-      // safe placeholder the open-credit paths (lib/loans/openCredit.ts)
-      // never read.
-      termCount: isOpenCredit ? 0 : (params.termCount as number),
-      frequency: params.frequency,
+      ...loanTermsFields(params),
       startDate: params.startDate ?? now,
       status: "active",
-      notes: params.notes ?? null,
-      graceDays: params.graceDays ?? null,
-      moraEnabled: params.moraEnabled ?? null,
-      moraRateBps: params.moraRate != null ? Math.round(params.moraRate * 100) : null,
-      skipSundays: params.skipSundays ?? null,
-      loanType: isOpenCredit ? "open_credit" : null,
       createdAt: now,
       updatedAt: now
     };

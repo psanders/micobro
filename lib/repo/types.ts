@@ -7,7 +7,9 @@ import type {
   LoanWithCustomer,
   LoanDetail,
   CreateLoanInput,
-  LoanFrequency
+  LoanFrequency,
+  LoanStatus,
+  LoanTermsInput
 } from "../loans/loan.schema";
 import type { OpenCreditCycle } from "../loans/openCredit";
 import type { Payment, CreatePaymentInput, PaymentMethod } from "../payments/payment.schema";
@@ -64,6 +66,18 @@ export interface CustomerLoanSummary {
   openCredit: CustomerOpenCreditSummary | null;
 }
 
+/** One archived loan in Cliente Detalle's ARCHIVADOS section. */
+export interface ArchivedLoanSummary {
+  loanId: string;
+  code: string;
+  principalCents: number;
+  frequency: LoanFrequency;
+  paymentCount: number;
+  collectedCents: number;
+  /** The loan's last update — when it was archived, since archived loans can't be edited. */
+  archivedAt: Date;
+}
+
 /** A recent-history entry ("Pago cuota 3 · RD$2,400"). */
 export interface CustomerActivityItem {
   id: string;
@@ -86,6 +100,7 @@ export interface CustomerDetailView {
   sinceYear: number | null;
   standing: CustomerStanding;
   activeLoans: CustomerLoanSummary[];
+  archivedLoans: ArchivedLoanSummary[];
   recentActivity: CustomerActivityItem[];
 }
 
@@ -172,6 +187,13 @@ export interface LoanDetailView {
   dueTodayCents: number;
   dueTodayLines: DueTodayLine[];
   schedule: LoanScheduleItem[];
+  status: LoanStatus;
+  /** Payments recorded against this loan — any payment locks Editar préstamo. */
+  paymentCount: number;
+  /** Everything those payments collected, mora included — what stays in Cuadre if it's archived. */
+  collectedCents: number;
+  /** Set only for an archived loan (see `ARCHIVED_LOAN_STATUS`). */
+  archivedAt: Date | null;
   /** Populated instead of the term fields above's meaningful use when this is a crédito abierto loan; `null` for a term loan. */
   openCredit: OpenCreditView | null;
 }
@@ -202,6 +224,10 @@ export interface LoanRepo {
   create(input: CreateLoanInput): Promise<Loan>;
   getDetailView(id: string): Promise<LoanDetailView | null>;
   getPaymentHistory(id: string): Promise<PaymentHistoryView | null>;
+  /** Editar préstamo — rejected once the loan has payments. */
+  update(id: string, terms: LoanTermsInput): Promise<Loan>;
+  archive(id: string): Promise<Loan>;
+  restore(id: string): Promise<Loan>;
 }
 
 /** What the Registrar cobro screen needs to build its options. */

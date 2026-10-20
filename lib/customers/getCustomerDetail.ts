@@ -8,11 +8,12 @@ import { customers, loans, payments, visits } from "../db/schema";
 import {
   buildLoanDetailView,
   buildCustomerLoanSummary,
+  buildArchivedLoanSummary,
   cycleIndexForPayment,
   MORA_NOTE
 } from "../loans/loanViews";
 import { computeLoanMora, loanMoraPolicy } from "../loans/mora";
-import { effectiveLoanType } from "../loans/loan.schema";
+import { effectiveLoanType, ARCHIVED_LOAN_STATUS } from "../loans/loan.schema";
 import { openCreditState } from "../loans/openCredit";
 import { formatCurrency } from "../utils/money";
 import { visitDescription } from "../visits/visitDescription";
@@ -48,6 +49,7 @@ export function createGetCustomerDetail({ db }: GetCustomerDetailDeps) {
     const customerLoans = (await db.select().from(loans).where(eq(loans.customerId, id))) as Loan[];
 
     const activeLoans = [];
+    const archivedLoans: CustomerDetailView["archivedLoans"] = [];
     const activity: CustomerDetailView["recentActivity"] = [];
     let inMora = false;
     for (const loan of customerLoans) {
@@ -62,6 +64,10 @@ export function createGetCustomerDetail({ db }: GetCustomerDetailDeps) {
       // It must never drive `standing` to "mora" (capitalization replaces
       // mora entirely for this loan type — see change 55).
       const ocState = isOpenCredit ? openCreditState(loan, loanPayments, new Date()) : null;
+
+      if (loan.status === ARCHIVED_LOAN_STATUS) {
+        archivedLoans.push(buildArchivedLoanSummary(loan, loanPayments));
+      }
 
       if (loan.status === "active") {
         if (isOpenCredit && ocState) {
@@ -144,6 +150,7 @@ export function createGetCustomerDetail({ db }: GetCustomerDetailDeps) {
       sinceYear: customer.createdAt.getFullYear(),
       standing: inMora ? "mora" : "al_dia",
       activeLoans,
+      archivedLoans: archivedLoans.sort((a, b) => b.archivedAt.getTime() - a.archivedAt.getTime()),
       recentActivity: activity.slice(0, 5)
     };
   };

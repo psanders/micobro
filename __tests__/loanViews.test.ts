@@ -6,6 +6,7 @@
  * the due-today breakdown lists overdue cuotas plus mora.
  */
 import {
+  buildArchivedLoanSummary,
   buildLoanDetailView,
   buildCustomerLoanSummary,
   cycleIndexForPayment,
@@ -732,6 +733,57 @@ describe("buildCustomerLoanSummary", () => {
       expect(cycleIndexForPayment(state.cycles, strayPayment)).toBe(
         state.cycles[state.cycles.length - 1]!.index
       );
+    });
+  });
+});
+
+describe("loan correction fields (loan-edit-archive)", () => {
+  it("reports an active loan's status, payment count and collected total", () => {
+    const view = buildLoanDetailView({
+      loan,
+      customerName: "José Núñez",
+      business: null,
+      payments: threePaid,
+      today
+    });
+
+    expect(view.status).toBe("active");
+    expect(view.paymentCount).toBe(3);
+    expect(view.collectedCents).toBe(810000);
+    expect(view.archivedAt).toBeNull();
+  });
+
+  it("dates an archived loan by its last update and keeps its schedule", () => {
+    const archivedAt = daysAgo(2);
+    const view = buildLoanDetailView({
+      loan: { ...loan, status: "cancelled", updatedAt: archivedAt },
+      customerName: "José Núñez",
+      business: null,
+      payments: threePaid,
+      today
+    });
+
+    expect(view.status).toBe("cancelled");
+    expect(view.archivedAt).toBe(archivedAt);
+    expect(view.schedule).toHaveLength(12);
+    expect(view.installmentsPaid).toBe(3);
+  });
+
+  it("summarizes an archived loan for Cliente Detalle's ARCHIVADOS", () => {
+    const archivedAt = daysAgo(2);
+    const summary = buildArchivedLoanSummary(
+      { ...loan, status: "cancelled", updatedAt: archivedAt },
+      threePaid
+    );
+
+    expect(summary).toEqual({
+      loanId: "loan-3",
+      code: loanCode("loan-3"),
+      principalCents: 2880000,
+      frequency: "weekly",
+      paymentCount: 3,
+      collectedCents: 810000,
+      archivedAt
     });
   });
 });
