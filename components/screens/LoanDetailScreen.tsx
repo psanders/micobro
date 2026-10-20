@@ -5,7 +5,7 @@
  * balance summary, "Total a pagar hoy" breakdown, Plan de pagos, and the
  * Anotar visita / Cobrar action bar.
  */
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import {
   View,
   Text,
@@ -30,6 +30,8 @@ import { ProgressBar } from "../ProgressBar";
 import { MetaChip } from "../MetaChip";
 import { CuotaRow } from "../CuotaRow";
 import { KvRow } from "../KvRow";
+import { LoanOptionsSheet, type LoanOption } from "../LoanOptionsSheet";
+import { ArchiveLoanSheet } from "../ArchiveLoanSheet";
 import { colors, fonts } from "../../lib/ui/theme";
 import type { DueTodayLine, OpenCreditView } from "../../lib/repo/types";
 import type { OpenCreditCycle } from "../../lib/loans/openCredit";
@@ -91,6 +93,98 @@ export function LoanDetailScreen({ loanId }: { loanId: string }) {
   );
 
   const loan = detail.data;
+  const [showOptions, setShowOptions] = useState(false);
+  const [showArchive, setShowArchive] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const isArchived = loan?.archivedAt != null;
+  // Nothing left to collect: a closed crédito abierto, or a term loan with
+  // no balance. Archiving one is housekeeping, not a correction.
+  const isPaidOff = loan
+    ? loan.openCredit
+      ? loan.openCredit.isClosed
+      : loan.balanceCents === 0
+    : false;
+
+  const runWrite = async (write: () => Promise<unknown>, after?: () => void) => {
+    setBusy(true);
+    try {
+      await write();
+      setShowArchive(false);
+      setShowOptions(false);
+      if (after) after();
+      else reload();
+    } catch (err) {
+      Alert.alert("No se pudo guardar", err instanceof Error ? err.message : String(err));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleRestore = () => runWrite(() => loanRepo.restore(loanId));
+  const handleArchive = () => runWrite(() => loanRepo.archive(loanId));
+  // Archive first (the committed action), then offer the corrected loan —
+  // backing out of the form leaves the old loan archived, nothing created.
+  const handleArchiveAndCreate = () =>
+    runWrite(
+      () => loanRepo.archive(loanId),
+      () =>
+        router.replace({
+          pathname: "/loans/new",
+          params: { customerId: loan?.customerId ?? "", fromLoanId: loanId }
+        })
+    );
+
+  const options: LoanOption[] = !loan
+    ? []
+    : isArchived
+      ? [
+          {
+            key: "restore",
+            icon: "rotate-ccw",
+            title: "Restaurar préstamo",
+            subtitle: "Vuelve a tu ruta y a los préstamos activos",
+            tone: "brand",
+            onPress: handleRestore
+          }
+        ]
+      : [
+          {
+            key: "edit",
+            icon: "edit-2",
+            title: "Editar préstamo",
+            subtitle:
+              loan.paymentCount > 0
+                ? isPaidOff
+                  ? "No disponible: este préstamo ya tiene pagos."
+                  : "No disponible: este préstamo ya tiene pagos. Archívalo y crea uno corregido."
+                : "Corrige monto, cuotas, tasa o fechas",
+            tone: "brand",
+            disabled: loan.paymentCount > 0,
+            onPress: () => {
+              setShowOptions(false);
+              router.push(`/loans/${loan.id}/editar`);
+            }
+          },
+          {
+            key: "archive",
+            icon: "archive",
+            title: "Archivar préstamo",
+            subtitle: "Lo saca de tu ruta y de los préstamos activos",
+            tone: "amber",
+            onPress: () => {
+              setShowOptions(false);
+              setShowArchive(true);
+            }
+          }
+        ];
+
+  const optionsSubtitle = !loan
+    ? ""
+    : isArchived
+      ? `Archivado el ${formatShortDate(loan.archivedAt!)}`
+      : loan.paymentCount === 0
+        ? "Sin pagos registrados"
+        : `${loan.paymentCount} pago${loan.paymentCount === 1 ? "" : "s"} registrado${loan.paymentCount === 1 ? "" : "s"} · ${formatCurrency(loan.collectedCents)} cobrados`;
 
   if (!detail.loading && !loan) {
     return (
@@ -117,7 +211,7 @@ export function LoanDetailScreen({ loanId }: { loanId: string }) {
         right={
           <Pressable
             hitSlop={10}
-            onPress={() => Alert.alert("Muy pronto", "Esta función todavía no está disponible.")}
+            onPress={() => loan && setShowOptions(true)}
             accessibilityLabel="Más opciones"
           >
             <MaterialCommunityIcons
@@ -136,6 +230,19 @@ export function LoanDetailScreen({ loanId }: { loanId: string }) {
       ) : (
         <>
           <ScrollView contentContainerStyle={styles.content}>
+            {isArchived && (
+              <View style={styles.archivedBanner} testID="loan-archived-banner">
+                <Icon name="archive" size={18} color={colors.amber} />
+                <View style={styles.archivedBannerText}>
+                  <Text style={styles.archivedBannerTitle}>
+                    Archivado el {formatShortDate(loan.archivedAt!)}
+                  </Text>
+                  <Text style={styles.archivedBannerSub}>
+                    No aparece en tu ruta ni se puede cobrar. Sus pagos siguen en el historial.
+                  </Text>
+                </View>
+              </View>
+            )}
             {loan.openCredit ? (
               <>
                 <View style={styles.chips}>
@@ -300,39 +407,43 @@ export function LoanDetailScreen({ loanId }: { loanId: string }) {
                   </View>
                 </View>
 
-                <View style={styles.dueCard}>
-                  <View style={styles.dueTop}>
-                    <View style={styles.dueTitleWrap}>
-                      <Text style={styles.dueLabel}>TOTAL A PAGAR HOY</Text>
-                      <Text style={styles.dueSub}>Lo que el cliente debe entregar ahora</Text>
-                    </View>
-                    <View style={styles.dueAmountRow}>
-                      <Text style={[styles.dueCurrency, !hasArrears && styles.dueAmountOk]}>
-                        RD$
-                      </Text>
-                      <Text style={[styles.dueAmount, !hasArrears && styles.dueAmountOk]}>
-                        {(loan.dueTodayCents / 100).toLocaleString("es-DO")}
-                      </Text>
-                    </View>
-                  </View>
-                  <View style={styles.divider} />
-                  <View style={styles.dueLines}>
-                    {loan.dueTodayLines.map((line, index) => (
-                      <View key={index} style={styles.dueLine}>
-                        <View style={styles.dueLineLeft}>
-                          <View
-                            style={[
-                              styles.dueDot,
-                              line.kind === "mora" && { backgroundColor: colors.orangeDeep }
-                            ]}
-                          />
-                          <Text style={styles.dueLineText}>{dueLineLabel(line)}</Text>
-                        </View>
-                        <Text style={styles.dueLineAmount}>{formatCurrency(line.amountCents)}</Text>
+                {!isArchived && (
+                  <View style={styles.dueCard}>
+                    <View style={styles.dueTop}>
+                      <View style={styles.dueTitleWrap}>
+                        <Text style={styles.dueLabel}>TOTAL A PAGAR HOY</Text>
+                        <Text style={styles.dueSub}>Lo que el cliente debe entregar ahora</Text>
                       </View>
-                    ))}
+                      <View style={styles.dueAmountRow}>
+                        <Text style={[styles.dueCurrency, !hasArrears && styles.dueAmountOk]}>
+                          RD$
+                        </Text>
+                        <Text style={[styles.dueAmount, !hasArrears && styles.dueAmountOk]}>
+                          {(loan.dueTodayCents / 100).toLocaleString("es-DO")}
+                        </Text>
+                      </View>
+                    </View>
+                    <View style={styles.divider} />
+                    <View style={styles.dueLines}>
+                      {loan.dueTodayLines.map((line, index) => (
+                        <View key={index} style={styles.dueLine}>
+                          <View style={styles.dueLineLeft}>
+                            <View
+                              style={[
+                                styles.dueDot,
+                                line.kind === "mora" && { backgroundColor: colors.orangeDeep }
+                              ]}
+                            />
+                            <Text style={styles.dueLineText}>{dueLineLabel(line)}</Text>
+                          </View>
+                          <Text style={styles.dueLineAmount}>
+                            {formatCurrency(line.amountCents)}
+                          </Text>
+                        </View>
+                      ))}
+                    </View>
                   </View>
-                </View>
+                )}
 
                 <View style={styles.planHead}>
                   <SectionLabel>PLAN DE PAGOS</SectionLabel>
@@ -360,34 +471,68 @@ export function LoanDetailScreen({ loanId }: { loanId: string }) {
             )}
           </ScrollView>
 
-          <View style={[styles.actionBar, { paddingBottom: 14 + insets.bottom }]}>
-            <Pressable
-              style={styles.actionSecondary}
-              onPress={() => router.push(`/loans/${loan.id}/visita`)}
-            >
-              <MaterialCommunityIcons
-                name="notebook-edit-outline"
-                size={16}
-                color={colors.brandDeep}
-                accessibilityElementsHidden
-                importantForAccessibility="no"
-              />
-              <Text style={styles.actionSecondaryText}>Anotar visita</Text>
-            </Pressable>
-            <Pressable
-              style={styles.actionPrimary}
-              onPress={() => router.push(`/loans/${loan.id}/cobrar`)}
-            >
-              <MaterialCommunityIcons
-                name="cash"
-                size={16}
-                color={colors.white}
-                accessibilityElementsHidden
-                importantForAccessibility="no"
-              />
-              <Text style={styles.actionPrimaryText}>Cobrar</Text>
-            </Pressable>
-          </View>
+          {isArchived ? (
+            <View style={[styles.actionBar, { paddingBottom: 14 + insets.bottom }]}>
+              <Pressable
+                testID="loan-restore-button"
+                style={styles.actionRestore}
+                disabled={busy}
+                onPress={handleRestore}
+              >
+                <Icon name="rotate-ccw" size={16} color={colors.brandDeep} />
+                <Text style={styles.actionSecondaryText}>Restaurar préstamo</Text>
+              </Pressable>
+            </View>
+          ) : (
+            <View style={[styles.actionBar, { paddingBottom: 14 + insets.bottom }]}>
+              <Pressable
+                style={styles.actionSecondary}
+                onPress={() => router.push(`/loans/${loan.id}/visita`)}
+              >
+                <MaterialCommunityIcons
+                  name="notebook-edit-outline"
+                  size={16}
+                  color={colors.brandDeep}
+                  accessibilityElementsHidden
+                  importantForAccessibility="no"
+                />
+                <Text style={styles.actionSecondaryText}>Anotar visita</Text>
+              </Pressable>
+              <Pressable
+                style={styles.actionPrimary}
+                onPress={() => router.push(`/loans/${loan.id}/cobrar`)}
+              >
+                <MaterialCommunityIcons
+                  name="cash"
+                  size={16}
+                  color={colors.white}
+                  accessibilityElementsHidden
+                  importantForAccessibility="no"
+                />
+                <Text style={styles.actionPrimaryText}>Cobrar</Text>
+              </Pressable>
+            </View>
+          )}
+
+          <LoanOptionsSheet
+            visible={showOptions}
+            title={`Préstamo #${loan.code}`}
+            subtitle={optionsSubtitle}
+            options={options}
+            onClose={() => setShowOptions(false)}
+          />
+          <ArchiveLoanSheet
+            visible={showArchive}
+            loanCode={loan.code}
+            customerName={loan.customerName}
+            paymentCount={loan.paymentCount}
+            collectedCents={loan.collectedCents}
+            offerCorrected={loan.paymentCount > 0 && !isPaidOff}
+            busy={busy}
+            onArchive={handleArchive}
+            onArchiveAndCreate={handleArchiveAndCreate}
+            onClose={() => setShowArchive(false)}
+          />
         </>
       )}
     </View>
@@ -405,6 +550,23 @@ const styles = StyleSheet.create({
     marginTop: 40
   },
   content: { paddingHorizontal: 20, paddingTop: 4, paddingBottom: 24, gap: 14 },
+  archivedBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    backgroundColor: colors.amberBg,
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 12
+  },
+  archivedBannerText: { flex: 1, gap: 1 },
+  archivedBannerTitle: { fontSize: 13, fontFamily: fonts.bold, color: colors.ink },
+  archivedBannerSub: {
+    fontSize: 11,
+    fontFamily: fonts.medium,
+    color: colors.muted,
+    lineHeight: 15
+  },
   chips: { flexDirection: "row", gap: 6 },
   summary: { backgroundColor: colors.brandDeep, borderRadius: 18, padding: 20, gap: 14 },
   summaryLabel: {
@@ -500,6 +662,18 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 6,
     backgroundColor: colors.mist,
+    borderRadius: 12,
+    padding: 14
+  },
+  actionRestore: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    backgroundColor: colors.white,
+    borderWidth: 1.5,
+    borderColor: colors.brandDeep,
     borderRadius: 12,
     padding: 14
   },

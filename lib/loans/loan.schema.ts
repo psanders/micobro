@@ -26,62 +26,116 @@ export type LoanType = (typeof loanTypes)[number];
  */
 export const DEFAULT_GRACE_DAYS = 7;
 
+/**
+ * The loan terms a lender types into Nuevo/Editar préstamo — shared by
+ * `createLoanSchema` and `updateLoanSchema` so creating and correcting a
+ * loan validate identically.
+ */
+const loanTermsShape = {
+  principal: z.number().positive("El monto debe ser mayor a cero").transform(toCents),
+  // For a term loan this is the flat whole-loan rate (see loanMath.ts).
+  // For an open-credit loan (loanType: "open_credit") it's the PER-CYCLE
+  // rate applied to the outstanding capital each cycle — see
+  // lib/loans/openCredit.ts. Same %→bps conversion either way.
+  interestRate: z.number().nonnegative("La tasa no puede ser negativa"),
+  // Number of cuotas — required for a term loan (see the .refine below).
+  // Meaningless for an open-credit loan, which has no fixed term and runs
+  // on a cycle-by-cycle interest schedule instead.
+  termCount: z
+    .number()
+    .int("El plazo debe ser un número entero de cuotas")
+    .positive("El plazo debe ser mayor a cero")
+    .optional(),
+  frequency: z.enum(loanFrequencies),
+  startDate: z.date().optional(),
+  // Days of leeway before mora starts accruing on an overdue cuota.
+  // Omitted/undefined means "use the default" (DEFAULT_GRACE_DAYS, 7).
+  // For open credit it's the grace before unpaid interest is added to the
+  // balance instead (0 = none; unset = 5 — see openCreditGraceDays).
+  graceDays: z.number().int().nonnegative("El período de gracia no puede ser negativo").optional(),
+  // Whether this loan charges mora at all. Omitted/undefined means "use
+  // the default" (enabled) at the data layer — see `lib/loans/mora.ts`'s
+  // `isMoraEnabled` — though the Nuevo Préstamo form itself defaults its
+  // toggle off, so a newly created loan is opt-in. Meaningless for open
+  // credit — no mora ever applies to it (capitalization is the penalty).
+  moraEnabled: z.boolean().optional(),
+  // Percentage (e.g. 10 = 10%), mirroring `interestRate`. Omitted means
+  // "use the default" (DEFAULT_MORA_RATE_BPS, 10%).
+  moraRate: z.number().nonnegative("La tasa de mora no puede ser negativa").optional(),
+  // Whether a daily loan's schedule skips Sundays (no cuota falls due on a
+  // Sunday). Omitted/undefined means "off" — see
+  // `lib/loans/loanViews.ts`'s `installmentDueDate`. Meaningless for
+  // non-daily frequencies, and for open credit (Change 2's sunday-skip
+  // doesn't apply to the cycle model — see the proposal's non-goals).
+  skipSundays: z.boolean().optional(),
+  // "term" (default, omitted) | "open_credit". See `LoanType` above.
+  loanType: z.enum(loanTypes).optional(),
+  notes: z.string().optional()
+};
+
+// A term loan still needs its cuota count; an open-credit loan doesn't
+// collect one at all (Nuevo Préstamo hides the field — see the
+// loan-configuration spec).
+const requireTermCount = (data: { loanType?: LoanType; termCount?: number }) =>
+  (data.loanType ?? "term") !== "term" || data.termCount !== undefined;
+const termCountRequired = { message: "El plazo debe ser mayor a cero", path: ["termCount"] };
+
 export const createLoanSchema = z
   .object({
     customerId: z.string().min(1, "El cliente es obligatorio"),
-    principal: z.number().positive("El monto debe ser mayor a cero").transform(toCents),
-    // For a term loan this is the flat whole-loan rate (see loanMath.ts).
-    // For an open-credit loan (loanType: "open_credit") it's the PER-CYCLE
-    // rate applied to the outstanding capital each cycle — see
-    // lib/loans/openCredit.ts. Same %→bps conversion either way.
-    interestRate: z.number().nonnegative("La tasa no puede ser negativa"),
-    // Number of cuotas — required for a term loan (see the .refine below).
-    // Meaningless for an open-credit loan, which has no fixed term and runs
-    // on a cycle-by-cycle interest schedule instead.
-    termCount: z
-      .number()
-      .int("El plazo debe ser un número entero de cuotas")
-      .positive("El plazo debe ser mayor a cero")
-      .optional(),
-    frequency: z.enum(loanFrequencies),
-    startDate: z.date().optional(),
-    // Days of leeway before mora starts accruing on an overdue cuota.
-    // Omitted/undefined means "use the default" (DEFAULT_GRACE_DAYS, 7).
-    // For open credit it's the grace before unpaid interest is added to the
-    // balance instead (0 = none; unset = 3 — see openCreditGraceDays).
-    graceDays: z
-      .number()
-      .int()
-      .nonnegative("El período de gracia no puede ser negativo")
-      .optional(),
-    // Whether this loan charges mora at all. Omitted/undefined means "use
-    // the default" (enabled) at the data layer — see `lib/loans/mora.ts`'s
-    // `isMoraEnabled` — though the Nuevo Préstamo form itself defaults its
-    // toggle off, so a newly created loan is opt-in. Meaningless for open
-    // credit — no mora ever applies to it (capitalization is the penalty).
-    moraEnabled: z.boolean().optional(),
-    // Percentage (e.g. 10 = 10%), mirroring `interestRate`. Omitted means
-    // "use the default" (DEFAULT_MORA_RATE_BPS, 10%).
-    moraRate: z.number().nonnegative("La tasa de mora no puede ser negativa").optional(),
-    // Whether a daily loan's schedule skips Sundays (no cuota falls due on a
-    // Sunday). Omitted/undefined means "off" — see
-    // `lib/loans/loanViews.ts`'s `installmentDueDate`. Meaningless for
-    // non-daily frequencies, and for open credit (Change 2's sunday-skip
-    // doesn't apply to the cycle model — see the proposal's non-goals).
-    skipSundays: z.boolean().optional(),
-    // "term" (default, omitted) | "open_credit". See `LoanType` above.
-    loanType: z.enum(loanTypes).optional(),
-    notes: z.string().optional()
+    ...loanTermsShape
   })
-  // A term loan still needs its cuota count; an open-credit loan doesn't
-  // collect one at all (Nuevo Préstamo hides the field — see the
-  // loan-configuration spec).
-  .refine((data) => (data.loanType ?? "term") !== "term" || data.termCount !== undefined, {
-    message: "El plazo debe ser mayor a cero",
-    path: ["termCount"]
-  });
+  .refine(requireTermCount, termCountRequired);
 
 export type CreateLoanInput = z.infer<typeof createLoanSchema>;
+
+/** Editar préstamo: the same terms as creating one, for an existing loan. The customer can't change. */
+export const updateLoanSchema = z
+  .object({
+    id: z.string().min(1, "El id es obligatorio"),
+    ...loanTermsShape
+  })
+  .refine(requireTermCount, termCountRequired);
+
+export type UpdateLoanInput = z.infer<typeof updateLoanSchema>;
+export type LoanTermsInput = Omit<UpdateLoanInput, "id">;
+
+export const loanIdSchema = z.object({
+  id: z.string().min(1, "El id es obligatorio")
+});
+
+export type LoanIdInput = z.infer<typeof loanIdSchema>;
+
+/**
+ * "Archivado" in the UI. Reuses the existing `cancelled` status rather than
+ * a new one: every active-loan surface already filters on `active`, and the
+ * Sheet's status column already accepts it.
+ */
+export const ARCHIVED_LOAN_STATUS: LoanStatus = "cancelled";
+
+/**
+ * The stored loan fields derived from validated terms — shared by
+ * createLoan, updateLoan and the mock repo so all three persist terms the
+ * same way.
+ */
+export function loanTermsFields(terms: LoanTermsInput) {
+  const isOpenCredit = terms.loanType === "open_credit";
+  return {
+    principalCents: terms.principal,
+    interestRateBps: Math.round(terms.interestRate * 100),
+    // Open credit has no fixed term (validated by requireTermCount, which
+    // requires termCount only for a term loan) — 0 is a safe placeholder
+    // the open-credit paths (lib/loans/openCredit.ts) never read.
+    termCount: isOpenCredit ? 0 : (terms.termCount as number),
+    frequency: terms.frequency,
+    notes: terms.notes ?? null,
+    graceDays: terms.graceDays ?? null,
+    moraEnabled: terms.moraEnabled ?? null,
+    moraRateBps: terms.moraRate != null ? Math.round(terms.moraRate * 100) : null,
+    skipSundays: terms.skipSundays ?? null,
+    loanType: isOpenCredit ? ("open_credit" as const) : null
+  };
+}
 
 export interface Loan {
   id: string;

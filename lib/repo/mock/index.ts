@@ -15,7 +15,10 @@ import {
 } from "../../customers/customer.schema";
 import {
   createLoanSchema,
+  updateLoanSchema,
+  loanTermsFields,
   effectiveLoanType,
+  ARCHIVED_LOAN_STATUS,
   type Loan,
   type LoanWithCustomer,
   type LoanDetail
@@ -28,6 +31,7 @@ import {
 import { createPaymentSchema, type Payment } from "../../payments/payment.schema";
 import { setProfileSchema, type Profile } from "../../profile/profile.schema";
 import {
+  buildArchivedLoanSummary,
   buildCustomerLoanSummary,
   buildLoanDetailView,
   buildPaymentHistoryView,
@@ -172,31 +176,58 @@ export function createMockRepos(): Repos {
 
   const createLoan = withErrorHandlingAndValidation(async (params): Promise<Loan> => {
     const now = new Date();
-    const isOpenCredit = params.loanType === "open_credit";
     const loan: Loan = {
       id: Crypto.randomUUID(),
       customerId: params.customerId,
-      principalCents: params.principal,
-      interestRateBps: Math.round(params.interestRate * 100),
-      // See lib/loans/createLoan.ts's real-repo counterpart: open credit has
-      // no fixed term, so 0 is a safe placeholder the open-credit paths
-      // never read.
-      termCount: isOpenCredit ? 0 : (params.termCount as number),
-      frequency: params.frequency,
+      ...loanTermsFields(params),
       startDate: params.startDate ?? now,
       status: "active",
-      notes: params.notes ?? null,
-      graceDays: params.graceDays ?? null,
-      moraEnabled: params.moraEnabled ?? null,
-      moraRateBps: params.moraRate != null ? Math.round(params.moraRate * 100) : null,
-      skipSundays: params.skipSundays ?? null,
-      loanType: isOpenCredit ? "open_credit" : null,
       createdAt: now,
       updatedAt: now
     };
     loans.push(loan);
     return loan;
   }, createLoanSchema);
+
+  // Mirrors lib/loans/updateLoan.ts / archiveLoan.ts / restoreLoan.ts over
+  // the in-memory arrays (no pending_mutations to enqueue here).
+  const findMockLoan = (id: string) => {
+    const idx = loans.findIndex((l) => l.id === id);
+    if (idx === -1) throw new Error("No encontramos este préstamo.");
+    return idx;
+  };
+
+  const updateLoan = withErrorHandlingAndValidation(async (params): Promise<Loan> => {
+    const idx = findMockLoan(params.id);
+    const current = loans[idx]!;
+    if (current.status !== "active") throw new Error("Solo se pueden editar préstamos activos.");
+    if (payments.some((p) => p.loanId === params.id)) {
+      throw new Error("Este préstamo ya tiene pagos y no se puede editar. Puedes archivarlo.");
+    }
+    const loan: Loan = {
+      ...current,
+      ...loanTermsFields(params),
+      startDate: params.startDate ?? current.startDate,
+      updatedAt: new Date()
+    };
+    loans[idx] = loan;
+    return loan;
+  }, updateLoanSchema);
+
+  const setMockLoanStatus = (id: string, from: "active" | "archived") => {
+    const idx = findMockLoan(id);
+    const current = loans[idx]!;
+    const isArchived = current.status === ARCHIVED_LOAN_STATUS;
+    if (from === "active" && isArchived) throw new Error("Este préstamo ya está archivado.");
+    if (from === "archived" && !isArchived) throw new Error("Este préstamo no está archivado.");
+    const loan: Loan = {
+      ...current,
+      status: from === "active" ? ARCHIVED_LOAN_STATUS : "active",
+      updatedAt: new Date()
+    };
+    loans[idx] = loan;
+    return loan;
+  };
 
   const createPayment = withErrorHandlingAndValidation(async (params): Promise<Payment> => {
     const now = new Date();
@@ -332,6 +363,14 @@ export function createMockRepos(): Repos {
           sinceYear: customer.createdAt.getFullYear(),
           standing: customerInMora(id) ? "mora" : "al_dia",
           activeLoans,
+          archivedLoans: customerLoans
+            .filter((l) => l.status === ARCHIVED_LOAN_STATUS)
+            .map((l) =>
+              buildArchivedLoanSummary(
+                l,
+                payments.filter((p) => p.loanId === l.id)
+              )
+            ),
           recentActivity: activity.slice(0, 5)
         };
       }
@@ -362,7 +401,10 @@ export function createMockRepos(): Repos {
       getPaymentHistory: async (id) => {
         const loan = loans.find((l) => l.id === id);
         return loan ? buildPaymentHistoryView(loan, payments) : null;
-      }
+      },
+      update: (id, terms) => updateLoan({ id, ...terms }),
+      archive: async (id) => setMockLoanStatus(id, "active"),
+      restore: async (id) => setMockLoanStatus(id, "archived")
     },
     payments: {
       listByLoan: async (loanId) => payments.filter((payment) => payment.loanId === loanId),

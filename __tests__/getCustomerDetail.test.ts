@@ -119,6 +119,59 @@ function makeDbStub(rows: {
 }
 
 describe("createGetCustomerDetail", () => {
+  describe("archived loans (loan-edit-archive)", () => {
+    it("lists an archived loan under archivedLoans, not activeLoans", async () => {
+      // Arrange
+      const active = loanRow({ id: "loan-1", startDate: daysAgo(3) });
+      const archived = loanRow({ id: "loan-2", status: "cancelled", updatedAt: daysAgo(1) });
+      const db = makeDbStub({
+        customers: [baseCustomerRow],
+        loans: [active, archived],
+        paymentsPerLoan: [[], [paymentRow({ id: "p9", loanId: "loan-2" })]]
+      });
+      const getCustomerDetail = createGetCustomerDetail({ db });
+
+      // Act
+      const result = await getCustomerDetail({ id: "customer-1" });
+
+      // Assert
+      expect(result?.activeLoans.map((l) => l.loanId)).toEqual(["loan-1"]);
+      expect(result?.archivedLoans).toHaveLength(1);
+      expect(result?.archivedLoans[0]).toMatchObject({
+        loanId: "loan-2",
+        paymentCount: 1,
+        collectedCents: 270000
+      });
+    });
+
+    it("keeps an archived loan's payments in the recent activity", async () => {
+      // Arrange
+      const archived = loanRow({ status: "cancelled" });
+      const db = makeDbStub({
+        customers: [baseCustomerRow],
+        loans: [archived],
+        paymentsPerLoan: [[paymentRow({})]]
+      });
+      const getCustomerDetail = createGetCustomerDetail({ db });
+
+      // Act
+      const result = await getCustomerDetail({ id: "customer-1" });
+
+      // Assert
+      expect(result?.activeLoans).toHaveLength(0);
+      expect(result?.recentActivity.map((a) => a.id)).toContain("p1");
+    });
+
+    it("returns an empty archivedLoans when nothing is archived", async () => {
+      const getCustomerDetail = createGetCustomerDetail({
+        db: makeDbStub({ customers: [baseCustomerRow] })
+      });
+      const result = await getCustomerDetail({ id: "customer-1" });
+
+      expect(result?.archivedLoans).toEqual([]);
+    });
+  });
+
   it("carries the customer's cédula and avatarKey through", async () => {
     const getCustomerDetail = createGetCustomerDetail({
       db: makeDbStub({ customers: [baseCustomerRow] })

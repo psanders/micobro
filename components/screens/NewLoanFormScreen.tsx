@@ -1,7 +1,7 @@
 /**
  * Copyright (C) 2026 by Pedro Sanders. MIT License.
  */
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -19,14 +19,18 @@ import { useAsync } from "../../lib/hooks/useAsync";
 import {
   loanFrequencies,
   DEFAULT_GRACE_DAYS,
+  effectiveLoanType,
   type LoanFrequency,
+  type LoanTermsInput,
   type LoanType
 } from "../../lib/loans/loan.schema";
+import { effectiveGraceDays, effectiveMoraRateBps, isMoraEnabled } from "../../lib/loans/mora";
 import { loanCostSummary } from "../../lib/loans/loanMath";
-import { OPEN_CREDIT_DEFAULT_GRACE_DAYS } from "../../lib/loans/openCredit";
+import { OPEN_CREDIT_DEFAULT_GRACE_DAYS, openCreditGraceDays } from "../../lib/loans/openCredit";
 import {
   addFrequencyInterval,
   healthyFirstPaymentFloor,
+  loanCode,
   monthlyAnchorAtRisk
 } from "../../lib/loans/loanViews";
 import { ValidationError } from "../../lib/errors/ValidationError";
@@ -76,12 +80,35 @@ function firstPaymentLabel(date: Date, frequency: LoanFrequency, isDefault: bool
   return `En 1 ${unit}, ${short}`;
 }
 
-export function NewLoanFormScreen({ customerId: initialCustomerId }: { customerId?: string }) {
+interface NewLoanFormScreenProps {
+  customerId?: string;
+  /** Editar préstamo: prefill from this loan and save its corrected terms in place. */
+  editLoanId?: string;
+  /** "Crear préstamo corregido": prefill a new loan from this (archived) one. */
+  fromLoanId?: string;
+}
+
+export function NewLoanFormScreen({
+  customerId: initialCustomerId,
+  editLoanId,
+  fromLoanId
+}: NewLoanFormScreenProps) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const customerRepo = useCustomerRepo();
   const loanRepo = useLoanRepo();
-  const { data: customers, loading } = useAsync(() => customerRepo.list(), []);
+  const { data: customers, loading: loadingCustomers } = useAsync(() => customerRepo.list(), []);
+  const isEdit = !!editLoanId;
+  const sourceLoanId = editLoanId ?? fromLoanId;
+  const source = useAsync(
+    () => (sourceLoanId ? loanRepo.get(sourceLoanId) : Promise.resolve(null)),
+    [sourceLoanId]
+  );
+  const [prefilled, setPrefilled] = useState(!sourceLoanId);
+  // Set while prefilling a different frequency, so the frequency-reset
+  // effect below keeps the loan's own first-payment date instead of
+  // snapping it back to the default.
+  const keepPrefilledDate = useRef(false);
 
   const [customerId, setCustomerId] = useState(initialCustomerId ?? "");
   // Once a customer is picked, collapse the chip list behind the selected
@@ -126,8 +153,40 @@ export function NewLoanFormScreen({ customerId: initialCustomerId }: { customerI
   // en 1 semana) — a date the lender picked for the old frequency isn't
   // meaningful anymore, so snap back to the new default.
   useEffect(() => {
+    if (keepPrefilledDate.current) {
+      keepPrefilledDate.current = false;
+      return;
+    }
     setFirstPaymentDate(firstPaymentFloor);
   }, [frequency]);
+
+  // Editar / Crear préstamo corregido: load the source loan's terms once.
+  // The first payment date inverts handleSubmit's startDate math, so saving
+  // without touching it keeps the same schedule.
+  useEffect(() => {
+    const loan = source.data;
+    if (!loan || prefilled) return;
+    if (loan.frequency !== frequency) keepPrefilledDate.current = true;
+    setCustomerId(loan.customerId);
+    setShowClientPicker(false);
+    setLoanType(effectiveLoanType(loan));
+    setPrincipal(String(loan.principalCents / 100));
+    setInterestRate(String(loan.interestRateBps / 100));
+    setTermCount(loan.termCount > 0 ? String(loan.termCount) : "");
+    setFrequency(loan.frequency);
+    setSkipSundays(loan.skipSundays ?? false);
+    setFirstPaymentDate(addFrequencyInterval(loan.startDate, loan.frequency, 1));
+    setMoraEnabled(isMoraEnabled(loan));
+    setMoraRate(String(effectiveMoraRateBps(loan) / 100));
+    setGraceDays(String(effectiveGraceDays(loan)));
+    // Crédito abierto keeps its own grace (a different meaning from the
+    // Tradicional mora grace above): without this, editing or "corregir"
+    // would silently turn a loan's grace off.
+    const ocGrace = openCreditGraceDays(loan);
+    setOcGraceEnabled(ocGrace > 0);
+    if (ocGrace > 0) setOcGraceDays(String(ocGrace));
+    setPrefilled(true);
+  }, [source.data]);
 
   // Turning on Saltar domingos can invalidate an already-picked Sunday —
   // bump it forward to the (now Sunday-aware) floor rather than leaving an
@@ -171,12 +230,11 @@ export function NewLoanFormScreen({ customerId: initialCustomerId }: { customerI
       // first-payment date minus one interval — this makes
       // installmentDueDate(loan, 1) land exactly on what the lender picked.
       const startDate = addFrequencyInterval(firstPaymentDate, frequency, -1);
-      await loanRepo.create({
-        customerId,
+      const terms: LoanTermsInput = {
         principal: Number(principal),
         interestRate: Number(interestRate),
         // Open credit has no fixed term — omitted (not just undefined) so
-        // createLoanSchema's .refine (term-only requirement) is satisfied.
+        // the schema's .refine (term-only requirement) is satisfied.
         ...(!isOpenCredit && { termCount: Number(termCount) }),
         frequency,
         startDate,
@@ -194,21 +252,37 @@ export function NewLoanFormScreen({ customerId: initialCustomerId }: { customerI
           })
         }),
         ...(frequency === "daily" && !isOpenCredit && { skipSundays })
-      });
+      };
+      if (editLoanId) {
+        await loanRepo.update(editLoanId, terms);
+      } else {
+        await loanRepo.create({ customerId, ...terms });
+      }
       router.back();
     } catch (err) {
-      setError(err instanceof ValidationError ? err.message : "No se pudo crear el préstamo");
+      // Editing can also be refused by the loan's own state (e.g. a payment
+      // landed since the form opened) — that reason is worth showing.
+      if (err instanceof ValidationError || (isEdit && err instanceof Error)) {
+        setError(err.message);
+      } else {
+        setError(isEdit ? "No se pudo guardar el préstamo" : "No se pudo crear el préstamo");
+      }
     } finally {
       setSubmitting(false);
     }
   }
 
-  const headerSubtitle = selectedCustomer ? `Para ${selectedCustomer.name}` : undefined;
+  const title = isEdit ? "Editar préstamo" : "Nuevo préstamo";
+  const headerSubtitle = isEdit
+    ? `#${loanCode(editLoanId)}${selectedCustomer ? ` · ${selectedCustomer.name}` : ""}`
+    : selectedCustomer
+      ? `Para ${selectedCustomer.name}`
+      : undefined;
 
-  if (loading) {
+  if (loadingCustomers || !prefilled) {
     return (
       <View style={[styles.screen, { paddingTop: insets.top }]}>
-        <ScreenHeader title="Nuevo préstamo" onBack={() => router.back()} />
+        <ScreenHeader title={title} onBack={() => router.back()} />
         <View style={styles.center}>
           <ActivityIndicator />
         </View>
@@ -218,21 +292,36 @@ export function NewLoanFormScreen({ customerId: initialCustomerId }: { customerI
 
   return (
     <View style={[styles.screen, { paddingTop: insets.top }]}>
-      <ScreenHeader title="Nuevo préstamo" subtitle={headerSubtitle} onBack={() => router.back()} />
+      <ScreenHeader title={title} subtitle={headerSubtitle} onBack={() => router.back()} />
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
       >
+        {(isEdit || fromLoanId) && (
+          <View style={styles.sourceNote} testID="loan-form-source-note">
+            <Icon name="info" size={16} color={colors.brandDeep} />
+            <Text style={styles.sourceNoteText}>
+              {isEdit
+                ? "Este préstamo no tiene pagos. Al guardar, el plan de pagos se recalcula con los nuevos datos."
+                : `Basado en el préstamo #${loanCode(fromLoanId!)}, que quedó archivado. Corrige lo que haga falta.`}
+            </Text>
+          </View>
+        )}
+
         <View style={styles.field}>
           {selectedCustomer && !showClientPicker ? (
             <ClientRow
               avatarKey={selectedCustomer.avatarKey}
               name={selectedCustomer.name}
-              meta="Cliente seleccionado"
-              trailing={<Icon name="chevron-right" size={18} color={colors.slate} />}
-              onPress={initialCustomerId ? undefined : () => setShowClientPicker(true)}
+              meta={isEdit ? "El cliente no se puede cambiar" : "Cliente seleccionado"}
+              trailing={
+                <Icon name={isEdit ? "lock" : "chevron-right"} size={18} color={colors.slate} />
+              }
+              onPress={
+                initialCustomerId || sourceLoanId ? undefined : () => setShowClientPicker(true)
+              }
             />
           ) : (
             <>
@@ -441,7 +530,7 @@ export function NewLoanFormScreen({ customerId: initialCustomerId }: { customerI
 
         <Pressable style={styles.submitButton} onPress={handleSubmit} disabled={submitting}>
           <Text style={styles.submitButtonText}>
-            {submitting ? "Guardando..." : "Crear préstamo"}
+            {submitting ? "Guardando..." : isEdit ? "Guardar cambios" : "Crear préstamo"}
           </Text>
         </Pressable>
       </ScrollView>
@@ -466,6 +555,16 @@ const styles = StyleSheet.create({
   scroll: { flex: 1 },
   center: { flex: 1, alignItems: "center", justifyContent: "center" },
   content: { padding: 16, gap: 20 },
+  sourceNote: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    backgroundColor: colors.mist,
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 12
+  },
+  sourceNoteText: { flex: 1, fontSize: 12, color: colors.brandDeep, lineHeight: 17 },
   field: { gap: 8 },
   switchRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   label: { fontSize: 13, fontWeight: "600", color: colors.muted },

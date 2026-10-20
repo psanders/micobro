@@ -88,6 +88,11 @@ A crédito abierto loan SHALL have a number of grace days (0 = none). An unpaid 
 - **WHEN** the same loan has 0 grace days
 - **THEN** the unpaid interest is added to the balance on Sunday and the Monday payment counts toward the next cycle
 
+#### Scenario: Editing or correcting keeps the grace
+
+- **WHEN** the lender opens Editar préstamo, or "Crear préstamo corregido", on a crédito abierto loan with 5 grace days
+- **THEN** the Días de gracia switch is on with 5 days, and saving without touching it keeps 5
+
 #### Scenario: Grace shown next to the due date
 
 - **WHEN** a loan with 3 grace days is due 1 nov

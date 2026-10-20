@@ -27,7 +27,7 @@ import { computePaymentSplit } from "../../lib/payments/paymentSplit";
 import { resolveOpenCreditPayOptions } from "../../lib/payments/openCreditPayOptions";
 import type { OpenCreditPayOption } from "../../lib/payments/openCreditPayOptions";
 import { cuotaLabel as formatCuotaLabel } from "../../lib/loans/loanViews";
-import { formatCurrency } from "../../lib/utils/money";
+import { formatCurrency, parseAmountToCents } from "../../lib/utils/money";
 import { formatFullDate, formatShortDate, formatTime } from "../../lib/utils/dates";
 import { Avatar } from "../Avatar";
 import { ScreenHeader } from "../ScreenHeader";
@@ -61,8 +61,7 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
   const oc = ctx?.openCredit ?? null;
 
   const ocCapitalCents = useMemo(() => {
-    const n = Number(ocCapitalText.replace(/[,.]/g, ""));
-    return Number.isFinite(n) && n > 0 ? Math.round(n * 100) : 0;
+    return parseAmountToCents(ocCapitalText) ?? 0;
   }, [ocCapitalText]);
   const ocCurrentCycle = oc && oc.cycles.length > 0 ? oc.cycles[oc.cycles.length - 1]! : null;
   // Which options this loan may be collected with right now — see
@@ -160,8 +159,7 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
   const effectiveOption: PayOption = selectedOption ?? (mora > 0 ? "arrears" : "cuota");
 
   const customAmountCents = useMemo(() => {
-    const n = Number(customAmountText.replace(/[,.]/g, ""));
-    return Number.isFinite(n) && n > 0 ? n * 100 : 0;
+    return parseAmountToCents(customAmountText) ?? 0;
   }, [customAmountText]);
 
   const amount = useMemo(() => {
