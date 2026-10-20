@@ -23,7 +23,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Icon } from "../Icon";
 import { usePaymentRepo, useCashCloseRepo } from "../../lib/repo/RepoProvider";
 import { useAsync } from "../../lib/hooks/useAsync";
-import { formatCurrency } from "../../lib/utils/money";
+import { formatAmount, formatCurrency, parseAmountToCents } from "../../lib/utils/money";
 import { formatShortDate, formatRelativeTime } from "../../lib/utils/dates";
 import { useSyncContext } from "../../lib/sync/SyncProvider";
 import { AmountInputCard } from "../AmountInputCard";
@@ -58,9 +58,7 @@ export function CuadreScreen() {
     .reduce((sum, p) => sum + p.amountCents, 0);
 
   const verifiedCents = useMemo(() => {
-    if (verifiedText === "") return 0;
-    const n = Number(verifiedText.replace(/[,.]/g, ""));
-    return Number.isFinite(n) && n >= 0 ? n * 100 : 0;
+    return parseAmountToCents(verifiedText) ?? 0;
   }, [verifiedText]);
 
   const hasEnteredVerified = verifiedText !== "";
@@ -105,9 +103,7 @@ export function CuadreScreen() {
               <Text style={styles.summaryLabel}>COBRADO SEGÚN EL SISTEMA</Text>
               <View style={styles.summaryAmountRow}>
                 <Text style={styles.summaryCurrency}>RD$</Text>
-                <Text style={styles.summaryAmount}>
-                  {(totalCents / 100).toLocaleString("es-DO")}
-                </Text>
+                <Text style={styles.summaryAmount}>{formatAmount(totalCents)}</Text>
               </View>
             </View>
 

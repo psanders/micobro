@@ -24,6 +24,7 @@ import { Icon } from "../Icon";
 import { usePaymentRepo, useVisitRepo } from "../../lib/repo/RepoProvider";
 import { useAsync } from "../../lib/hooks/useAsync";
 import { formatShortDate, formatTime } from "../../lib/utils/dates";
+import { parseAmountToCents } from "../../lib/utils/money";
 import { ScreenHeader } from "../ScreenHeader";
 import { SectionLabel } from "../SectionLabel";
 import { ClientRow } from "../ClientRow";
@@ -76,8 +77,7 @@ export function VisitOutcomeScreen({ loanId }: { loanId: string }) {
   const defaultAmountCents = (ctx?.cuotaCents ?? 0) + (ctx?.moraCents ?? 0);
   const amountCents = useMemo(() => {
     if (amountText === "") return defaultAmountCents;
-    const n = Number(amountText.replace(/[,.]/g, ""));
-    return Number.isFinite(n) && n >= 0 ? n * 100 : 0;
+    return parseAmountToCents(amountText) ?? 0;
   }, [amountText, defaultAmountCents]);
 
   const handleSave = async () => {
