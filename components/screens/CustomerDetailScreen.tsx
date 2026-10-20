@@ -29,6 +29,7 @@ import { ScreenHeader } from "../ScreenHeader";
 import { InfoRow } from "../InfoRow";
 import { SectionLabel } from "../SectionLabel";
 import { LoanSummaryCard } from "../LoanSummaryCard";
+import { ArchivedLoansSection } from "../ArchivedLoansSection";
 import { colors, fonts } from "../../lib/ui/theme";
 
 async function openLink(url: string, failMessage: string) {
@@ -188,6 +189,11 @@ export function CustomerDetailScreen({ customerId }: { customerId: string }) {
               />
             ))
           )}
+
+          <ArchivedLoansSection
+            loans={customer.archivedLoans}
+            onOpen={(loanId) => router.push(`/loans/${loanId}`)}
+          />
 
           <SectionLabel>VISITAS RECIENTES</SectionLabel>
           {customer.recentActivity.length === 0 ? (

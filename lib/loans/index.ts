@@ -2,6 +2,9 @@
  * Copyright (C) 2026 by Pedro Sanders. MIT License.
  */
 export { createCreateLoan } from "./createLoan";
+export { createUpdateLoan } from "./updateLoan";
+export { createArchiveLoan } from "./archiveLoan";
+export { createRestoreLoan } from "./restoreLoan";
 export { createListLoans } from "./listLoans";
 export { createListLoansByCustomer } from "./listLoansByCustomer";
 export { createGetLoanDetail } from "./getLoanDetail";
@@ -11,6 +14,7 @@ export {
   buildLoanDetailView,
   buildPaymentHistoryView,
   buildCustomerLoanSummary,
+  buildArchivedLoanSummary,
   cycleIndexForPayment,
   loanCode,
   installmentDueDate,
@@ -38,6 +42,10 @@ export { openCreditState } from "./openCredit";
 export type { OpenCreditState, OpenCreditCycle, OpenCreditCycleStatus } from "./openCredit";
 export {
   createLoanSchema,
+  updateLoanSchema,
+  loanIdSchema,
+  loanTermsFields,
+  ARCHIVED_LOAN_STATUS,
   loanFrequencies,
   loanStatuses,
   loanTypes,
@@ -46,6 +54,9 @@ export {
 } from "./loan.schema";
 export type {
   CreateLoanInput,
+  UpdateLoanInput,
+  LoanTermsInput,
+  LoanIdInput,
   Loan,
   LoanWithCustomer,
   LoanDetail,

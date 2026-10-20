@@ -66,6 +66,24 @@ function payment(overrides: Partial<Payment>): Payment {
 }
 
 describe("composeRouteDay", () => {
+  it("leaves an archived loan out of the route, the goal and upcoming customers", () => {
+    // Arrange — same overdue shape as a real visit, but archived (loan-edit-archive)
+    const archived = loan({ id: "loan-archived", status: "cancelled", graceDays: 0 });
+
+    // Act
+    const day = composeRouteDay({
+      customers: [customer({})],
+      loans: [archived],
+      payments: [],
+      today: TODAY
+    });
+
+    // Assert
+    expect(day.visits).toEqual([]);
+    expect(day.goalCents).toBe(0);
+    expect(day.upcomingCustomers).toEqual([]);
+  });
+
   it("returns an empty day when nothing is due or overdue", () => {
     // Arrange — loan started 3 days ago, weekly cuota1 not due for 4 more days
     const freshLoan = loan({ id: "loan-fresh", startDate: daysBeforeToday(3) });

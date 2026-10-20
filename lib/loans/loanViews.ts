@@ -11,12 +11,13 @@
  */
 import { methodLabels } from "../payments/labels";
 import { cuotaCents, lastCuotaCents, totalInterestCents, totalRepayCents } from "./loanMath";
-import { effectiveLoanType } from "./loan.schema";
+import { effectiveLoanType, ARCHIVED_LOAN_STATUS } from "./loan.schema";
 import type { Loan, LoanFrequency } from "./loan.schema";
 import type { Customer } from "../customers/customer.schema";
 import type { Payment } from "../payments/payment.schema";
 import type { OpenCreditCycle, OpenCreditState } from "./openCredit";
 import type {
+  ArchivedLoanSummary,
   CustomerLoanSummary,
   DueTodayLine,
   LoanDetailView,
@@ -265,6 +266,10 @@ export function buildLoanDetailView({
     dueTodayCents: dueTodayLines.reduce((sum, line) => sum + line.amountCents, 0),
     dueTodayLines,
     schedule,
+    status: loan.status,
+    paymentCount: payments.length,
+    collectedCents: payments.reduce((sum, payment) => sum + payment.amountCents, 0),
+    archivedAt: loan.status === ARCHIVED_LOAN_STATUS ? loan.updatedAt : null,
     // Callers building an open-credit view override this after the fact
     // (buildLoanDetailView's cuota/schedule math is term-only) — see
     // getLoanDetailView.ts / repo/mock/index.ts's viewOf.
@@ -515,5 +520,18 @@ export function buildCustomerLoanSummary(
     nextDueDate: view.nextDueDate,
     nextAmountCents: nextLine ? view.dueTodayCents : 0,
     openCredit: null
+  };
+}
+
+/** Cliente Detalle's ARCHIVADOS row: what was lent and what it collected before it was archived. */
+export function buildArchivedLoanSummary(loan: Loan, payments: Payment[]): ArchivedLoanSummary {
+  return {
+    loanId: loan.id,
+    code: loanCode(loan.id),
+    principalCents: loan.principalCents,
+    frequency: loan.frequency,
+    paymentCount: payments.length,
+    collectedCents: payments.reduce((sum, payment) => sum + payment.amountCents, 0),
+    archivedAt: loan.updatedAt
   };
 }
