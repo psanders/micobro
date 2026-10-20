@@ -236,3 +236,45 @@ describe("buildReceiptBytes", () => {
     expect(lines).toContain("Vencimiento: Crédito abierto");
   });
 });
+
+describe("buildReceiptBytes — crédito abierto balance after payment", () => {
+  it("prints the 'Después de este pago' block when balanceAfter is present", () => {
+    const text = cp858ToString(
+      Array.from(
+        buildReceiptBytes({
+          ...openCreditReceipt,
+          balanceAfter: [
+            { label: "Capital pendiente", amountCents: 1000000 },
+            { label: "Intereses sumados", amountCents: 0 }
+          ]
+        })
+      )
+    );
+
+    expect(text).toContain("DESPUES DE ESTE PAGO");
+    expect(text).toContain("Capital pendiente:");
+    expect(text).toContain("Intereses sumados:");
+  });
+
+  it("prints no balance block for a receipt without balanceAfter", () => {
+    const text = cp858ToString(Array.from(buildReceiptBytes(sampleReceipt)));
+
+    expect(text).not.toContain("DESPUES DE ESTE PAGO");
+  });
+});
+
+describe("buildReceiptBytes — amounts are never cut off", () => {
+  it("shortens a long label instead of the amount", () => {
+    const text = cp858ToString(
+      Array.from(
+        buildReceiptBytes({
+          ...openCreditReceipt,
+          balanceAfter: [{ label: "Próx. interés 01/12", amountCents: 1331000 }]
+        })
+      )
+    );
+
+    expect(text).toContain("RD$13,310.00");
+    expect(text).not.toContain("RD$13,31...");
+  });
+});

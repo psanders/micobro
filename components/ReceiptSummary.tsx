@@ -21,6 +21,8 @@ export interface ReceiptSummaryProps {
   receiptNumber: string;
   paidAtLabel: string;
   lines: ReceiptLine[];
+  /** "Después de este pago" rows (crédito abierto only); omitted when empty. */
+  balanceAfter?: ReceiptLine[];
 }
 
 export function ReceiptSummary({
@@ -30,7 +32,8 @@ export function ReceiptSummary({
   methodLabel,
   receiptNumber,
   paidAtLabel,
-  lines
+  lines,
+  balanceAfter = []
 }: ReceiptSummaryProps) {
   return (
     <>
@@ -58,6 +61,15 @@ export function ReceiptSummary({
         <KvRow label="Método" value={methodLabel} />
         <KvRow label="Recibo" value={`#${receiptNumber}`} valueColor={colors.brandPrimary} />
         <KvRow label="Hora" value={paidAtLabel} />
+        {balanceAfter.length > 0 && (
+          <>
+            <View style={styles.rule} />
+            <Text style={styles.afterLabel}>DESPUÉS DE ESTE PAGO</Text>
+            {balanceAfter.map((line) => (
+              <KvRow key={line.label} label={line.label} value={formatCurrency(line.amountCents)} />
+            ))}
+          </>
+        )}
       </View>
     </>
   );
@@ -91,5 +103,6 @@ const styles = StyleSheet.create({
     letterSpacing: -1,
     marginTop: 4
   },
-  rule: { height: 1, backgroundColor: colors.mist }
+  rule: { height: 1, backgroundColor: colors.mist },
+  afterLabel: { fontSize: 10, fontFamily: fonts.bold, color: colors.slate, letterSpacing: 1.4 }
 });

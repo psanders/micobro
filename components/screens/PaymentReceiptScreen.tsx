@@ -56,6 +56,7 @@ export function PaymentReceiptScreen({ paymentId }: { paymentId: string }) {
               receiptNumber={data.receiptNumber}
               paidAtLabel={paidAtLabel}
               lines={data.lines}
+              balanceAfter={data.balanceAfter}
             />
           </ScrollView>
 
@@ -70,6 +71,7 @@ export function PaymentReceiptScreen({ paymentId }: { paymentId: string }) {
               loanStartDate={data.loanStartDate}
               loanEndDate={data.loanEndDate}
               isOpenCredit={data.isOpenCredit}
+              balanceAfter={data.balanceAfter}
             />
           </View>
         </>

@@ -10,11 +10,16 @@
  * bare principal.
  */
 import { methodLabels } from "../payments/labels";
+import { formatShortDate } from "../utils/dates";
 import { cuotaCents, lastCuotaCents, totalInterestCents, totalRepayCents } from "./loanMath";
 import { effectiveLoanType } from "./loan.schema";
 import type { Loan, LoanFrequency } from "./loan.schema";
 import type { Customer } from "../customers/customer.schema";
 import type { Payment } from "../payments/payment.schema";
+import { openCreditReceiptBreakdown } from "./openCredit";
+import { addFrequencyInterval } from "./frequency";
+// Re-exported so existing imports from loanViews keep working.
+export { addFrequencyInterval } from "./frequency";
 import type { OpenCreditCycle, OpenCreditState } from "./openCredit";
 import type {
   CustomerLoanSummary,
@@ -48,37 +53,6 @@ export function loanCode(id: string): string {
  */
 export function cuotaLabel(currentInstallmentNumber: number, installmentsTotal: number): string {
   return `Cuota ${currentInstallmentNumber}/${installmentsTotal}`;
-}
-
-/**
- * `date` shifted by `count` payment intervals for `frequency` (monthly
- * shifts by calendar months, everything else by a fixed day count).
- * `count` may be negative to shift backward.
- *
- * Monthly is anchor-preserving: the day-of-month is `date`'s, clamped to
- * the target month's last day when that month is too short (31 Jul → 30
- * Sep for +2), but a later month long enough for the original day returns
- * to it rather than staying clamped (31 Jul → 31 Oct for +3) — see issue
- * #110. `date.getDate()` is only ever the anchor because every caller
- * passes the loan's original `startDate` as `date` with an increasing
- * `count`, never the previous call's result.
- *
- * Shared by `installmentDueDate` (schedule math) and the new-loan form's
- * "primer pago" default/override, so both agree on what "one interval"
- * means per frequency.
- */
-export function addFrequencyInterval(date: Date, frequency: LoanFrequency, count: number): Date {
-  if (frequency === "monthly") {
-    const anchorDay = date.getDate();
-    const due = new Date(date);
-    due.setDate(1); // avoid overflow while shifting the month
-    due.setMonth(due.getMonth() + count);
-    const daysInTargetMonth = new Date(due.getFullYear(), due.getMonth() + 1, 0).getDate();
-    due.setDate(Math.min(anchorDay, daysInTargetMonth));
-    return due;
-  }
-  const days = frequency === "daily" ? 1 : frequency === "weekly" ? 7 : 15;
-  return new Date(date.getTime() + count * days * DAY_MS);
 }
 
 /**
@@ -410,14 +384,22 @@ export function buildPaymentReceipt(
   const canonicalNumbers = canonicalReceiptNumbers(loanPayments, receiptNumberIndex);
   const cuotaNumbers = cuotaNumbersByPaymentId(loan, loanPayments);
 
-  const lines: ReceiptLine[] = [...siblings]
-    .sort((a, b) => (a.notes === MORA_NOTE ? 0 : 1) - (b.notes === MORA_NOTE ? 0 : 1))
-    .map((p) => {
-      if (p.notes === MORA_NOTE) return { label: "Mora (prioridad)", amountCents: p.amountCents };
-      const cuotaNumber = cuotaNumbers.get(p.id);
-      const label = cuotaNumber ? cuotaLabel(cuotaNumber, loan.termCount) : "Abono a cuenta";
-      return { label, amountCents: p.amountCents };
-    });
+  const openCredit =
+    effectiveLoanType(loan) === "open_credit"
+      ? openCreditReceiptBreakdown(loan, loanPayments, target.id, formatShortDate)
+      : null;
+
+  const lines: ReceiptLine[] = openCredit
+    ? openCredit.lines
+    : [...siblings]
+        .sort((a, b) => (a.notes === MORA_NOTE ? 0 : 1) - (b.notes === MORA_NOTE ? 0 : 1))
+        .map((p) => {
+          if (p.notes === MORA_NOTE)
+            return { label: "Mora (prioridad)", amountCents: p.amountCents };
+          const cuotaNumber = cuotaNumbers.get(p.id);
+          const label = cuotaNumber ? cuotaLabel(cuotaNumber, loan.termCount) : "Abono a cuenta";
+          return { label, amountCents: p.amountCents };
+        });
 
   return {
     paymentId: target.id,
@@ -429,7 +411,8 @@ export function buildPaymentReceipt(
     lines,
     loanStartDate: loan.startDate,
     loanEndDate: loanEndDate(loan),
-    isOpenCredit: effectiveLoanType(loan) === "open_credit"
+    isOpenCredit: openCredit !== null,
+    balanceAfter: openCredit?.balanceAfter ?? []
   };
 }
 
@@ -461,10 +444,10 @@ function startOfDayMs(date: Date): number {
 }
 
 /**
- * Ratio of capital repaid, clamped to `[0, 1]` — capitalized interest can
- * grow the balance past the original principal (negative raw ratio) or, in
- * principle, a zero-principal loan (division guard); both must read 0%,
- * never negative or NaN.
+ * Ratio of capital repaid, clamped to `[0, 1]`. Callers pass the principal
+ * balance (capital only, see `openCreditState`), which never exceeds the
+ * principal; the clamp and the zero-principal guard still keep it from
+ * ever reading negative or NaN.
  */
 function capitalPaidRatio(principalCents: number, balanceCents: number): number {
   if (principalCents <= 0) return 0;
@@ -499,7 +482,9 @@ export function buildCustomerLoanSummary(
       openCredit: {
         interestRateBps: loan.interestRateBps,
         balanceCents: openCredit.balanceCents,
-        capitalPaidRatio: capitalPaidRatio(loan.principalCents, openCredit.balanceCents)
+        // Real capital, not the balance: intereses sumados never make the
+        // repaid percentage go backwards.
+        capitalPaidRatio: capitalPaidRatio(loan.principalCents, openCredit.principalBalanceCents)
       }
     };
   }

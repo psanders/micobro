@@ -176,3 +176,43 @@ describe("resolveOpenCreditPayOptions — edge cases", () => {
     expect(view.defaultOption).toBe("interest");
   });
 });
+
+describe("Ponerse al día (catch up)", () => {
+  // Disbursed 16 Apr, no grace: cycles due 16 May and 16 Jun ended unpaid
+  // (RD$1,000 + RD$1,100 added); cycle 3 (due 16 Jul) is current at RD$1,210.
+  const behind = baseLoan({ startDate: new Date("2026-04-16T00:00:00"), graceDays: 0 });
+
+  it("is offered and pre-selected when interest was added to the balance", () => {
+    const view = resolveOpenCreditPayOptions(openCreditState(behind, [], TODAY));
+
+    expect(view.catchUpEnabled).toBe(true);
+    expect(view.catchUpCents).toBe(331000);
+    expect(view.defaultOption).toBe("catch_up");
+    expect(view.dueInterestCents).toBe(121000);
+  });
+
+  it("is not offered when nothing was added — Solo interés stays the default", () => {
+    const view = resolveOpenCreditPayOptions(openCreditState(baseLoan(), [], TODAY));
+
+    expect(view.catchUpEnabled).toBe(false);
+    expect(view.catchUpCents).toBe(0);
+    expect(view.defaultOption).toBe("interest");
+  });
+
+  it("after paying the cycle's interest it is just the intereses sumados", () => {
+    const paid = [payment(121000, TODAY)];
+    const view = resolveOpenCreditPayOptions(openCreditState(behind, paid, TODAY));
+
+    expect(view.interestCovered).toBe(true);
+    expect(view.catchUpCents).toBe(210000);
+    expect(view.defaultOption).toBe("catch_up");
+  });
+
+  it("collecting it clears the intereses sumados", () => {
+    const paid = [payment(331000, TODAY)];
+    const state = openCreditState(behind, paid, TODAY);
+
+    expect(state.capitalizedInterestCents).toBe(0);
+    expect(resolveOpenCreditPayOptions(state).catchUpEnabled).toBe(false);
+  });
+});

@@ -31,6 +31,8 @@ export interface ReceiptViewData {
   loanEndDate: string | null;
   /** Picks "Fecha Inicia" over "Fecha Inicio" and the "Crédito abierto" end-date wording. */
   isOpenCredit: boolean;
+  /** "Después de este pago" rows (crédito abierto only); omitted when empty. */
+  balanceAfter?: ReceiptLine[];
 }
 
 function Row({ label, value }: { label: string; value: string }) {
@@ -86,6 +88,18 @@ export const ReceiptView = forwardRef<View, { data: ReceiptViewData }>(({ data }
         ))}
       </View>
 
+      {data.balanceAfter && data.balanceAfter.length > 0 && (
+        <>
+          <View style={s.divider} />
+          <View style={s.fields}>
+            <Text style={s.afterLabel}>DESPUÉS DE ESTE PAGO</Text>
+            {data.balanceAfter.map((line) => (
+              <Row key={line.label} label={line.label} value={formatCurrency(line.amountCents)} />
+            ))}
+          </View>
+        </>
+      )}
+
       <View style={s.dashedDivider} />
 
       <View style={s.footer}>
@@ -97,6 +111,12 @@ export const ReceiptView = forwardRef<View, { data: ReceiptViewData }>(({ data }
 });
 
 const s = StyleSheet.create({
+  afterLabel: {
+    fontFamily: fonts.bold,
+    fontSize: 10,
+    color: colors.slate,
+    letterSpacing: 1.4
+  },
   receipt: {
     width: 384,
     backgroundColor: colors.white,

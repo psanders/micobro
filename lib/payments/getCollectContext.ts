@@ -9,7 +9,7 @@ import { buildLoanDetailView, loanCode } from "../loans/loanViews";
 import { cuotaCents } from "../loans/loanMath";
 import { computeLoanMora, loanMoraPolicy } from "../loans/mora";
 import { effectiveLoanType } from "../loans/loan.schema";
-import { openCreditState } from "../loans/openCredit";
+import { openCreditState, openCreditGraceDays } from "../loans/openCredit";
 import type { Customer } from "../customers/customer.schema";
 import type { Loan } from "../loans/loan.schema";
 import type { Payment } from "./payment.schema";
@@ -51,6 +51,11 @@ export function createGetCollectContext({ db }: GetCollectContextDeps) {
       const state = openCreditState(loan, loanPayments, new Date());
       const openCredit: OpenCreditView = {
         balanceCents: state.balanceCents,
+        principalBalanceCents: state.principalBalanceCents,
+        capitalizedInterestCents: state.capitalizedInterestCents,
+        catchUpCents: state.catchUpCents,
+        graceDays: openCreditGraceDays(loan),
+        nextGraceEndDate: state.nextGraceEndDate,
         interestDueCents: state.interestDueCents,
         nextDueDate: state.nextDueDate,
         interestRateBps: loan.interestRateBps,

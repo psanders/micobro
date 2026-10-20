@@ -106,8 +106,18 @@ export interface CustomerRepo {
  * and the after-payment interest preview without a second loan fetch.
  */
 export interface OpenCreditView {
-  /** Capital pendiente. */
+  /** Total owed toward the balance — capital + intereses sumados ("Para saldar"). */
   balanceCents: number;
+  /** Capital pendiente — never above what was lent. */
+  principalBalanceCents: number;
+  /** Intereses sumados: capitalized interest not yet paid off. */
+  capitalizedInterestCents: number;
+  /** Current cycle's unpaid interest + intereses sumados ("Para ponerse al día"). */
+  catchUpCents: number;
+  /** Grace days this loan gives after each due date (0 = none). */
+  graceDays: number;
+  /** Last day the next interest can be paid before it's added to the balance. */
+  nextGraceEndDate: Date;
   /** Current-cycle interest — "Interés del próximo pago" in the UI. */
   interestDueCents: number;
   /** Próx. pago. */
@@ -259,6 +269,9 @@ export interface PaymentReceipt {
   /** Whether this is a crédito abierto loan — picks the start-date label
    * and the "Crédito abierto" end-date wording on both receipt surfaces. */
   isOpenCredit: boolean;
+  /** "Después de este pago" rows — crédito abierto only (capital pendiente,
+   * intereses sumados, próximo interés); empty for a term loan. */
+  balanceAfter: ReceiptLine[];
 }
 
 export interface PaymentRepo {

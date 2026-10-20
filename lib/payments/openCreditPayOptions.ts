@@ -13,11 +13,16 @@
  * "Solo capital" opens up instead — no payment-type column needed, because the
  * engine already routes anything paid beyond the cycle's interest to capital.
  *
+ * "Ponerse al día" (catch up) is offered whenever unpaid interest was added
+ * to the balance (intereses sumados): it collects the current cycle's
+ * outstanding interest plus those sumados in one go, and is pre-selected so
+ * a lender never mistakes "Solo interés" for the customer being current.
+ *
  * Pure and cheap: safe to call on every render.
  */
 import type { OpenCreditState } from "../loans/openCredit";
 
-export type OpenCreditPayOption = "interest" | "interest_capital" | "capital";
+export type OpenCreditPayOption = "catch_up" | "interest" | "interest_capital" | "capital";
 
 export interface OpenCreditPayOptionsView {
   /** True once the current cycle's interest has been fully covered. */
@@ -30,6 +35,10 @@ export interface OpenCreditPayOptionsView {
   interestEnabled: boolean;
   interestCapitalEnabled: boolean;
   capitalEnabled: boolean;
+  /** "Ponerse al día" — only when there are intereses sumados to clear. */
+  catchUpEnabled: boolean;
+  /** What "Ponerse al día" collects: outstanding interest + intereses sumados. */
+  catchUpCents: number;
   /**
    * What to select on entering the screen: whichever option covers the main
    * case for this loan right now — "Solo interés" while there is interest to
@@ -52,6 +61,8 @@ export function resolveOpenCreditPayOptions(state: OpenCreditState): OpenCreditP
       interestEnabled: false,
       interestCapitalEnabled: false,
       capitalEnabled: false,
+      catchUpEnabled: false,
+      catchUpCents: 0,
       defaultOption: null
     };
   }
@@ -65,6 +76,8 @@ export function resolveOpenCreditPayOptions(state: OpenCreditState): OpenCreditP
       interestEnabled: true,
       interestCapitalEnabled: true,
       capitalEnabled: false,
+      catchUpEnabled: false,
+      catchUpCents: 0,
       defaultOption: "interest"
     };
   }
@@ -72,6 +85,7 @@ export function resolveOpenCreditPayOptions(state: OpenCreditState): OpenCreditP
   // A zero-interest cycle counts as covered — there is nothing to collect for
   // it, so capital is the only thing left to pay.
   const interestCovered = currentCycle.paidCents >= currentCycle.interestDueCents;
+  const catchUpEnabled = state.capitalizedInterestCents > 0;
 
   return {
     interestCovered,
@@ -79,6 +93,8 @@ export function resolveOpenCreditPayOptions(state: OpenCreditState): OpenCreditP
     interestEnabled: !interestCovered,
     interestCapitalEnabled: !interestCovered,
     capitalEnabled: interestCovered,
-    defaultOption: interestCovered ? "capital" : "interest"
+    catchUpEnabled,
+    catchUpCents: catchUpEnabled ? state.catchUpCents : 0,
+    defaultOption: catchUpEnabled ? "catch_up" : interestCovered ? "capital" : "interest"
   };
 }

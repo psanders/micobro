@@ -43,6 +43,8 @@ const openCreditLoanRow = {
   startDate: daysAgo(8),
   status: "active",
   notes: null,
+  // No grace: the fixture dates assume a cycle ends the day after it is due.
+  graceDays: 0,
   loanType: "open_credit",
   createdAt: daysAgo(8),
   updatedAt: daysAgo(8)

@@ -35,6 +35,8 @@ export interface ReceiptActionsProps {
   /** `null` for crédito abierto — rendered as "Crédito abierto" instead of a date. */
   loanEndDate: Date | null;
   isOpenCredit: boolean;
+  /** "Después de este pago" rows (crédito abierto only); omitted when empty. */
+  balanceAfter?: ReceiptLine[];
 }
 
 export function ReceiptActions({
@@ -46,7 +48,8 @@ export function ReceiptActions({
   lines,
   loanStartDate,
   loanEndDate,
-  isOpenCredit
+  isOpenCredit,
+  balanceAfter
 }: ReceiptActionsProps) {
   const router = useRouter();
   const [printing, setPrinting] = useState(false);
@@ -75,7 +78,8 @@ export function ReceiptActions({
       phone,
       loanStartDate: loanStartDateLabel,
       loanEndDate: loanEndDateLabel,
-      isOpenCredit
+      isOpenCredit,
+      balanceAfter
     }),
     [
       lenderName,
@@ -88,7 +92,8 @@ export function ReceiptActions({
       phone,
       loanStartDateLabel,
       loanEndDateLabel,
-      isOpenCredit
+      isOpenCredit,
+      balanceAfter
     ]
   );
 
@@ -111,7 +116,8 @@ export function ReceiptActions({
         phone,
         loanStartDate: loanStartDateLabel,
         loanEndDate: loanEndDateLabel,
-        isOpenCredit
+        isOpenCredit,
+        balanceAfter
       });
     } finally {
       setPrinting(false);

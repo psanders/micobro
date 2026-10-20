@@ -31,6 +31,7 @@ export default function PagoConfirmadoRoute() {
     loanStartDate: string;
     loanEndDate: string;
     isOpenCredit: string;
+    balanceAfter: string;
   }>();
 
   let lines: ReceiptLine[] = [];
@@ -38,6 +39,13 @@ export default function PagoConfirmadoRoute() {
     lines = JSON.parse(params.lines ?? "[]") as ReceiptLine[];
   } catch {
     lines = [];
+  }
+
+  let balanceAfter: ReceiptLine[] = [];
+  try {
+    balanceAfter = JSON.parse(params.balanceAfter ?? "[]") as ReceiptLine[];
+  } catch {
+    balanceAfter = [];
   }
 
   return (
@@ -51,6 +59,7 @@ export default function PagoConfirmadoRoute() {
       loanStartDate={dateParam(params.loanStartDate)}
       loanEndDate={dateParam(params.loanEndDate)}
       isOpenCredit={params.isOpenCredit === "true"}
+      balanceAfter={balanceAfter}
     />
   );
 }

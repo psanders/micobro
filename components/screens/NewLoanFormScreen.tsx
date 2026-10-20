@@ -23,6 +23,7 @@ import {
   type LoanType
 } from "../../lib/loans/loan.schema";
 import { loanCostSummary } from "../../lib/loans/loanMath";
+import { OPEN_CREDIT_DEFAULT_GRACE_DAYS } from "../../lib/loans/openCredit";
 import {
   addFrequencyInterval,
   healthyFirstPaymentFloor,
@@ -53,8 +54,16 @@ const frequencyLabels: Record<LoanFrequency, string> = {
  */
 const loanTypeOptions: { value: LoanType; label: string }[] = [
   { value: "term", label: "Tradicional" },
-  { value: "open_credit", label: "Crédito Abierto" }
+  { value: "open_credit", label: "Crédito abierto (compuesto)" }
 ];
+
+/** "un mes" in "el primer interés vence un mes después" — one cycle of each frequency. */
+const firstInterestAfter: Record<LoanFrequency, string> = {
+  daily: "un día",
+  weekly: "una semana",
+  biweekly: "una quincena",
+  monthly: "un mes"
+};
 
 /** Relative label for the default date, else the numeric "DD/MM" fallback
  * — the app avoids Spanish month abbreviations ("ago") reading like the
@@ -103,6 +112,10 @@ export function NewLoanFormScreen({ customerId: initialCustomerId }: { customerI
   const [graceDays, setGraceDays] = useState(String(DEFAULT_GRACE_DAYS));
   const [moraEnabled, setMoraEnabled] = useState(false);
   const [moraRate, setMoraRate] = useState("10");
+  // Crédito abierto grace: off by default for new loans (stored as 0), so
+  // only loans created before grace existed get the 3-day default.
+  const [ocGraceEnabled, setOcGraceEnabled] = useState(false);
+  const [ocGraceDays, setOcGraceDays] = useState(String(OPEN_CREDIT_DEFAULT_GRACE_DAYS));
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -168,6 +181,9 @@ export function NewLoanFormScreen({ customerId: initialCustomerId }: { customerI
         frequency,
         startDate,
         loanType: isOpenCredit ? "open_credit" : undefined,
+        ...(isOpenCredit && {
+          graceDays: ocGraceEnabled && ocGraceDays.trim() !== "" ? Number(ocGraceDays) : 0
+        }),
         // Mora and Saltar domingos are meaningless for open credit — no
         // mora ever applies to it (capitalization is the penalty instead).
         ...(!isOpenCredit && {
@@ -268,6 +284,13 @@ export function NewLoanFormScreen({ customerId: initialCustomerId }: { customerI
             </Text>
             <Text style={styles.dateInputHint}>Toca para cambiar</Text>
           </Pressable>
+          {isOpenCredit && (
+            <Text style={styles.deliveryHint} testID="loan-form-delivery-hint">
+              Préstamo entregado el{" "}
+              {formatShortDate(addFrequencyInterval(firstPaymentDate, frequency, -1))} · el primer
+              interés vence {firstInterestAfter[frequency]} después
+            </Text>
+          )}
           {monthlyAnchorWarningDate && (
             <Text style={styles.anchorWarning}>
               El mes anterior no tiene el día {firstPaymentDate.getDate()}, así que la primera cuota
@@ -321,6 +344,36 @@ export function NewLoanFormScreen({ customerId: initialCustomerId }: { customerI
             placeholder="10"
           />
         </View>
+
+        {isOpenCredit && (
+          <View style={[styles.field, styles.switchRow]}>
+            <View style={styles.switchText}>
+              <Text style={styles.label}>Días de gracia</Text>
+              <Text style={styles.switchHint}>
+                Tiempo extra para pagar antes de que el interés se sume al saldo.
+              </Text>
+            </View>
+            <Toggle value={ocGraceEnabled} onValueChange={setOcGraceEnabled} />
+          </View>
+        )}
+
+        {isOpenCredit && ocGraceEnabled && (
+          <View style={styles.field}>
+            <Text style={styles.label}>Días de gracia</Text>
+            <TextInput
+              testID="loan-form-grace-days"
+              style={styles.input}
+              keyboardType="number-pad"
+              value={ocGraceDays}
+              onChangeText={(t) => setOcGraceDays(t.replace(/[^0-9]/g, ""))}
+              placeholder={String(OPEN_CREDIT_DEFAULT_GRACE_DAYS)}
+            />
+            <Text style={styles.switchHint}>
+              Tiene {ocGraceDays || "0"} día{ocGraceDays === "1" ? "" : "s"} después del vencimiento
+              para pagar sin que el interés se sume al saldo.
+            </Text>
+          </View>
+        )}
 
         {!isOpenCredit && (
           <View style={[styles.field, styles.switchRow]}>
@@ -436,6 +489,9 @@ const styles = StyleSheet.create({
   dateInputText: { fontSize: 15, color: colors.ink, fontWeight: "600" },
   dateInputHint: { fontSize: 12, color: colors.muted },
   anchorWarning: { fontSize: 12, color: colors.amber, marginTop: 6 },
+  deliveryHint: { fontSize: 12, fontWeight: "600", color: colors.brandDeep },
+  switchText: { flex: 1, gap: 2, paddingRight: 12 },
+  switchHint: { fontSize: 12, color: colors.muted },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   chip: {
     paddingHorizontal: 14,

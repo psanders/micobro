@@ -61,6 +61,8 @@ export interface PrintReceiptData {
   loanEndDate: string | null;
   /** Picks "Inicia" over "Inicio" and the "Crédito abierto" end-date wording. */
   isOpenCredit: boolean;
+  /** "Después de este pago" rows (crédito abierto only); omitted when empty. */
+  balanceAfter?: PrintReceiptLine[];
 }
 
 function text(s: string): number[] {
@@ -80,9 +82,14 @@ function line(s: string): number[] {
   return [...text(truncateToWidth(s)), 0x0a];
 }
 
+/** "Label:      value" on one line. When both don't fit, the label is
+ * shortened ("..."), never the value — on a receipt the amount is the part
+ * that must stay readable. */
 function pad(label: string, value: string): string {
-  const gap = LINE_WIDTH - label.length - value.length;
-  return label + " ".repeat(Math.max(1, gap)) + value;
+  const room = LINE_WIDTH - value.length - 1;
+  const fitted = label.length <= room ? label : `${label.slice(0, Math.max(0, room - 3))}...`;
+  const gap = LINE_WIDTH - fitted.length - value.length;
+  return fitted + " ".repeat(Math.max(1, gap)) + value;
 }
 
 function divider(char = "-"): string {
@@ -133,6 +140,16 @@ export function buildReceiptBytes(data: PrintReceiptData): Uint8Array {
 
   push(...line(""));
   push(...line(pad("Metodo:", data.method)));
+
+  if (data.balanceAfter && data.balanceAfter.length > 0) {
+    push(...line(divider()));
+    push(...CMD.BOLD_ON);
+    push(...line("DESPUES DE ESTE PAGO"));
+    push(...CMD.BOLD_OFF);
+    for (const item of data.balanceAfter) {
+      push(...line(pad(`${item.label}:`, formatRD(item.amountCents))));
+    }
+  }
 
   push(...line(divider("=")));
   push(...CMD.CENTER);
