@@ -23,7 +23,11 @@ import {
   type LoanWithCustomer,
   type LoanDetail
 } from "../../loans/loan.schema";
-import { openCreditState } from "../../loans/openCredit";
+import {
+  openCreditState,
+  openCreditReceiptBreakdown,
+  openCreditGraceDays
+} from "../../loans/openCredit";
 import { createPaymentSchema, type Payment } from "../../payments/payment.schema";
 import { setProfileSchema, type Profile } from "../../profile/profile.schema";
 import {
@@ -39,6 +43,7 @@ import {
 } from "../../loans/loanViews";
 import { cuotaCents, totalRepayCents } from "../../loans/loanMath";
 import { formatCurrency } from "../../utils/money";
+import { formatShortDate } from "../../utils/dates";
 import { createVisitSchema, type Visit } from "../../visits/visit.schema";
 import { visitDescription } from "../../visits/visitDescription";
 import {
@@ -101,6 +106,11 @@ export function createMockRepos(): Repos {
       });
       const openCredit: OpenCreditView = {
         balanceCents: ocState.balanceCents,
+        principalBalanceCents: ocState.principalBalanceCents,
+        capitalizedInterestCents: ocState.capitalizedInterestCents,
+        catchUpCents: ocState.catchUpCents,
+        graceDays: openCreditGraceDays(loan),
+        nextGraceEndDate: ocState.nextGraceEndDate,
         interestDueCents: ocState.interestDueCents,
         nextDueDate: ocState.nextDueDate,
         interestRateBps: loan.interestRateBps,
@@ -490,6 +500,12 @@ export function createMockRepos(): Repos {
           paymentId = row.id;
         }
 
+        // Same engine-derived breakdown as lib/payments/collectPayment.ts.
+        const openCredit =
+          loan && effectiveLoanType(loan) === "open_credit"
+            ? openCreditReceiptBreakdown(loan, payments, paymentId, formatShortDate)
+            : null;
+
         return {
           paymentId,
           receiptNumber,
@@ -497,11 +513,12 @@ export function createMockRepos(): Repos {
           totalCents: input.amountCents,
           method: input.method,
           customerName: customer?.name ?? "Cliente",
-          lines: input.lines,
+          lines: openCredit?.lines ?? input.lines,
           // `null`, not paidAt — see the note in lib/payments/collectPayment.ts.
           loanStartDate: loan?.startDate ?? null,
           loanEndDate: loan ? loanEndDate(loan) : null,
-          isOpenCredit: loan ? effectiveLoanType(loan) === "open_credit" : false
+          isOpenCredit: openCredit !== null,
+          balanceAfter: openCredit?.balanceAfter ?? []
         };
       },
       getReceipt: async (paymentId) => {

@@ -54,6 +54,11 @@ function cycleRowIsSettled(status: OpenCreditCycle["status"]): boolean {
   return status === "paid" || status === "interest_only" || status === "interest_plus_capital";
 }
 
+/** "Ciclo 3 · No pagado" for a cycle whose unpaid interest was added to the balance. */
+function cycleNameLabel(cycle: OpenCreditCycle): string {
+  return cycle.status === "skipped" ? `Ciclo ${cycle.index} · No pagado` : `Ciclo ${cycle.index}`;
+}
+
 function cycleAmountLabel(cycle: OpenCreditCycle): string {
   if (cycle.status === "pending") {
     return cycle.capitalPaidCents > 0
@@ -61,7 +66,8 @@ function cycleAmountLabel(cycle: OpenCreditCycle): string {
       : `Int: ${formatCurrency(cycle.interestDueCents)}`;
   }
   if (cycle.status === "skipped") {
-    return formatCurrency(cycle.interestDueCents);
+    // Say where the money went: it became intereses sumados, not capital.
+    return `${formatCurrency(cycle.capitalizedCents)} se sumó al saldo`;
   }
   return formatCurrency(cycle.paidCents);
 }
@@ -241,20 +247,61 @@ export function LoanDetailScreen({ loanId }: { loanId: string }) {
               <>
                 <View style={styles.chips}>
                   <MetaChip>{frequencyLabels[loan.frequency]}</MetaChip>
+                  <MetaChip>
+                    {loan.openCredit.graceDays > 0
+                      ? `Compuesto · gracia ${loan.openCredit.graceDays} día${loan.openCredit.graceDays === 1 ? "" : "s"}`
+                      : "Compuesto"}
+                  </MetaChip>
                   <MetaChip>{loan.openCredit.isClosed ? "Cerrado" : "Activo"}</MetaChip>
                 </View>
 
+                {/*
+                  The headline is capital only — it never exceeds what was
+                  lent. Interest that went unpaid and was added to the
+                  balance is shown apart as "intereses sumados", so the
+                  customer never sees their capital grow.
+                */}
                 <View style={styles.summary}>
                   <Text style={styles.summaryLabel}>CAPITAL PENDIENTE</Text>
-                  <Text style={styles.summaryAmount}>
-                    {formatCurrency(loan.openCredit.balanceCents)}
+                  <Text style={styles.summaryAmount} testID="oc-principal-balance">
+                    {formatCurrency(loan.openCredit.principalBalanceCents)}
                   </Text>
+                  <Text style={styles.summaryCaption}>
+                    Prestado {formatCurrency(loan.principalCents)} · solo baja con abonos a capital
+                  </Text>
+                  {loan.openCredit.capitalizedInterestCents > 0 && (
+                    <>
+                      <View style={styles.summaryRule} />
+                      <View style={styles.summaryRow}>
+                        <View style={styles.summaryRowLeft}>
+                          <View style={styles.summaryDot} />
+                          <Text style={styles.summaryRowLabel}>Intereses sumados</Text>
+                        </View>
+                        <Text style={styles.summaryRowAccent} testID="oc-capitalized-interest">
+                          {formatCurrency(loan.openCredit.capitalizedInterestCents)}
+                        </Text>
+                      </View>
+                      <View style={styles.summaryRow}>
+                        <Text style={styles.summaryCaption}>Para saldar hoy</Text>
+                        <Text style={styles.summaryRowValue}>
+                          {formatCurrency(loan.openCredit.balanceCents)}
+                        </Text>
+                      </View>
+                    </>
+                  )}
                 </View>
 
                 <View style={styles.dueCard}>
                   <KvRow label="Tasa de interés" value={rateLabel(loan.openCredit)} />
                   <View style={styles.divider} />
-                  <KvRow label="Próx. pago" value={formatShortDate(loan.openCredit.nextDueDate)} />
+                  <KvRow
+                    label="Próx. pago"
+                    value={
+                      loan.openCredit.graceDays > 0
+                        ? `${formatShortDate(loan.openCredit.nextDueDate)} · gracia hasta ${formatShortDate(loan.openCredit.nextGraceEndDate)}`
+                        : formatShortDate(loan.openCredit.nextDueDate)
+                    }
+                  />
                   <View style={styles.divider} />
                   {/*
                     Not "pendiente": during an in-progress cycle this interest
@@ -266,6 +313,20 @@ export function LoanDetailScreen({ loanId }: { loanId: string }) {
                     label="Interés del próximo pago"
                     value={formatCurrency(loan.openCredit.interestDueCents)}
                   />
+                  {loan.openCredit.capitalizedInterestCents > 0 && (
+                    <Text style={styles.ocHint}>
+                      Se calcula sobre capital + intereses sumados (
+                      {formatCurrency(loan.openCredit.balanceCents)})
+                    </Text>
+                  )}
+                  {loan.openCredit.capitalizedInterestCents > 0 && (
+                    <View style={styles.ocCatchUp} testID="oc-catch-up-row">
+                      <Text style={styles.ocCatchUpLabel}>Para ponerse al día</Text>
+                      <Text style={styles.ocCatchUpValue}>
+                        {formatCurrency(loan.openCredit.catchUpCents)}
+                      </Text>
+                    </View>
+                  )}
                 </View>
 
                 <SectionLabel>HISTORIAL DE CICLOS</SectionLabel>
@@ -281,7 +342,7 @@ export function LoanDetailScreen({ loanId }: { loanId: string }) {
                         ]}
                       >
                         <Text style={[styles.ocCycleName, !settled && styles.ocCycleTextAmber]}>
-                          Ciclo {cycle.index}
+                          {cycleNameLabel(cycle)}
                         </Text>
                         <View style={styles.ocCycleRight}>
                           <Text style={[styles.ocCycleAmount, !settled && styles.ocCycleTextAmber]}>
@@ -526,6 +587,25 @@ const styles = StyleSheet.create({
     color: "#9FE6D2"
   },
   summaryGrid: { flexDirection: "row", justifyContent: "space-between" },
+  summaryRule: { height: 1, backgroundColor: "rgba(255, 255, 255, 0.15)" },
+  summaryRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  summaryRowLeft: { flexDirection: "row", alignItems: "center", gap: 6 },
+  summaryDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.yellowAccent },
+  summaryRowLabel: { fontSize: 13, fontFamily: fonts.medium, color: colors.white },
+  summaryRowAccent: { fontSize: 15, fontFamily: fonts.bold, color: colors.yellowAccent },
+  summaryRowValue: { fontSize: 15, fontFamily: fonts.bold, color: colors.white },
+  ocHint: { fontSize: 11, fontFamily: fonts.medium, color: colors.slate },
+  ocCatchUp: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: colors.amberBg,
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 12
+  },
+  ocCatchUpLabel: { fontSize: 13, fontFamily: fonts.semiBold, color: "#92400E" },
+  ocCatchUpValue: { fontSize: 15, fontFamily: fonts.bold, color: "#92400E" },
   summaryCellLabel: { fontSize: 11, fontFamily: fonts.medium, color: "#9FE6D2" },
   summaryCellValue: { fontSize: 14, fontFamily: fonts.bold, color: colors.white, marginTop: 2 },
   dueCard: { backgroundColor: colors.white, borderRadius: 18, padding: 16, gap: 12 },

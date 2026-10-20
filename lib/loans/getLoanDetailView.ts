@@ -8,7 +8,7 @@ import { customers, loans, payments } from "../db/schema";
 import { buildLoanDetailView } from "./loanViews";
 import { computeLoanMora, loanMoraPolicy } from "./mora";
 import { effectiveLoanType } from "./loan.schema";
-import { openCreditState } from "./openCredit";
+import { openCreditState, openCreditGraceDays } from "./openCredit";
 import type { Customer } from "../customers/customer.schema";
 import type { Loan } from "./loan.schema";
 import type { Payment } from "../payments/payment.schema";
@@ -62,6 +62,11 @@ export function createGetLoanDetailView({ db }: GetLoanDetailViewDeps) {
       });
       const openCredit: OpenCreditView = {
         balanceCents: state.balanceCents,
+        principalBalanceCents: state.principalBalanceCents,
+        capitalizedInterestCents: state.capitalizedInterestCents,
+        catchUpCents: state.catchUpCents,
+        graceDays: openCreditGraceDays(loan),
+        nextGraceEndDate: state.nextGraceEndDate,
         interestDueCents: state.interestDueCents,
         nextDueDate: state.nextDueDate,
         interestRateBps: loan.interestRateBps,

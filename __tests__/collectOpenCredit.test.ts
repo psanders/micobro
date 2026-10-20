@@ -43,6 +43,58 @@ function makeDbStub() {
   return { db, inserted };
 }
 
+describe("open-credit receipt from collectPayment", () => {
+  it("builds the receipt lines from the engine, not from the screen", async () => {
+    // Arrange — a real crédito abierto row, 10 days into cycle 1 (RD$1,000 interest)
+    const start = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000);
+    const ocLoan = {
+      id: "loan-1",
+      customerId: "customer-1",
+      principalCents: 1000000,
+      interestRateBps: 1000,
+      termCount: 0,
+      frequency: "monthly",
+      startDate: start,
+      status: "active",
+      notes: null,
+      graceDays: null,
+      moraEnabled: null,
+      moraRateBps: null,
+      skipSundays: null,
+      loanType: "open_credit",
+      createdAt: start,
+      updatedAt: start
+    };
+    const from = jest.fn((table: unknown) => {
+      const rows = table === loans ? [ocLoan] : table === customers ? [customerRow] : [];
+      return Object.assign(Promise.resolve(rows), { where: jest.fn(() => Promise.resolve(rows)) });
+    });
+    const db = {
+      select: jest.fn(() => ({ from })),
+      insert: jest.fn(() => ({ values: jest.fn(async () => undefined) }))
+    } as unknown as Database;
+    const collect = createCollectPayment({ db });
+
+    // Act — the screen's own labels are ignored for crédito abierto
+    const receipt = await collect({
+      loanId: "loan-1",
+      amountCents: 150000,
+      method: "cash",
+      moraCents: 0,
+      lines: [{ label: "Capital", amountCents: 150000 }]
+    });
+
+    // Assert
+    expect(receipt.isOpenCredit).toBe(true);
+    expect(receipt.lines).toEqual([
+      { label: "Interés · ciclo 1", amountCents: 100000 },
+      { label: "Abono a capital", amountCents: 50000 }
+    ]);
+    expect(receipt.balanceAfter[0]).toEqual({ label: "Capital pendiente", amountCents: 950000 });
+    expect(receipt.balanceAfter[1]).toEqual({ label: "Intereses sumados", amountCents: 0 });
+  });
+});
+
 describe("collecting an open-credit payment", () => {
   it("records interest + capital as a single row with no mora note", async () => {
     const { db, inserted } = makeDbStub();

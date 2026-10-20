@@ -586,6 +586,7 @@ describe("buildPaymentReceipt", () => {
       ...loan,
       id: "loan-oc",
       termCount: 0,
+      graceDays: 0,
       loanType: "open_credit"
     };
     const ocPayment: Payment = {
@@ -623,7 +624,7 @@ describe("buildCustomerLoanSummary", () => {
     startDate: new Date(today.getTime() - 8 * DAY_MS),
     status: "active",
     notes: null,
-    graceDays: null,
+    graceDays: 0,
     moraEnabled: null,
     moraRateBps: null,
     skipSundays: null,

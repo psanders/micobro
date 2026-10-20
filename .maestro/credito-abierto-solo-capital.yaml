@@ -1,4 +1,4 @@
-# Covers: Crédito Abierto -> Cobrar -> "Solo capital" unlocking once the
+# Covers: Crédito Abierto -> Cobrar -> "Solo abono" unlocking once the
 # cycle's interest is covered (openspec change 103-solo-capital).
 #
 # Requires a mock-repo build (EXPO_PUBLIC_USE_MOCK_REPOS=true) — see the
@@ -6,8 +6,8 @@
 # (lib/repo/mock/fixtures.ts): crédito abierto, principal 1,000,000 cents at
 # 500 bps weekly, started 21 days ago with interest-only payments on cycles 1
 # and 2. That leaves the CURRENT cycle's interest UNPAID, so the flow starts
-# with "Solo capital" locked, collects "Solo interés" to cover it, then comes
-# back and finds "Solo capital" available — which is the whole behavior under
+# with "Solo abono" locked, collects "Solo interés" to cover it, then comes
+# back and finds "Solo abono" available — which is the whole behavior under
 # test, reached through the app rather than by seeding a special fixture.
 appId: ${APP_ID}
 ---
@@ -83,7 +83,7 @@ appId: ${APP_ID}
     timeout: 15000
 - tapOn: "Cobrar"
 
-# The cycle's interest is still owed, so Solo capital is locked and says why.
+# The cycle's interest is still owed, so Solo abono is locked and says why.
 # It's the third option card, below the fold on first render — never run
 # before this issue (#106), so the flow didn't account for that.
 - extendedWaitUntil:
@@ -91,12 +91,12 @@ appId: ${APP_ID}
     timeout: 15000
 - scrollUntilVisible:
     element:
-      text: ".*Solo capital.*"
+      text: ".*Solo abono.*"
     direction: DOWN
     speed: 20
     waitToSettleTimeoutMs: 500
     visibilityPercentage: 90
-- assertVisible: ".*Solo capital.*"
+- assertVisible: ".*Solo abono.*"
 - assertVisible: ".*Disponible al cubrir el interés del ciclo.*"
 
 # Collect the cycle's interest with the default option. The CTA text is
@@ -118,32 +118,32 @@ appId: ${APP_ID}
     visible: "OPCIONES DE PAGO"
     timeout: 15000
 
-# The note appears, the interest options are spent, and Solo capital is live.
+# The note appears, the interest options are spent, and Solo abono is live.
 - assertVisible: "El interés de este ciclo ya fue pagado"
 - assertVisible: ".*Ya cubierto en este ciclo.*"
 - scrollUntilVisible:
     element:
-      text: ".*Solo capital.*"
+      text: ".*Solo abono.*"
     direction: DOWN
     speed: 20
     waitToSettleTimeoutMs: 500
     visibilityPercentage: 90
-- tapOn: ".*Solo capital.*"
+- tapOn: ".*Solo abono.*"
 # Selecting the card resets scroll position back to the top (layout shift
-# from the newly-revealed capital input), so the "Monto a capital" input
+# from the newly-revealed capital input), so the "Abono" input
 # needs its own scroll — never run before this issue (#106).
 - scrollUntilVisible:
     element:
-      text: ".*Monto a capital.*"
+      text: ".*Abono.*"
     direction: DOWN
     speed: 20
     waitToSettleTimeoutMs: 500
     visibilityPercentage: 90
-- assertVisible: ".*Monto a capital.*"
-# This is where the flow stops: the "Solo capital" unlocking behavior this
+- assertVisible: ".*Abono.*"
+# This is where the flow stops: the "Solo abono" unlocking behavior this
 # flow exists to prove is now confirmed end-to-end. Completing an actual
 # custom-amount capital payment from here would need typing into the
-# "Monto a capital" TextInput, but it's nested inside an accessible
+# "Abono" TextInput, but it's nested inside an accessible
 # Pressable that iOS merges into one opaque VoiceOver element — the input
 # has no independently addressable text, testID (tried — see
 # components/screens/CollectPaymentScreen.tsx's oc-capital-input, added for

@@ -51,7 +51,7 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
   const [submitting, setSubmitting] = useState(false);
   const customInputRef = useRef<TextInput>(null);
 
-  // Crédito abierto (07c): "Solo interés" vs "Interés + capital", with a
+  // Crédito abierto (07c): "Solo interés" vs "Interés + abono", with a
   // lender-entered capital amount for the latter.
   const [ocOption, setOcOption] = useState<OpenCreditPayOption | null>("interest");
   const [ocCapitalText, setOcCapitalText] = useState("");
@@ -77,6 +77,8 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
             interestEnabled: true,
             interestCapitalEnabled: true,
             capitalEnabled: false,
+            catchUpEnabled: false,
+            catchUpCents: 0,
             defaultOption: "interest" as const
           },
     [oc]
@@ -86,18 +88,36 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
   // Only actually applied to the total/preview when the selected option
   // includes that part — the capital input stays live either way so its pill
   // preview updates as the lender types.
+  // "Ponerse al día" is the cycle's interest plus, as the abono, exactly the
+  // intereses sumados — the engine applies it in that order.
   const ocInterestPortion =
-    ocOption === "interest" || ocOption === "interest_capital" ? ocDueInterestCents : 0;
+    ocOption === "interest" || ocOption === "interest_capital" || ocOption === "catch_up"
+      ? ocDueInterestCents
+      : 0;
   const ocCapitalPortion =
-    ocOption === "interest_capital" || ocOption === "capital" ? ocCapitalCents : 0;
+    ocOption === "interest_capital" || ocOption === "capital"
+      ? ocCapitalCents
+      : ocOption === "catch_up"
+        ? (oc?.capitalizedInterestCents ?? 0)
+        : 0;
   const ocAmountCents = ocInterestPortion + ocCapitalPortion;
   const ocBalanceAfterCents = Math.max(0, (oc?.balanceCents ?? 0) - ocCapitalPortion);
+  // The abono clears intereses sumados before capital (same order as
+  // openCreditState), so "Después del pago" shows each part separately.
+  const ocCapitalizedCents = oc?.capitalizedInterestCents ?? 0;
+  const ocCapitalizedAfterCents = Math.max(0, ocCapitalizedCents - ocCapitalPortion);
+  const ocPrincipalAfterCents = Math.max(0, ocBalanceAfterCents - ocCapitalizedAfterCents);
+  const ocAbonoSubtitle =
+    ocCapitalizedCents > 0
+      ? "El abono paga primero los intereses sumados, luego capital"
+      : "Reduce el capital y siguiente interés";
   const ocNextInterestCents = oc
     ? Math.round((ocBalanceAfterCents * oc.interestRateBps) / 10000)
     : 0;
 
-  // Land on whichever option covers the main case right now — Solo interés
-  // while interest is owed, Solo capital once it isn't — so the lender always
+  // Land on whichever option covers the main case right now — Ponerse al
+  // día when interest was added to the balance, else Solo interés while
+  // interest is owed and Solo abono once it isn't — so the lender always
   // arrives at a live selection instead of an empty form.
   useEffect(() => {
     setOcOption(ocView.defaultOption);
@@ -276,7 +296,8 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
           // parses them back.
           loanStartDate: receipt.loanStartDate ? receipt.loanStartDate.toISOString() : "",
           loanEndDate: receipt.loanEndDate ? receipt.loanEndDate.toISOString() : "",
-          isOpenCredit: String(receipt.isOpenCredit)
+          isOpenCredit: String(receipt.isOpenCredit),
+          balanceAfter: JSON.stringify(receipt.balanceAfter)
         }
       });
     } catch {
@@ -308,17 +329,46 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
             <View style={styles.ocBanner}>
               <Text style={styles.ocBannerTitle}>
                 {ocCurrentCycle
-                  ? `Ciclo ${ocCurrentCycle.index} · Del ${formatShortDate(ocCurrentCycle.start)} al ${formatShortDate(ocCurrentCycle.end)}`
+                  ? `Ciclo ${ocCurrentCycle.index} · Del ${formatShortDate(ocCurrentCycle.start)} al ${formatShortDate(ocCurrentCycle.end)}${
+                      ctx.openCredit.graceDays > 0
+                        ? ` · gracia hasta ${formatShortDate(ocCurrentCycle.graceEnd)}`
+                        : ""
+                    }`
                   : ""}
               </Text>
               <Text style={styles.ocBannerSub}>
-                Capital actual: {formatCurrency(ctx.openCredit.balanceCents)}
+                Capital {formatCurrency(ctx.openCredit.principalBalanceCents)}
+                {ctx.openCredit.capitalizedInterestCents > 0
+                  ? ` · Intereses sumados ${formatCurrency(ctx.openCredit.capitalizedInterestCents)}`
+                  : ""}
               </Text>
             </View>
 
             <View style={styles.ocInterestCard}>
-              <SectionLabel>INTERÉS DEL PRÓXIMO PAGO</SectionLabel>
-              <Text style={styles.ocInterestAmount}>{formatCurrency(ocDueInterestCents)}</Text>
+              {ocView.catchUpEnabled ? (
+                <>
+                  <SectionLabel>PARA PONERSE AL DÍA</SectionLabel>
+                  <Text style={styles.ocInterestAmount} testID="oc-catch-up-amount">
+                    {formatCurrency(ocView.catchUpCents)}
+                  </Text>
+                  {ocDueInterestCents > 0 && ocCurrentCycle ? (
+                    <KvRow
+                      label={`Interés ciclo ${ocCurrentCycle.index} (vence ${formatShortDate(ocCurrentCycle.end)})`}
+                      value={formatCurrency(ocDueInterestCents)}
+                    />
+                  ) : null}
+                  <KvRow
+                    label="Intereses sumados (atrasados)"
+                    value={formatCurrency(ocCapitalizedCents)}
+                    valueColor={colors.amber}
+                  />
+                </>
+              ) : (
+                <>
+                  <SectionLabel>INTERÉS DEL PRÓXIMO PAGO</SectionLabel>
+                  <Text style={styles.ocInterestAmount}>{formatCurrency(ocDueInterestCents)}</Text>
+                </>
+              )}
               {ocInterestCovered ? (
                 <View style={styles.ocPaidNote}>
                   <Icon name="check" size={13} color={colors.green} />
@@ -330,6 +380,40 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
             <View style={styles.section}>
               <SectionLabel>OPCIONES DE PAGO</SectionLabel>
               <View style={styles.ocOptions}>
+                {ocView.catchUpEnabled ? (
+                  <Pressable
+                    testID="oc-option-catch-up"
+                    style={[
+                      styles.ocOptionCard,
+                      ocOption === "catch_up" && styles.ocOptionCardSelected
+                    ]}
+                    onPress={() => setOcOption("catch_up")}
+                  >
+                    <View style={styles.ocOptionHeader}>
+                      <View style={styles.ocOptionTextWrap}>
+                        <Text style={styles.ocOptionTitle}>Ponerse al día</Text>
+                        <Text style={styles.ocOptionSubtitle}>
+                          {ocInterestCovered
+                            ? "Paga los intereses atrasados"
+                            : "Paga el interés del ciclo y los atrasos"}
+                        </Text>
+                      </View>
+                      <View
+                        style={[styles.ocRadio, ocOption === "catch_up" && styles.ocRadioSelected]}
+                      >
+                        {ocOption === "catch_up" ? (
+                          <Icon name="check" size={14} color={colors.white} />
+                        ) : null}
+                      </View>
+                    </View>
+                    <View style={styles.ocPayPill}>
+                      <Text style={styles.ocPayPillLabel}>A pagar</Text>
+                      <Text style={styles.ocPayPillValue}>
+                        {formatCurrency(ocView.catchUpCents)}
+                      </Text>
+                    </View>
+                  </Pressable>
+                ) : null}
                 <Pressable
                   style={[
                     styles.ocOptionCard,
@@ -347,17 +431,20 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
                           ocInterestCovered && styles.ocOptionTextDisabled
                         ]}
                       >
-                        Solo interés
+                        {ocView.catchUpEnabled ? "Solo interés del ciclo" : "Solo interés"}
                       </Text>
                       <Text
                         style={[
                           styles.ocOptionSubtitle,
-                          ocInterestCovered && styles.ocOptionTextDisabled
+                          ocInterestCovered && styles.ocOptionTextDisabled,
+                          !ocInterestCovered && ocCapitalizedCents > 0 && styles.ocOptionWarning
                         ]}
                       >
                         {ocInterestCovered
                           ? "Ya cubierto en este ciclo"
-                          : "Mantiene el capital pendiente"}
+                          : ocCapitalizedCents > 0
+                            ? `Los ${formatCurrency(ocCapitalizedCents)} atrasados siguen sumados y generando interés`
+                            : "Mantiene el capital pendiente"}
                       </Text>
                     </View>
                     <View
@@ -398,7 +485,7 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
                           ocInterestCovered && styles.ocOptionTextDisabled
                         ]}
                       >
-                        Interés + capital
+                        Interés + abono
                       </Text>
                       <Text
                         style={[
@@ -406,9 +493,7 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
                           ocInterestCovered && styles.ocOptionTextDisabled
                         ]}
                       >
-                        {ocInterestCovered
-                          ? "Ya cubierto en este ciclo"
-                          : "Reduce el capital y siguiente interés"}
+                        {ocInterestCovered ? "Ya cubierto en este ciclo" : ocAbonoSubtitle}
                       </Text>
                     </View>
                     <View
@@ -424,7 +509,7 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
                   </View>
                   {ocInterestCovered ? null : (
                     <>
-                      <Text style={styles.ocCapitalLabel}>Capital a pagar</Text>
+                      <Text style={styles.ocCapitalLabel}>Abono</Text>
                       <View style={styles.customInputCard}>
                         <Text style={styles.customInputLabel}>RD$</Text>
                         <TextInput
@@ -464,7 +549,7 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
                           !ocInterestCovered && styles.ocOptionTextDisabled
                         ]}
                       >
-                        Solo capital
+                        Solo abono
                       </Text>
                       <Text
                         style={[
@@ -473,7 +558,9 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
                         ]}
                       >
                         {ocInterestCovered
-                          ? "Todo el monto baja el capital"
+                          ? ocCapitalizedCents > 0
+                            ? "Paga intereses sumados, luego capital"
+                            : "Todo el monto baja el capital"
                           : "Disponible al cubrir el interés del ciclo"}
                       </Text>
                     </View>
@@ -487,7 +574,7 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
                   </View>
                   {ocInterestCovered ? (
                     <>
-                      <Text style={styles.ocCapitalLabel}>Monto a capital</Text>
+                      <Text style={styles.ocCapitalLabel}>Abono</Text>
                       <View style={styles.customInputCard}>
                         <Text style={styles.customInputLabel}>RD$</Text>
                         <TextInput
@@ -515,7 +602,16 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
             <View style={styles.section}>
               <SectionLabel>DESPUÉS DEL PAGO</SectionLabel>
               <View style={styles.ocAfterCard}>
-                <KvRow label="Capital restante" value={formatCurrency(ocBalanceAfterCents)} />
+                <KvRow label="Capital" value={formatCurrency(ocPrincipalAfterCents)} />
+                {ocCapitalizedCents > 0 && (
+                  <>
+                    <View style={styles.divider} />
+                    <KvRow
+                      label="Intereses sumados"
+                      value={formatCurrency(ocCapitalizedAfterCents)}
+                    />
+                  </>
+                )}
                 <View style={styles.divider} />
                 <KvRow
                   label={`Próx. interés (${oc ? oc.interestRateBps / 100 : 0}%)`}
@@ -854,6 +950,7 @@ const styles = StyleSheet.create({
     justifyContent: "center"
   },
   ocRadioSelected: { backgroundColor: colors.brandDeep },
+  ocOptionWarning: { color: colors.amber },
   ocCapitalLabel: { fontSize: 12, fontFamily: fonts.semiBold, color: "#5B6B7A" },
   ocPayPill: {
     flexDirection: "row",

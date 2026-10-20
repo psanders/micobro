@@ -27,7 +27,8 @@ function baseLoan(overrides: Partial<Loan> = {}): Loan {
     startDate: new Date(TODAY.getTime() - 4 * WEEK_MS), // 4 weeks before today
     status: "active",
     notes: null,
-    graceDays: null,
+    // No grace: these tests pin the due-date rules; grace has its own tests.
+    graceDays: 0,
     moraEnabled: null,
     moraRateBps: null,
     skipSundays: null,

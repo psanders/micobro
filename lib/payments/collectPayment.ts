@@ -9,8 +9,11 @@ import { paymentMethods } from "./payment.schema";
 import { customers, loans, payments } from "../db/schema";
 import { MORA_NOTE, loanEndDate } from "../loans/loanViews";
 import { effectiveLoanType } from "../loans/loan.schema";
+import { openCreditReceiptBreakdown } from "../loans/openCredit";
+import { formatShortDate } from "../utils/dates";
 import { fromCents } from "../utils/money";
 import type { Customer } from "../customers/customer.schema";
+import type { Payment } from "./payment.schema";
 import type { Loan } from "../loans/loan.schema";
 import type { CollectInput, PaymentReceipt } from "../repo/types";
 import type { Database } from "../db/client";
@@ -53,6 +56,7 @@ export function createCollectPayment({ db }: CollectPaymentDeps) {
     const installmentCents = input.amountCents - moraCents;
 
     let paymentId = "";
+    const created: Payment[] = [];
     if (moraCents > 0) {
       const row = await createPayment({
         loanId: input.loanId,
@@ -62,6 +66,7 @@ export function createCollectPayment({ db }: CollectPaymentDeps) {
         notes: MORA_NOTE
       });
       paymentId = row.id;
+      created.push(row);
     }
     if (installmentCents > 0) {
       const row = await createPayment({
@@ -71,7 +76,22 @@ export function createCollectPayment({ db }: CollectPaymentDeps) {
         method: input.method
       });
       paymentId = row.id;
+      created.push(row);
     }
+
+    // Crédito abierto: how the money was applied (interés / intereses
+    // sumados / capital) and the balance it left come from the engine, not
+    // the screen — the same breakdown a reprint from history rebuilds.
+    const isOpenCredit = loan ? effectiveLoanType(loan) === "open_credit" : false;
+    const breakdown =
+      loan && isOpenCredit
+        ? openCreditReceiptBreakdown(
+            loan,
+            [...(existing as Payment[]).filter((p) => p.loanId === loan.id), ...created],
+            paymentId,
+            formatShortDate
+          )
+        : null;
 
     return {
       paymentId,
@@ -80,7 +100,7 @@ export function createCollectPayment({ db }: CollectPaymentDeps) {
       totalCents: input.amountCents,
       method: input.method,
       customerName: customer?.name ?? "Cliente",
-      lines: input.lines,
+      lines: breakdown?.lines ?? input.lines,
       // `null`, not paidAt: a substituted date would print "Inicio: <hoy>" on
       // a receipt the customer keeps for months, asserting the loan started
       // the day of the cobro. The renderers drop the row instead — see the
@@ -88,7 +108,8 @@ export function createCollectPayment({ db }: CollectPaymentDeps) {
       // no honest placeholder for a date.
       loanStartDate: loan?.startDate ?? null,
       loanEndDate: loan ? loanEndDate(loan) : null,
-      isOpenCredit: loan ? effectiveLoanType(loan) === "open_credit" : false
+      isOpenCredit,
+      balanceAfter: breakdown?.balanceAfter ?? []
     };
   };
 

@@ -28,6 +28,8 @@ export interface PaymentConfirmedParams {
   loanStartDate: Date | null;
   loanEndDate: Date | null;
   isOpenCredit: boolean;
+  /** "Después de este pago" rows (crédito abierto only); omitted when empty. */
+  balanceAfter?: ReceiptLine[];
 }
 
 export function PaymentConfirmedScreen({
@@ -39,7 +41,8 @@ export function PaymentConfirmedScreen({
   lines,
   loanStartDate,
   loanEndDate,
-  isOpenCredit
+  isOpenCredit,
+  balanceAfter
 }: PaymentConfirmedParams) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -56,6 +59,7 @@ export function PaymentConfirmedScreen({
           receiptNumber={receiptNumber}
           paidAtLabel={paidAtLabel}
           lines={lines}
+          balanceAfter={balanceAfter}
         />
       </ScrollView>
 
@@ -70,6 +74,7 @@ export function PaymentConfirmedScreen({
           loanStartDate={loanStartDate}
           loanEndDate={loanEndDate}
           isOpenCredit={isOpenCredit}
+          balanceAfter={balanceAfter}
         />
         <Pressable style={styles.doneBtn} onPress={() => router.back()}>
           <Text style={styles.doneText}>Listo</Text>

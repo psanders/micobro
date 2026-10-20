@@ -50,7 +50,8 @@ const loanTermsShape = {
   startDate: z.date().optional(),
   // Days of leeway before mora starts accruing on an overdue cuota.
   // Omitted/undefined means "use the default" (DEFAULT_GRACE_DAYS, 7).
-  // Meaningless for open credit — no mora ever applies to it.
+  // For open credit it's the grace before unpaid interest is added to the
+  // balance instead (0 = none; unset = 5 — see openCreditGraceDays).
   graceDays: z.number().int().nonnegative("El período de gracia no puede ser negativo").optional(),
   // Whether this loan charges mora at all. Omitted/undefined means "use
   // the default" (enabled) at the data layer — see `lib/loans/mora.ts`'s
