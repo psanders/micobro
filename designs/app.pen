@@ -19044,7 +19044,7 @@
                 {
                   "type": "frame",
                   "id": "kuba4",
-                  "name": "Mi posición — reporte",
+                  "name": "Mi cartera — reporte",
                   "clip": true,
                   "width": 390,
                   "fill": "$ui:ds.bg",
@@ -19142,16 +19142,16 @@
                               "id": "hNRN3",
                               "type": "ref",
                               "ref": "ui:F6nZP",
-                              "name": "Cobrado en total",
+                              "name": "Margen de beneficio",
                               "width": "fill_container",
                               "descendants": {
                                 "ui:B917x1": {
-                                  "content": "Cobrado en total",
+                                  "content": "Margen de beneficio (interés)",
                                   "fill": "$ui:ds.muted",
                                   "fontSize": 14
                                 },
                                 "ui:q368B": {
-                                  "content": "RD$205,000",
+                                  "content": "RD$96,000",
                                   "fontSize": 14
                                 }
                               }
