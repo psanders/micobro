@@ -28,6 +28,7 @@
 import { Platform } from "react-native";
 import Constants from "expo-constants";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
+import { FAKE_ACCESS_TOKEN, fakeGoogleSession, isFakeGoogleEnabled } from "./fakeGoogle";
 
 // Re-exported so friendlySyncError.ts (and anything else translating a
 // Google error for the lender) never has to import the native package
@@ -67,6 +68,7 @@ function getIosClientId(): string {
  * iOS also needs its own client id.
  */
 export function isGoogleAuthConfigured(): boolean {
+  if (isFakeGoogleEnabled()) return true;
   const hasWebClientId = Boolean(Constants.expoConfig?.extra?.googleWebClientId);
   const hasIosClientId = Boolean(Constants.expoConfig?.extra?.googleIosClientId);
   return hasWebClientId && (Platform.OS !== "ios" || hasIosClientId);
@@ -94,6 +96,7 @@ export function configureGoogleSignin(): void {
  * for a lender who simply hasn't connected yet.
  */
 export function isSignedInToGoogle(): boolean {
+  if (isFakeGoogleEnabled()) return fakeGoogleSession.isSignedIn();
   if (!isGoogleAuthConfigured()) return false;
   configureGoogleSignin();
   return GoogleSignin.hasPreviousSignIn();
@@ -101,6 +104,7 @@ export function isSignedInToGoogle(): boolean {
 
 /** Runs the interactive native sign-in. Returns false if the user cancels; throws on other errors. */
 export async function signInWithGoogle(): Promise<boolean> {
+  if (isFakeGoogleEnabled()) return fakeGoogleSession.requestSignIn();
   configureGoogleSignin();
   await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
   const response = await GoogleSignin.signIn();
@@ -109,6 +113,7 @@ export async function signInWithGoogle(): Promise<boolean> {
 
 /** A fresh access token for the Sheets API, refreshed silently. Null if not signed in. */
 export async function getValidAccessToken(): Promise<string | null> {
+  if (isFakeGoogleEnabled()) return fakeGoogleSession.isSignedIn() ? FAKE_ACCESS_TOKEN : null;
   if (!isGoogleAuthConfigured()) return null;
   configureGoogleSignin();
   if (!GoogleSignin.getCurrentUser()) {
@@ -120,6 +125,7 @@ export async function getValidAccessToken(): Promise<string | null> {
 }
 
 export async function signOutOfGoogle(): Promise<void> {
+  if (isFakeGoogleEnabled()) return fakeGoogleSession.signOut();
   configureGoogleSignin();
   await GoogleSignin.signOut();
 }

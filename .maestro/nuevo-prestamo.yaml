@@ -61,6 +61,12 @@ appId: ${APP_ID}
 - extendedWaitUntil:
     visible: "Hola, Carlos."
     timeout: 15000
+# Demo video: pass -e RECORD=true to save videos/nuevo-prestamo.mp4 (recording starts after the PIN preamble).
+- runFlow:
+    when:
+      true: ${RECORD}
+    commands:
+      - startRecording: videos/nuevo-prestamo
 
 - tapOn:
     id: "tab-buscar"
@@ -88,13 +94,17 @@ appId: ${APP_ID}
     visible: "Nuevo préstamo"
     timeout: 15000
 - tapOn:
-    below: "Monto del préstamo"
+    id: "loan-form-principal"
 - inputText: "20000"
+# The numeric keyboard covers the fields below on a phone-sized screen; a
+# drag (scroll) dismisses it (keyboardDismissMode="on-drag") before the next tap.
+- scroll
 - tapOn:
-    below: "Tasa de interés (%)"
+    id: "loan-form-rate"
 - inputText: "10"
+- scroll
 - tapOn:
-    below: "Plazo (número de cuotas)"
+    id: "loan-form-term"
 - inputText: "12"
 # "Frecuencia de pago" (SelectField) already defaults to "weekly" — no tap needed.
 # Same keyboard-covers-the-submit-button issue as #119's New/Edit customer
@@ -108,3 +118,8 @@ appId: ${APP_ID}
 - extendedWaitUntil:
     visible: "Felipe Taveras"
     timeout: 15000
+- runFlow:
+    when:
+      true: ${RECORD}
+    commands:
+      - stopRecording

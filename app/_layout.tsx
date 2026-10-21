@@ -79,6 +79,8 @@ function Gate() {
           options={{ headerShown: false, presentation: "modal" }}
         />
         <Stack.Screen name="perfil" options={{ headerShown: false }} />
+        <Stack.Screen name="perfil/editar" options={{ headerShown: false }} />
+        <Stack.Screen name="mi-cartera" options={{ headerShown: false }} />
         <Stack.Screen
           name="feedback/consentimiento"
           options={{ headerShown: false, presentation: "modal" }}

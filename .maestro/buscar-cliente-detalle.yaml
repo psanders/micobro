@@ -60,6 +60,12 @@ appId: ${APP_ID}
 - extendedWaitUntil:
     visible: "Hola, Carlos."
     timeout: 15000
+# Demo video: pass -e RECORD=true to save videos/buscar-cliente-detalle.mp4 (recording starts after the PIN preamble).
+- runFlow:
+    when:
+      true: ${RECORD}
+    commands:
+      - startRecording: videos/buscar-cliente-detalle
 
 # Home's "Mi ruta / Buscar / Cuadre" quick actions repeat the tab bar's own
 # labels, so "Buscar" alone is ambiguous — tab-buscar is the testID added
@@ -82,3 +88,8 @@ appId: ${APP_ID}
     timeout: 15000
 - assertVisible: "María Rosa Peralta"
 - assertVisible: ".*Al día.*"
+- runFlow:
+    when:
+      true: ${RECORD}
+    commands:
+      - stopRecording

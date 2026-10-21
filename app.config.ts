@@ -148,6 +148,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     googleIosClientId: GOOGLE_IOS_CLIENT_ID,
     storybookEnabled: process.env.STORYBOOK_ENABLED === "true",
     useMockRepos: process.env.EXPO_PUBLIC_USE_MOCK_REPOS === "true",
+    // Swaps Google sign-in and the Sheets/Drive REST calls for an on-screen
+    // account chooser and an in-memory Drive (lib/sync/fakeGoogle) — e2e/demo only.
+    useFakeGoogle: process.env.EXPO_PUBLIC_USE_FAKE_GOOGLE === "true",
     eas: {
       projectId: "7b6f3228-32a6-44c6-bc41-378b27eb2086"
     }

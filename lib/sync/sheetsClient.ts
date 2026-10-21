@@ -6,6 +6,7 @@
  * Node's http agent) and doesn't belong on-device.
  */
 import { getValidAccessToken } from "./googleAuth";
+import { fakeGoogleServer, isFakeGoogleEnabled } from "./fakeGoogle";
 
 const SHEETS_API_BASE = "https://sheets.googleapis.com/v4/spreadsheets";
 const DRIVE_API_BASE = "https://www.googleapis.com/drive/v3/files";
@@ -16,7 +17,8 @@ async function authorizedFetch(url: string, init: RequestInit): Promise<Response
     throw new Error("Not signed in to Google. Call the sign-in flow before syncing.");
   }
 
-  return fetch(url, {
+  const send = isFakeGoogleEnabled() ? fakeGoogleServer.fetch : fetch;
+  return send(url, {
     ...init,
     headers: {
       ...init.headers,

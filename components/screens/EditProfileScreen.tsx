@@ -88,7 +88,7 @@ export function EditProfileScreen() {
       {profile.loading ? (
         <ActivityIndicator color={colors.brandDeep} style={styles.loading} />
       ) : (
-        <ScrollView contentContainerStyle={styles.content}>
+        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <View style={styles.field}>
             <Text style={styles.label}>Avatar</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.avatarRow}>
@@ -116,17 +116,28 @@ export function EditProfileScreen() {
 
           <View style={styles.field}>
             <Text style={styles.label}>Nombre completo</Text>
-            <TextInput style={styles.input} value={name} onChangeText={setName} />
+            <TextInput
+              testID="profile-name"
+              style={styles.input}
+              value={name}
+              onChangeText={setName}
+            />
           </View>
 
           <View style={styles.field}>
             <Text style={styles.label}>Nombre del negocio (opcional)</Text>
-            <TextInput style={styles.input} value={businessName} onChangeText={setBusinessName} />
+            <TextInput
+              testID="profile-business"
+              style={styles.input}
+              value={businessName}
+              onChangeText={setBusinessName}
+            />
           </View>
 
           <View style={styles.field}>
             <Text style={styles.label}>Teléfono (opcional)</Text>
             <TextInput
+              testID="profile-phone"
               style={styles.input}
               keyboardType="phone-pad"
               placeholder="809-251-2222"

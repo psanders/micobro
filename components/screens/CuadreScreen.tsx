@@ -103,12 +103,15 @@ export function CuadreScreen() {
               <Text style={styles.summaryLabel}>COBRADO SEGÚN EL SISTEMA</Text>
               <View style={styles.summaryAmountRow}>
                 <Text style={styles.summaryCurrency}>RD$</Text>
-                <Text style={styles.summaryAmount}>{formatAmount(totalCents)}</Text>
+                <Text style={styles.summaryAmount} testID="cuadre-system-total">
+                  {formatAmount(totalCents)}
+                </Text>
               </View>
             </View>
 
             <AmountInputCard
               label="TOTAL VERIFICADO"
+              testID="cuadre-verified-input"
               value={verifiedText}
               onChangeText={setVerifiedText}
               matches={matches}

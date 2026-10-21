@@ -1,0 +1,86 @@
+# Covers: Hoy -> Mi cuenta -> "Mi cartera" -> report sections visible -> back to Hoy.
+#
+# Requires a mock-repo build (EXPO_PUBLIC_USE_MOCK_REPOS=true) — see the
+# comment in pin-unlock.yaml. Asserts the section labels only: the amounts
+# come from the mock fixtures and are covered by __tests__/composePosition.test.ts.
+appId: ${APP_ID}
+---
+- launchApp:
+    clearState: true
+- runFlow:
+    when:
+      true: ${DEV_URL}
+    commands:
+      - extendedWaitUntil:
+          visible: "Development Build"
+          timeout: 20000
+      - openLink: ${DEV_URL}
+      - tapOn:
+          text: "Open"
+          optional: true
+      - extendedWaitUntil:
+          visible: "Continue"
+          timeout: 45000
+      - runFlow:
+          when:
+            true: ${DEV_MENU_DISMISS}
+          commands:
+            - back
+      - runFlow:
+          when:
+            true: ${DEV_MENU_CONTINUE}
+          commands:
+            - tapOn:
+                text: "Continue"
+                optional: true
+- extendedWaitUntil:
+    visible: "Crea tu PIN"
+    timeout: 30000
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- extendedWaitUntil:
+    visible: "Confirma tu PIN"
+    timeout: 10000
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- extendedWaitUntil:
+    visible: "Ahora no, tal vez después"
+    timeout: 15000
+- tapOn: "Ahora no, tal vez después"
+- extendedWaitUntil:
+    visible: "Hola, Carlos."
+    timeout: 15000
+# Demo video: pass -e RECORD=true to save videos/mi-cartera.mp4 (recording starts after the PIN preamble).
+- runFlow:
+    when:
+      true: ${RECORD}
+    commands:
+      - startRecording: videos/mi-cartera
+
+- tapOn:
+    id: "home-avatar-button"
+- extendedWaitUntil:
+    visible: "Mi cuenta"
+    timeout: 15000
+- tapOn: "Mi cartera"
+- extendedWaitUntil:
+    visible: "PRESTADO ACTIVO"
+    timeout: 15000
+- assertVisible: "EN ATRASO"
+- assertVisible: "POR COBRAR POR TIPO"
+- assertVisible: "ESTE MES"
+- assertVisible: ".*cerrarías el mes con.*"
+- tapOn: "Volver"
+- tapOn: "Volver"
+- extendedWaitUntil:
+    visible: "Hola, Carlos."
+    timeout: 15000
+- runFlow:
+    when:
+      true: ${RECORD}
+    commands:
+      - stopRecording
