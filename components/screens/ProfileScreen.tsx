@@ -159,12 +159,6 @@ export function ProfileScreen() {
         <SectionLabel>Ajustes</SectionLabel>
         <View style={styles.settingsList}>
           <ListTile
-            icon="bell"
-            iconColor={colors.brandPrimary}
-            label="Notificaciones"
-            onPress={() => Alert.alert("Muy pronto", "Esta función todavía no está disponible.")}
-          />
-          <ListTile
             icon="shield"
             iconColor={colors.brandPrimary}
             label="Seguridad y PIN"

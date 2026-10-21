@@ -18144,7 +18144,10 @@
                             {
                               "type": "frame",
                               "id": "Zbrmz",
-                              "width": "fill_container",
+                              "x": 20,
+                              "y": 548,
+                              "enabled": false,
+                              "width": "fill_container(350)",
                               "fill": "#E8F7F2",
                               "cornerRadius": 12,
                               "gap": 8,
@@ -19733,7 +19736,8 @@
                                   "id": "ihXeR",
                                   "type": "ref",
                                   "ref": "ui:WoWn9",
-                                  "width": "fill_container",
+                                  "width": "fill_container(350)",
+                                  "enabled": false,
                                   "descendants": {
                                     "ui:oeQMo": {
                                       "fill": "$ui:brand.blue.primary",
@@ -20239,7 +20243,8 @@
                                   "id": "c7CvFh",
                                   "type": "ref",
                                   "ref": "ui:WoWn9",
-                                  "width": "fill_container",
+                                  "width": "fill_container(350)",
+                                  "enabled": false,
                                   "descendants": {
                                     "ui:oeQMo": {
                                       "fill": "$ui:brand.blue.primary",
@@ -20780,7 +20785,8 @@
                                   "id": "h38T3",
                                   "type": "ref",
                                   "ref": "ui:WoWn9",
-                                  "width": "fill_container",
+                                  "width": "fill_container(350)",
+                                  "enabled": false,
                                   "descendants": {
                                     "ui:oeQMo": {
                                       "fill": "$ui:brand.blue.primary",
@@ -22463,7 +22469,8 @@
                               "id": "gnN6m",
                               "type": "ref",
                               "ref": "ui:WoWn9",
-                              "width": "fill_container",
+                              "width": "fill_container(350)",
+                              "enabled": false,
                               "descendants": {
                                 "ui:oeQMo": {
                                   "fill": "$ui:brand.blue.primary",
@@ -22496,7 +22503,7 @@
                               "width": "fill_container",
                               "name": "Sincronización con Google",
                               "x": 0,
-                              "y": 84,
+                              "y": 42,
                               "descendants": {
                                 "ui:oeQMo": {
                                   "fill": "$ui:brand.blue.primary",
