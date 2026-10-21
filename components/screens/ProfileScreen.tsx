@@ -122,6 +122,16 @@ export function ProfileScreen() {
           <StatCard value={String(day?.pendingCount ?? 0)} label="Pendientes" />
         </View>
 
+        <SectionLabel>Mi negocio</SectionLabel>
+        <View style={styles.settingsList}>
+          <ListTile
+            icon="bar-chart-2"
+            iconColor={colors.brandPrimary}
+            label="Mi cartera"
+            onPress={() => router.push("/mi-cartera")}
+          />
+        </View>
+
         <SectionLabel>Ajustes</SectionLabel>
         <View style={styles.settingsList}>
           <ListTile

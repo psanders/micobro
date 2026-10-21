@@ -24,7 +24,6 @@ import { formatCurrency } from "../../lib/utils/money";
 import { useSyncContext } from "../../lib/sync/SyncProvider";
 import { computeSyncStatusLabel, type SyncStatusLabel } from "../../lib/sync/syncStatusLabel";
 import { QuickAction } from "../QuickAction";
-import { ListTile } from "../ListTile";
 import { ProgressBar } from "../ProgressBar";
 import { ClientRow } from "../ClientRow";
 import { colors, fonts } from "../../lib/ui/theme";
@@ -218,15 +217,6 @@ export function HomeScreen() {
               onPress={() => router.push("/(tabs)/cuadre")}
             />
           </View>
-
-          <ListTile
-            icon="bar-chart-2"
-            iconColor={colors.brandPrimary}
-            label="Mi posición: prestado, atrasos y proyección del mes"
-            trailingIcon="chevron-right"
-            trailingAccessibilityLabel="Abrir Mi posición"
-            onPress={() => router.push("/mi-posicion")}
-          />
 
           <View style={styles.listHeader}>
             <Text style={styles.listTitle}>Próximas visitas</Text>

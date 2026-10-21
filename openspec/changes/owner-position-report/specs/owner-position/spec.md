@@ -1,13 +1,13 @@
 ## ADDED Requirements
 
-### Requirement: Capital lent and amount to collect
+### Requirement: Capital lent, amount to collect and margin
 
-The Mi posición report SHALL show, over the lender's active loans that still owe something, the capital lent (capital pendiente for crédito abierto), the amount still to collect, and the total collected on those loans.
+The Mi cartera report SHALL show, over the lender's active loans that still owe something, the capital lent (capital pendiente for crédito abierto), the amount still to collect, and the margen de beneficio: the interest earned on those loans (a term loan's total interest; for crédito abierto, intereses sumados plus the interest its next payment will cost).
 
-#### Scenario: Position with one term and one open-credit loan
+#### Scenario: One term and one open-credit loan
 
-- **WHEN** the lender has a term loan of RD$10,000 at 20% flat with RD$3,000 paid, and a crédito abierto of RD$5,000 with no payments
-- **THEN** the report shows prestado RD$15,000, por cobrar RD$14,000 (RD$9,000 + RD$5,000) and cobrado RD$3,000
+- **WHEN** the lender has a term loan of RD$10,000 at 20% flat with RD$6,000 paid, and a crédito abierto of RD$5,000 at 10% per cycle with no payments
+- **THEN** the report shows prestado RD$15,000, por cobrar RD$11,000 (RD$6,000 + RD$5,000) and margen de beneficio RD$2,500 (RD$2,000 + RD$500)
 
 #### Scenario: Archived and settled loans are left out
 
@@ -56,11 +56,11 @@ The report SHALL show what was collected so far this month, what is still due by
 - **WHEN** a cuota from last month is still unpaid
 - **THEN** it is included in what is still due this month
 
-### Requirement: Open the report from Hoy
+### Requirement: Open the report from Mi cuenta
 
-The Hoy screen SHALL offer a "Mi posición" quick action that opens the report.
+Mi cuenta SHALL offer a "Mi cartera" row, under a "Mi negocio" section, that opens the report. The report SHALL NOT be offered as a primary action on Hoy.
 
-#### Scenario: Opening from Hoy
+#### Scenario: Opening from Mi cuenta
 
-- **WHEN** the lender taps "Mi posición" on Hoy
-- **THEN** the Mi posición report opens, and back returns to Hoy
+- **WHEN** the lender opens Mi cuenta and taps "Mi cartera"
+- **THEN** the Mi cartera report opens, and back returns to Mi cuenta

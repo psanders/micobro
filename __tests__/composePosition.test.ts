@@ -50,7 +50,7 @@ function payment(
 }
 
 describe("composePosition", () => {
-  it("sums lent, to collect and collected across a term and an open-credit loan", () => {
+  it("sums lent, to collect and margin across a term and an open-credit loan", () => {
     const position = composePosition({
       today: TODAY,
       loans: [
@@ -72,7 +72,8 @@ describe("composePosition", () => {
 
     expect(position.lentCents).toBe(1500000);
     expect(position.receivableCents).toBe(600000 + 500000);
-    expect(position.collectedTotalCents).toBe(600000);
+    // term: RD$2,000 flat interest; open credit: next cycle RD$500 (10% of RD$5,000)
+    expect(position.marginCents).toBe(250000);
     expect(position.byType.term).toEqual({ loanCount: 1, outstandingCents: 600000 });
     expect(position.byType.openCredit).toEqual({ loanCount: 1, outstandingCents: 500000 });
     expect(
@@ -155,7 +156,7 @@ describe("composePosition", () => {
 
     expect(position.lentCents).toBe(0);
     expect(position.receivableCents).toBe(0);
-    expect(position.collectedTotalCents).toBe(0);
+    expect(position.marginCents).toBe(0);
     expect(position.byType.term.loanCount).toBe(0);
   });
 
@@ -172,14 +173,14 @@ describe("composePosition", () => {
     });
   });
 
-  it("counts mora payments as collected without changing what is to collect", () => {
+  it("counts mora payments in this month's collected without changing what is to collect", () => {
     const position = composePosition({
       today: TODAY,
       loans: [loan({ id: "a", startDate: new Date(2026, 8, 20) })],
       payments: [payment("a", 20000, new Date(2026, 9, 10), "mora")]
     });
 
-    expect(position.collectedTotalCents).toBe(20000);
+    expect(position.month.collectedCents).toBe(20000);
     expect(position.receivableCents).toBe(1200000);
   });
 });

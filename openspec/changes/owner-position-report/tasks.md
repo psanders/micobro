@@ -7,8 +7,8 @@
 
 ## 2. UI
 
-- [ ] 2.1 `MyPositionScreen` per the approved design, `app/mi-posicion.tsx`, `_layout` entry
-- [ ] 2.2 "Mi posición" quick action on `HomeScreen`
+- [ ] 2.1 `MyPortfolioScreen` per the approved design, `app/mi-cartera.tsx`, `_layout` entry
+- [ ] 2.2 "Mi cartera" row in `ProfileScreen` (Mi cuenta)
 
 ## 3. Tests
 
@@ -18,4 +18,4 @@
 
 ## 4. Design sync
 
-- [ ] 4.1 Update the Pencil copy to "de lo por cobrar" and "POR COBRAR POR TIPO"
+- [ ] 4.1 Update the Pencil copy to "de lo por cobrar" and "POR COBRAR POR TIPO", "Margen de beneficio (interés)"

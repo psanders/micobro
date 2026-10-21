@@ -1,7 +1,7 @@
 /**
  * Copyright (C) 2026 by Pedro Sanders. MIT License.
  *
- * Pure builder for the Mi posición report: every figure is a sum over the
+ * Pure builder for the Mi cartera report: every figure is a sum over the
  * active loans that still owe something, computed with the same loan math
  * the detail screens use (`loanViews.ts` for term loans, `openCredit.ts`
  * for crédito abierto) so the report never disagrees with a loan's own
@@ -24,6 +24,7 @@ export interface ComposePositionInput {
 interface LoanFigures {
   lentCents: number;
   receivableCents: number;
+  marginCents: number;
   isLate: boolean;
   /** Still due by month end, net of payments (never negative). */
   dueByMonthEndCents: number;
@@ -50,6 +51,7 @@ function figuresFor(
     return {
       lentCents: state.principalBalanceCents,
       receivableCents: state.balanceCents,
+      marginCents: state.capitalizedInterestCents + state.interestDueCents,
       isLate: state.capitalizedInterestCents > 0,
       dueByMonthEndCents:
         state.nextDueDate.getTime() <= monthEnd.getTime() ? state.catchUpCents : 0,
@@ -73,6 +75,7 @@ function figuresFor(
   return {
     lentCents: loan.principalCents,
     receivableCents: view.balanceCents,
+    marginCents: view.totalInterestCents,
     isLate: view.schedule.some((item) => item.status === "overdue"),
     dueByMonthEndCents: Math.max(0, dueThroughMonthEnd - view.paidCents),
     isOpenCredit: false
@@ -97,7 +100,7 @@ export function composePosition({
   const position: OwnerPosition = {
     lentCents: 0,
     receivableCents: 0,
-    collectedTotalCents: 0,
+    marginCents: 0,
     overdue: { cents: 0, loanCount: 0, percent: 0 },
     byType: {
       term: { loanCount: 0, outstandingCents: 0 },
@@ -114,6 +117,7 @@ export function composePosition({
 
     position.lentCents += figures.lentCents;
     position.receivableCents += figures.receivableCents;
+    position.marginCents += figures.marginCents;
     position.month.remainingCents += figures.dueByMonthEndCents;
 
     const bucket = figures.isOpenCredit ? position.byType.openCredit : position.byType.term;
@@ -126,7 +130,6 @@ export function composePosition({
     }
 
     for (const payment of loanPayments) {
-      position.collectedTotalCents += payment.amountCents;
       if (
         payment.paidAt.getTime() >= monthStart &&
         payment.paidAt.getTime() <= monthEnd.getTime()

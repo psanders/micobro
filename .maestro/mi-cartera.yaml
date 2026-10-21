@@ -1,4 +1,4 @@
-# Covers: Hoy -> "Mi posición" entry -> report sections visible -> back to Hoy.
+# Covers: Hoy -> Mi cuenta -> "Mi cartera" -> report sections visible -> back to Hoy.
 #
 # Requires a mock-repo build (EXPO_PUBLIC_USE_MOCK_REPOS=true) — see the
 # comment in pin-unlock.yaml. Asserts the section labels only: the amounts
@@ -55,7 +55,12 @@ appId: ${APP_ID}
     visible: "Hola, Carlos."
     timeout: 15000
 
-- tapOn: ".*Mi posición.*"
+- tapOn:
+    id: "home-avatar-button"
+- extendedWaitUntil:
+    visible: "Mi cuenta"
+    timeout: 15000
+- tapOn: "Mi cartera"
 - extendedWaitUntil:
     visible: "PRESTADO ACTIVO"
     timeout: 15000
@@ -63,6 +68,7 @@ appId: ${APP_ID}
 - assertVisible: "POR COBRAR POR TIPO"
 - assertVisible: "ESTE MES"
 - assertVisible: ".*cerrarías el mes con.*"
+- tapOn: "Volver"
 - tapOn: "Volver"
 - extendedWaitUntil:
     visible: "Hola, Carlos."

@@ -3,7 +3,7 @@
 Started: 2026-10-20
 Current stage: 5 — Sync (gate: awaiting approval)
 
-**Scope:** "Mi posición" report: capital lent, to collect, collected, late amount and share, to collect by loan type, and this month's outlook; opened from Hoy. Derived on read, no schema/sync changes.
+**Scope:** "Mi cartera" report: capital lent, to collect, collected, late amount and share, to collect by loan type, and this month's outlook; opened from Mi cuenta. Derived on read, no schema/sync changes.
 
 **Detected surfaces:** OpenSpec: yes · Pencil: yes · Storybook: yes (not used: screen only reuses existing components) · E2E: Maestro smoke only
 

@@ -1,7 +1,7 @@
 /**
  * Copyright (C) 2026 by Pedro Sanders. MIT License.
  *
- * Mi posición per designs/app.pen ("Mi posición — reporte"): capital lent,
+ * Mi cartera per designs/app.pen ("Mi cartera — reporte"): capital lent,
  * what is late, what is still to collect by loan type, and this month's
  * best-case outlook. Every figure comes from `lib/reports/composePosition`.
  */
@@ -21,7 +21,7 @@ function plural(count: number, one: string, many: string): string {
   return `${count} ${count === 1 ? one : many}`;
 }
 
-export function MyPositionScreen() {
+export function MyPortfolioScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const reportsRepo = useReportsRepo();
@@ -33,7 +33,7 @@ export function MyPositionScreen() {
   return (
     <View style={[styles.screen, { paddingTop: insets.top }]}>
       <ScreenHeader
-        title="Mi posición"
+        title="Mi cartera"
         subtitle={monthName.charAt(0).toUpperCase() + monthName.slice(1)}
         onBack={() => router.back()}
       />
@@ -51,27 +51,9 @@ export function MyPositionScreen() {
               label="Por cobrar (capital + interés)"
               value={formatCurrency(position.receivableCents)}
             />
-            <KvRow label="Cobrado en total" value={formatCurrency(position.collectedTotalCents)} />
-          </View>
-
-          <View style={styles.section}>
-            <SectionLabel>En atraso</SectionLabel>
-            <Text style={[styles.bigAmount, { color: colors.red }]}>
-              {formatCurrency(position.overdue.cents)}
-            </Text>
-            <Text style={styles.detail}>
-              {position.overdue.loanCount === 0
-                ? "Ningún préstamo atrasado"
-                : `${position.overdue.percent}% de lo por cobrar · ${plural(
-                    position.overdue.loanCount,
-                    "préstamo atrasado",
-                    "préstamos atrasados"
-                  )}`}
-            </Text>
-            <ProgressBar
-              progress={position.overdue.percent / 100}
-              trackColor={colors.redBg}
-              fillColor={colors.red}
+            <KvRow
+              label="Margen de beneficio (interés)"
+              value={formatCurrency(position.marginCents)}
             />
           </View>
 
@@ -95,6 +77,27 @@ export function MyPositionScreen() {
             <Text style={styles.note}>
               {`Si todos pagan a tiempo, cerrarías el mes con ${formatCurrency(position.month.expectedCents)}.`}
             </Text>
+          </View>
+
+          <View style={styles.section}>
+            <SectionLabel>En atraso</SectionLabel>
+            <Text style={[styles.bigAmount, { color: colors.red }]}>
+              {formatCurrency(position.overdue.cents)}
+            </Text>
+            <Text style={styles.detail}>
+              {position.overdue.loanCount === 0
+                ? "Ningún préstamo atrasado"
+                : `${position.overdue.percent}% de lo por cobrar · ${plural(
+                    position.overdue.loanCount,
+                    "préstamo atrasado",
+                    "préstamos atrasados"
+                  )}`}
+            </Text>
+            <ProgressBar
+              progress={position.overdue.percent / 100}
+              trackColor={colors.redBg}
+              fillColor={colors.red}
+            />
           </View>
         </ScrollView>
       )}

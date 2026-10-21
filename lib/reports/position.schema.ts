@@ -12,8 +12,12 @@ export interface OwnerPosition {
   lentCents: number;
   /** Still to collect: the sum of every active loan's balance. */
   receivableCents: number;
-  /** Everything collected (mora included) on active loans. */
-  collectedTotalCents: number;
+  /**
+   * Margen de beneficio: the interest the lender earns on active loans —
+   * a term loan's total interest, or a crédito abierto's intereses sumados
+   * plus the interest its next payment will cost.
+   */
+  marginCents: number;
   overdue: {
     /** Still to collect on late loans. */
     cents: number;
