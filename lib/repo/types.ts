@@ -18,6 +18,7 @@ import type { PullResult } from "../sync/pull";
 import type { CreateVisitInput, Visit } from "../visits/visit.schema";
 import type { Profile, SetProfileInput } from "../profile/profile.schema";
 import type { CashClose, CashSummary } from "../cashClose/cashClose.schema";
+import type { OwnerPosition } from "../reports/position.schema";
 
 /** Row shape for the Buscar screen: status line + navigation target. */
 export interface CustomerSearchResult {
@@ -426,6 +427,11 @@ export interface FeedbackRepo {
   submit(input: FeedbackSubmission): Promise<{ ok: true }>;
 }
 
+/** The lender's own position: lent, to collect, late, by type, month outlook. */
+export interface ReportsRepo {
+  getPosition(): Promise<OwnerPosition>;
+}
+
 export interface Repos {
   customers: CustomerRepo;
   loans: LoanRepo;
@@ -436,4 +442,5 @@ export interface Repos {
   visits: VisitRepo;
   feedback: FeedbackRepo;
   cashClose: CashCloseRepo;
+  reports: ReportsRepo;
 }

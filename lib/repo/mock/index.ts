@@ -55,6 +55,7 @@ import {
   visitFixtures
 } from "./fixtures";
 import { routeDayFixture } from "./routeFixtures";
+import { composePosition } from "../../reports/composePosition";
 import { normalizeText } from "../../utils/text";
 import { createMockSyncRepo } from "./syncRepo.mock";
 import type { CashClose } from "../../cashClose/cashClose.schema";
@@ -538,6 +539,9 @@ export function createMockRepos(): Repos {
     },
     route: {
       getToday: async () => routeDayFixture
+    },
+    reports: {
+      getPosition: async () => composePosition({ loans, payments })
     },
     visits: {
       record: createVisit
