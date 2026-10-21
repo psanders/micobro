@@ -37,3 +37,6 @@ storybook-static/
 
 # Demo videos recorded by `npm run e2e:videos`
 /videos/
+
+# Play service account key, written by .github/workflows/submit.yml — never commit
+google-service-account.json

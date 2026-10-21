@@ -347,6 +347,543 @@
           ]
         }
       ]
+    },
+    {
+      "type": "frame",
+      "id": "ohDX0",
+      "x": 0,
+      "y": 1420,
+      "name": "Store · Google Play",
+      "gap": 80,
+      "children": [
+        {
+          "type": "frame",
+          "id": "dgEUn",
+          "name": "play-feature-graphic",
+          "clip": true,
+          "width": 1024,
+          "height": 500,
+          "fill": "$ui:brand.blue.deep",
+          "layout": "none",
+          "children": [
+            {
+              "type": "frame",
+              "id": "AEtO8",
+              "x": 64,
+              "y": 0,
+              "name": "copy",
+              "width": 560,
+              "height": 500,
+              "layout": "vertical",
+              "gap": 22,
+              "justifyContent": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "o3pSpf",
+                  "name": "lockup",
+                  "gap": 14,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "z8Msfm",
+                      "name": "badge",
+                      "width": 56,
+                      "height": 56,
+                      "fill": "$ui:brand.white",
+                      "cornerRadius": 14,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "I8aFIl",
+                          "name": "m",
+                          "fill": "$ui:brand.blue.deep",
+                          "content": "m",
+                          "fontFamily": "$ui:font-logo",
+                          "fontSize": 34,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "Z7DRsi",
+                      "name": "wordmark",
+                      "fill": "$ui:brand.white",
+                      "content": "micobro",
+                      "fontFamily": "$ui:font-logo",
+                      "fontSize": 40,
+                      "fontWeight": "700"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "wIY9O",
+                  "name": "headline",
+                  "fill": "$ui:brand.white",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Tus préstamos al día, aunque no haya señal",
+                  "lineHeight": 1.12,
+                  "fontFamily": "$ui:font-family",
+                  "fontSize": 44,
+                  "fontWeight": "800"
+                },
+                {
+                  "type": "text",
+                  "id": "B6Vq9b",
+                  "name": "sub",
+                  "fill": "$ui:brand.mist",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Clientes, cobros y recibos en tu celular.",
+                  "fontFamily": "$ui:font-family",
+                  "fontSize": 22,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "k7Owof",
+              "x": 670,
+              "y": 56,
+              "name": "phone",
+              "width": 300,
+              "height": 652,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../store/ios/screenshots/01-hoy.png",
+                "mode": "cover"
+              },
+              "cornerRadius": 36,
+              "stroke": "#FFFFFF33",
+              "strokeWidth": 6,
+              "effect": {
+                "type": "shadow",
+                "shadowType": "outer",
+                "color": "#00000055",
+                "offset": {
+                  "x": 0,
+                  "y": 24
+                },
+                "blur": 60
+              }
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "rK9MI",
+          "name": "play-screenshot-01-01-hoy",
+          "clip": true,
+          "width": 1080,
+          "height": 1920,
+          "fill": "$ui:brand.blue.deep",
+          "layout": "vertical",
+          "gap": 64,
+          "padding": [
+            120,
+            0,
+            0,
+            0
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "G9ORC",
+              "name": "caption",
+              "fill": "$ui:brand.white",
+              "textGrowth": "fixed-width",
+              "width": 860,
+              "content": "Tu día de cobros, de un vistazo",
+              "lineHeight": 1.12,
+              "textAlign": "center",
+              "fontFamily": "$ui:font-family",
+              "fontSize": 64,
+              "fontWeight": "800"
+            },
+            {
+              "type": "frame",
+              "id": "J8Fj2c",
+              "name": "screen",
+              "width": 760,
+              "height": 1652,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../store/ios/screenshots/01-hoy.png",
+                "mode": "cover"
+              },
+              "cornerRadius": 56,
+              "effect": {
+                "type": "shadow",
+                "shadowType": "outer",
+                "color": "#0000003D",
+                "offset": {
+                  "x": 0,
+                  "y": 30
+                },
+                "blur": 80
+              }
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "GSDbT",
+          "name": "play-screenshot-02-02-mi-ruta",
+          "clip": true,
+          "width": 1080,
+          "height": 1920,
+          "fill": "$ui:brand.mist",
+          "layout": "vertical",
+          "gap": 64,
+          "padding": [
+            120,
+            0,
+            0,
+            0
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "A4SoE",
+              "name": "caption",
+              "fill": "$ui:brand.ink",
+              "textGrowth": "fixed-width",
+              "width": 860,
+              "content": "Tu ruta, ordenada por atrasos",
+              "lineHeight": 1.12,
+              "textAlign": "center",
+              "fontFamily": "$ui:font-family",
+              "fontSize": 64,
+              "fontWeight": "800"
+            },
+            {
+              "type": "frame",
+              "id": "hZIZm",
+              "name": "screen",
+              "width": 760,
+              "height": 1652,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../store/ios/screenshots/02-mi-ruta.png",
+                "mode": "cover"
+              },
+              "cornerRadius": 56,
+              "effect": {
+                "type": "shadow",
+                "shadowType": "outer",
+                "color": "#0000003D",
+                "offset": {
+                  "x": 0,
+                  "y": 30
+                },
+                "blur": 80
+              }
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "rqjcV",
+          "name": "play-screenshot-03-04-cliente",
+          "clip": true,
+          "width": 1080,
+          "height": 1920,
+          "fill": "$ui:brand.blue.deep",
+          "layout": "vertical",
+          "gap": 64,
+          "padding": [
+            120,
+            0,
+            0,
+            0
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "xxRNz",
+              "name": "caption",
+              "fill": "$ui:brand.white",
+              "textGrowth": "fixed-width",
+              "width": 860,
+              "content": "Cada cliente con su historial",
+              "lineHeight": 1.12,
+              "textAlign": "center",
+              "fontFamily": "$ui:font-family",
+              "fontSize": 64,
+              "fontWeight": "800"
+            },
+            {
+              "type": "frame",
+              "id": "LljKD",
+              "name": "screen",
+              "width": 760,
+              "height": 1652,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../store/ios/screenshots/04-cliente.png",
+                "mode": "cover"
+              },
+              "cornerRadius": 56,
+              "effect": {
+                "type": "shadow",
+                "shadowType": "outer",
+                "color": "#0000003D",
+                "offset": {
+                  "x": 0,
+                  "y": 30
+                },
+                "blur": 80
+              }
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "ZEq8m",
+          "name": "play-screenshot-04-05-prestamo",
+          "clip": true,
+          "width": 1080,
+          "height": 1920,
+          "fill": "$ui:brand.mist",
+          "layout": "vertical",
+          "gap": 64,
+          "padding": [
+            120,
+            0,
+            0,
+            0
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "KjyLL",
+              "name": "caption",
+              "fill": "$ui:brand.ink",
+              "textGrowth": "fixed-width",
+              "width": 860,
+              "content": "Cuotas, mora y saldo al día",
+              "lineHeight": 1.12,
+              "textAlign": "center",
+              "fontFamily": "$ui:font-family",
+              "fontSize": 64,
+              "fontWeight": "800"
+            },
+            {
+              "type": "frame",
+              "id": "YGMOs",
+              "name": "screen",
+              "width": 760,
+              "height": 1652,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../store/ios/screenshots/05-prestamo.png",
+                "mode": "cover"
+              },
+              "cornerRadius": 56,
+              "effect": {
+                "type": "shadow",
+                "shadowType": "outer",
+                "color": "#0000003D",
+                "offset": {
+                  "x": 0,
+                  "y": 30
+                },
+                "blur": 80
+              }
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "FpDoT",
+          "name": "play-screenshot-05-07-pago-registrado",
+          "clip": true,
+          "width": 1080,
+          "height": 1920,
+          "fill": "$ui:brand.blue.deep",
+          "layout": "vertical",
+          "gap": 64,
+          "padding": [
+            120,
+            0,
+            0,
+            0
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "BTLMt",
+              "name": "caption",
+              "fill": "$ui:brand.white",
+              "textGrowth": "fixed-width",
+              "width": 860,
+              "content": "Recibos por WhatsApp o impresos",
+              "lineHeight": 1.12,
+              "textAlign": "center",
+              "fontFamily": "$ui:font-family",
+              "fontSize": 64,
+              "fontWeight": "800"
+            },
+            {
+              "type": "frame",
+              "id": "UTZOl",
+              "name": "screen",
+              "width": 760,
+              "height": 1652,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../store/ios/screenshots/07-pago-registrado.png",
+                "mode": "cover"
+              },
+              "cornerRadius": 56,
+              "effect": {
+                "type": "shadow",
+                "shadowType": "outer",
+                "color": "#0000003D",
+                "offset": {
+                  "x": 0,
+                  "y": 30
+                },
+                "blur": 80
+              }
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "nfurr",
+          "name": "play-screenshot-06-08-mi-cartera",
+          "clip": true,
+          "width": 1080,
+          "height": 1920,
+          "fill": "$ui:brand.mist",
+          "layout": "vertical",
+          "gap": 64,
+          "padding": [
+            120,
+            0,
+            0,
+            0
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "eGZpZ",
+              "name": "caption",
+              "fill": "$ui:brand.ink",
+              "textGrowth": "fixed-width",
+              "width": 860,
+              "content": "Cuánto tienes prestado y en atraso",
+              "lineHeight": 1.12,
+              "textAlign": "center",
+              "fontFamily": "$ui:font-family",
+              "fontSize": 64,
+              "fontWeight": "800"
+            },
+            {
+              "type": "frame",
+              "id": "XkXW4",
+              "name": "screen",
+              "width": 760,
+              "height": 1652,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../store/ios/screenshots/08-mi-cartera.png",
+                "mode": "cover"
+              },
+              "cornerRadius": 56,
+              "effect": {
+                "type": "shadow",
+                "shadowType": "outer",
+                "color": "#0000003D",
+                "offset": {
+                  "x": 0,
+                  "y": 30
+                },
+                "blur": 80
+              }
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "Wg2UN",
+          "name": "play-screenshot-07-09-cuadre",
+          "clip": true,
+          "width": 1080,
+          "height": 1920,
+          "fill": "$ui:brand.blue.deep",
+          "layout": "vertical",
+          "gap": 64,
+          "padding": [
+            120,
+            0,
+            0,
+            0
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "FPdRZ",
+              "name": "caption",
+              "fill": "$ui:brand.white",
+              "textGrowth": "fixed-width",
+              "width": 860,
+              "content": "Cuadra tu caja sin calculadora",
+              "lineHeight": 1.12,
+              "textAlign": "center",
+              "fontFamily": "$ui:font-family",
+              "fontSize": 64,
+              "fontWeight": "800"
+            },
+            {
+              "type": "frame",
+              "id": "R17Noh",
+              "name": "screen",
+              "width": 760,
+              "height": 1652,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../store/ios/screenshots/09-cuadre.png",
+                "mode": "cover"
+              },
+              "cornerRadius": 56,
+              "effect": {
+                "type": "shadow",
+                "shadowType": "outer",
+                "color": "#0000003D",
+                "offset": {
+                  "x": 0,
+                  "y": 30
+                },
+                "blur": 80
+              }
+            }
+          ]
+        }
+      ]
     }
   ],
   "imports": {
