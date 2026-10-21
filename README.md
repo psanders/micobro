@@ -10,7 +10,8 @@ the sheet is a supported editing path, not just an export.
 
 ## Product design
 
-The product design lives in `pencil.pen` (edited with [Pencil](https://pencil.dev));
+The product design lives in `designs/` (edited with [Pencil](https://pencil.dev)),
+one file per area on top of a shared `micobro.lib.pen`;
 `assets/screens/` holds exports of the key flows. Onboarding is PIN-first — Google
 is optional backup, never a login wall:
 
