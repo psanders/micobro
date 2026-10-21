@@ -2,20 +2,12 @@
  * Copyright (C) 2026 by Pedro Sanders. MIT License.
  *
  * 11 Histórico de Pagos per pencil.pen `Mp5w8`: total-cobrado summary,
- * the chronological payment list, and the print placeholder.
+ * and the chronological payment list. (The "print the full history" card is
+ * hidden until printing it exists — App Review / Play reject "coming soon".)
  */
-import {
-  View,
-  Text,
-  Pressable,
-  ScrollView,
-  ActivityIndicator,
-  Alert,
-  StyleSheet
-} from "react-native";
+import { View, Text, ScrollView, ActivityIndicator, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Icon } from "../Icon";
 import { useLoanRepo } from "../../lib/repo/RepoProvider";
 import { useAsync } from "../../lib/hooks/useAsync";
 import { formatAmount, formatCurrency } from "../../lib/utils/money";
@@ -97,16 +89,6 @@ export function PaymentHistoryScreen({ loanId }: { loanId: string }) {
               ))}
             </View>
           )}
-
-          <Pressable
-            style={styles.printCard}
-            onPress={() =>
-              Alert.alert("Muy pronto", "Imprimir el histórico estará disponible pronto.")
-            }
-          >
-            <Icon name="printer" size={16} color={colors.brandDeep} />
-            <Text style={styles.printText}>Imprime el historial completo para el cliente.</Text>
-          </Pressable>
         </ScrollView>
       )}
     </View>
@@ -138,14 +120,5 @@ const styles = StyleSheet.create({
   summaryCellLabel: { fontSize: 10, fontFamily: fonts.medium, color: "#A9C4F2" },
   summaryCellValue: { fontSize: 14, fontFamily: fonts.bold, color: colors.white, marginTop: 2 },
   list: { gap: 8 },
-  empty: { fontSize: 13, fontFamily: fonts.medium, color: colors.slate },
-  printCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    backgroundColor: colors.mist,
-    borderRadius: 12,
-    padding: 14
-  },
-  printText: { flex: 1, fontSize: 11, fontFamily: fonts.semiBold, color: colors.brandDeep }
+  empty: { fontSize: 13, fontFamily: fonts.medium, color: colors.slate }
 });
