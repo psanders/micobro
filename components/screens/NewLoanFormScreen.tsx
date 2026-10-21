@@ -119,7 +119,8 @@ export function NewLoanFormScreen({
   const [principal, setPrincipal] = useState("");
   const [interestRate, setInterestRate] = useState("");
   const [termCount, setTermCount] = useState("");
-  const [frequency, setFrequency] = useState<LoanFrequency>("weekly");
+  // Monthly by default: most open-interest loans are collected monthly.
+  const [frequency, setFrequency] = useState<LoanFrequency>("monthly");
   // On by default: prestamistas don't collect on Sundays, so a daily loan
   // almost always wants them skipped. Only affects loans created from here —
   // existing loans keep whatever they were stored with (`null` reads as off).
