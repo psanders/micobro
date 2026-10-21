@@ -16,6 +16,8 @@ interface AuthGateValue {
   completeOnboarding: () => Promise<void>;
   unlock: () => void;
   lock: () => void;
+  /** Back to a fresh install: onboarding (create PIN) next. Used after erasing the device data. */
+  reset: () => void;
 }
 
 const AuthGateContext = createContext<AuthGateValue | null>(null);
@@ -42,7 +44,11 @@ export function AuthGateProvider({ children }: { children: ReactNode }) {
       setUnlocked(true);
     },
     unlock: () => setUnlocked(true),
-    lock: () => setUnlocked(false)
+    lock: () => setUnlocked(false),
+    reset: () => {
+      setUnlocked(false);
+      setOnboardingCompleteState(false);
+    }
   };
 
   return <AuthGateContext.Provider value={value}>{children}</AuthGateContext.Provider>;

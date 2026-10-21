@@ -69,6 +69,19 @@ export function ProfileScreen() {
   const syncRepo = useSyncRepo();
   const { lock } = useAuthGate();
 
+  // Step 1 of "Eliminar mis datos": spell out what goes (and what stays in
+  // Drive), then hand off to the PIN screen, which does the actual erase.
+  function confirmEraseData() {
+    Alert.alert(
+      "¿Eliminar todos tus datos?",
+      "Se borrarán de este teléfono tus clientes, préstamos, pagos, visitas, cuadres, tu perfil y tu PIN, y se desconectará Google. Tu hoja «Micobro / Datos» en Google Drive no se borra. Esto no se puede deshacer.",
+      [
+        { text: "Cancelar", style: "cancel" },
+        { text: "Eliminar", style: "destructive", onPress: () => router.push("/eliminar-datos") }
+      ]
+    );
+  }
+
   const profile = useAsync(() => profileRepo.get(), []);
   const route = useAsync(() => routeRepo.getToday(), []);
   const syncStatus = useAsync(() => syncRepo.getStatus(), []);
@@ -182,6 +195,16 @@ export function ProfileScreen() {
           <Text style={styles.logoutText}>Cerrar sesión</Text>
         </Pressable>
 
+        <Pressable
+          testID="profile-erase-data"
+          style={styles.eraseBtn}
+          onPress={confirmEraseData}
+          accessibilityRole="button"
+        >
+          <Icon name="trash-2" size={16} color={colors.red} />
+          <Text style={styles.eraseText}>Eliminar mis datos</Text>
+        </Pressable>
+
         <Text style={styles.version}>MiCobro · v{APP_VERSION}</Text>
       </ScrollView>
     </View>
@@ -250,5 +273,13 @@ const styles = StyleSheet.create({
     padding: 14
   },
   logoutText: { fontSize: 14, fontFamily: fonts.bold, color: colors.orangeDeep },
+  eraseBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    paddingVertical: 10
+  },
+  eraseText: { fontSize: 14, fontFamily: fonts.bold, color: colors.red },
   version: { fontSize: 11, fontFamily: fonts.medium, color: "#9AA8C2", textAlign: "center" }
 });
