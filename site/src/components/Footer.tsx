@@ -22,7 +22,8 @@ const COMPANY_LINKS = [
 ] as const;
 
 const LEGAL_LINKS = [
-  { label: "Privacidad", href: "#" },
+  { label: "Privacidad", href: `${import.meta.env.BASE_URL}privacidad/` },
+  { label: "Eliminar tus datos", href: `${import.meta.env.BASE_URL}eliminar-datos/` },
   { label: "Términos", href: "#" }
 ] as const;
 
@@ -59,7 +60,7 @@ interface FooterProps {
 
 export function Footer({ onPricingClick }: FooterProps) {
   const PRODUCT_LINKS: readonly FooterLink[] = [
-    { label: "Funcionalidades", href: "#funcionalidades" },
+    { label: "Funcionalidades", href: `${import.meta.env.BASE_URL}#funcionalidades` },
     { label: "Precios", onClick: onPricingClick },
     { label: "Documentación", href: DOCS_URL }
   ];
@@ -87,9 +88,7 @@ export function Footer({ onPricingClick }: FooterProps) {
         <div className="mt-10 h-px w-full bg-brand-night-border/40" />
 
         <div className="mt-6 flex flex-col-reverse items-center gap-6 md:flex-row md:justify-between">
-          <p className="text-[13px] text-brand-mist">
-            © 2026 Mikro, S.R.L · Santo Domingo, RD
-          </p>
+          <p className="text-[13px] text-brand-mist">© 2026 Mikro, S.R.L · Santo Domingo, RD</p>
           <div className="flex gap-4">
             {SOCIAL.map(({ icon: Icon, label, href }) => (
               <a

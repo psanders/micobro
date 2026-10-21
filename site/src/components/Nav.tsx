@@ -9,8 +9,9 @@ import { PrimaryButton } from "./PrimaryButton";
 type NavLink = { label: string; href: string } | { label: string; onClick: () => void };
 
 const STATIC_NAV_LINKS: readonly NavLink[] = [
-  { label: "Cómo funciona", href: "#como-funciona" },
-  { label: "Funcionalidades", href: "#funcionalidades" }
+  // Absolute to the home page so they also work from the legal pages.
+  { label: "Cómo funciona", href: `${import.meta.env.BASE_URL}#como-funciona` },
+  { label: "Funcionalidades", href: `${import.meta.env.BASE_URL}#funcionalidades` }
 ];
 
 /** The Mintlify docs site, deployed from `docs-site/` on main. */

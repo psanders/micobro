@@ -8835,6 +8835,1639 @@
           ]
         }
       ]
+    },
+    {
+      "type": "frame",
+      "id": "tjgRp",
+      "x": 5282,
+      "y": 3482,
+      "name": "Privacidad — Micobro",
+      "clip": true,
+      "width": 1440,
+      "fill": "$ui:ds.bg",
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "frame",
+          "id": "xLn6c",
+          "name": "Nav",
+          "width": "fill_container",
+          "fill": "$ui:brand.white",
+          "gap": 24,
+          "padding": [
+            20,
+            80
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "jqdi3",
+              "name": "Nav Logo",
+              "gap": 14,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "vBRNe",
+                  "name": "component/logo-mark",
+                  "width": 40,
+                  "height": 40,
+                  "fill": "$ui:brand.blue.deep",
+                  "cornerRadius": 11,
+                  "layout": "vertical",
+                  "padding": [
+                    0,
+                    0,
+                    4,
+                    0
+                  ],
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "tQ4wj",
+                      "name": "logoM",
+                      "rotation": 0.2685392692845832,
+                      "fill": "$ui:brand.white",
+                      "content": "m",
+                      "lineHeight": 1,
+                      "textAlign": "center",
+                      "textAlignVertical": "middle",
+                      "fontFamily": "Geist",
+                      "fontSize": 22,
+                      "fontWeight": "700"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "fXMhv",
+                  "name": "logoWord",
+                  "fill": "$ui:brand.blue.deep",
+                  "content": "micobro",
+                  "fontFamily": "Geist",
+                  "fontSize": 22,
+                  "fontWeight": "700",
+                  "letterSpacing": -0.5
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "Lk0xq",
+              "name": "Nav Links",
+              "gap": 32,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "AC7JI",
+                  "name": "Cómo funciona",
+                  "fill": "$ui:brand.ink",
+                  "content": "Cómo funciona",
+                  "fontFamily": "$ui:font-family",
+                  "fontSize": 15,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "text",
+                  "id": "Kp27j",
+                  "name": "Funcionalidades",
+                  "fill": "$ui:brand.ink",
+                  "content": "Funcionalidades",
+                  "fontFamily": "$ui:font-family",
+                  "fontSize": 15,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "text",
+                  "id": "GzRv2",
+                  "name": "Precios",
+                  "fill": "$ui:brand.ink",
+                  "content": "Precios",
+                  "fontFamily": "$ui:font-family",
+                  "fontSize": 15,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "text",
+                  "id": "JXF6O",
+                  "name": "Documentación",
+                  "fill": "$ui:brand.ink",
+                  "content": "Documentación",
+                  "fontFamily": "$ui:font-family",
+                  "fontSize": 15,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "Jhenr",
+              "name": "Nav CTA",
+              "fill": "$ui:brand.blue.deep",
+              "cornerRadius": "$ui:radius.pill",
+              "gap": 8,
+              "padding": [
+                12,
+                22
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "U5A3b0",
+                  "name": "i",
+                  "width": 16,
+                  "height": 16,
+                  "icon": "download",
+                  "library": "lucide",
+                  "fill": "$ui:brand.white"
+                },
+                {
+                  "type": "text",
+                  "id": "QKeFu",
+                  "name": "t",
+                  "fill": "$ui:brand.white",
+                  "content": "Descargar app",
+                  "fontFamily": "$ui:font-family",
+                  "fontSize": 14,
+                  "fontWeight": "700"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "PYKxf",
+          "name": "Body",
+          "width": "fill_container",
+          "layout": "vertical",
+          "padding": [
+            88,
+            80,
+            110,
+            80
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "zgSjR",
+              "name": "Column",
+              "width": 760,
+              "layout": "vertical",
+              "gap": 36,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "iSSNI",
+                  "name": "Heading",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 12,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "qG9cv",
+                      "name": "Kicker",
+                      "fill": "$ui:brand.orange.deep",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "LEGAL",
+                      "fontFamily": "$ui:font-family",
+                      "fontSize": 13,
+                      "fontWeight": "700",
+                      "letterSpacing": 1.5
+                    },
+                    {
+                      "type": "text",
+                      "id": "DxEda",
+                      "name": "Title",
+                      "fill": "$ui:brand.ink",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Política de privacidad",
+                      "fontFamily": "$ui:font-family",
+                      "fontSize": 44,
+                      "fontWeight": "800"
+                    },
+                    {
+                      "type": "text",
+                      "id": "TGQT7",
+                      "name": "Updated",
+                      "fill": "$ui:ds.muted",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Última actualización: 21 de octubre de 2026",
+                      "fontFamily": "$ui:font-family",
+                      "fontSize": 15,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "zTURV",
+                  "name": "Intro",
+                  "fill": "$ui:brand.ink",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Micobro es una app para prestamistas independientes en la República Dominicana. Esta política explica qué datos maneja la app, dónde se guardan y qué control tienes sobre ellos. En corto: tus datos viven en tu teléfono, Micobro no tiene servidores que los reciban y nunca los vendemos ni los compartimos.",
+                  "lineHeight": 1.6,
+                  "fontFamily": "$ui:font-family",
+                  "fontSize": 18,
+                  "fontWeight": "500"
+                },
+                {
+                  "type": "frame",
+                  "id": "kTsy6",
+                  "name": "1. Qué datos maneja la app",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 10,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "DLvUL",
+                      "name": "H",
+                      "fill": "$ui:brand.ink",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "1. Qué datos maneja la app",
+                      "fontFamily": "$ui:font-family",
+                      "fontSize": 22,
+                      "fontWeight": "800"
+                    },
+                    {
+                      "type": "text",
+                      "id": "cEjID",
+                      "name": "P",
+                      "fill": "$ui:brand.ink",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Solo lo que tú escribes: tus clientes (nombre, teléfono, dirección y cédula si la anotas), tus préstamos, pagos, visitas y cuadres de caja, y tu perfil (nombre, negocio, teléfono y avatar). Tu PIN se guarda cifrado en el teléfono.",
+                      "lineHeight": 1.65,
+                      "fontFamily": "$ui:font-family",
+                      "fontSize": 16,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "kIMBa",
+                  "name": "2. Dónde se guardan",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 10,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "ZEH8Y",
+                      "name": "H",
+                      "fill": "$ui:brand.ink",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "2. Dónde se guardan",
+                      "fontFamily": "$ui:font-family",
+                      "fontSize": 22,
+                      "fontWeight": "800"
+                    },
+                    {
+                      "type": "text",
+                      "id": "kEz7G",
+                      "name": "P",
+                      "fill": "$ui:brand.ink",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "En una base de datos dentro de tu teléfono. Micobro no tiene un servidor propio: nosotros no recibimos, no vemos y no guardamos tus clientes, préstamos ni pagos.",
+                      "lineHeight": 1.65,
+                      "fontFamily": "$ui:font-family",
+                      "fontSize": 16,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "ck66j",
+                  "name": "3. Respaldo con Google (opcional)",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 10,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "gt2mh",
+                      "name": "H",
+                      "fill": "$ui:brand.ink",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "3. Respaldo con Google (opcional)",
+                      "fontFamily": "$ui:font-family",
+                      "fontSize": 22,
+                      "fontWeight": "800"
+                    },
+                    {
+                      "type": "text",
+                      "id": "XwENI",
+                      "name": "P",
+                      "fill": "$ui:brand.ink",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Si decides conectar tu cuenta de Google, la app crea una hoja de cálculo «Micobro / Datos» en tu propio Google Drive y la mantiene al día. Usamos el permiso más limitado (drive.file): la app solo puede ver los archivos que ella misma crea. Google nos da tu correo para identificar la cuenta conectada. Los datos viajan directo de tu teléfono a Google, cifrados (HTTPS). Puedes desconectarte cuando quieras.",
+                      "lineHeight": 1.65,
+                      "fontFamily": "$ui:font-family",
+                      "fontSize": 16,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "wa8AP",
+                  "name": "4. Permisos del teléfono",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 10,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "lZcjx",
+                      "name": "H",
+                      "fill": "$ui:brand.ink",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "4. Permisos del teléfono",
+                      "fontFamily": "$ui:font-family",
+                      "fontSize": 22,
+                      "fontWeight": "800"
+                    },
+                    {
+                      "type": "text",
+                      "id": "z7EalI",
+                      "name": "P",
+                      "fill": "$ui:brand.ink",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Bluetooth: para imprimir recibos en una impresora térmica; no se usa para saber tu ubicación. Micrófono y grabación de pantalla: solo cuando tú inicias «Enviar feedback» y aceptas; la grabación se queda en tu teléfono. WhatsApp: la app solo abre WhatsApp con el mensaje listo; el envío lo haces tú.",
+                      "lineHeight": 1.65,
+                      "fontFamily": "$ui:font-family",
+                      "fontSize": 16,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "uMj9C",
+                  "name": "5. Con quién los compartimos",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 10,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "zRgn8",
+                      "name": "H",
+                      "fill": "$ui:brand.ink",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "5. Con quién los compartimos",
+                      "fontFamily": "$ui:font-family",
+                      "fontSize": 22,
+                      "fontWeight": "800"
+                    },
+                    {
+                      "type": "text",
+                      "id": "jb2HB",
+                      "name": "P",
+                      "fill": "$ui:brand.ink",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Con nadie. No vendemos datos, no mostramos publicidad y la app no usa herramientas de analítica ni de rastreo.",
+                      "lineHeight": 1.65,
+                      "fontFamily": "$ui:font-family",
+                      "fontSize": 16,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "regjA",
+                  "name": "6. Nuestro sitio web",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 10,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "t6ywEa",
+                      "name": "H",
+                      "fill": "$ui:brand.ink",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "6. Nuestro sitio web",
+                      "fontFamily": "$ui:font-family",
+                      "fontSize": 22,
+                      "fontWeight": "800"
+                    },
+                    {
+                      "type": "text",
+                      "id": "puLT6",
+                      "name": "P",
+                      "fill": "$ui:brand.ink",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "micobro.app usa Meta Pixel para medir visitas y solicitudes de invitación. Si pides una invitación, guardamos tu nombre y tu número de WhatsApp para contactarte.",
+                      "lineHeight": 1.65,
+                      "fontFamily": "$ui:font-family",
+                      "fontSize": 16,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "Hj3uQ",
+                  "name": "7. Borrar tus datos",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 10,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "RqiRm",
+                      "name": "H",
+                      "fill": "$ui:brand.ink",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "7. Borrar tus datos",
+                      "fontFamily": "$ui:font-family",
+                      "fontSize": 22,
+                      "fontWeight": "800"
+                    },
+                    {
+                      "type": "text",
+                      "id": "O2Heo",
+                      "name": "P",
+                      "fill": "$ui:brand.ink",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Desde la app: Mi cuenta → Eliminar mis datos borra todo lo guardado en el teléfono y desconecta Google. La hoja «Micobro / Datos» es tuya y queda en tu Drive; puedes borrarla desde Google Drive. Más detalles en micobro.app/eliminar-datos.",
+                      "lineHeight": 1.65,
+                      "fontFamily": "$ui:font-family",
+                      "fontSize": 16,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "Oubyk",
+                  "name": "8. Seguridad",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 10,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "NpgbV",
+                      "name": "H",
+                      "fill": "$ui:brand.ink",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "8. Seguridad",
+                      "fontFamily": "$ui:font-family",
+                      "fontSize": 22,
+                      "fontWeight": "800"
+                    },
+                    {
+                      "type": "text",
+                      "id": "S47pny",
+                      "name": "P",
+                      "fill": "$ui:brand.ink",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "La app se protege con tu PIN y tus datos no salen del teléfono salvo hacia tu propia cuenta de Google, si la conectas.",
+                      "lineHeight": 1.65,
+                      "fontFamily": "$ui:font-family",
+                      "fontSize": 16,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "spZ8U",
+                  "name": "9. Menores de edad",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 10,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "iPRGK",
+                      "name": "H",
+                      "fill": "$ui:brand.ink",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "9. Menores de edad",
+                      "fontFamily": "$ui:font-family",
+                      "fontSize": 22,
+                      "fontWeight": "800"
+                    },
+                    {
+                      "type": "text",
+                      "id": "SkdGN",
+                      "name": "P",
+                      "fill": "$ui:brand.ink",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Micobro es para personas adultas que llevan su negocio de préstamos. No está dirigida a menores de 18 años.",
+                      "lineHeight": 1.65,
+                      "fontFamily": "$ui:font-family",
+                      "fontSize": 16,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "XHwEZ",
+                  "name": "10. Cambios y contacto",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 10,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "HLvfJ",
+                      "name": "H",
+                      "fill": "$ui:brand.ink",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "10. Cambios y contacto",
+                      "fontFamily": "$ui:font-family",
+                      "fontSize": 22,
+                      "fontWeight": "800"
+                    },
+                    {
+                      "type": "text",
+                      "id": "f6AOU6",
+                      "name": "P",
+                      "fill": "$ui:brand.ink",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Si cambiamos esta política, actualizaremos la fecha de arriba. Para cualquier pregunta escríbenos a equipo@mikro.do.",
+                      "lineHeight": 1.65,
+                      "fontFamily": "$ui:font-family",
+                      "fontSize": 16,
+                      "fontWeight": "500"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "b4pqh",
+          "name": "Footer",
+          "width": "fill_container",
+          "fill": "$ui:brand.blue.primary",
+          "layout": "vertical",
+          "gap": 40,
+          "padding": [
+            64,
+            80,
+            40,
+            80
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "xmuO6",
+              "name": "Footer Top",
+              "width": "fill_container",
+              "justifyContent": "space_between",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "Hxepr",
+                  "name": "Footer Left",
+                  "width": 320,
+                  "layout": "vertical",
+                  "gap": 14,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "CNFRM",
+                      "name": "Footer Logo",
+                      "gap": 12,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "Thzxn",
+                          "name": "component/logo-mark",
+                          "width": 36,
+                          "height": 36,
+                          "fill": "$ui:brand.white",
+                          "cornerRadius": 10,
+                          "layout": "vertical",
+                          "padding": [
+                            0,
+                            0,
+                            3,
+                            0
+                          ],
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "cB4IU",
+                              "name": "logoM",
+                              "rotation": 0.2685392692845832,
+                              "fill": "$ui:brand.blue.deep",
+                              "content": "m",
+                              "lineHeight": 1,
+                              "textAlign": "center",
+                              "textAlignVertical": "middle",
+                              "fontFamily": "Geist",
+                              "fontSize": 20,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "Q96ij",
+                          "name": "logoWord",
+                          "fill": "$ui:brand.white",
+                          "content": "micobro",
+                          "fontFamily": "Geist",
+                          "fontSize": 20,
+                          "fontWeight": "700",
+                          "letterSpacing": -0.5
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "XZIu2",
+                      "name": "tagline",
+                      "fill": "$ui:brand.mist",
+                      "textGrowth": "fixed-width",
+                      "width": 280,
+                      "content": "Funciona sin conexión para prestamistas dominicanos.",
+                      "lineHeight": 1.5,
+                      "fontFamily": "$ui:font-family",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "zymoF",
+                  "name": "Footer Links",
+                  "gap": 64,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "S7mzS2",
+                      "name": "PRODUCTO",
+                      "width": 140,
+                      "layout": "vertical",
+                      "gap": 12,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "X8BWTc",
+                          "name": "title",
+                          "fill": "$ui:brand.mist",
+                          "content": "PRODUCTO",
+                          "fontFamily": "$ui:font-family",
+                          "fontSize": 12,
+                          "fontWeight": "700",
+                          "letterSpacing": 1
+                        },
+                        {
+                          "type": "text",
+                          "id": "TmQjG",
+                          "name": "Funcionalidades",
+                          "fill": "$ui:brand.white",
+                          "content": "Funcionalidades",
+                          "fontFamily": "$ui:font-family",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "nQRh3",
+                          "name": "Precios",
+                          "fill": "$ui:brand.white",
+                          "content": "Precios",
+                          "fontFamily": "$ui:font-family",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "YTuB5",
+                          "name": "Documentación",
+                          "fill": "$ui:brand.white",
+                          "content": "Documentación",
+                          "fontFamily": "$ui:font-family",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "GoWwQ",
+                      "name": "COMPAÑÍA",
+                      "width": 140,
+                      "layout": "vertical",
+                      "gap": 12,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "p4JKf",
+                          "name": "title",
+                          "fill": "$ui:brand.mist",
+                          "content": "COMPAÑÍA",
+                          "fontFamily": "$ui:font-family",
+                          "fontSize": 12,
+                          "fontWeight": "700",
+                          "letterSpacing": 1
+                        },
+                        {
+                          "type": "text",
+                          "id": "r9RwVC",
+                          "name": "Nosotros",
+                          "fill": "$ui:brand.white",
+                          "content": "Nosotros",
+                          "fontFamily": "$ui:font-family",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "QMGtL",
+                          "name": "Contacto",
+                          "fill": "$ui:brand.white",
+                          "content": "Contacto",
+                          "fontFamily": "$ui:font-family",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "vJ01c",
+                      "name": "LEGAL",
+                      "width": 140,
+                      "layout": "vertical",
+                      "gap": 12,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "i9FbU",
+                          "name": "title",
+                          "fill": "$ui:brand.mist",
+                          "content": "LEGAL",
+                          "fontFamily": "$ui:font-family",
+                          "fontSize": 12,
+                          "fontWeight": "700",
+                          "letterSpacing": 1
+                        },
+                        {
+                          "type": "text",
+                          "id": "uLAx6",
+                          "name": "Privacidad",
+                          "fill": "$ui:brand.white",
+                          "content": "Privacidad",
+                          "fontFamily": "$ui:font-family",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "j71vmJ",
+                          "name": "Términos",
+                          "fill": "$ui:brand.white",
+                          "content": "Términos",
+                          "fontFamily": "$ui:font-family",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "rectangle",
+              "id": "tLWgJ",
+              "name": "footer divider",
+              "opacity": 0.4,
+              "fill": "$ui:brand.night.border",
+              "width": "fill_container",
+              "height": 1
+            },
+            {
+              "type": "frame",
+              "id": "geYqA",
+              "name": "Footer Bottom",
+              "width": "fill_container",
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "z76mmD",
+                  "name": "copyright",
+                  "fill": "$ui:brand.mist",
+                  "content": "© 2026 Mikro, S.R.L · Santo Domingo, RD",
+                  "fontFamily": "$ui:font-family",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "IGJIv",
+                  "name": "social",
+                  "gap": 16,
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "S0YOfE",
+                      "name": "instagram",
+                      "width": 18,
+                      "height": 18,
+                      "icon": "instagram",
+                      "library": "lucide",
+                      "fill": "$ui:brand.white"
+                    },
+                    {
+                      "type": "icon",
+                      "id": "LfqnG",
+                      "name": "facebook",
+                      "width": 18,
+                      "height": 18,
+                      "icon": "facebook",
+                      "library": "lucide",
+                      "fill": "$ui:brand.white"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "W4m0tV",
+      "x": 6842,
+      "y": 3482,
+      "name": "Eliminar datos — Micobro",
+      "clip": true,
+      "width": 1440,
+      "fill": "$ui:ds.bg",
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "frame",
+          "id": "Q8MZfs",
+          "name": "Nav",
+          "width": "fill_container",
+          "fill": "$ui:brand.white",
+          "gap": 24,
+          "padding": [
+            20,
+            80
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "g6pPt",
+              "name": "Nav Logo",
+              "gap": 14,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "T8qztZ",
+                  "name": "component/logo-mark",
+                  "width": 40,
+                  "height": 40,
+                  "fill": "$ui:brand.blue.deep",
+                  "cornerRadius": 11,
+                  "layout": "vertical",
+                  "padding": [
+                    0,
+                    0,
+                    4,
+                    0
+                  ],
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "rw5RL",
+                      "name": "logoM",
+                      "rotation": 0.2685392692845832,
+                      "fill": "$ui:brand.white",
+                      "content": "m",
+                      "lineHeight": 1,
+                      "textAlign": "center",
+                      "textAlignVertical": "middle",
+                      "fontFamily": "Geist",
+                      "fontSize": 22,
+                      "fontWeight": "700"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "jIdjE",
+                  "name": "logoWord",
+                  "fill": "$ui:brand.blue.deep",
+                  "content": "micobro",
+                  "fontFamily": "Geist",
+                  "fontSize": 22,
+                  "fontWeight": "700",
+                  "letterSpacing": -0.5
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "rgh4L",
+              "name": "Nav Links",
+              "gap": 32,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "ZmAJn",
+                  "name": "Cómo funciona",
+                  "fill": "$ui:brand.ink",
+                  "content": "Cómo funciona",
+                  "fontFamily": "$ui:font-family",
+                  "fontSize": 15,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "text",
+                  "id": "G6O8cG",
+                  "name": "Funcionalidades",
+                  "fill": "$ui:brand.ink",
+                  "content": "Funcionalidades",
+                  "fontFamily": "$ui:font-family",
+                  "fontSize": 15,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "text",
+                  "id": "p1JzpS",
+                  "name": "Precios",
+                  "fill": "$ui:brand.ink",
+                  "content": "Precios",
+                  "fontFamily": "$ui:font-family",
+                  "fontSize": 15,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "text",
+                  "id": "K3yDT",
+                  "name": "Documentación",
+                  "fill": "$ui:brand.ink",
+                  "content": "Documentación",
+                  "fontFamily": "$ui:font-family",
+                  "fontSize": 15,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "P5Bmgd",
+              "name": "Nav CTA",
+              "fill": "$ui:brand.blue.deep",
+              "cornerRadius": "$ui:radius.pill",
+              "gap": 8,
+              "padding": [
+                12,
+                22
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "u3siEg",
+                  "name": "i",
+                  "width": 16,
+                  "height": 16,
+                  "icon": "download",
+                  "library": "lucide",
+                  "fill": "$ui:brand.white"
+                },
+                {
+                  "type": "text",
+                  "id": "cXX7t",
+                  "name": "t",
+                  "fill": "$ui:brand.white",
+                  "content": "Descargar app",
+                  "fontFamily": "$ui:font-family",
+                  "fontSize": 14,
+                  "fontWeight": "700"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "ep9jp",
+          "name": "Body",
+          "width": "fill_container",
+          "layout": "vertical",
+          "padding": [
+            88,
+            80,
+            110,
+            80
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "NMwqc",
+              "name": "Column",
+              "width": 760,
+              "layout": "vertical",
+              "gap": 36,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "OedME",
+                  "name": "Heading",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 12,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "VBYul",
+                      "name": "Kicker",
+                      "fill": "$ui:brand.orange.deep",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "LEGAL",
+                      "fontFamily": "$ui:font-family",
+                      "fontSize": 13,
+                      "fontWeight": "700",
+                      "letterSpacing": 1.5
+                    },
+                    {
+                      "type": "text",
+                      "id": "o1rKP",
+                      "name": "Title",
+                      "fill": "$ui:brand.ink",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Eliminar tus datos",
+                      "fontFamily": "$ui:font-family",
+                      "fontSize": 44,
+                      "fontWeight": "800"
+                    },
+                    {
+                      "type": "text",
+                      "id": "u9RJgU",
+                      "name": "Updated",
+                      "fill": "$ui:ds.muted",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Última actualización: 21 de octubre de 2026",
+                      "fontFamily": "$ui:font-family",
+                      "fontSize": 15,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "xDmG2",
+                  "name": "Intro",
+                  "fill": "$ui:brand.ink",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Micobro no tiene cuentas ni servidores: tus datos están en tu teléfono y, si conectaste Google, en una hoja de tu propio Google Drive. Así borras cada parte.",
+                  "lineHeight": 1.6,
+                  "fontFamily": "$ui:font-family",
+                  "fontSize": 18,
+                  "fontWeight": "500"
+                },
+                {
+                  "type": "frame",
+                  "id": "fRuc0",
+                  "name": "1. En la app",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 10,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "evwMt",
+                      "name": "H",
+                      "fill": "$ui:brand.ink",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "1. En la app",
+                      "fontFamily": "$ui:font-family",
+                      "fontSize": 22,
+                      "fontWeight": "800"
+                    },
+                    {
+                      "type": "text",
+                      "id": "zjo1F",
+                      "name": "P",
+                      "fill": "$ui:brand.ink",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Abre Mi cuenta → Eliminar mis datos y confirma. La app borra tus clientes, préstamos, pagos, visitas, cuadres, tu perfil y tu PIN, y desconecta tu cuenta de Google. Esto no se puede deshacer.",
+                      "lineHeight": 1.65,
+                      "fontFamily": "$ui:font-family",
+                      "fontSize": 16,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "i46EI3",
+                  "name": "2. Tu respaldo en Google Drive",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 10,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "UyAub",
+                      "name": "H",
+                      "fill": "$ui:brand.ink",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "2. Tu respaldo en Google Drive",
+                      "fontFamily": "$ui:font-family",
+                      "fontSize": 22,
+                      "fontWeight": "800"
+                    },
+                    {
+                      "type": "text",
+                      "id": "f6Wpuw",
+                      "name": "P",
+                      "fill": "$ui:brand.ink",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "La hoja «Micobro / Datos» es tuya y la app no la borra. Para eliminarla, abre drive.google.com, busca la carpeta «Micobro», muévela a la papelera y vacía la papelera.",
+                      "lineHeight": 1.65,
+                      "fontFamily": "$ui:font-family",
+                      "fontSize": 16,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "TX1H0",
+                  "name": "3. Quitar el acceso de Micobro a Google",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 10,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "tzLkP",
+                      "name": "H",
+                      "fill": "$ui:brand.ink",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "3. Quitar el acceso de Micobro a Google",
+                      "fontFamily": "$ui:font-family",
+                      "fontSize": 22,
+                      "fontWeight": "800"
+                    },
+                    {
+                      "type": "text",
+                      "id": "S74Qh1",
+                      "name": "P",
+                      "fill": "$ui:brand.ink",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "En myaccount.google.com → Seguridad → Conexiones con terceros, elige Micobro y quita el acceso.",
+                      "lineHeight": 1.65,
+                      "fontFamily": "$ui:font-family",
+                      "fontSize": 16,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "dmp5D",
+                  "name": "4. Si ya no tienes la app",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 10,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "JVzbm",
+                      "name": "H",
+                      "fill": "$ui:brand.ink",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "4. Si ya no tienes la app",
+                      "fontFamily": "$ui:font-family",
+                      "fontSize": 22,
+                      "fontWeight": "800"
+                    },
+                    {
+                      "type": "text",
+                      "id": "KMVzy",
+                      "name": "P",
+                      "fill": "$ui:brand.ink",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Desinstalarla borra todo lo guardado en el teléfono. Tu hoja en Drive sigue siendo tuya: bórrala como en el punto 2.",
+                      "lineHeight": 1.65,
+                      "fontFamily": "$ui:font-family",
+                      "fontSize": 16,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "XHJcN",
+                  "name": "5. ¿Necesitas ayuda?",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 10,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "nu0vY",
+                      "name": "H",
+                      "fill": "$ui:brand.ink",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "5. ¿Necesitas ayuda?",
+                      "fontFamily": "$ui:font-family",
+                      "fontSize": 22,
+                      "fontWeight": "800"
+                    },
+                    {
+                      "type": "text",
+                      "id": "lLdm8",
+                      "name": "P",
+                      "fill": "$ui:brand.ink",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Escríbenos a equipo@mikro.do. Como no guardamos tus datos, no hay nada más que borrar de nuestro lado.",
+                      "lineHeight": 1.65,
+                      "fontFamily": "$ui:font-family",
+                      "fontSize": 16,
+                      "fontWeight": "500"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "x93ivb",
+          "name": "Footer",
+          "width": "fill_container",
+          "fill": "$ui:brand.blue.primary",
+          "layout": "vertical",
+          "gap": 40,
+          "padding": [
+            64,
+            80,
+            40,
+            80
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "k0OGd",
+              "name": "Footer Top",
+              "width": "fill_container",
+              "justifyContent": "space_between",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "mNR7q",
+                  "name": "Footer Left",
+                  "width": 320,
+                  "layout": "vertical",
+                  "gap": 14,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "MNIER",
+                      "name": "Footer Logo",
+                      "gap": 12,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "HuCk5",
+                          "name": "component/logo-mark",
+                          "width": 36,
+                          "height": 36,
+                          "fill": "$ui:brand.white",
+                          "cornerRadius": 10,
+                          "layout": "vertical",
+                          "padding": [
+                            0,
+                            0,
+                            3,
+                            0
+                          ],
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "V4Cei",
+                              "name": "logoM",
+                              "rotation": 0.2685392692845832,
+                              "fill": "$ui:brand.blue.deep",
+                              "content": "m",
+                              "lineHeight": 1,
+                              "textAlign": "center",
+                              "textAlignVertical": "middle",
+                              "fontFamily": "Geist",
+                              "fontSize": 20,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "qAeFw",
+                          "name": "logoWord",
+                          "fill": "$ui:brand.white",
+                          "content": "micobro",
+                          "fontFamily": "Geist",
+                          "fontSize": 20,
+                          "fontWeight": "700",
+                          "letterSpacing": -0.5
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "M65OW",
+                      "name": "tagline",
+                      "fill": "$ui:brand.mist",
+                      "textGrowth": "fixed-width",
+                      "width": 280,
+                      "content": "Funciona sin conexión para prestamistas dominicanos.",
+                      "lineHeight": 1.5,
+                      "fontFamily": "$ui:font-family",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "qLuUh",
+                  "name": "Footer Links",
+                  "gap": 64,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "AQHrR",
+                      "name": "PRODUCTO",
+                      "width": 140,
+                      "layout": "vertical",
+                      "gap": 12,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "ifJK5",
+                          "name": "title",
+                          "fill": "$ui:brand.mist",
+                          "content": "PRODUCTO",
+                          "fontFamily": "$ui:font-family",
+                          "fontSize": 12,
+                          "fontWeight": "700",
+                          "letterSpacing": 1
+                        },
+                        {
+                          "type": "text",
+                          "id": "lsq7k",
+                          "name": "Funcionalidades",
+                          "fill": "$ui:brand.white",
+                          "content": "Funcionalidades",
+                          "fontFamily": "$ui:font-family",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "Pa3d9",
+                          "name": "Precios",
+                          "fill": "$ui:brand.white",
+                          "content": "Precios",
+                          "fontFamily": "$ui:font-family",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "jwN5I",
+                          "name": "Documentación",
+                          "fill": "$ui:brand.white",
+                          "content": "Documentación",
+                          "fontFamily": "$ui:font-family",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "B0N9X",
+                      "name": "COMPAÑÍA",
+                      "width": 140,
+                      "layout": "vertical",
+                      "gap": 12,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "wZfCw",
+                          "name": "title",
+                          "fill": "$ui:brand.mist",
+                          "content": "COMPAÑÍA",
+                          "fontFamily": "$ui:font-family",
+                          "fontSize": 12,
+                          "fontWeight": "700",
+                          "letterSpacing": 1
+                        },
+                        {
+                          "type": "text",
+                          "id": "qo3uY",
+                          "name": "Nosotros",
+                          "fill": "$ui:brand.white",
+                          "content": "Nosotros",
+                          "fontFamily": "$ui:font-family",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "cka2r",
+                          "name": "Contacto",
+                          "fill": "$ui:brand.white",
+                          "content": "Contacto",
+                          "fontFamily": "$ui:font-family",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "daVHd",
+                      "name": "LEGAL",
+                      "width": 140,
+                      "layout": "vertical",
+                      "gap": 12,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "OFnHo",
+                          "name": "title",
+                          "fill": "$ui:brand.mist",
+                          "content": "LEGAL",
+                          "fontFamily": "$ui:font-family",
+                          "fontSize": 12,
+                          "fontWeight": "700",
+                          "letterSpacing": 1
+                        },
+                        {
+                          "type": "text",
+                          "id": "MZYET",
+                          "name": "Privacidad",
+                          "fill": "$ui:brand.white",
+                          "content": "Privacidad",
+                          "fontFamily": "$ui:font-family",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "tOB4Q",
+                          "name": "Términos",
+                          "fill": "$ui:brand.white",
+                          "content": "Términos",
+                          "fontFamily": "$ui:font-family",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "rectangle",
+              "id": "AKSSi",
+              "name": "footer divider",
+              "opacity": 0.4,
+              "fill": "$ui:brand.night.border",
+              "width": "fill_container",
+              "height": 1
+            },
+            {
+              "type": "frame",
+              "id": "o3r2Ck",
+              "name": "Footer Bottom",
+              "width": "fill_container",
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "fkL7m",
+                  "name": "copyright",
+                  "fill": "$ui:brand.mist",
+                  "content": "© 2026 Mikro, S.R.L · Santo Domingo, RD",
+                  "fontFamily": "$ui:font-family",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "UJwfy",
+                  "name": "social",
+                  "gap": 16,
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "OYwSB",
+                      "name": "instagram",
+                      "width": 18,
+                      "height": 18,
+                      "icon": "instagram",
+                      "library": "lucide",
+                      "fill": "$ui:brand.white"
+                    },
+                    {
+                      "type": "icon",
+                      "id": "IWMrm",
+                      "name": "facebook",
+                      "width": 18,
+                      "height": 18,
+                      "icon": "facebook",
+                      "library": "lucide",
+                      "fill": "$ui:brand.white"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "imports": {

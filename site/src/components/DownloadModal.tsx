@@ -124,7 +124,10 @@ export function DownloadModal({ open, onClose }: DownloadModalProps) {
                 Nombre
               </label>
               <div className="flex items-center gap-2.5 rounded-xl bg-brand-mist px-4 py-3.5">
-                <User className="h-[18px] w-[18px] shrink-0 text-brand-blue-primary" strokeWidth={2} />
+                <User
+                  className="h-[18px] w-[18px] shrink-0 text-brand-blue-primary"
+                  strokeWidth={2}
+                />
                 <input
                   id="invite-nombre"
                   type="text"
@@ -143,7 +146,10 @@ export function DownloadModal({ open, onClose }: DownloadModalProps) {
                 WhatsApp
               </label>
               <div className="flex items-center gap-2.5 rounded-xl bg-brand-mist px-4 py-3.5">
-                <Phone className="h-[18px] w-[18px] shrink-0 text-brand-blue-primary" strokeWidth={2} />
+                <Phone
+                  className="h-[18px] w-[18px] shrink-0 text-brand-blue-primary"
+                  strokeWidth={2}
+                />
                 <input
                   id="invite-whatsapp"
                   type="tel"
@@ -171,7 +177,11 @@ export function DownloadModal({ open, onClose }: DownloadModalProps) {
               className="flex items-center justify-center gap-2.5 rounded-full bg-brand-blue-deep px-6 py-4 text-[15px] font-bold text-white transition-colors hover:bg-[#0a4640] disabled:cursor-not-allowed disabled:opacity-70"
             >
               <Send className="h-[18px] w-[18px]" strokeWidth={2} />
-              {isSubmitting ? "Enviando..." : status === "error" ? "Intentar de nuevo" : "Pedir mi invitación"}
+              {isSubmitting
+                ? "Enviando..."
+                : status === "error"
+                  ? "Intentar de nuevo"
+                  : "Pedir mi invitación"}
             </button>
           </form>
         )}

@@ -26,7 +26,8 @@
   --radius-card: 20px;
   --radius-pill: 9999px;
 
-  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+  --font-sans:
+    "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif;
   --font-logo: "Sora", ui-sans-serif, system-ui, sans-serif;
 }
