@@ -1,9 +1,11 @@
 /**
  * Copyright (C) 2026 by Pedro Sanders. MIT License.
  */
+import { useEffect } from "react";
 import { Stack } from "expo-router";
 import { ActivityIndicator, Text, View } from "react-native";
 import Constants from "expo-constants";
+import * as SplashScreen from "expo-splash-screen";
 import {
   useFonts,
   PlusJakartaSans_400Regular,
@@ -22,6 +24,9 @@ import { AuthGateProvider, useAuthGate } from "../lib/security/AuthGateProvider"
 import { FeedbackProvider } from "../lib/feedback/FeedbackContext";
 import { RecordingPill } from "../components/feedback/RecordingPill";
 import { FeedbackStatusModal } from "../components/feedback/FeedbackStatusModal";
+
+// Keep the native splash up until fonts and the DB migration are ready.
+void SplashScreen.preventAutoHideAsync();
 
 const repos = Constants.expoConfig?.extra?.useMockRepos
   ? createMockRepos()
@@ -100,6 +105,12 @@ export default function RootLayout() {
     PlusJakartaSans_700Bold,
     Sora_700Bold
   });
+
+  // Hide the splash once there is something real to show (or an error).
+  const ready = Boolean(error) || (success && (fontsLoaded || Boolean(fontsError)));
+  useEffect(() => {
+    if (ready) void SplashScreen.hideAsync();
+  }, [ready]);
 
   if (error) {
     return (
