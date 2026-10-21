@@ -113,7 +113,9 @@ description and a **short video** of the feature in use:
 > problem; a persistent notification is shown and the user stops it at any
 > time. The recording stays on the device.
 
-Video: record "Enviar feedback" end to end on an Android device or emulator.
+Video: `feedback-recorder-demo.mp4` (19 s, this folder) — Mi cuenta → Enviar feedback →
+consent → Android's "Start recording" dialog → recording pill while using the app.
+Play asks for a link: upload it unlisted to YouTube (or share it from Drive) and paste the URL.
 
 ## Account deletion
 
