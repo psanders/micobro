@@ -68,10 +68,11 @@ appId: ${APP_ID}
 # on the (scrollable) breakdown card dismisses it.
 - tapOn: "DESGLOSE"
 - tapOn: "Cerrar caja"
+# The close starts a new period ("Sin cierres previos" goes away). The total is
+# not asserted as 0: one mock payment is stamped 9:14 a.m. and stays in the
+# total when the flow runs before that wall-clock time.
 - extendedWaitUntil:
-    visible:
-      id: "cuadre-system-total"
-      text: "0"
+    notVisible: "Sin cierres previos"
     timeout: 15000
 - runFlow:
     when:

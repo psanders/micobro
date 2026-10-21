@@ -1,0 +1,132 @@
+# Covers: create a loan -> Más opciones -> Editar préstamo -> change the cuotas -> the
+# customer card shows the new schedule.
+#
+# Requires a mock-repo build (EXPO_PUBLIC_USE_MOCK_REPOS=true) — see pin-unlock.yaml.
+# Pass -e RECORD=true to save videos/editar-prestamo.mp4.
+appId: ${APP_ID}
+---
+- launchApp:
+    clearState: true
+- runFlow:
+    when:
+      true: ${DEV_URL}
+    commands:
+      - extendedWaitUntil:
+          visible: "Development Build"
+          timeout: 20000
+      - openLink: ${DEV_URL}
+      - tapOn:
+          text: "Open"
+          optional: true
+      - extendedWaitUntil:
+          visible: "Continue"
+          timeout: 45000
+      - runFlow:
+          when:
+            true: ${DEV_MENU_DISMISS}
+          commands:
+            - back
+      - runFlow:
+          when:
+            true: ${DEV_MENU_CONTINUE}
+          commands:
+            - tapOn:
+                text: "Continue"
+                optional: true
+- extendedWaitUntil:
+    visible: "Crea tu PIN"
+    timeout: 30000
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- extendedWaitUntil:
+    visible: "Confirma tu PIN"
+    timeout: 10000
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- extendedWaitUntil:
+    visible: "Ahora no, tal vez después"
+    timeout: 15000
+- tapOn: "Ahora no, tal vez después"
+- extendedWaitUntil:
+    visible: "Hola, Carlos."
+    timeout: 15000
+# Demo video: pass -e RECORD=true to save videos/editar-prestamo.mp4 (recording starts after the PIN preamble).
+- runFlow:
+    when:
+      true: ${RECORD}
+    commands:
+      - startRecording: videos/editar-prestamo
+
+- tapOn:
+    id: "tab-buscar"
+- extendedWaitUntil:
+    visible: "Buscar cliente"
+    timeout: 15000
+- tapOn: "Nombre, teléfono o cédula…"
+- inputText: "Felipe"
+- extendedWaitUntil:
+    visible: ".*Felipe Taveras.*"
+    timeout: 15000
+- tapOn: ".*Felipe Taveras.*"
+- extendedWaitUntil:
+    visible: "PRÉSTAMOS ACTIVOS"
+    timeout: 15000
+- tapOn:
+    id: "customer-detail-new-loan-button"
+- extendedWaitUntil:
+    visible: "Nuevo préstamo"
+    timeout: 15000
+# 9 cuotas is unique among Felipe's mock loans, so the new card is findable.
+- tapOn:
+    id: "loan-form-principal"
+- inputText: "20000"
+- scroll
+- tapOn:
+    id: "loan-form-rate"
+- inputText: "10"
+- scroll
+- tapOn:
+    id: "loan-form-term"
+- inputText: "9"
+- scroll
+- tapOn: "Crear préstamo"
+- extendedWaitUntil:
+    visible: ".*Cuota 1 de 9.*"
+    timeout: 15000
+
+# Open the new (payment-free) loan and correct its term.
+- tapOn: ".*Cuota 1 de 9.*"
+- extendedWaitUntil:
+    visible: "TOTAL A PAGAR HOY"
+    timeout: 15000
+- tapOn: "Más opciones"
+- extendedWaitUntil:
+    visible: ".*Corrige monto, cuotas, tasa o fechas.*"
+    timeout: 15000
+- tapOn: ".*Corrige monto, cuotas, tasa o fechas.*"
+- extendedWaitUntil:
+    visible: ".*Este préstamo no tiene pagos.*"
+    timeout: 15000
+- tapOn:
+    id: "loan-form-term"
+- eraseText: 3
+- inputText: "6"
+- scroll
+- tapOn: "Guardar cambios"
+- extendedWaitUntil:
+    visible: "TOTAL A PAGAR HOY"
+    timeout: 15000
+- tapOn: "Volver"
+- extendedWaitUntil:
+    visible: ".*Cuota 1 de 6.*"
+    timeout: 15000
+- assertNotVisible: ".*Cuota 1 de 9.*"
+- runFlow:
+    when:
+      true: ${RECORD}
+    commands:
+      - stopRecording
