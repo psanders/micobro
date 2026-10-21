@@ -182,19 +182,19 @@ jobs:
       # rather than a global libvips (mirrors ../mikro's eas.json profiles).
       SHARP_IGNORE_GLOBAL_LIBVIPS: "1"
     steps:
-      # The native build compiles C++ for every ABI (expo-modules-core,
-      # reanimated, ...) and a hosted runner's disk was filling up mid-build
-      # ("Disk quota exceeded" from clang, releases v0.12.0-v0.15.0). Drop the
-      # preinstalled toolchains this job never uses. The Android SDK/NDK under
-      # /usr/local/lib/android is deliberately kept.
-      - name: Free disk space
+      # `eas build --local` works in os.tmpdir() (/tmp/runner/...), and on the
+      # current ubuntu-latest image /tmp is a 7.9 GB tmpfs while / has >100 GB
+      # free. The Android native build (C++ for every ABI) overflows the tmpfs,
+      # so clang dies with "Disk quota exceeded" (releases v0.12.0-v0.15.0).
+      # Point the build at the real disk instead.
+      - name: Build on disk, not on the /tmp tmpfs
         run: |
-          df -h /
-          sudo rm -rf /usr/share/dotnet /usr/local/share/boost /usr/local/.ghcup \
-            /opt/ghc /opt/hostedtoolcache/CodeQL /usr/share/swift /usr/local/lib/heroku
-          sudo docker image prune --all --force >/dev/null 2>&1 || true
-          sudo apt-get clean
-          df -h /
+          mkdir -p "$RUNNER_TEMP/eas-build" "$RUNNER_TEMP/tmp"
+          {
+            echo "EAS_LOCAL_BUILD_WORKINGDIR=$RUNNER_TEMP/eas-build"
+            echo "TMPDIR=$RUNNER_TEMP/tmp"
+          } >> "$GITHUB_ENV"
+          df -h / /tmp "$RUNNER_TEMP"
 
       - uses: actions/checkout@v7
         with:
@@ -276,12 +276,12 @@ jobs:
           eas build --platform android --profile production-apk --local \
             --non-interactive --output "$RUNNER_TEMP/micobro-$TAG-android.apk"
 
-      # If a native build still dies on disk, the run log shows what was using it.
+      # If a native build still dies on space, the run log shows what was using it.
       - name: Disk usage (on failure)
         if: ${{ failure() }}
         run: |
-          df -h
-          sudo du -xh --max-depth=2 /tmp /home/runner 2>/dev/null | sort -rh | head -15
+          df -h / /tmp "$RUNNER_TEMP"
+          sudo du -xh --max-depth=2 "$RUNNER_TEMP" /home/runner 2>/dev/null | sort -rh | head -15
 
       # Runs on success or failure (not on cancel) so a finished AAB still
       # gets saved even if the APK build later fails.
