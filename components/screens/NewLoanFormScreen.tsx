@@ -119,8 +119,18 @@ export function NewLoanFormScreen({
   const [principal, setPrincipal] = useState("");
   const [interestRate, setInterestRate] = useState("");
   const [termCount, setTermCount] = useState("");
-  // Monthly by default: most open-interest loans are collected monthly.
-  const [frequency, setFrequency] = useState<LoanFrequency>("monthly");
+  const [frequency, setFrequency] = useState<LoanFrequency>("weekly");
+  // Term loans are mostly weekly and open-interest loans mostly monthly, so the
+  // frequency follows the loan type until the lender picks one themselves.
+  const frequencyTouched = useRef(false);
+  const handleLoanTypeChange = (next: LoanType) => {
+    setLoanType(next);
+    if (!frequencyTouched.current) setFrequency(next === "open_credit" ? "monthly" : "weekly");
+  };
+  const handleFrequencyChange = (next: LoanFrequency) => {
+    frequencyTouched.current = true;
+    setFrequency(next);
+  };
   // On by default: prestamistas don't collect on Sundays, so a daily loan
   // almost always wants them skipped. Only affects loans created from here —
   // existing loans keep whatever they were stored with (`null` reads as off).
@@ -354,7 +364,7 @@ export function NewLoanFormScreen({
           label="Tipo de préstamo"
           value={loanType}
           options={loanTypeOptions}
-          onChange={setLoanType}
+          onChange={handleLoanTypeChange}
         />
 
         <SelectField
@@ -364,7 +374,7 @@ export function NewLoanFormScreen({
             value: option,
             label: frequencyLabels[option]
           }))}
-          onChange={setFrequency}
+          onChange={handleFrequencyChange}
         />
 
         <View style={styles.field}>
