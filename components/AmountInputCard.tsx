@@ -14,6 +14,7 @@ interface AmountInputCardProps {
   onChangeText: (text: string) => void;
   matches: boolean;
   hint: string;
+  testID?: string;
 }
 
 export function AmountInputCard({
@@ -21,7 +22,8 @@ export function AmountInputCard({
   value,
   onChangeText,
   matches,
-  hint
+  hint,
+  testID
 }: AmountInputCardProps) {
   return (
     <View style={styles.card}>
@@ -29,6 +31,7 @@ export function AmountInputCard({
       <View style={styles.row}>
         <Text style={styles.currency}>RD$</Text>
         <TextInput
+          testID={testID}
           style={styles.input}
           value={value}
           onChangeText={onChangeText}

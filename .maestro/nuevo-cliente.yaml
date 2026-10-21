@@ -55,6 +55,12 @@ appId: ${APP_ID}
 - extendedWaitUntil:
     visible: "Hola, Carlos."
     timeout: 15000
+# Demo video: pass -e RECORD=true to save videos/nuevo-cliente.mp4 (recording starts after the PIN preamble).
+- runFlow:
+    when:
+      true: ${RECORD}
+    commands:
+      - startRecording: videos/nuevo-cliente
 
 - tapOn:
     id: "tab-buscar"
@@ -89,3 +95,8 @@ appId: ${APP_ID}
 - extendedWaitUntil:
     visible: "Buscar cliente"
     timeout: 15000
+- runFlow:
+    when:
+      true: ${RECORD}
+    commands:
+      - stopRecording

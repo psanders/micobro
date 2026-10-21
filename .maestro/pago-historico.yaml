@@ -56,6 +56,12 @@ appId: ${APP_ID}
 - extendedWaitUntil:
     visible: "Hola, Carlos."
     timeout: 15000
+# Demo video: pass -e RECORD=true to save videos/pago-historico.mp4 (recording starts after the PIN preamble).
+- runFlow:
+    when:
+      true: ${RECORD}
+    commands:
+      - startRecording: videos/pago-historico
 
 - tapOn:
     id: "tab-buscar"
@@ -94,8 +100,16 @@ appId: ${APP_ID}
     timeout: 15000
 - assertVisible: "Imprimir"
 - assertVisible: "WhatsApp"
-- back
+# Receipt header back chevron: tapped by position because the stack keeps the
+# previous screen's "Volver" mounted underneath.
+- tapOn:
+    point: "8%,10%"
 
 - extendedWaitUntil:
     visible: "Histórico de pagos"
     timeout: 15000
+- runFlow:
+    when:
+      true: ${RECORD}
+    commands:
+      - stopRecording

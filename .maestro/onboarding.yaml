@@ -1,0 +1,72 @@
+# Covers: first launch -> create PIN -> confirm PIN -> Continuar con Google (fake
+# account chooser + consent) -> Hoy.
+#
+# Requires a build with EXPO_PUBLIC_USE_MOCK_REPOS=true and
+# EXPO_PUBLIC_USE_FAKE_GOOGLE=true (see pin-unlock.yaml). The fake Google
+# sheet (components/FakeGoogleSignIn.tsx) stands in for Google's own account
+# chooser and consent screen; approving always succeeds. Pass -e RECORD=true
+# to save videos/onboarding.mp4.
+appId: ${APP_ID}
+---
+- launchApp:
+    clearState: true
+- runFlow:
+    when:
+      true: ${DEV_URL}
+    commands:
+      - extendedWaitUntil:
+          visible: "Development Build"
+          timeout: 20000
+      - openLink: ${DEV_URL}
+      - tapOn:
+          text: "Open"
+          optional: true
+      - extendedWaitUntil:
+          visible: "Continue"
+          timeout: 45000
+      - runFlow:
+          when:
+            true: ${DEV_MENU_DISMISS}
+          commands:
+            - back
+- extendedWaitUntil:
+    visible: "Crea tu PIN"
+    timeout: 30000
+- runFlow:
+    when:
+      true: ${RECORD}
+    commands:
+      - startRecording: videos/onboarding
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- extendedWaitUntil:
+    visible: "Confirma tu PIN"
+    timeout: 10000
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- extendedWaitUntil:
+    visible: "Guarda un respaldo en la nube."
+    timeout: 15000
+- tapOn: "Continuar con Google"
+- extendedWaitUntil:
+    visible: "Elige una cuenta"
+    timeout: 15000
+- tapOn:
+    id: "fake-google-account"
+- extendedWaitUntil:
+    visible: ".*quiere acceder.*"
+    timeout: 10000
+- tapOn:
+    id: "fake-google-allow"
+- extendedWaitUntil:
+    visible: "Hola, Carlos."
+    timeout: 20000
+- runFlow:
+    when:
+      true: ${RECORD}
+    commands:
+      - stopRecording

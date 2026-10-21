@@ -60,6 +60,12 @@ appId: ${APP_ID}
 - extendedWaitUntil:
     visible: "Hola, Carlos."
     timeout: 15000
+# Demo video: pass -e RECORD=true to save videos/credito-abierto-solo-capital.mp4 (recording starts after the PIN preamble).
+- runFlow:
+    when:
+      true: ${RECORD}
+    commands:
+      - startRecording: videos/credito-abierto-solo-capital
 
 - tapOn:
     id: "tab-buscar"
@@ -154,3 +160,8 @@ appId: ${APP_ID}
 # the option card while it's expanded, so the nested input becomes its own
 # focus target), tracked as a follow-up rather than attempted here with a
 # fragile coordinate-based tap.
+- runFlow:
+    when:
+      true: ${RECORD}
+    commands:
+      - stopRecording

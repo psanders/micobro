@@ -1,0 +1,80 @@
+# Covers: Hoy -> Cuadre de caja -> copy the system total into "Total verificado" ->
+# Cerrar caja -> the period resets to RD$0.
+#
+# Requires a mock-repo build (EXPO_PUBLIC_USE_MOCK_REPOS=true) — see pin-unlock.yaml.
+# Pass -e RECORD=true to save videos/cuadre.mp4.
+appId: ${APP_ID}
+---
+- launchApp:
+    clearState: true
+- runFlow:
+    when:
+      true: ${DEV_URL}
+    commands:
+      - extendedWaitUntil:
+          visible: "Development Build"
+          timeout: 20000
+      - openLink: ${DEV_URL}
+      - tapOn:
+          text: "Open"
+          optional: true
+      - extendedWaitUntil:
+          visible: "Continue"
+          timeout: 45000
+      - runFlow:
+          when:
+            true: ${DEV_MENU_DISMISS}
+          commands:
+            - back
+- extendedWaitUntil:
+    visible: "Crea tu PIN"
+    timeout: 30000
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- extendedWaitUntil:
+    visible: "Confirma tu PIN"
+    timeout: 10000
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- extendedWaitUntil:
+    visible: "Ahora no, tal vez después"
+    timeout: 15000
+- tapOn: "Ahora no, tal vez después"
+- extendedWaitUntil:
+    visible: "Hola, Carlos."
+    timeout: 15000
+# Demo video: pass -e RECORD=true to save videos/cuadre.mp4 (recording starts after the PIN preamble).
+- runFlow:
+    when:
+      true: ${RECORD}
+    commands:
+      - startRecording: videos/cuadre
+- tapOn: "Cuadre"
+- extendedWaitUntil:
+    visible: "Cuadre de caja"
+    timeout: 15000
+- assertVisible:
+    id: "cuadre-system-total"
+    text: "51,150"
+- tapOn:
+    id: "cuadre-verified-input"
+# The mock caja is the 31 fixture receipts: RD$51,150.
+- inputText: "51150"
+# The numeric keyboard has no Done key and covers the footer button; a tap
+# on the (scrollable) breakdown card dismisses it.
+- tapOn: "DESGLOSE"
+- tapOn: "Cerrar caja"
+- extendedWaitUntil:
+    visible:
+      id: "cuadre-system-total"
+      text: "0"
+    timeout: 15000
+- runFlow:
+    when:
+      true: ${RECORD}
+    commands:
+      - stopRecording

@@ -21,6 +21,7 @@
     "typecheck": "tsc --noEmit",
     "test": "jest",
     "test:e2e": "maestro test .maestro",
+    "e2e:videos": "mkdir -p videos && maestro test .maestro -e APP_ID=com.micobro.app -e RECORD=true",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",

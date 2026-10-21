@@ -22,7 +22,6 @@ import { AuthGateProvider, useAuthGate } from "../lib/security/AuthGateProvider"
 import { FeedbackProvider } from "../lib/feedback/FeedbackContext";
 import { RecordingPill } from "../components/feedback/RecordingPill";
 import { FeedbackStatusModal } from "../components/feedback/FeedbackStatusModal";
-import { FakeGoogleSignIn } from "../components/FakeGoogleSignIn";
 
 const repos = Constants.expoConfig?.extra?.useMockRepos
   ? createMockRepos()
@@ -80,6 +79,7 @@ function Gate() {
           options={{ headerShown: false, presentation: "modal" }}
         />
         <Stack.Screen name="perfil" options={{ headerShown: false }} />
+        <Stack.Screen name="perfil/editar" options={{ headerShown: false }} />
         <Stack.Screen name="mi-cartera" options={{ headerShown: false }} />
         <Stack.Screen
           name="feedback/consentimiento"
@@ -125,7 +125,6 @@ export default function RootLayout() {
             <Gate />
             <RecordingPill />
             <FeedbackStatusModal />
-            <FakeGoogleSignIn />
           </FeedbackProvider>
         </AuthGateProvider>
       </SyncProvider>

@@ -5,9 +5,12 @@
  * on (EXPO_PUBLIC_USE_FAKE_GOOGLE=true): an account chooser, then the
  * consent screen. Approving always succeeds — authenticity is assumed — so
  * e2e runs and demo videos can show the Google step without a real account.
+ * Rendered as an in-tree overlay (not a RN Modal) inside the screen that asks
+ * for the sign-in, because iOS cannot present a Modal over the native modal
+ * route /conectar.
  */
 import { useEffect, useState } from "react";
-import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import {
   FAKE_GOOGLE_ACCOUNT,
   fakeGoogleSession,
@@ -52,17 +55,12 @@ export function FakeGoogleSignIn() {
     });
   }, []);
 
-  if (!isFakeGoogleEnabled()) return null;
+  if (!isFakeGoogleEnabled() || !pending) return null;
 
   const initial = FAKE_GOOGLE_ACCOUNT.name.charAt(0);
 
   return (
-    <Modal
-      visible={pending}
-      animationType="slide"
-      transparent
-      onRequestClose={() => fakeGoogleSession.resolveSignIn(false)}
-    >
+    <>
       <View style={styles.backdrop}>
         <View style={styles.sheet} testID="fake-google-sheet">
           <GoogleWordmark />
@@ -133,12 +131,21 @@ export function FakeGoogleSignIn() {
           )}
         </View>
       </View>
-    </Modal>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
-  backdrop: { flex: 1, backgroundColor: "rgba(0,0,0,0.45)", justifyContent: "flex-end" },
+  backdrop: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 1000,
+    backgroundColor: "rgba(0,0,0,0.45)",
+    justifyContent: "flex-end"
+  },
   sheet: {
     backgroundColor: "#FFFFFF",
     borderTopLeftRadius: 28,

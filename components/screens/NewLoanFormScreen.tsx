@@ -400,6 +400,7 @@ export function NewLoanFormScreen({
           <TextInput
             style={styles.input}
             keyboardType="numeric"
+            testID="loan-form-principal"
             value={principal}
             onChangeText={setPrincipal}
             placeholder="15000"
@@ -412,6 +413,7 @@ export function NewLoanFormScreen({
             <TextInput
               style={styles.input}
               keyboardType="number-pad"
+              testID="loan-form-term"
               value={termCount}
               // Cuotas are whole numbers — strip anything but digits so a
               // stray decimal can't reach the integer schema validation.
@@ -428,6 +430,7 @@ export function NewLoanFormScreen({
           <TextInput
             style={styles.input}
             keyboardType="numeric"
+            testID="loan-form-rate"
             value={interestRate}
             onChangeText={setInterestRate}
             placeholder="10"

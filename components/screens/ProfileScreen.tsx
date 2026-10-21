@@ -8,7 +8,8 @@
  * earlier employee-style "ID #COB-0042" placeholder.
  */
 import { View, Text, Pressable, ScrollView, Alert, Linking, StyleSheet } from "react-native";
-import { useRouter } from "expo-router";
+import { useCallback } from "react";
+import { useRouter, useFocusEffect } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Constants from "expo-constants";
 import { Icon } from "../Icon";
@@ -71,6 +72,16 @@ export function ProfileScreen() {
   const profile = useAsync(() => profileRepo.get(), []);
   const route = useAsync(() => routeRepo.getToday(), []);
   const syncStatus = useAsync(() => syncRepo.getStatus(), []);
+  // Mi cuenta stays mounted under Editar perfil, so re-read the profile (and
+  // the sync pill) whenever it regains focus — otherwise a saved name never shows.
+  const { reload: reloadProfile } = profile;
+  const { reload: reloadSyncStatus } = syncStatus;
+  useFocusEffect(
+    useCallback(() => {
+      reloadProfile();
+      reloadSyncStatus();
+    }, [reloadProfile, reloadSyncStatus])
+  );
 
   const name = profile.data?.name ?? "Cobrador";
   const day = route.data;

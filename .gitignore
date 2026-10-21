@@ -34,3 +34,6 @@ storybook-static/
 
 # Logs
 *.log
+
+# Demo videos recorded by `npm run e2e:videos`
+/videos/

@@ -66,6 +66,11 @@ TestFlight.
   invocation — same bundle id on both platforms). See `.maestro/launch.yaml`'s
   header comment for the dev-client-only steps, which differ slightly by
   platform (`adb reverse` on Android; not needed on the iOS simulator).
+  The flows run against a build with `EXPO_PUBLIC_USE_MOCK_REPOS=true` and
+  `EXPO_PUBLIC_USE_FAKE_GOOGLE=true` (an on-screen Google account chooser and
+  an in-memory Drive/Sheets, `lib/sync/fakeGoogle`; approving always
+  succeeds). `npm run e2e:videos` runs them all with `-e RECORD=true` and
+  saves one `.mp4` per flow in `videos/` (git-ignored).
 - **Google OAuth client IDs** for Sheets sign-in, all with the
   `https://www.googleapis.com/auth/drive.file` scope (least-privilege —
   access only to spreadsheets this app creates): the native Google Sign-In
@@ -100,6 +105,7 @@ TestFlight.
 | `npm run typecheck`              | `tsc --noEmit`                                                        |
 | `npm test`                       | Jest unit tests                                                       |
 | `npm run test:e2e`               | Maestro flows under `.maestro/`                                       |
+| `npm run e2e:videos`             | Same flows, recording a demo video of each into `videos/`             |
 | `npm run db:generate`            | Regenerate drizzle migrations from the schema                         |
 | `npm run start:storybook:native` | Component dev in Storybook                                            |
 | `npm run start:demo`             | App with in-memory mock data, no real device DB or Google auth needed |

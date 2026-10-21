@@ -1,0 +1,68 @@
+# Covers: Hoy -> Mi ruta -> the day's visits -> open a customer from the route.
+#
+# Requires a mock-repo build (EXPO_PUBLIC_USE_MOCK_REPOS=true) — see pin-unlock.yaml.
+# Pass -e RECORD=true to save videos/mi-ruta.mp4.
+appId: ${APP_ID}
+---
+- launchApp:
+    clearState: true
+- runFlow:
+    when:
+      true: ${DEV_URL}
+    commands:
+      - extendedWaitUntil:
+          visible: "Development Build"
+          timeout: 20000
+      - openLink: ${DEV_URL}
+      - tapOn:
+          text: "Open"
+          optional: true
+      - extendedWaitUntil:
+          visible: "Continue"
+          timeout: 45000
+      - runFlow:
+          when:
+            true: ${DEV_MENU_DISMISS}
+          commands:
+            - back
+- extendedWaitUntil:
+    visible: "Crea tu PIN"
+    timeout: 30000
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- extendedWaitUntil:
+    visible: "Confirma tu PIN"
+    timeout: 10000
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- extendedWaitUntil:
+    visible: "Ahora no, tal vez después"
+    timeout: 15000
+- tapOn: "Ahora no, tal vez después"
+- extendedWaitUntil:
+    visible: "Hola, Carlos."
+    timeout: 15000
+# Demo video: pass -e RECORD=true to save videos/mi-ruta.mp4 (recording starts after the PIN preamble).
+- runFlow:
+    when:
+      true: ${RECORD}
+    commands:
+      - startRecording: videos/mi-ruta
+- tapOn: "Mi ruta"
+- extendedWaitUntil:
+    visible: "Mi ruta"
+    timeout: 15000
+- assertVisible: ".*Felipe Taveras.*"
+- tapOn: ".*Felipe Taveras.*"
+- extendedWaitUntil:
+    visible: "PRÉSTAMOS ACTIVOS"
+    timeout: 15000
+- runFlow:
+    when:
+      true: ${RECORD}
+    commands:
+      - stopRecording

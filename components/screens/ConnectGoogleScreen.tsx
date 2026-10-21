@@ -7,6 +7,8 @@
  * the native Google sign-in through the sync repo (see lib/sync/googleAuth.ts);
  * on the mock client it simulates a successful connection instead.
  */
+import { isFakeGoogleEnabled } from "../../lib/sync/fakeGoogle";
+import { FakeGoogleSignIn } from "../FakeGoogleSignIn";
 import { useState } from "react";
 import { View, Text, Pressable, StyleSheet, ActivityIndicator, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -31,13 +33,16 @@ export function ConnectGoogleScreen({ onDone }: ConnectGoogleScreenProps) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const useMockRepos = Boolean(Constants.expoConfig?.extra?.useMockRepos);
+  const useFakeGoogle = isFakeGoogleEnabled();
   const webClientId = Constants.expoConfig?.extra?.googleWebClientId as string | undefined;
   const iosClientId = Constants.expoConfig?.extra?.googleIosClientId as string | undefined;
   // iOS needs both the Web and iOS client ids configured (lib/sync/googleAuth.ts);
   // Android only needs the Web one — its OAuth client is matched by Play
   // Services via package name + signing SHA-1, no id required here.
   const googleConfigured =
-    useMockRepos || (Boolean(webClientId) && (Platform.OS !== "ios" || Boolean(iosClientId)));
+    useMockRepos ||
+    useFakeGoogle ||
+    (Boolean(webClientId) && (Platform.OS !== "ios" || Boolean(iosClientId)));
 
   // Both mock and real sync repos run their own connect flow: the real one
   // triggers the native Google sign-in (@react-native-google-signin), the mock
@@ -121,6 +126,7 @@ export function ConnectGoogleScreen({ onDone }: ConnectGoogleScreenProps) {
           </>
         )}
       </View>
+      <FakeGoogleSignIn />
     </View>
   );
 }

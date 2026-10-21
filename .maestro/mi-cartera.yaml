@@ -54,6 +54,12 @@ appId: ${APP_ID}
 - extendedWaitUntil:
     visible: "Hola, Carlos."
     timeout: 15000
+# Demo video: pass -e RECORD=true to save videos/mi-cartera.mp4 (recording starts after the PIN preamble).
+- runFlow:
+    when:
+      true: ${RECORD}
+    commands:
+      - startRecording: videos/mi-cartera
 
 - tapOn:
     id: "home-avatar-button"
@@ -73,3 +79,8 @@ appId: ${APP_ID}
 - extendedWaitUntil:
     visible: "Hola, Carlos."
     timeout: 15000
+- runFlow:
+    when:
+      true: ${RECORD}
+    commands:
+      - stopRecording
