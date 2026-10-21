@@ -128,6 +128,27 @@ describe("pushPendingMutations", () => {
     expect(result).toEqual({ pushed: 1, failed: 0 });
   });
 
+  it("pushes a payment's stored cents to the Sheet unchanged (whole-peso rounding never alters sync)", async () => {
+    // Arrange — RD$1,105 stored as 110500 cents
+    const mutation = {
+      id: "m-pay",
+      entity: "payment",
+      entityId: "payment-1",
+      operation: "create",
+      payload: JSON.stringify({ ...JSON.parse(paymentPayload), amountCents: 110500 }),
+      status: "pending",
+      retryCount: 0
+    };
+    const db = makeDbStub([mutation]);
+
+    // Act
+    await pushPendingMutations(db);
+
+    // Assert — the amount column carries the raw stored value
+    const row = appendRowMock.mock.calls[0]![2] as (string | number | null)[];
+    expect(row).toContain(110500);
+  });
+
   it("retries a failed mutation below the retry cap instead of leaving it stuck", async () => {
     // Arrange: a row that failed once already, but hasn't exhausted MAX_RETRIES
     const mutation = {

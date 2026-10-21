@@ -13,16 +13,14 @@
  * the single-option core, not mikro's options-generator loop.
  */
 
-/** One peso in cents — cuotas round to the nearest whole peso, never a fractional amount. */
-export const PESO_CENTS = 100;
+import { PESO_CENTS, roundToPeso } from "../utils/money";
 
-function roundToNearestPeso(valueCents: number): number {
-  return Math.round(valueCents / PESO_CENTS) * PESO_CENTS;
-}
+// Re-exported for callers that already import the peso unit from here.
+export { PESO_CENTS };
 
 /** rate = interestRateBps / 10000 (e.g. 2000 bps → 0.20 = 20% flat over the whole loan). */
 export function totalInterestCents(principalCents: number, interestRateBps: number): number {
-  return Math.round((principalCents * interestRateBps) / 10000);
+  return roundToPeso((principalCents * interestRateBps) / 10000);
 }
 
 /** Principal + flat interest — the full amount the loan will collect. */
@@ -42,7 +40,7 @@ export function cuotaCents(
   termCount: number
 ): number {
   const repay = totalRepayCents(principalCents, interestRateBps);
-  return roundToNearestPeso(repay / termCount);
+  return roundToPeso(repay / termCount);
 }
 
 /**

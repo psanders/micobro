@@ -12,6 +12,7 @@
  * NSBluetoothAlwaysUsageDescription / NSBluetoothPeripheralUsageDescription
  * strings declared in `app.config.ts`'s `ios.infoPlist`.
  */
+import { formatCurrency } from "./utils/money";
 import { Alert, Platform, PermissionsAndroid } from "react-native";
 import { logger } from "./logger";
 import { formatPhone, encodeCp858 } from "./utils/text";
@@ -97,8 +98,7 @@ function divider(char = "-"): string {
 }
 
 function formatRD(cents: number): string {
-  const amount = cents / 100;
-  return `RD$${amount.toLocaleString("es-DO", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  return formatCurrency(cents);
 }
 
 export function buildReceiptBytes(data: PrintReceiptData): Uint8Array {

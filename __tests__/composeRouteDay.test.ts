@@ -147,15 +147,16 @@ describe("composeRouteDay", () => {
     expect(day.visits[0]!.status).toBe("overdue");
     expect(day.visits[0]!.overdueDays).toBe(3);
     expect(day.visits[0]!.hasMora).toBe(true);
-    // cuota RD$110 (flat add-on interest) + mora (0.1 * 3/30 * 11000 = 110 cents) = 11110 cents
-    expect(day.visits[0]!.amountCents).toBe(11110);
+    // cuota RD$110 (flat add-on interest) + mora (0.1 * 3/30 * 11000 = 110 cents,
+    // rounded to RD$1) = 11100 cents
+    expect(day.visits[0]!.amountCents).toBe(11100);
 
     expect(day.visits[1]!.status).toBe("pending");
     expect(day.visits[1]!.hasMora).toBe(false);
     expect(day.visits[1]!.installmentLabel).toBe("Cuota 1/4");
     expect(day.visits[1]!.amountCents).toBe(11000);
 
-    expect(day.goalCents).toBe(22110);
+    expect(day.goalCents).toBe(22100);
     expect(day.collectedCents).toBe(0);
     expect(day.clientCount).toBe(2);
     expect(day.pendingCount).toBe(2);
@@ -197,9 +198,9 @@ describe("composeRouteDay", () => {
       today: TODAY
     });
 
-    // Assert — mora (0.1 * 3/30 * 11000 = 110 cents) on top of the cuota
+    // Assert — mora (0.1 * 3/30 * 11000 = 110 cents, rounded to RD$1) on top of the cuota
     expect(day.visits[0]!.hasMora).toBe(true);
-    expect(day.visits[0]!.amountCents).toBe(11110);
+    expect(day.visits[0]!.amountCents).toBe(11100);
   });
 
   it("marks a visit done and moves it out of pendingCount once collected today", () => {
@@ -237,7 +238,7 @@ describe("composeRouteDay", () => {
     expect(overdue.status).toBe("overdue");
 
     // goal stays the expected total; collected reflects only today's payments
-    expect(day.goalCents).toBe(22110);
+    expect(day.goalCents).toBe(22100);
     expect(day.collectedCents).toBe(10000);
     expect(day.pendingCount).toBe(1);
     expect(day.clientCount).toBe(2);

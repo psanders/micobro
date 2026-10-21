@@ -1,0 +1,100 @@
+# Covers: Nuevo préstamo -> a principal with centavos shows "Solo pesos enteros,
+# sin centavos." and is not silently rounded; a whole-peso principal clears it.
+#
+# Requires a mock-repo build (EXPO_PUBLIC_USE_MOCK_REPOS=true) — see pin-unlock.yaml.
+# Pass -e RECORD=true to save videos/solo-pesos-enteros.mp4.
+appId: ${APP_ID}
+---
+- launchApp:
+    clearState: true
+- runFlow:
+    when:
+      true: ${DEV_URL}
+    commands:
+      - extendedWaitUntil:
+          visible: "Development Build"
+          timeout: 20000
+      - openLink: ${DEV_URL}
+      - tapOn:
+          text: "Open"
+          optional: true
+      - extendedWaitUntil:
+          visible: "Continue"
+          timeout: 45000
+      - runFlow:
+          when:
+            true: ${DEV_MENU_DISMISS}
+          commands:
+            - back
+      - runFlow:
+          when:
+            true: ${DEV_MENU_CONTINUE}
+          commands:
+            - tapOn:
+                text: "Continue"
+                optional: true
+- extendedWaitUntil:
+    visible: "Crea tu PIN"
+    timeout: 30000
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- extendedWaitUntil:
+    visible: "Confirma tu PIN"
+    timeout: 10000
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- extendedWaitUntil:
+    visible: "Ahora no, tal vez después"
+    timeout: 15000
+- tapOn: "Ahora no, tal vez después"
+- extendedWaitUntil:
+    visible: "Hola, Carlos."
+    timeout: 15000
+# Demo video: pass -e RECORD=true to save videos/solo-pesos-enteros.mp4 (recording starts after the PIN preamble).
+- runFlow:
+    when:
+      true: ${RECORD}
+    commands:
+      - startRecording: videos/solo-pesos-enteros
+
+- tapOn:
+    id: "tab-buscar"
+- extendedWaitUntil:
+    visible: "Buscar cliente"
+    timeout: 15000
+- tapOn: "Nombre, teléfono o cédula…"
+- inputText: "Felipe"
+- extendedWaitUntil:
+    visible: ".*Felipe Taveras.*"
+    timeout: 15000
+- tapOn: ".*Felipe Taveras.*"
+- extendedWaitUntil:
+    visible: "PRÉSTAMOS ACTIVOS"
+    timeout: 15000
+
+# Icon-only "+" next to PRÉSTAMOS ACTIVOS
+# (components/screens/CustomerDetailScreen.tsx).
+- tapOn:
+    id: "customer-detail-new-loan-button"
+
+# NewLoanFormScreen, reached via app/loans/new.tsx's Stack.Screen title
+# "Nuevo préstamo".
+- extendedWaitUntil:
+    visible: "Nuevo préstamo"
+    timeout: 15000
+- tapOn:
+    id: "loan-form-principal"
+- inputText: "1500.50"
+- assertVisible: "Solo pesos enteros, sin centavos."
+- eraseText: 7
+- inputText: "1500"
+- assertNotVisible: "Solo pesos enteros, sin centavos."
+- runFlow:
+    when:
+      true: ${RECORD}
+    commands:
+      - stopRecording

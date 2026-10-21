@@ -34,6 +34,7 @@ import {
   monthlyAnchorAtRisk
 } from "../../lib/loans/loanViews";
 import { ValidationError } from "../../lib/errors/ValidationError";
+import { hasCentavos, WHOLE_PESOS_ONLY_MESSAGE } from "../../lib/utils/money";
 import { formatCurrency, toCents } from "../../lib/utils/money";
 import { formatShortDate } from "../../lib/utils/dates";
 import { colors } from "../../lib/ui/theme";
@@ -399,12 +400,15 @@ export function NewLoanFormScreen({
           <Text style={styles.label}>Monto del préstamo</Text>
           <TextInput
             style={styles.input}
-            keyboardType="numeric"
+            keyboardType="number-pad"
             testID="loan-form-principal"
             value={principal}
             onChangeText={setPrincipal}
             placeholder="15000"
           />
+          {hasCentavos(principal) ? (
+            <Text style={styles.wholePesosError}>{WHOLE_PESOS_ONLY_MESSAGE}</Text>
+          ) : null}
         </View>
 
         {!isOpenCredit && (
@@ -554,6 +558,7 @@ export function NewLoanFormScreen({
 }
 
 const styles = StyleSheet.create({
+  wholePesosError: { color: colors.red, fontSize: 12 },
   screen: { flex: 1, backgroundColor: "#FFFFFF" },
   scroll: { flex: 1 },
   center: { flex: 1, alignItems: "center", justifyContent: "center" },

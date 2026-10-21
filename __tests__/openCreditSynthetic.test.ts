@@ -14,6 +14,7 @@
  */
 import { openCreditState } from "../lib/loans/openCredit";
 import { addFrequencyInterval } from "../lib/loans/loanViews";
+import { roundToPeso } from "../lib/utils/money";
 import type { Loan, LoanFrequency } from "../lib/loans/loan.schema";
 import type { Payment } from "../lib/payments/payment.schema";
 
@@ -80,12 +81,12 @@ describe("closed-form expectations", () => {
       const loan = makeLoan(1000000, rateBps, frequency);
       let expected = 1000000;
       for (let n = 1; n <= 12; n++) {
-        expected += Math.round(expected * (rateBps / 10000));
+        expected += roundToPeso(expected * (rateBps / 10000));
         const state = openCreditState(loan, [], dayAfterDue(loan, n));
         expect(state.balanceCents).toBe(expected);
         expect(state.principalBalanceCents).toBe(1000000);
         expect(state.capitalizedInterestCents).toBe(expected - 1000000);
-        expect(state.interestDueCents).toBe(Math.round(expected * (rateBps / 10000)));
+        expect(state.interestDueCents).toBe(roundToPeso(expected * (rateBps / 10000)));
       }
     }
   );
@@ -109,11 +110,11 @@ describe("closed-form expectations", () => {
     let capital = 1000000;
     const payments: Payment[] = [];
     for (let n = 1; n <= 9; n++) {
-      payments.push(payment(`p${n}`, atDay(due(loan, n)), Math.round(capital * 0.1) + 100000));
+      payments.push(payment(`p${n}`, atDay(due(loan, n)), roundToPeso(capital * 0.1) + 100000));
       capital -= 100000;
       const state = openCreditState(loan, payments, dayAfterDue(loan, n));
       expect(state.principalBalanceCents).toBe(capital);
-      expect(state.interestDueCents).toBe(Math.round(capital * 0.1));
+      expect(state.interestDueCents).toBe(roundToPeso(capital * 0.1));
     }
   });
 
@@ -145,7 +146,7 @@ interface DayPayment {
 /**
  * Reference model, written from the rules rather than from the engine:
  * cycles are whole-day windows (prevDue, due], cycle 1 also owning day 0;
- * interest = round(balance × rate) at the cycle's start; money covers that
+ * interest = roundToPeso(balance × rate) at the cycle's start; money covers that
  * interest first and any surplus lowers the balance (intereses sumados
  * first); a cycle that has ENDED short capitalizes the shortfall; the
  * current cycle never does; the loan closes at zero.
@@ -170,7 +171,7 @@ function referenceModel(
       .filter((p) => (k === 0 ? p.day >= 0 : p.day > prevGraceEnd) && p.day <= dueDay)
       .reduce((s, p) => s + p.amountCents, 0);
     prevGraceEnd = dueDay;
-    const interest = Math.round(balance * (rateBps / 10000));
+    const interest = roundToPeso(balance * (rateBps / 10000));
     const surplus = Math.max(0, paid - interest);
     balance = Math.max(0, balance - surplus);
     sumados = Math.max(0, sumados - surplus);

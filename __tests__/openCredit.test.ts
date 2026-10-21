@@ -313,15 +313,29 @@ describe("openCreditState — compounding across multiple skipped cycles", () =>
 
     // Cycle 1: 10,000 * 5% = 500 unpaid -> balance 10,500.
     // Cycle 2: 10,500 * 5% = 525 unpaid -> balance 11,025.
-    // Cycle 3 (current, as of `today`): 11,025 * 5% = 551.25 -> 55,125 due,
-    // not yet capitalized (it's still in progress).
+    // Cycle 3 (current, as of `today`): 11,025 * 5% = 551.25 -> RD$551
+    // (whole pesos) -> 55,100 due, not yet capitalized (it's still in progress).
     expect(state.cycles).toHaveLength(3);
     expect(state.cycles[0]).toMatchObject({ status: "skipped", interestDueCents: 50000 });
     expect(state.cycles[1]).toMatchObject({ status: "skipped", interestDueCents: 52500 });
-    expect(state.cycles[2]).toMatchObject({ status: "pending", interestDueCents: 55125 });
+    expect(state.cycles[2]).toMatchObject({ status: "pending", interestDueCents: 55100 });
     expect(state.balanceCents).toBe(1102500);
-    expect(state.interestDueCents).toBe(55125);
+    expect(state.interestDueCents).toBe(55100);
     expect(state.isClosed).toBe(false);
+  });
+});
+
+describe("openCreditState — whole-peso rounding", () => {
+  it("rounds each cycle's interest to the peso before compounding it into the balance", () => {
+    // RD$10,333 at 5% per cycle: 516.65 → RD$517 (whole pesos), never RD$516.65.
+    const loan = baseLoan({ principalCents: 1033300, startDate: startedCyclesAgo(1) });
+
+    const state = openCreditState(loan, [], TODAY);
+
+    expect(state.cycles[0]).toMatchObject({ status: "skipped", interestDueCents: 51700 });
+    expect(state.balanceCents).toBe(1033300 + 51700);
+    expect(state.balanceCents % 100).toBe(0);
+    expect(state.interestDueCents % 100).toBe(0);
   });
 });
 

@@ -12,6 +12,7 @@
 import { MORA_NOTE, installmentDueDate, principalPaidCents } from "./loanViews";
 import { cuotaCents as computeCuotaCents, totalRepayCents } from "./loanMath";
 import { DEFAULT_GRACE_DAYS } from "./loan.schema";
+import { roundToPeso } from "../utils/money";
 import type { Loan } from "./loan.schema";
 import type { Payment } from "../payments/payment.schema";
 
@@ -96,7 +97,7 @@ export function computeAccruedMora(
   const cap = policy.capInCuotas * cuotaCents;
   const capped = cap > 0 ? Math.min(rawMora, cap) : rawMora;
 
-  let moraCents = Math.round(capped);
+  let moraCents = roundToPeso(capped);
   if (policy.minCents > 0 && moraCents > 0 && moraCents < policy.minCents) {
     moraCents = policy.minCents;
   }

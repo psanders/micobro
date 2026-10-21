@@ -27,7 +27,13 @@ import { computePaymentSplit } from "../../lib/payments/paymentSplit";
 import { resolveOpenCreditPayOptions } from "../../lib/payments/openCreditPayOptions";
 import type { OpenCreditPayOption } from "../../lib/payments/openCreditPayOptions";
 import { cuotaLabel as formatCuotaLabel } from "../../lib/loans/loanViews";
-import { formatCurrency, parseAmountToCents } from "../../lib/utils/money";
+import {
+  formatAmount,
+  formatCurrency,
+  hasCentavos,
+  parseAmountToCents,
+  WHOLE_PESOS_ONLY_MESSAGE
+} from "../../lib/utils/money";
 import { formatFullDate, formatShortDate, formatTime } from "../../lib/utils/dates";
 import { Avatar } from "../Avatar";
 import { ScreenHeader } from "../ScreenHeader";
@@ -517,11 +523,14 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
                           style={styles.customInput}
                           value={ocCapitalText}
                           onChangeText={setOcCapitalText}
-                          keyboardType="numeric"
+                          keyboardType="number-pad"
                           placeholder="0"
                           placeholderTextColor={colors.slate}
                         />
                       </View>
+                      {hasCentavos(ocCapitalText) ? (
+                        <Text style={styles.wholePesosError}>{WHOLE_PESOS_ONLY_MESSAGE}</Text>
+                      ) : null}
                       <View style={[styles.ocPayPill, styles.ocPayPillGreen]}>
                         <Text style={styles.ocPayPillLabel}>A pagar</Text>
                         <Text style={[styles.ocPayPillValue, styles.ocPayPillValueGreen]}>
@@ -582,11 +591,14 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
                           style={styles.customInput}
                           value={ocCapitalText}
                           onChangeText={setOcCapitalText}
-                          keyboardType="numeric"
+                          keyboardType="number-pad"
                           placeholder="0"
                           placeholderTextColor={colors.slate}
                         />
                       </View>
+                      {hasCentavos(ocCapitalText) ? (
+                        <Text style={styles.wholePesosError}>{WHOLE_PESOS_ONLY_MESSAGE}</Text>
+                      ) : null}
                       <View style={[styles.ocPayPill, styles.ocPayPillGreen]}>
                         <Text style={styles.ocPayPillLabel}>A pagar</Text>
                         <Text style={[styles.ocPayPillValue, styles.ocPayPillValueGreen]}>
@@ -695,7 +707,7 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
               <SectionLabel>MONTO A COBRAR</SectionLabel>
               <View style={styles.amountRow}>
                 <Text style={styles.amountCurrency}>RD$</Text>
-                <Text style={styles.amountNumber}>{(amount / 100).toLocaleString("es-DO")}</Text>
+                <Text style={styles.amountNumber}>{formatAmount(amount)}</Text>
               </View>
               <Text style={styles.amountHint}>{hint}</Text>
             </View>
@@ -724,11 +736,16 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
                         style={styles.customInput}
                         value={customAmountText}
                         onChangeText={setCustomAmountText}
-                        keyboardType="numeric"
+                        keyboardType="number-pad"
                         placeholder="0"
                         placeholderTextColor={colors.slate}
                       />
                     </View>
+                  ) : null}
+                  {option.key === "custom" &&
+                  effectiveOption === "custom" &&
+                  hasCentavos(customAmountText) ? (
+                    <Text style={styles.wholePesosError}>{WHOLE_PESOS_ONLY_MESSAGE}</Text>
                   ) : null}
                 </View>
               ))}
@@ -809,6 +826,7 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
 }
 
 const styles = StyleSheet.create({
+  wholePesosError: { fontSize: 12, fontFamily: fonts.medium, color: colors.red },
   screen: { flex: 1, backgroundColor: colors.bg },
   loading: { marginTop: 40 },
   content: { paddingHorizontal: 20, paddingTop: 8, paddingBottom: 24, gap: 18 },
