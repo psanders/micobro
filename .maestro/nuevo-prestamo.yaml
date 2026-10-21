@@ -106,7 +106,7 @@ appId: ${APP_ID}
 - tapOn:
     id: "loan-form-term"
 - inputText: "12"
-# "Frecuencia de pago" (SelectField) already defaults to "weekly" — no tap needed.
+# "Frecuencia de pago" (SelectField) already defaults to "monthly" — no tap needed.
 # Same keyboard-covers-the-submit-button issue as #119's New/Edit customer
 # forms — a plain `scroll` (real drag gesture) dismisses the keyboard via
 # keyboardDismissMode="on-drag"; scrollUntilVisible's internal micro-scrolls
