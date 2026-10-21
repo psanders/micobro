@@ -26,3 +26,4 @@ export const useVisitRepo = () => useRepos().visits;
 export const useFeedbackRepo = () => useRepos().feedback;
 export const useCashCloseRepo = () => useRepos().cashClose;
 export const useReportsRepo = () => useRepos().reports;
+export const useAccountRepo = () => useRepos().account;

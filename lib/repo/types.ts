@@ -432,6 +432,14 @@ export interface ReportsRepo {
   getPosition(): Promise<OwnerPosition>;
 }
 
+/**
+ * The lender's data on this phone as a whole. `eraseDeviceData` needs the
+ * current PIN and resolves false (erasing nothing) when it's wrong.
+ */
+export interface AccountRepo {
+  eraseDeviceData(pin: string): Promise<boolean>;
+}
+
 export interface Repos {
   customers: CustomerRepo;
   loans: LoanRepo;
@@ -443,4 +451,5 @@ export interface Repos {
   feedback: FeedbackRepo;
   cashClose: CashCloseRepo;
   reports: ReportsRepo;
+  account: AccountRepo;
 }

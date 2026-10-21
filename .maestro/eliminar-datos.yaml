@@ -1,0 +1,99 @@
+# Covers: Mi cuenta -> Eliminar mis datos -> confirm -> a wrong PIN erases
+# nothing -> the right PIN erases everything and the app is back at "Crea tu PIN".
+#
+# Requires a mock-repo build (EXPO_PUBLIC_USE_MOCK_REPOS=true) — see pin-unlock.yaml.
+# Pass -e RECORD=true to save videos/eliminar-datos.mp4.
+appId: ${APP_ID}
+---
+- launchApp:
+    clearState: true
+- runFlow:
+    when:
+      true: ${DEV_URL}
+    commands:
+      - extendedWaitUntil:
+          visible: "Development Build"
+          timeout: 20000
+      - openLink: ${DEV_URL}
+      - tapOn:
+          text: "Open"
+          optional: true
+      - extendedWaitUntil:
+          visible: "Continue"
+          timeout: 45000
+      - runFlow:
+          when:
+            true: ${DEV_MENU_DISMISS}
+          commands:
+            - back
+      - runFlow:
+          when:
+            true: ${DEV_MENU_CONTINUE}
+          commands:
+            - tapOn:
+                text: "Continue"
+                optional: true
+- extendedWaitUntil:
+    visible: "Crea tu PIN"
+    timeout: 30000
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- extendedWaitUntil:
+    visible: "Confirma tu PIN"
+    timeout: 10000
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- extendedWaitUntil:
+    visible: "Ahora no, tal vez después"
+    timeout: 15000
+- tapOn: "Ahora no, tal vez después"
+- extendedWaitUntil:
+    visible: "Hola, Carlos."
+    timeout: 15000
+# Demo video: pass -e RECORD=true to save videos/eliminar-datos.mp4 (recording starts after the PIN preamble).
+- runFlow:
+    when:
+      true: ${RECORD}
+    commands:
+      - startRecording: videos/eliminar-datos
+
+- tapOn:
+    id: "home-avatar-button"
+- extendedWaitUntil:
+    visible: "Mi cuenta"
+    timeout: 15000
+- scrollUntilVisible:
+    element:
+      id: "profile-erase-data"
+- tapOn:
+    id: "profile-erase-data"
+- extendedWaitUntil:
+    visible: "¿Eliminar todos tus datos?"
+    timeout: 10000
+- tapOn: "Eliminar"
+- extendedWaitUntil:
+    visible: "Confirma con tu PIN"
+    timeout: 10000
+- tapOn: "2"
+- tapOn: "2"
+- tapOn: "2"
+- tapOn: "2"
+- extendedWaitUntil:
+    visible: "PIN incorrecto. Intenta de nuevo."
+    timeout: 10000
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- extendedWaitUntil:
+    visible: "Crea tu PIN"
+    timeout: 15000
+- runFlow:
+    when:
+      true: ${RECORD}
+    commands:
+      - stopRecording

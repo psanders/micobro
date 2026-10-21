@@ -543,6 +543,23 @@ export function createMockRepos(): Repos {
     reports: {
       getPosition: async () => composePosition({ loans, payments })
     },
+    account: {
+      // Same PIN gate as the real repo; empties the in-memory dataset so the
+      // demo build behaves like a fresh install afterwards.
+      eraseDeviceData: async (pin) => {
+        // Loaded lazily: both are native modules, and importing them at the
+        // top would break every test that builds the mock repos.
+        const { verifyPin, clearPin } = await import("../../security/pin");
+        const { default: AsyncStorage } = await import("@react-native-async-storage/async-storage");
+        if (!(await verifyPin(pin))) return false;
+        for (const list of [customers, loans, payments, visitLog, cashCloses]) list.splice(0);
+        mora.clear();
+        profileState = null;
+        await AsyncStorage.clear();
+        await clearPin();
+        return true;
+      }
+    },
     visits: {
       record: createVisit
     },

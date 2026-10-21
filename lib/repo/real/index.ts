@@ -11,6 +11,7 @@ import { createRealVisitRepo } from "./visitRepo";
 import { createRealFeedbackRepo } from "./feedbackRepo";
 import { createRealCashCloseRepo } from "./cashCloseRepo";
 import { createRealReportsRepo } from "./reportsRepo";
+import { createRealAccountRepo } from "./accountRepo";
 import type { Database } from "../../db/client";
 import type { Repos } from "../types";
 
@@ -25,6 +26,7 @@ export function createRealRepos({ db }: { db: Database }): Repos {
     visits: createRealVisitRepo({ db }),
     feedback: createRealFeedbackRepo(),
     cashClose: createRealCashCloseRepo({ db }),
-    reports: createRealReportsRepo({ db })
+    reports: createRealReportsRepo({ db }),
+    account: createRealAccountRepo({ db })
   };
 }
