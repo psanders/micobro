@@ -67,10 +67,11 @@ appId: ${APP_ID}
 - tapOn:
     id: "profile-name"
 - eraseText: 30
-- inputText: "Carlos Martínez"
+# ASCII only: Maestro cannot type accented characters on Android.
+- inputText: "Carlos Martinez"
 - tapOn:
     id: "profile-business"
-- inputText: "Préstamos Martínez"
+- inputText: "Prestamos Martinez"
 - tapOn:
     id: "profile-phone"
 - inputText: "8095550123"
@@ -78,7 +79,7 @@ appId: ${APP_ID}
 - extendedWaitUntil:
     visible: "Mi cuenta"
     timeout: 15000
-- assertVisible: ".*Carlos Martínez.*"
+- assertVisible: ".*Carlos Martinez.*"
 - runFlow:
     when:
       true: ${RECORD}

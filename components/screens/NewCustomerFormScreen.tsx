@@ -59,12 +59,18 @@ export function NewCustomerFormScreen() {
     >
       <View style={styles.field}>
         <Text style={styles.label}>Nombre completo</Text>
-        <TextInput style={styles.input} value={name} onChangeText={setName} />
+        <TextInput
+          testID="customer-form-name"
+          style={styles.input}
+          value={name}
+          onChangeText={setName}
+        />
       </View>
 
       <View style={styles.field}>
         <Text style={styles.label}>Teléfono</Text>
         <TextInput
+          testID="customer-form-phone"
           style={styles.input}
           keyboardType="phone-pad"
           placeholder="809-251-2222"
