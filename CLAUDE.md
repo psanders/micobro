@@ -42,6 +42,15 @@ Single package — mobile is the only surface, so there's no monorepo/`common` s
 - `lib/logger.ts` — console-based logger. **Do not add `@fonoster/logger`** —
   it pulls in `winston`/`fluent-logger`, both Node-only and unusable under Hermes.
 - `__tests__/` — one Jest test file per function.
+- `designs/` — Pencil design files, one per area, all importing the shared
+  library as `ui` (refs are `ui:<id>`, variables `$ui:<name>`):
+  `micobro.lib.pen` (variables/palette, brand book, mobile component library,
+  app icons), `app.pen` (collector flows and screens), `website.pen` (landing,
+  modals, OpenGraph), `ads.pen` (social/ad creatives, review board, widget
+  sources), `ops.pen` (ops dashboard + its component library), `exports.pen`
+  (README banner and export frames). Reusable components and variables live
+  only in the lib; `designs/assets` and `designs/images` are symlinks to the
+  root folders so image paths keep resolving.
 - `.maestro/` — E2E smoke flows (machine-level Maestro CLI, not an npm dep).
 - `site/` — the Vite marketing site served at `micobro.app`.
 - `docs-site/` — the Mintlify docs (`docs.json` + `.mdx`), authored with

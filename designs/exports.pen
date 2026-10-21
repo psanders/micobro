@@ -1,0 +1,356 @@
+{
+  "version": "2.21",
+  "children": [
+    {
+      "type": "frame",
+      "id": "thgmZ",
+      "x": 0,
+      "y": 0,
+      "name": "Export Frames (do not edit)",
+      "width": 2434,
+      "height": 700,
+      "fill": "#EDF2FB",
+      "layout": "vertical",
+      "gap": 40,
+      "padding": [
+        60,
+        80
+      ],
+      "children": [
+        {
+          "type": "text",
+          "id": "odXzi",
+          "fill": "#5A7BAF",
+          "content": "Export Frames — run at 2× scale → 1024×1024 output",
+          "fontFamily": "$ui:font-family",
+          "fontSize": 20,
+          "fontWeight": "500"
+        },
+        {
+          "type": "frame",
+          "id": "KdyuJ",
+          "width": "fill_container",
+          "gap": 80,
+          "children": [
+            {
+              "type": "frame",
+              "id": "Xs01p",
+              "name": "EXPORT-icon",
+              "clip": true,
+              "width": 512,
+              "height": 512,
+              "fill": {
+                "type": "gradient",
+                "gradientType": "linear",
+                "enabled": true,
+                "rotation": 150,
+                "size": {
+                  "height": 1
+                },
+                "colors": [
+                  {
+                    "color": "#1F9C82",
+                    "position": 0
+                  },
+                  {
+                    "color": "#0B4F4A",
+                    "position": 1
+                  }
+                ]
+              },
+              "layout": "vertical",
+              "padding": [
+                0,
+                0,
+                50,
+                0
+              ],
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "KJSya",
+                  "rotation": 0.27,
+                  "fill": "#FFFFFF",
+                  "content": "m",
+                  "lineHeight": 1,
+                  "fontFamily": "$ui:font-family",
+                  "fontSize": 320,
+                  "fontWeight": "700"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "y77PuY",
+              "name": "EXPORT-android-foreground",
+              "clip": true,
+              "width": 512,
+              "height": 512,
+              "layout": "vertical",
+              "padding": [
+                0,
+                0,
+                40,
+                0
+              ],
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "zD4hH",
+                  "rotation": 0.27,
+                  "fill": "#FFFFFF",
+                  "content": "m",
+                  "lineHeight": 1,
+                  "fontFamily": "$ui:font-family",
+                  "fontSize": 260,
+                  "fontWeight": "700"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "n4xRq",
+              "name": "EXPORT-android-background",
+              "clip": true,
+              "width": 512,
+              "height": 512,
+              "fill": {
+                "type": "gradient",
+                "gradientType": "linear",
+                "enabled": true,
+                "rotation": 150,
+                "size": {
+                  "height": 1
+                },
+                "colors": [
+                  {
+                    "color": "#1F9C82",
+                    "position": 0
+                  },
+                  {
+                    "color": "#0B4F4A",
+                    "position": 1
+                  }
+                ]
+              }
+            },
+            {
+              "type": "frame",
+              "id": "mVqgi",
+              "name": "EXPORT-android-monochrome",
+              "clip": true,
+              "width": 512,
+              "height": 512,
+              "fill": "#000000",
+              "layout": "vertical",
+              "padding": [
+                0,
+                0,
+                40,
+                0
+              ],
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "wZG3J",
+                  "rotation": 0.27,
+                  "fill": "#FFFFFF",
+                  "content": "m",
+                  "lineHeight": 1,
+                  "fontFamily": "$ui:font-family",
+                  "fontSize": 260,
+                  "fontWeight": "700"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "FWJxl",
+      "x": 0,
+      "y": 820,
+      "name": "EXPORT-readme-banner",
+      "clip": true,
+      "width": 1280,
+      "height": 400,
+      "fill": {
+        "type": "gradient",
+        "gradientType": "linear",
+        "enabled": true,
+        "rotation": 150,
+        "size": {
+          "height": 1
+        },
+        "colors": [
+          {
+            "color": "#1F9C82",
+            "position": 0
+          },
+          {
+            "color": "#0B4F4A",
+            "position": 1
+          }
+        ]
+      },
+      "layout": "none",
+      "children": [
+        {
+          "type": "text",
+          "id": "e1cXX5",
+          "x": 930,
+          "y": -110,
+          "name": "ghostM",
+          "rotation": 0.27,
+          "fill": "#FFFFFF1A",
+          "content": "m",
+          "lineHeight": 1,
+          "fontFamily": "$ui:font-family",
+          "fontSize": 620,
+          "fontWeight": "700"
+        },
+        {
+          "type": "frame",
+          "id": "DqQFt",
+          "x": 80,
+          "y": 0,
+          "name": "content",
+          "width": 900,
+          "height": 400,
+          "layout": "vertical",
+          "gap": 24,
+          "justifyContent": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "W8RVwx",
+              "name": "logoRow",
+              "gap": 18,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "f9n4f",
+                  "name": "logoMark",
+                  "width": 68,
+                  "height": 68,
+                  "fill": "$ui:brand.white",
+                  "cornerRadius": 18,
+                  "layout": "vertical",
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "LNufP",
+                      "name": "markM",
+                      "rotation": 0.27,
+                      "fill": "$ui:brand.blue.deep",
+                      "content": "m",
+                      "lineHeight": 1,
+                      "textAlign": "center",
+                      "textAlignVertical": "middle",
+                      "fontFamily": "$ui:font-logo",
+                      "fontSize": 42,
+                      "fontWeight": "700"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "XSjhf",
+                  "name": "wordmark",
+                  "fill": "$ui:brand.white",
+                  "content": "micobro",
+                  "fontFamily": "$ui:font-logo",
+                  "fontSize": 58,
+                  "fontWeight": "700",
+                  "letterSpacing": -1.5
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "krzWG",
+              "name": "tagline",
+              "fill": "#E8F7F2",
+              "textGrowth": "fixed-width",
+              "width": 640,
+              "content": "Clientes, préstamos y cobros — todo en tu teléfono, sin internet.",
+              "lineHeight": 1.35,
+              "fontFamily": "$ui:font-family",
+              "fontSize": 23,
+              "fontWeight": "500"
+            },
+            {
+              "type": "frame",
+              "id": "R0BxO",
+              "name": "pills",
+              "gap": 12,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "PbQsd",
+                  "name": "pillA",
+                  "fill": "$ui:brand.orange.deep",
+                  "cornerRadius": "$ui:radius.pill",
+                  "padding": [
+                    10,
+                    18
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "bDtrO",
+                      "name": "pillAText",
+                      "fill": "$ui:brand.white",
+                      "content": "100% fuera de línea",
+                      "fontFamily": "$ui:font-family",
+                      "fontSize": 15,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "E7PpY",
+                  "name": "pillB",
+                  "fill": "#0B4F4A",
+                  "cornerRadius": "$ui:radius.pill",
+                  "padding": [
+                    10,
+                    18
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "kAH1h",
+                      "name": "pillBText",
+                      "fill": "$ui:brand.white",
+                      "content": "Respaldo en tu Google Sheet",
+                      "fontFamily": "$ui:font-family",
+                      "fontSize": 15,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "imports": {
+    "ui": "micobro.lib.pen"
+  },
+  "fileToken": "3ed029cd-46c2-4d93-a41c-abfdbd105234"
+}
