@@ -42,8 +42,8 @@ export function PricingModal({ open, onClose }: PricingModalProps) {
         </h2>
 
         <p className="text-sm leading-relaxed text-ds-muted">
-          Hoy puedes usar Micobro completo, sin pagar nada. Más adelante añadiremos funciones nuevas
-          y algunas de ellas serán de pago. Te avisaremos con tiempo antes de que eso pase.
+          Hoy puedes usar Micobro completo, sin pagar nada. Más adelante añadiremos funciones
+          nuevas y algunas de ellas serán de pago. Te avisaremos con tiempo antes de que eso pase.
         </p>
 
         <button
