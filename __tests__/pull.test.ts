@@ -177,6 +177,30 @@ describe("pullEntities", () => {
     expect(result.pulled).toBe(0);
   });
 
+  it("does not overwrite a pending local archive with the Sheet's still-active row", async () => {
+    // The Sheet still says "active", but this device archived the loan and
+    // has not pushed yet — the unpushed local change wins.
+    mockRanges({ loan: [["ID"], loanRow({ status: "active" })] });
+    const db = makeDbStub([[{ id: "pm-archive", status: "pending" }]]);
+
+    const result = await pullEntities(db);
+
+    expect(entityInsertCalls(db.insert as jest.Mock)).toHaveLength(0);
+    expect(db.update).not.toHaveBeenCalled();
+    expect(result.skipped).toBe(1);
+    expect(result.pulled).toBe(0);
+  });
+
+  it("also protects a local archive whose push failed and is waiting to retry", async () => {
+    mockRanges({ loan: [["ID"], loanRow({ status: "active" })] });
+    const db = makeDbStub([[{ id: "pm-archive", status: "failed" }]]);
+
+    const result = await pullEntities(db);
+
+    expect(db.update).not.toHaveBeenCalled();
+    expect(result.skipped).toBe(1);
+  });
+
   it("skips and counts a malformed row instead of aborting the pull", async () => {
     // Row with an empty required "name" field
     mockRanges({ customer: [CUSTOMER_HEADER, customerRow({ name: "" })] });

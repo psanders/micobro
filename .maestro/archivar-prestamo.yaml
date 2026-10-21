@@ -1,0 +1,143 @@
+# Covers: collect on a loan -> edit is unavailable -> archive it -> it leaves the active
+# loans and appears under ARCHIVADOS -> Restaurar brings it back.
+#
+# Requires a mock-repo build (EXPO_PUBLIC_USE_MOCK_REPOS=true) — see pin-unlock.yaml.
+# Pass -e RECORD=true to save videos/archivar-prestamo.mp4.
+appId: ${APP_ID}
+---
+- launchApp:
+    clearState: true
+- runFlow:
+    when:
+      true: ${DEV_URL}
+    commands:
+      - extendedWaitUntil:
+          visible: "Development Build"
+          timeout: 20000
+      - openLink: ${DEV_URL}
+      - tapOn:
+          text: "Open"
+          optional: true
+      - extendedWaitUntil:
+          visible: "Continue"
+          timeout: 45000
+      - runFlow:
+          when:
+            true: ${DEV_MENU_DISMISS}
+          commands:
+            - back
+      - runFlow:
+          when:
+            true: ${DEV_MENU_CONTINUE}
+          commands:
+            - tapOn:
+                text: "Continue"
+                optional: true
+- extendedWaitUntil:
+    visible: "Crea tu PIN"
+    timeout: 30000
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- extendedWaitUntil:
+    visible: "Confirma tu PIN"
+    timeout: 10000
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- extendedWaitUntil:
+    visible: "Ahora no, tal vez después"
+    timeout: 15000
+- tapOn: "Ahora no, tal vez después"
+- extendedWaitUntil:
+    visible: "Hola, Carlos."
+    timeout: 15000
+# Demo video: pass -e RECORD=true to save videos/archivar-prestamo.mp4 (recording starts after the PIN preamble).
+- runFlow:
+    when:
+      true: ${RECORD}
+    commands:
+      - startRecording: videos/archivar-prestamo
+
+- tapOn:
+    id: "tab-buscar"
+- extendedWaitUntil:
+    visible: "Buscar cliente"
+    timeout: 15000
+- tapOn: "Nombre, teléfono o cédula…"
+- inputText: "Maria"
+- extendedWaitUntil:
+    visible: ".*María Rosa Peralta.*"
+    timeout: 15000
+- tapOn: ".*María Rosa Peralta.*"
+- extendedWaitUntil:
+    visible: "PRÉSTAMOS ACTIVOS"
+    timeout: 15000
+- tapOn: ".*Préstamo #L-00001.*"
+- extendedWaitUntil:
+    visible: "TOTAL A PAGAR HOY"
+    timeout: 15000
+
+# Collect, so the loan has payments and its terms lock.
+- tapOn: "Cobrar"
+- extendedWaitUntil:
+    visible: "Registrar cobro"
+    timeout: 15000
+- tapOn: "Confirmar y cobrar"
+- extendedWaitUntil:
+    visible: "¡Pago registrado!"
+    timeout: 15000
+- tapOn: "Listo"
+- extendedWaitUntil:
+    visible: "TOTAL A PAGAR HOY"
+    timeout: 15000
+
+# Editar is locked once there are payments; Archivar is the way out.
+- tapOn: "Más opciones"
+- extendedWaitUntil:
+    visible: ".*No disponible: este préstamo ya tiene pagos.*"
+    timeout: 15000
+- tapOn: ".*Archivar préstamo.*"
+- extendedWaitUntil:
+    visible: ".*Archivar el préstamo.*"
+    timeout: 15000
+- tapOn:
+    id: "archive-only"
+- extendedWaitUntil:
+    visible:
+      id: "loan-archived-banner"
+    timeout: 15000
+
+# Back on the customer: gone from the active loans, present under ARCHIVADOS.
+- tapOn: "Volver"
+- extendedWaitUntil:
+    visible:
+      id: "archived-loans-toggle"
+    timeout: 15000
+- assertVisible: "No tiene préstamos activos."
+- assertNotVisible: ".*Préstamo #L-00001.*"
+- tapOn:
+    id: "archived-loans-toggle"
+- extendedWaitUntil:
+    visible: ".*L-00001.*"
+    timeout: 15000
+- tapOn: ".*L-00001.*"
+- extendedWaitUntil:
+    visible:
+      id: "loan-archived-banner"
+    timeout: 15000
+
+# Restaurar returns it to the active loans.
+- tapOn:
+    id: "loan-restore-button"
+- tapOn: "Volver"
+- extendedWaitUntil:
+    visible: ".*Préstamo #L-00001.*"
+    timeout: 15000
+- runFlow:
+    when:
+      true: ${RECORD}
+    commands:
+      - stopRecording
