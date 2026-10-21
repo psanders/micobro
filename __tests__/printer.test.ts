@@ -155,7 +155,9 @@ describe("buildReceiptBytes", () => {
     const bytes = buildReceiptBytes(sampleReceipt);
     const text = cp858ToString(Array.from(bytes));
     expect(text).toContain("TOTAL:");
-    expect(text).toContain("RD$5,150.00");
+    expect(text).toContain("RD$5,150");
+    // Whole pesos only — no centavos on a receipt.
+    expect(text).not.toMatch(/RD\$[\d,]+\.\d{2}/);
   });
 
   it("prints the lender phone, formatted, after the thank-you line when set", () => {
@@ -274,7 +276,7 @@ describe("buildReceiptBytes — amounts are never cut off", () => {
       )
     );
 
-    expect(text).toContain("RD$13,310.00");
+    expect(text).toContain("RD$13,310");
     expect(text).not.toContain("RD$13,31...");
   });
 });

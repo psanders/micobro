@@ -32,7 +32,11 @@ export const DEFAULT_GRACE_DAYS = 7;
  * loan validate identically.
  */
 const loanTermsShape = {
-  principal: z.number().positive("El monto debe ser mayor a cero").transform(toCents),
+  principal: z
+    .number()
+    .positive("El monto debe ser mayor a cero")
+    .int("El monto debe ser en pesos enteros")
+    .transform(toCents),
   // For a term loan this is the flat whole-loan rate (see loanMath.ts).
   // For an open-credit loan (loanType: "open_credit") it's the PER-CYCLE
   // rate applied to the outstanding capital each cycle — see

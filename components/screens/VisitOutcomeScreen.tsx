@@ -24,7 +24,7 @@ import { Icon } from "../Icon";
 import { usePaymentRepo, useVisitRepo } from "../../lib/repo/RepoProvider";
 import { useAsync } from "../../lib/hooks/useAsync";
 import { formatShortDate, formatTime } from "../../lib/utils/dates";
-import { parseAmountToCents } from "../../lib/utils/money";
+import { hasCentavos, parseAmountToCents, WHOLE_PESOS_ONLY_MESSAGE } from "../../lib/utils/money";
 import { ScreenHeader } from "../ScreenHeader";
 import { SectionLabel } from "../SectionLabel";
 import { ClientRow } from "../ClientRow";
@@ -163,11 +163,14 @@ export function VisitOutcomeScreen({ loanId }: { loanId: string }) {
                     style={styles.amountInput}
                     value={amountText}
                     onChangeText={setAmountText}
-                    keyboardType="numeric"
+                    keyboardType="number-pad"
                     placeholder={String(defaultAmountCents / 100)}
                     placeholderTextColor={colors.slate}
                   />
                 </View>
+                {hasCentavos(amountText) ? (
+                  <Text style={styles.wholePesosError}>{WHOLE_PESOS_ONLY_MESSAGE}</Text>
+                ) : null}
               </>
             ) : null}
 
@@ -210,6 +213,7 @@ export function VisitOutcomeScreen({ loanId }: { loanId: string }) {
 }
 
 const styles = StyleSheet.create({
+  wholePesosError: { fontSize: 12, fontFamily: fonts.medium, color: colors.red },
   screen: { flex: 1, backgroundColor: colors.bg },
   loading: { marginTop: 40 },
   cancel: { fontSize: 14, fontFamily: fonts.semiBold, color: colors.brandPrimary },

@@ -18,7 +18,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Icon } from "../Icon";
 import { useLoanRepo } from "../../lib/repo/RepoProvider";
 import { useAsync } from "../../lib/hooks/useAsync";
-import { formatCurrency } from "../../lib/utils/money";
+import { formatAmount, formatCurrency } from "../../lib/utils/money";
 import { formatShortDate } from "../../lib/utils/dates";
 import { ScreenHeader } from "../ScreenHeader";
 import { SectionLabel } from "../SectionLabel";
@@ -54,9 +54,7 @@ export function PaymentHistoryScreen({ loanId }: { loanId: string }) {
             <Text style={styles.summaryLabel}>TOTAL COBRADO</Text>
             <View style={styles.summaryAmountRow}>
               <Text style={styles.summaryCurrency}>RD$</Text>
-              <Text style={styles.summaryAmount}>
-                {(view.totalCollectedCents / 100).toLocaleString("es-DO")}
-              </Text>
+              <Text style={styles.summaryAmount}>{formatAmount(view.totalCollectedCents)}</Text>
             </View>
             <View style={styles.summaryGrid}>
               <View>

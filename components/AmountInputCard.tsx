@@ -35,7 +35,7 @@ export function AmountInputCard({
           style={styles.input}
           value={value}
           onChangeText={onChangeText}
-          keyboardType="numeric"
+          keyboardType="number-pad"
           placeholder="0"
           placeholderTextColor={colors.slate}
         />

@@ -74,8 +74,15 @@ describe("computeAccruedMora", () => {
     // Act
     const r = computeAccruedMora(9, 65000, DEFAULT_MORA_POLICY);
 
-    // Assert — 0.1 * (9/30) * 65000 = 1950
-    expect(r).toEqual({ moraCents: 1950, moraDays: 9 });
+    // Assert — 0.1 * (9/30) * 65000 = 1950 cents (RD$19.50) → RD$20 (nearest peso)
+    expect(r).toEqual({ moraCents: 2000, moraDays: 9 });
+  });
+
+  it("rounds mora to the nearest whole peso (RD$36.83 → RD$37)", () => {
+    // 0.1 * (10/30) * 110500 = 3683.33 cents
+    const r = computeAccruedMora(10, 110500, DEFAULT_MORA_POLICY);
+
+    expect(r).toEqual({ moraCents: 3700, moraDays: 10 });
   });
 
   it("applies the grace period", () => {
@@ -353,8 +360,10 @@ describe("computeLoanMora wired to a loan's own mora configuration", () => {
       loanMoraPolicy(customRateLoan)
     );
 
-    // Assert — double the rate means double the accrued mora
-    expect(customResult.moraCents).toBe(defaultResult.moraCents * 2);
+    // Assert — double the rate: 21 days on RD$110 is RD$7.70 at 10% → RD$8, and
+    // RD$15.40 at 20% → RD$15 (each rounded to the nearest peso).
+    expect(defaultResult.moraCents).toBe(800);
+    expect(customResult.moraCents).toBe(1500);
   });
 });
 

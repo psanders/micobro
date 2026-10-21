@@ -25,9 +25,15 @@ describe("loanMath", () => {
       expect(totalInterestCents(1000000, 2000)).toBe(200000);
     });
 
-    it("rounds to the nearest cent", () => {
-      // 100,033 * 733 / 10000 = 7,332.4189 → 7332.
-      expect(totalInterestCents(100033, 733)).toBe(7332);
+    it("rounds to the nearest whole peso", () => {
+      // 100,033 * 733 / 10000 = 7,332.4189 cents → RD$73.32 → RD$73.
+      expect(totalInterestCents(100033, 733)).toBe(7300);
+    });
+
+    it("rounds a fractional-peso interest up from the half (spec: RD$1,001 at 12.5%)", () => {
+      // 100,100 * 1250 / 10000 = 12,512.5 cents → RD$125.125 → RD$125.
+      expect(totalInterestCents(100100, 1250)).toBe(12500);
+      expect(totalRepayCents(100100, 1250)).toBe(112600);
     });
 
     it("is zero for a zero rate", () => {

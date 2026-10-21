@@ -75,8 +75,8 @@ describe("createGetLoanDetailView", () => {
     const result = await getLoanDetailView({ id: "loan-1" });
 
     // Assert — cuota1 (interest-inclusive: RD$110, see lib/loans/loanMath.ts)
-    // is 21 days overdue: 0.1 * (21/30) * 11000 = 770
-    expect(result?.moraCents).toBe(770);
+    // is 21 days overdue: 0.1 * (21/30) * 11000 = 770 cents (RD$7.70) → RD$8
+    expect(result?.moraCents).toBe(800);
     expect(result?.moraDays).toBe(21);
     expect(result?.dueTodayCents).toBeGreaterThan(0);
   });

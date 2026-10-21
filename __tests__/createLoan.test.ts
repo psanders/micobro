@@ -101,6 +101,24 @@ describe("createCreateLoan", () => {
   });
 
   describe("with invalid input", () => {
+    it("rejects a principal with centavos and never touches the database", async () => {
+      // Arrange
+      const db = makeDbStub();
+      const createLoan = createCreateLoan({ db: db as unknown as Database });
+
+      // Act + Assert — whole pesos only; never rounded silently
+      await expect(
+        createLoan({
+          customerId: "customer-1",
+          principal: 1500.5,
+          interestRate: 10,
+          termCount: 12,
+          frequency: "weekly"
+        })
+      ).rejects.toBeInstanceOf(ValidationError);
+      expect(db.insert).not.toHaveBeenCalled();
+    });
+
     it("throws ValidationError and never touches the database", async () => {
       // Arrange
       const db = makeDbStub();

@@ -23,7 +23,13 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Icon } from "../Icon";
 import { usePaymentRepo, useCashCloseRepo } from "../../lib/repo/RepoProvider";
 import { useAsync } from "../../lib/hooks/useAsync";
-import { formatAmount, formatCurrency, parseAmountToCents } from "../../lib/utils/money";
+import {
+  formatAmount,
+  formatCurrency,
+  hasCentavos,
+  parseAmountToCents,
+  WHOLE_PESOS_ONLY_MESSAGE
+} from "../../lib/utils/money";
 import { formatShortDate, formatRelativeTime } from "../../lib/utils/dates";
 import { useSyncContext } from "../../lib/sync/SyncProvider";
 import { AmountInputCard } from "../AmountInputCard";
@@ -117,7 +123,10 @@ export function CuadreScreen() {
               matches={matches}
               hint="Cuenta el efectivo y las transferencias verificadas, y escribe el total. El sistema te avisa si hay diferencia."
             />
-            {hasEnteredVerified && !matches && (
+            {hasCentavos(verifiedText) && (
+              <Text style={styles.mismatch}>{WHOLE_PESOS_ONLY_MESSAGE}</Text>
+            )}
+            {hasEnteredVerified && !matches && !hasCentavos(verifiedText) && (
               <Text style={styles.mismatch}>
                 Diferencia: {formatCurrency(Math.abs(differenceCents))}
                 {differenceCents > 0 ? " de más" : " de menos"}

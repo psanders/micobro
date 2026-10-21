@@ -58,6 +58,7 @@
  * (it's cheap and pure — safe to call on every render).
  */
 import { addFrequencyInterval } from "./frequency";
+import { roundToPeso } from "../utils/money";
 
 /**
  * Grace days for a crédito abierto loan with no stored value (`null`).
@@ -208,7 +209,7 @@ export function openCreditState(
       })
       .reduce((sum, p) => sum + p.amountCents, 0);
 
-    const interestDue = Math.round(balance * rate);
+    const interestDue = roundToPeso(balance * rate);
     const interestPaid = Math.min(paidThisCycle, interestDue);
     // Interest is paid first; only the remainder (if any) pays down capital.
     const capitalPaid = Math.max(0, paidThisCycle - interestDue);
@@ -295,13 +296,13 @@ export function openCreditState(
       currentCycleOutstanding = outstanding;
       nextDueDate = lastCycle.end;
     } else {
-      interestDueCents = Math.round(balance * rate);
+      interestDueCents = roundToPeso(balance * rate);
       nextDueDate = addFrequencyInterval(loan.startDate, loan.frequency, lastCycle.index + 1);
     }
   } else {
     // `today` precedes the loan's first cycle — report cycle 1's
     // not-yet-started interest without adding a cycle to the history.
-    interestDueCents = Math.round(balance * rate);
+    interestDueCents = roundToPeso(balance * rate);
     nextDueDate = addFrequencyInterval(loan.startDate, loan.frequency, 1);
   }
 

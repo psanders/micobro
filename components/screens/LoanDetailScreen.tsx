@@ -21,7 +21,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Icon } from "../Icon";
 import { useLoanRepo } from "../../lib/repo/RepoProvider";
 import { useAsync } from "../../lib/hooks/useAsync";
-import { formatCurrency } from "../../lib/utils/money";
+import { formatAmount, formatCurrency } from "../../lib/utils/money";
 import { formatShortDate, isToday } from "../../lib/utils/dates";
 import { frequencyLabels } from "../../lib/loans/labels";
 import { ScreenHeader } from "../ScreenHeader";
@@ -419,7 +419,7 @@ export function LoanDetailScreen({ loanId }: { loanId: string }) {
                           RD$
                         </Text>
                         <Text style={[styles.dueAmount, !hasArrears && styles.dueAmountOk]}>
-                          {(loan.dueTodayCents / 100).toLocaleString("es-DO")}
+                          {formatAmount(loan.dueTodayCents)}
                         </Text>
                       </View>
                     </View>
