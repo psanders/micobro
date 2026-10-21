@@ -41,6 +41,30 @@
               "children": [
                 {
                   "type": "frame",
+                  "id": "Ve0Sd",
+                  "name": "00 Splash (expo-splash-screen: #0B4F4A + android-icon-foreground, 200px)",
+                  "clip": true,
+                  "width": 390,
+                  "height": 844,
+                  "fill": "$ui:brand.blue.deep",
+                  "layout": "vertical",
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "dtXQj",
+                      "name": "mark",
+                      "fill": "$ui:brand.white",
+                      "content": "m",
+                      "fontFamily": "$ui:font-logo",
+                      "fontSize": 120,
+                      "fontWeight": "700"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
                   "id": "f3RaCI",
                   "cornerRadius": 40,
                   "effect": {

@@ -93,6 +93,18 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   plugins: [
     "expo-router",
+    // Brand splash per app.pen "00 Splash": the white "m" lettermark (the
+    // adaptive-icon foreground) on brand deep teal, held until fonts and the
+    // DB migration are ready (app/_layout.tsx).
+    [
+      "expo-splash-screen",
+      {
+        backgroundColor: BRAND_DEEP,
+        image: "./assets/android-icon-foreground.png",
+        imageWidth: 200,
+        resizeMode: "contain"
+      }
+    ],
     "expo-secure-store",
     "expo-sqlite",
     ["react-native-nitro-screen-recorder", screenRecorderPluginProps],
