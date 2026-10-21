@@ -1,0 +1,100 @@
+# Store screenshots (not part of the e2e suite — lives in a subfolder).
+# Run on an iPhone 6.9" simulator (17 Pro Max -> 1320x2868) against a mock-repo
+# build, from the repo root:
+#   xcrun simctl status_bar <udid> override --time 9:41 --batteryState charged --batteryLevel 100
+#   maestro --device <udid> test .maestro/store/screenshots.yaml -e APP_ID=com.micobro.app
+appId: ${APP_ID}
+---
+- launchApp:
+    clearState: true
+- runFlow:
+    when:
+      true: ${DEV_URL}
+    commands:
+      - extendedWaitUntil:
+          visible: "Development Build"
+          timeout: 20000
+      - openLink: ${DEV_URL}
+      - tapOn:
+          text: "Open"
+          optional: true
+      - extendedWaitUntil:
+          visible: "Continue"
+          timeout: 45000
+      - runFlow:
+          when:
+            true: ${DEV_MENU_DISMISS}
+          commands:
+            - back
+      - runFlow:
+          when:
+            true: ${DEV_MENU_CONTINUE}
+          commands:
+            - tapOn:
+                text: "Continue"
+                optional: true
+- extendedWaitUntil:
+    visible: "Crea tu PIN"
+    timeout: 30000
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- extendedWaitUntil:
+    visible: "Confirma tu PIN"
+    timeout: 10000
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- extendedWaitUntil:
+    visible: "Ahora no, tal vez después"
+    timeout: 15000
+- tapOn: "Ahora no, tal vez después"
+- extendedWaitUntil:
+    visible: "Hola, Carlos."
+    timeout: 15000
+- waitForAnimationToEnd
+- takeScreenshot: store/ios/screenshots/01-hoy
+- tapOn: "Mi ruta"
+- extendedWaitUntil:
+    visible: ".*Felipe Taveras.*"
+    timeout: 15000
+- waitForAnimationToEnd
+- takeScreenshot: store/ios/screenshots/02-mi-ruta
+- tapOn:
+    id: "tab-buscar"
+- extendedWaitUntil:
+    visible: "Buscar cliente"
+    timeout: 15000
+- waitForAnimationToEnd
+- takeScreenshot: store/ios/screenshots/03-buscar
+- tapOn: "Nombre, teléfono o cédula…"
+- inputText: "Maria"
+- extendedWaitUntil:
+    visible: ".*María Rosa Peralta.*"
+    timeout: 15000
+- tapOn: ".*María Rosa Peralta.*"
+- extendedWaitUntil:
+    visible: "PRÉSTAMOS ACTIVOS"
+    timeout: 15000
+- waitForAnimationToEnd
+- takeScreenshot: store/ios/screenshots/04-cliente
+- tapOn: ".*Préstamo #L-00001.*"
+- extendedWaitUntil:
+    visible: "TOTAL A PAGAR HOY"
+    timeout: 15000
+- waitForAnimationToEnd
+- takeScreenshot: store/ios/screenshots/05-prestamo
+- tapOn: "Cobrar"
+- extendedWaitUntil:
+    visible: "Registrar cobro"
+    timeout: 15000
+- waitForAnimationToEnd
+- takeScreenshot: store/ios/screenshots/06-cobrar
+- tapOn: "Confirmar y cobrar"
+- extendedWaitUntil:
+    visible: "¡Pago registrado!"
+    timeout: 15000
+- waitForAnimationToEnd
+- takeScreenshot: store/ios/screenshots/07-pago-registrado

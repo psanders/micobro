@@ -1,0 +1,74 @@
+# Store screenshots, part 2 (Mi cartera, Cuadre) — see screenshots.yaml for how to run.
+appId: ${APP_ID}
+---
+- launchApp:
+    clearState: true
+- runFlow:
+    when:
+      true: ${DEV_URL}
+    commands:
+      - extendedWaitUntil:
+          visible: "Development Build"
+          timeout: 20000
+      - openLink: ${DEV_URL}
+      - tapOn:
+          text: "Open"
+          optional: true
+      - extendedWaitUntil:
+          visible: "Continue"
+          timeout: 45000
+      - runFlow:
+          when:
+            true: ${DEV_MENU_DISMISS}
+          commands:
+            - back
+      - runFlow:
+          when:
+            true: ${DEV_MENU_CONTINUE}
+          commands:
+            - tapOn:
+                text: "Continue"
+                optional: true
+- extendedWaitUntil:
+    visible: "Crea tu PIN"
+    timeout: 30000
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- extendedWaitUntil:
+    visible: "Confirma tu PIN"
+    timeout: 10000
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- extendedWaitUntil:
+    visible: "Ahora no, tal vez después"
+    timeout: 15000
+- tapOn: "Ahora no, tal vez después"
+- extendedWaitUntil:
+    visible: "Hola, Carlos."
+    timeout: 15000
+- tapOn:
+    id: "home-avatar-button"
+- extendedWaitUntil:
+    visible: "Mi cuenta"
+    timeout: 15000
+- tapOn: "Mi cartera"
+- extendedWaitUntil:
+    visible: "PRESTADO ACTIVO"
+    timeout: 15000
+- waitForAnimationToEnd
+- takeScreenshot: store/ios/screenshots/08-mi-cartera
+- tapOn: "Volver"
+- tapOn: "Volver"
+- extendedWaitUntil:
+    visible: "Hola, Carlos."
+    timeout: 15000
+- tapOn: "Cuadre"
+- extendedWaitUntil:
+    visible: "Cuadre de caja"
+    timeout: 15000
+- waitForAnimationToEnd
+- takeScreenshot: store/ios/screenshots/09-cuadre
