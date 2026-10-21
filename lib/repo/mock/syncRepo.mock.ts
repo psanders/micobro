@@ -1,6 +1,7 @@
 /**
  * Copyright (C) 2026 by Pedro Sanders. MIT License.
  */
+import { fakeGoogleSession, isFakeGoogleEnabled } from "../../sync/fakeGoogle";
 import type { SyncRepo, SyncStatus } from "../types";
 
 export function createMockSyncRepo(): SyncRepo {
@@ -25,11 +26,17 @@ export function createMockSyncRepo(): SyncRepo {
       return { ...state };
     },
     async connect() {
+      // With fake Google on, the connect step shows the account chooser and
+      // honours a cancel; otherwise it simulates an instant success.
+      if (isFakeGoogleEnabled() && !(await fakeGoogleSession.requestSignIn())) {
+        return { ...state };
+      }
       state.connected = true;
       state.sheetId = "mock-sheet-id";
       return { ...state };
     },
     async disconnect() {
+      if (isFakeGoogleEnabled()) fakeGoogleSession.signOut();
       state.connected = false;
       state.sheetId = null;
     },
