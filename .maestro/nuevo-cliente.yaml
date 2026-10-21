@@ -78,10 +78,10 @@ appId: ${APP_ID}
     visible: "Nuevo cliente"
     timeout: 15000
 - tapOn:
-    below: "Nombre completo"
+    id: "customer-form-name"
 - inputText: "Yolanda Beltran"
 - tapOn:
-    below: "Teléfono"
+    id: "customer-form-phone"
 - inputText: "8095550199"
 # The form had no ScrollView until #119 — Guardar was unreachable behind
 # the keyboard on iOS. keyboardDismissMode="on-drag" dismisses it on a real
