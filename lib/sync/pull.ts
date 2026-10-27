@@ -2,284 +2,203 @@
  * Copyright (C) 2026 by Pedro Sanders. MIT License.
  *
  * Pulls the lender's Google Sheet back down into local SQLite: the other
- * half of the sync loop, chained after push.ts in syncNow(). Only
- * `customers` and `loans` are pulled — `payments`/`visits` are append-only
- * by product design (no edit flow, no updatedAt column), so there is
- * nothing for a lender to correct in the Sheet for those two.
+ * half of the sync loop, run after push in syncNow(). `Clientes`, `Préstamos`,
+ * `Pagos` and `Visitas` are pulled — edits, new rows and deletions; `Cierres`
+ * stays upload-only (see openspec/changes/full-two-way-sync).
  *
- * Conflict policy is remote-wins-with-guard (see
- * openspec/changes/7-pull-two-way-sync/design.md §4): a pulled row
- * overwrites the local row for the same id, UNLESS that id has an unpushed
- * pending_mutations row (status "pending" or "failed"), in which case the
- * local value is strictly newer than what the Sheet currently shows and is
- * left untouched until that mutation successfully pushes.
- *
- * Deletion is never inferred from a row's absence — a local row with no
- * matching remote id is left alone (see design.md §3).
+ * The four tabs are read in one request, planned (pullPlan.ts) and applied in
+ * one transaction (applyPullPlan.ts). Rows the owner added without an id get
+ * one written to the Sheet first, and are only inserted once it's there, so a
+ * failed write can never import the same row twice. Anything the pull needs
+ * the Sheet to do — remove cascaded rows, take back kept rows — is queued in
+ * pending_mutations for the push that follows.
  */
-import { eq, and, or } from "drizzle-orm";
-import { customers, loans, pendingMutations, syncMeta } from "../db/schema";
-import { readRange } from "./sheetsClient";
+import * as Crypto from "expo-crypto";
+import { eq, or } from "drizzle-orm";
+import { pendingMutations, syncMeta } from "../db/schema";
+import { readRange, readRanges, updateRow } from "./sheetsClient";
 import { getSheetId } from "./config";
 import { ENTITY_RANGES } from "./push";
 import { isClientesLayoutReady } from "./clientesLayout";
-import { normalizeCedula } from "../utils/cedula";
+import { buildPullPlan, countDeletions, guardKey, needsDeletionConfirmation } from "./pullPlan";
+import { applyPullPlanTo, createSqlPullStore } from "./applyPullPlan";
+import { createExpoSqlExecutor } from "../db/sqlExecutor";
+import type { SqlExecutor } from "../db/sqlExecutor";
+import { PULLED_ENTITIES, PULLED_TABLES } from "./syncedTables";
 import { logger } from "../logger";
 import type { Database } from "../db/client";
-import type { Customer } from "../customers/customer.schema";
-import type { Loan, LoanFrequency, LoanStatus, LoanType } from "../loans/loan.schema";
+import { EMPTY_PULL_RESULT } from "./pullResult";
+import type { PullResult } from "./pullResult";
+import type { ByEntity, LocalRecords, PlannedNewRow } from "./pullPlan";
+
+export { EMPTY_PULL_RESULT };
+export type { PullResult };
 
 export const LAST_PULLED_AT_KEY = "lastPulledAt";
+/** Deletions waiting for the owner's Aplicar / Restaurar, as DeletionCounts JSON. */
+export const HELD_DELETIONS_KEY = "heldDeletions";
+/** The last pull's broken-tab report, as TabProblem[] JSON. */
+export const SYNC_PROBLEMS_KEY = "syncProblems";
 
-export interface PullResult {
-  /** Rows inserted or updated locally. */
-  pulled: number;
-  /** Rows left untouched because an unpushed local mutation protects them. */
-  skipped: number;
-  /** Rows that failed to parse and were logged instead of applied. */
-  malformed: number;
-}
+/**
+ * "auto": apply deletions unless they need the owner's confirmation, then
+ * hold them. "apply" / "restore": the owner's answer to held deletions.
+ */
+export type DeletionMode = "auto" | "apply" | "restore";
 
-function parseDate(value: string): Date | null {
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? null : date;
-}
-
-function parseNumber(value: string): number | null {
-  const n = Number(value);
-  return Number.isFinite(n) ? n : null;
-}
-
-// Inverse of customerRowValues in push.ts — same "Clientes!A:G" column order.
-// The cédula is accepted with or without dashes and stored as digits only; an
-// empty cell clears it (remote wins), like any other optional field.
-function rowToCustomer(row: string[]): Customer | null {
-  const [id, name, cedulaRaw, phone, address, createdAtRaw, updatedAtRaw] = row;
-  const createdAt = createdAtRaw ? parseDate(createdAtRaw) : null;
-  const updatedAt = updatedAtRaw ? parseDate(updatedAtRaw) : null;
-  if (!id || !name || !phone || !createdAt || !updatedAt) return null;
-  return {
-    id,
-    name,
-    phone,
-    address: address || null,
-    cedula: normalizeCedula(cedulaRaw ?? "") || null,
-    avatarKey: null,
-    createdAt,
-    updatedAt
-  };
-}
-
-// Inverse of loanRowValues in push.ts — same "Préstamos!A:P" column order.
-function rowToLoan(row: string[]): Loan | null {
-  const [
-    id,
-    customerId,
-    principalCentsRaw,
-    interestRateBpsRaw,
-    termCountRaw,
-    frequency,
-    startDateRaw,
-    status,
-    notes,
-    graceDaysRaw,
-    moraEnabledRaw,
-    moraRateBpsRaw,
-    skipSundaysRaw,
-    loanTypeRaw,
-    createdAtRaw,
-    updatedAtRaw
-  ] = row;
-  const principalCents = principalCentsRaw ? parseNumber(principalCentsRaw) : null;
-  const interestRateBps = interestRateBpsRaw ? parseNumber(interestRateBpsRaw) : null;
-  const termCount = termCountRaw ? parseNumber(termCountRaw) : null;
-  const startDate = startDateRaw ? parseDate(startDateRaw) : null;
-  const graceDays = graceDaysRaw ? parseNumber(graceDaysRaw) : null;
-  const moraEnabled = moraEnabledRaw ? moraEnabledRaw.toLowerCase() === "true" : null;
-  const moraRateBps = moraRateBpsRaw ? parseNumber(moraRateBpsRaw) : null;
-  const skipSundays = skipSundaysRaw ? skipSundaysRaw.toLowerCase() === "true" : null;
-  const loanType = loanTypeRaw ? (loanTypeRaw as LoanType) : null;
-  const createdAt = createdAtRaw ? parseDate(createdAtRaw) : null;
-  const updatedAt = updatedAtRaw ? parseDate(updatedAtRaw) : null;
-  if (
-    !id ||
-    !customerId ||
-    principalCents === null ||
-    interestRateBps === null ||
-    termCount === null ||
-    !frequency ||
-    !startDate ||
-    !status ||
-    !createdAt ||
-    !updatedAt
-  ) {
-    return null;
+async function setMeta(db: Database, key: string, value: string | null): Promise<void> {
+  if (value === null) {
+    await db.delete(syncMeta).where(eq(syncMeta.key, key));
+    return;
   }
+  await db
+    .insert(syncMeta)
+    .values({ key, value })
+    .onConflictDoUpdate({ target: syncMeta.key, set: { value } });
+}
+
+async function readLocal(db: Database): Promise<{ [E in keyof LocalRecords]: LocalRecords[E][] }> {
   return {
-    id,
-    customerId,
-    principalCents,
-    interestRateBps,
-    termCount,
-    frequency: frequency as LoanFrequency,
-    startDate,
-    status: status as LoanStatus,
-    notes: notes || null,
-    graceDays,
-    moraEnabled,
-    moraRateBps,
-    skipSundays,
-    loanType,
-    createdAt,
-    updatedAt
+    customer: await db.select().from(PULLED_TABLES.customer),
+    loan: await db.select().from(PULLED_TABLES.loan),
+    payment: await db.select().from(PULLED_TABLES.payment),
+    visit: await db.select().from(PULLED_TABLES.visit)
   };
 }
 
-async function isGuarded(db: Database, entity: string, entityId: string): Promise<boolean> {
-  const guard = await db
+async function readGuarded(db: Database): Promise<Set<string>> {
+  const rows = await db
     .select()
     .from(pendingMutations)
-    .where(
-      and(
-        eq(pendingMutations.entity, entity),
-        eq(pendingMutations.entityId, entityId),
-        or(eq(pendingMutations.status, "pending"), eq(pendingMutations.status, "failed"))
-      )
-    );
-  return guard.length > 0;
+    .where(or(eq(pendingMutations.status, "pending"), eq(pendingMutations.status, "failed")));
+  return new Set(rows.map((r) => guardKey(r.entity, r.entityId)));
 }
 
-async function pullCustomers(db: Database, sheetId: string): Promise<PullResult> {
-  const rows = await readRange(sheetId, ENTITY_RANGES.customer);
-  let pulled = 0;
-  let skipped = 0;
-  let malformed = 0;
-
-  for (const row of rows.slice(1)) {
-    const record = rowToCustomer(row);
-    if (!record) {
-      logger.warn("skipping malformed pulled customer row", { row });
-      malformed += 1;
-      continue;
-    }
-    if (await isGuarded(db, "customer", record.id)) {
-      skipped += 1;
-      continue;
-    }
-
-    const existing = await db.select().from(customers).where(eq(customers.id, record.id));
-    const current = existing[0];
-    if (!current) {
-      await db.insert(customers).values({ ...record, avatarKey: null });
-      pulled += 1;
-    } else if (
-      current.name !== record.name ||
-      current.phone !== record.phone ||
-      current.address !== record.address ||
-      current.cedula !== record.cedula ||
-      current.updatedAt.getTime() !== record.updatedAt.getTime()
-    ) {
-      await db
-        .update(customers)
-        .set({
-          name: record.name,
-          phone: record.phone,
-          address: record.address,
-          cedula: record.cedula,
-          updatedAt: record.updatedAt
-        })
-        .where(eq(customers.id, record.id));
-      pulled += 1;
+/** Writes each new row's id into its Sheet id cell; returns the rows that made it. */
+async function writeNewIds(sheetId: string, rows: PlannedNewRow[]): Promise<PlannedNewRow[]> {
+  const written: PlannedNewRow[] = [];
+  for (const row of rows) {
+    const tab = ENTITY_RANGES[row.entity].split("!")[0];
+    try {
+      await updateRow(sheetId, `${tab}!A${row.sheetRow}:A${row.sheetRow}`, [row.record.id]);
+      written.push(row);
+    } catch (err) {
+      // Not inserted: the row still has no id in the Sheet, so next sync retries it.
+      logger.warn("could not write a new row's id to the Sheet", {
+        entity: row.entity,
+        sheetRow: row.sheetRow,
+        error: String(err)
+      });
     }
   }
-
-  return { pulled, skipped, malformed };
+  return written;
 }
 
-async function pullLoans(db: Database, sheetId: string): Promise<PullResult> {
-  const rows = await readRange(sheetId, ENTITY_RANGES.loan);
-  let pulled = 0;
-  let skipped = 0;
-  let malformed = 0;
+/** "(400)" / "(404)" in a sheetsClient error: the range itself is bad, not the network. */
+function isMissingRange(err: unknown): boolean {
+  return /\((400|404)\)/.test(err instanceof Error ? err.message : String(err));
+}
 
-  for (const row of rows.slice(1)) {
-    const record = rowToLoan(row);
-    if (!record) {
-      logger.warn("skipping malformed pulled loan row", { row });
-      malformed += 1;
-      continue;
-    }
-    if (await isGuarded(db, "loan", record.id)) {
-      skipped += 1;
-      continue;
-    }
-
-    const existing = await db.select().from(loans).where(eq(loans.id, record.id));
-    const current = existing[0];
-    if (!current) {
-      await db.insert(loans).values(record);
-      pulled += 1;
-    } else if (
-      current.principalCents !== record.principalCents ||
-      current.interestRateBps !== record.interestRateBps ||
-      current.termCount !== record.termCount ||
-      current.frequency !== record.frequency ||
-      current.status !== record.status ||
-      current.notes !== record.notes ||
-      current.startDate.getTime() !== record.startDate.getTime() ||
-      current.updatedAt.getTime() !== record.updatedAt.getTime()
-    ) {
-      await db
-        .update(loans)
-        .set({
-          principalCents: record.principalCents,
-          interestRateBps: record.interestRateBps,
-          termCount: record.termCount,
-          frequency: record.frequency,
-          startDate: record.startDate,
-          status: record.status,
-          notes: record.notes,
-          updatedAt: record.updatedAt
-        })
-        .where(eq(loans.id, record.id));
-      pulled += 1;
+/**
+ * All tabs in one batch read. A batch fails whole when any one tab is
+ * missing (e.g. renamed by the owner), so fall back to reading tab by tab:
+ * a missing tab is unreadable this sync (null), never a reason to stop the
+ * others. Network errors still fail the pull.
+ */
+async function readTabs(sheetId: string, ranges: string[]): Promise<(string[][] | null)[]> {
+  try {
+    return await readRanges(sheetId, ranges);
+  } catch (err) {
+    if (!isMissingRange(err)) throw err;
+  }
+  const tabs: (string[][] | null)[] = [];
+  for (const range of ranges) {
+    try {
+      tabs.push(await readRange(sheetId, range));
+    } catch (err) {
+      if (!isMissingRange(err)) throw err;
+      logger.warn("sheet tab unreadable, skipping it this sync", { range });
+      tabs.push(null);
     }
   }
-
-  return { pulled, skipped, malformed };
+  return tabs;
 }
 
-export async function pullEntities(db: Database): Promise<PullResult> {
+export async function pullEntities(
+  db: Database,
+  {
+    deletions = "auto",
+    sql = createExpoSqlExecutor(db)
+  }: { deletions?: DeletionMode; sql?: SqlExecutor } = {}
+): Promise<PullResult> {
   const sheetId = await getSheetId();
   if (!sheetId) {
     logger.warn("no sheet configured, skipping pull");
-    return { pulled: 0, skipped: 0, malformed: 0 };
+    return EMPTY_PULL_RESULT;
   }
 
-  // Sequential, not concurrent: both calls end up going through the same
-  // native GoogleSignin.getTokens() call underneath (authorizedFetch ->
-  // getValidAccessToken), which throws if a second call starts before the
-  // first settles. Parallelizing this saves little latency in practice
-  // (two Sheets ranges) and isn't worth that hazard.
   // Customer rows are only read once the Clientes tab is confirmed to be in
   // the Cédula layout (push confirms it) — read in the old layout, Teléfono
   // would land in cedula and Dirección in phone.
-  const customerResult = (await isClientesLayoutReady(db))
-    ? await pullCustomers(db, sheetId)
-    : { pulled: 0, skipped: 0, malformed: 0 };
-  const loanResult = await pullLoans(db, sheetId);
+  const customersReady = await isClientesLayoutReady(db);
+  const ranges = PULLED_ENTITIES.map((entity) => ENTITY_RANGES[entity]);
+  const values = await readTabs(sheetId, ranges);
+  const tabs = {} as ByEntity<string[][] | null>;
+  PULLED_ENTITIES.forEach((entity, i) => {
+    tabs[entity] = entity === "customer" && !customersReady ? null : (values[i] ?? null);
+  });
+
+  const local = await readLocal(db);
+  const now = new Date();
+  const plan = buildPullPlan({
+    tabs,
+    local,
+    guarded: await readGuarded(db),
+    now,
+    newId: () => Crypto.randomUUID()
+  });
+
+  const localCounts = {} as ByEntity<number>;
+  for (const entity of PULLED_ENTITIES) localCounts[entity] = local[entity].length;
+  const hold =
+    deletions === "auto" &&
+    plan.deletions.length > 0 &&
+    needsDeletionConfirmation(plan.deletions, localCounts);
+
+  const writtenNewRows = await writeNewIds(sheetId, plan.newRows);
+
+  let applied!: ReturnType<typeof applyPullPlanTo>;
+  sql.transaction(() => {
+    applied = applyPullPlanTo(createSqlPullStore(db, sql, now), plan, {
+      applyDeletions: !hold && deletions !== "restore",
+      restoreDeletions: deletions === "restore",
+      writtenNewRows,
+      now
+    });
+  });
+
+  const held = hold ? countDeletions(plan.deletions) : null;
+  await setMeta(db, HELD_DELETIONS_KEY, held ? JSON.stringify(held) : null);
+  await setMeta(db, SYNC_PROBLEMS_KEY, plan.problems.length ? JSON.stringify(plan.problems) : null);
+  await setMeta(db, LAST_PULLED_AT_KEY, String(Date.now()));
 
   const result: PullResult = {
-    pulled: customerResult.pulled + loanResult.pulled,
-    skipped: customerResult.skipped + loanResult.skipped,
-    malformed: customerResult.malformed + loanResult.malformed
+    pulled: applied.inserted + applied.updated,
+    skipped: plan.guardedSkipped + applied.changedDuringSync,
+    malformed: plan.problems.length,
+    deleted: applied.deleted,
+    queued: applied.queued,
+    problems: plan.problems,
+    held
   };
-
-  await db
-    .insert(syncMeta)
-    .values({ key: LAST_PULLED_AT_KEY, value: String(Date.now()) })
-    .onConflictDoUpdate({ target: syncMeta.key, set: { value: String(Date.now()) } });
-
-  logger.info("pull complete", { ...result });
+  logger.info("pull complete", {
+    pulled: result.pulled,
+    skipped: result.skipped,
+    malformed: result.malformed,
+    deleted: result.deleted,
+    queued: result.queued,
+    held: held?.total ?? 0,
+    brokenTabs: plan.brokenTabs
+  });
   return result;
 }

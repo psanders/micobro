@@ -13,7 +13,8 @@ jest.mock("../lib/sync/config", () => ({
 jest.mock("../lib/sync/sheetsClient", () => ({
   appendRow: jest.fn().mockResolvedValue(undefined),
   updateRow: jest.fn().mockResolvedValue(undefined),
-  readRange: jest.fn().mockResolvedValue([])
+  readRange: jest.fn().mockResolvedValue([]),
+  deleteRows: jest.fn().mockResolvedValue(undefined)
 }));
 
 jest.mock("../lib/sync/clientesLayout", () => ({
@@ -27,13 +28,15 @@ jest.mock("../lib/sync/queueCedulaResend", () => ({
 
 import { pushPendingMutations } from "../lib/sync/push";
 import { ensureClientesLayout } from "../lib/sync/clientesLayout";
-import { appendRow, updateRow, readRange } from "../lib/sync/sheetsClient";
+import { appendRow, updateRow, readRange, deleteRows } from "../lib/sync/sheetsClient";
+import { customers, cashCloses, pendingMutations } from "../lib/db/schema";
 import type { Database } from "../lib/db/client";
 
 const appendRowMock = appendRow as jest.Mock;
 const updateRowMock = updateRow as jest.Mock;
 const readRangeMock = readRange as jest.Mock;
 const ensureClientesLayoutMock = ensureClientesLayout as jest.Mock;
+const deleteRowsMock = deleteRows as jest.Mock;
 
 const basePayload = JSON.stringify({
   id: "customer-1",
@@ -199,7 +202,7 @@ describe("pushPendingMutations", () => {
     expect(appendRowMock.mock.calls[0][1]).toBe("Préstamos!A:P");
     // Only the loan is cleared; the customer's row is neither deleted nor marked failed.
     expect(db.delete).toHaveBeenCalledTimes(1);
-    expect(db.update).not.toHaveBeenCalled();
+    expect(db.update).not.toHaveBeenCalledWith(pendingMutations);
     expect(result).toEqual({ pushed: 1, failed: 0 });
   });
 
@@ -706,4 +709,174 @@ describe("pushPendingMutations", () => {
       expect(result).toEqual({ pushed: 1, failed: 0 });
     }
   );
+});
+
+describe("pushPendingMutations — pushedAt and delete mutations", () => {
+  function makeTrackingDb(mutations: Record<string, unknown>[]) {
+    const db = makeDbStub(mutations) as unknown as {
+      update: jest.Mock;
+      delete: jest.Mock;
+    };
+    const sets: { table: unknown; values: Record<string, unknown> }[] = [];
+    db.update.mockImplementation((table: unknown) => ({
+      set: (values: Record<string, unknown>) => {
+        sets.push({ table, values });
+        return { where: jest.fn().mockResolvedValue(undefined) };
+      }
+    }));
+    return { db: db as unknown as Database, sets, deleteMock: db.delete };
+  }
+
+  const mutation = (overrides: Record<string, unknown>) => ({
+    id: "m1",
+    entity: "customer",
+    entityId: "customer-1",
+    operation: "create",
+    payload: basePayload,
+    status: "pending",
+    retryCount: 0,
+    ...overrides
+  });
+
+  beforeEach(() => {
+    appendRowMock.mockReset().mockResolvedValue(undefined);
+    updateRowMock.mockReset().mockResolvedValue(undefined);
+    deleteRowsMock.mockReset().mockResolvedValue(undefined);
+    readRangeMock.mockReset().mockResolvedValue([]);
+  });
+
+  it("stamps pushedAt on the local row after a successful push", async () => {
+    // Arrange
+    const { db, sets } = makeTrackingDb([mutation({})]);
+
+    // Act
+    await pushPendingMutations(db);
+
+    // Assert
+    const stamp = sets.find((s) => s.table === customers);
+    expect(stamp?.values.pushedAt).toBeInstanceOf(Date);
+  });
+
+  it("does not stamp pushedAt when the push fails", async () => {
+    // Arrange
+    appendRowMock.mockRejectedValueOnce(new Error("offline"));
+    const { db, sets } = makeTrackingDb([mutation({})]);
+
+    // Act
+    const result = await pushPendingMutations(db);
+
+    // Assert — the only update is the mutation's failed status
+    expect(result).toEqual({ pushed: 0, failed: 1 });
+    expect(sets.some((s) => s.table === customers)).toBe(false);
+    expect(sets.find((s) => s.table === pendingMutations)?.values.status).toBe("failed");
+  });
+
+  it("never stamps a cash close (push-only, no pushedAt)", async () => {
+    // Arrange
+    const { db, sets } = makeTrackingDb([
+      mutation({ entity: "cashClose", entityId: "close-1", payload: cashClosePayload })
+    ]);
+
+    // Act
+    await pushPendingMutations(db);
+
+    // Assert
+    expect(sets.some((s) => s.table === cashCloses)).toBe(false);
+  });
+
+  it("deletes the Sheet row for a delete mutation", async () => {
+    // Arrange: customer-1 sits at sheet row 3
+    readRangeMock.mockResolvedValueOnce([["ID"], ["customer-0"], ["customer-1"]]);
+    const { db } = makeTrackingDb([mutation({ operation: "delete", payload: "{}" })]);
+
+    // Act
+    const result = await pushPendingMutations(db);
+
+    // Assert
+    expect(deleteRowsMock).toHaveBeenCalledWith("sheet-1", "Clientes", [3]);
+    expect(appendRowMock).not.toHaveBeenCalled();
+    expect(result).toEqual({ pushed: 1, failed: 0 });
+  });
+
+  it("counts a delete as done when the row is already gone", async () => {
+    // Arrange: readRange returns no matching id
+    const { db, deleteMock } = makeTrackingDb([mutation({ operation: "delete", payload: "{}" })]);
+
+    // Act
+    const result = await pushPendingMutations(db);
+
+    // Assert
+    expect(deleteRowsMock).not.toHaveBeenCalled();
+    expect(deleteMock).toHaveBeenCalledWith(pendingMutations);
+    expect(result).toEqual({ pushed: 1, failed: 0 });
+  });
+
+  it("keeps a failed delete queued for a retry", async () => {
+    // Arrange
+    readRangeMock.mockResolvedValueOnce([["ID"], ["customer-1"]]);
+    deleteRowsMock.mockRejectedValueOnce(new Error("503"));
+    const { db, sets } = makeTrackingDb([mutation({ operation: "delete", payload: "{}" })]);
+
+    // Act
+    const result = await pushPendingMutations(db);
+
+    // Assert
+    expect(result).toEqual({ pushed: 0, failed: 1 });
+    expect(sets.find((s) => s.table === pendingMutations)?.values).toMatchObject({
+      status: "failed",
+      retryCount: 1
+    });
+  });
+
+  it("sends the row as it is locally for an empty-payload resend", async () => {
+    // Arrange: first select is the queue, second is the customer row
+    const row = {
+      id: "customer-1",
+      name: "Juana Restaurada",
+      cedula: null,
+      phone: "8091234567",
+      address: null,
+      createdAt: new Date("2026-01-01T00:00:00.000Z"),
+      updatedAt: new Date("2026-01-03T00:00:00.000Z")
+    };
+    const { db } = makeTrackingDb([mutation({ operation: "update", payload: "" })]);
+    const where = jest
+      .fn()
+      .mockResolvedValueOnce([mutation({ operation: "update", payload: "" })])
+      .mockResolvedValueOnce([row]);
+    (db as unknown as { select: jest.Mock }).select.mockReturnValue({
+      from: () => ({ where })
+    });
+
+    // Act
+    const result = await pushPendingMutations(db);
+
+    // Assert — readRange defaults to [] so the update self-heals by appending
+    expect(appendRowMock).toHaveBeenCalledWith(
+      "sheet-1",
+      "Clientes!A:G",
+      expect.arrayContaining(["customer-1", "Juana Restaurada", "2026-01-03T00:00:00.000Z"])
+    );
+    expect(result).toEqual({ pushed: 1, failed: 0 });
+  });
+
+  it("drops an empty-payload resend whose row no longer exists", async () => {
+    // Arrange
+    const { db, deleteMock } = makeTrackingDb([]);
+    const where = jest
+      .fn()
+      .mockResolvedValueOnce([mutation({ operation: "update", payload: "" })])
+      .mockResolvedValueOnce([]);
+    (db as unknown as { select: jest.Mock }).select.mockReturnValue({
+      from: () => ({ where })
+    });
+
+    // Act
+    const result = await pushPendingMutations(db);
+
+    // Assert
+    expect(appendRowMock).not.toHaveBeenCalled();
+    expect(deleteMock).toHaveBeenCalledWith(pendingMutations);
+    expect(result).toEqual({ pushed: 1, failed: 0 });
+  });
 });

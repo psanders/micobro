@@ -45,4 +45,16 @@ describe("computeSyncStatusLabel", () => {
       computeSyncStatusLabel({ isSignedIn: true, isOnline: true, pendingCount: 0, stuckCount: 0 })
     ).toBe("synced");
   });
+
+  it("returns needs_attention when a pull left something to review", () => {
+    expect(
+      computeSyncStatusLabel({
+        isSignedIn: true,
+        isOnline: true,
+        pendingCount: 0,
+        stuckCount: 0,
+        needsReview: true
+      })
+    ).toBe("needs_attention");
+  });
 });

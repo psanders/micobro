@@ -15,6 +15,8 @@ import type { OpenCreditCycle } from "../loans/openCredit";
 import type { Payment, CreatePaymentInput, PaymentMethod } from "../payments/payment.schema";
 import type { PushResult } from "../sync/push";
 import type { PullResult } from "../sync/pull";
+import type { DeletionCounts, TabProblem } from "../sync/pullPlan";
+import type { Backup, RestoreBackupResult } from "../backups";
 import type { CreateVisitInput, Visit } from "../visits/visit.schema";
 import type { Profile, SetProfileInput } from "../profile/profile.schema";
 import type { CashClose, CashSummary } from "../cashClose/cashClose.schema";
@@ -328,6 +330,10 @@ export interface SyncStatus {
   pendingCount: number;
   /** Mutations that exhausted their retry cap — need the lender's attention. */
   stuckCount: number;
+  /** Sheet deletions waiting for the owner's Aplicar / Restaurar; null when none. */
+  heldDeletions: DeletionCounts | null;
+  /** Rows the last pull couldn't read — their tabs were skipped until fixed. */
+  syncProblems: TabProblem[];
 }
 
 export interface SyncRepo {
@@ -337,8 +343,16 @@ export interface SyncRepo {
   disconnect(): Promise<void>;
   /** Push only — used by the silent on-mutation/on-reconnect auto-triggers. */
   pushNow(): Promise<PushResult>;
-  /** Push then pull, as one unit — the manual "Sincronizar" action and the guarded app-open auto-sync both call this. */
+  /** Backup, push, then pull, as one unit — the manual "Sincronizar" action and the guarded app-open auto-sync both call this. */
   syncNow(): Promise<{ push: PushResult; pull: PullResult }>;
+  /** The owner's answer to held Sheet deletions: apply them, or put the rows back in the Sheet. */
+  resolveHeldDeletions(
+    choice: "apply" | "restore"
+  ): Promise<{ push: PushResult; pull: PullResult }>;
+  /** Pre-sync backups on the device, newest first. */
+  listBackups(): Promise<Backup[]>;
+  /** Replaces local data with a backup's; needs the PIN. */
+  restoreBackup(name: string, pin: string): Promise<RestoreBackupResult>;
 }
 
 export interface ProfileRepo {

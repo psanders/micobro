@@ -3,6 +3,7 @@
  *
  * Spec: device-data-erasure — "Eliminar mis datos" needs the current PIN,
  * erases every table, the app storage and the PIN, signs out of Google,
+ * removes the pre-sync backups (sync-backups),
  * and never touches the lender's own Drive sheet.
  */
 import { createEraseDeviceData } from "../lib/account/eraseDeviceData";
@@ -33,7 +34,8 @@ function makeDeps(pinIsValid = true) {
       storage: { clear: jest.fn().mockResolvedValue(undefined) },
       verifyPin: jest.fn().mockResolvedValue(pinIsValid),
       clearPin: jest.fn().mockResolvedValue(undefined),
-      signOutOfGoogle: jest.fn().mockResolvedValue(undefined)
+      signOutOfGoogle: jest.fn().mockResolvedValue(undefined),
+      deleteBackups: jest.fn()
     }
   };
 }
@@ -46,6 +48,11 @@ describe("createEraseDeviceData", () => {
 
     expect(erased).toBe(true);
     expect(deps.verifyPin).toHaveBeenCalledWith("1111");
+    // Backups first: their list lives in sync_meta, erased below.
+    expect(deps.deleteBackups).toHaveBeenCalledTimes(1);
+    expect(deps.deleteBackups.mock.invocationCallOrder[0]).toBeLessThan(
+      (deps.db.delete as jest.Mock).mock.invocationCallOrder[0]!
+    );
     expect(deleted).toEqual([
       payments,
       visits,
@@ -71,6 +78,7 @@ describe("createEraseDeviceData", () => {
     expect(deps.signOutOfGoogle).not.toHaveBeenCalled();
     expect(deps.storage.clear).not.toHaveBeenCalled();
     expect(deps.clearPin).not.toHaveBeenCalled();
+    expect(deps.deleteBackups).not.toHaveBeenCalled();
   });
 
   it("still erases everything when signing out of Google fails", async () => {

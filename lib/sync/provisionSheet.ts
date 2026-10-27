@@ -13,9 +13,15 @@
  * entity tab exists, additively, so a lender who connected before a given
  * entity shipped gets it backfilled (see issue #31).
  */
-import { findDriveFiles, createDriveFile, ensureSheetTab } from "./sheetsClient";
+import {
+  findDriveFiles,
+  createDriveFile,
+  ensureSheetTab,
+  ensureProtectedRanges
+} from "./sheetsClient";
 import { getSheetId, setSheetId } from "./config";
 import { ENTITY_RANGES, pushPendingMutations } from "./push";
+import { TAB_HEADERS } from "./sheetHeaders";
 import { logger } from "../logger";
 import type { Database } from "../db/client";
 
@@ -23,43 +29,6 @@ const FOLDER_NAME = "Micobro";
 const SPREADSHEET_NAME = "Datos";
 const FOLDER_MIME = "application/vnd.google-apps.folder";
 const SPREADSHEET_MIME = "application/vnd.google-apps.spreadsheet";
-
-// Spanish header labels, keyed by entity. Column order and count MUST match the
-// corresponding ENTITY_RANGES width and the push.ts row mappers — a test guards
-// the width. Money is stored as integer cents (see the "(centavos)" columns).
-const TAB_HEADERS: Record<string, string[]> = {
-  customer: ["ID", "Nombre", "Cédula", "Teléfono", "Dirección", "Creado", "Actualizado"],
-  loan: [
-    "ID",
-    "Cliente ID",
-    "Capital (centavos)",
-    "Interés (bps)",
-    "Cuotas",
-    "Frecuencia",
-    "Inicio",
-    "Estado",
-    "Notas",
-    "Período de gracia (días)",
-    "Mora activa",
-    "Mora (bps)",
-    "Salta domingos",
-    "Tipo",
-    "Creado",
-    "Actualizado"
-  ],
-  payment: ["ID", "Préstamo ID", "Monto (centavos)", "Pagado", "Método", "Notas", "Creado"],
-  visit: [
-    "ID",
-    "Cliente ID",
-    "Préstamo ID",
-    "Resultado",
-    "Fecha promesa",
-    "Monto promesa (centavos)",
-    "Nota",
-    "Creado"
-  ],
-  cashClose: ["ID", "Monto (centavos)", "Desde", "Cerrado", "Creado"]
-};
 
 function tabTitle(range: string): string {
   return range.split("!")[0];
@@ -73,6 +42,14 @@ function tabTitle(range: string): string {
 async function ensureAllTabs(spreadsheetId: string): Promise<void> {
   for (const [entity, range] of Object.entries(ENTITY_RANGES)) {
     await ensureSheetTab(spreadsheetId, tabTitle(range), TAB_HEADERS[entity]);
+  }
+  // Warning-only protection of each header row and id column, so a bulk
+  // edit doesn't scramble ids by accident. Nice to have, never a reason to
+  // fail a connect: a later connect tries again.
+  try {
+    await ensureProtectedRanges(spreadsheetId, Object.values(ENTITY_RANGES).map(tabTitle));
+  } catch (err) {
+    logger.warn("could not protect the id columns", { spreadsheetId, error: String(err) });
   }
 }
 

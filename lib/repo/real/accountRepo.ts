@@ -3,6 +3,7 @@
  */
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createEraseDeviceData } from "../../account/eraseDeviceData";
+import { createSqliteBackupDriver, deleteAllBackups } from "../../backups";
 import { clearPin, verifyPin } from "../../security/pin";
 import { signOutOfGoogle } from "../../sync/googleAuth";
 import type { Database } from "../../db/client";
@@ -14,7 +15,8 @@ export function createRealAccountRepo({ db }: { db: Database }): AccountRepo {
     storage: AsyncStorage,
     verifyPin,
     clearPin,
-    signOutOfGoogle
+    signOutOfGoogle,
+    deleteBackups: () => deleteAllBackups(createSqliteBackupDriver(db))
   });
 
   return {

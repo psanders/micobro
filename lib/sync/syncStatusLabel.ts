@@ -14,16 +14,19 @@ export interface SyncStatusLabelInput {
   isOnline: boolean;
   pendingCount: number;
   stuckCount: number;
+  /** A pull left something for the owner: held Sheet deletions or unreadable rows. */
+  needsReview?: boolean;
 }
 
 export function computeSyncStatusLabel({
   isSignedIn,
   isOnline,
   pendingCount,
-  stuckCount
+  stuckCount,
+  needsReview = false
 }: SyncStatusLabelInput): SyncStatusLabel {
   if (!isSignedIn) return "not_connected";
-  if (stuckCount > 0) return "needs_attention";
+  if (stuckCount > 0 || needsReview) return "needs_attention";
   if (!isOnline || pendingCount > 0) return "pending";
   return "synced";
 }

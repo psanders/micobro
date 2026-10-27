@@ -81,6 +81,148 @@ export async function readRange(spreadsheetId: string, range: string): Promise<s
   return json.values ?? [];
 }
 
+// Tab title -> numeric sheetId, per spreadsheet. deleteDimension addresses
+// tabs by sheetId, not title; it never changes for a tab, so one read is
+// enough per app session.
+const tabIdCache = new Map<string, Map<string, number>>();
+
+async function getTabId(spreadsheetId: string, title: string): Promise<number> {
+  let tabs = tabIdCache.get(spreadsheetId);
+  if (!tabs?.has(title)) {
+    const url = `${SHEETS_API_BASE}/${spreadsheetId}?fields=${encodeURIComponent("sheets.properties(sheetId,title)")}`;
+    const response = await authorizedFetch(url, { method: "GET" });
+    if (!response.ok) {
+      const body = await response.text();
+      throw new Error(`Sheets read metadata failed (${response.status}): ${body}`);
+    }
+    const meta = await response.json();
+    tabs = new Map(
+      (meta.sheets ?? []).map((s: { properties: { sheetId: number; title: string } }) => [
+        s.properties.title,
+        s.properties.sheetId
+      ])
+    );
+    tabIdCache.set(spreadsheetId, tabs);
+  }
+  const id = tabs.get(title);
+  if (id === undefined) throw new Error(`Sheet tab not found: ${title}`);
+  return id;
+}
+
+/** Test-only: forgets cached tab ids. */
+export function resetTabIdCache(): void {
+  tabIdCache.clear();
+}
+
+/**
+ * Deletes whole rows (1-based row numbers) from tab `title`, in one
+ * batchUpdate. Rows are removed bottom-up so earlier deletions never shift
+ * the rows still to be deleted.
+ */
+export async function deleteRows(
+  spreadsheetId: string,
+  title: string,
+  rowNumbers: number[]
+): Promise<void> {
+  if (rowNumbers.length === 0) return;
+  const sheetId = await getTabId(spreadsheetId, title);
+  const requests = [...new Set(rowNumbers)]
+    .sort((a, b) => b - a)
+    .map((row) => ({
+      deleteDimension: {
+        range: { sheetId, dimension: "ROWS", startIndex: row - 1, endIndex: row }
+      }
+    }));
+
+  const response = await authorizedFetch(`${SHEETS_API_BASE}/${spreadsheetId}:batchUpdate`, {
+    method: "POST",
+    body: JSON.stringify({ requests })
+  });
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`Sheets delete rows failed (${response.status}): ${body}`);
+  }
+}
+
+/**
+ * Reads several ranges in one request (`values:batchGet`), returned in the
+ * order asked. One request means the tabs are read together — a pull never
+ * mixes one tab's state from before an edit with another's from after it.
+ */
+export async function readRanges(spreadsheetId: string, ranges: string[]): Promise<string[][][]> {
+  const query = ranges.map((range) => `ranges=${encodeURIComponent(range)}`).join("&");
+  const url = `${SHEETS_API_BASE}/${spreadsheetId}/values:batchGet?${query}`;
+
+  const response = await authorizedFetch(url, { method: "GET" });
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`Sheets batch read failed (${response.status}): ${body}`);
+  }
+
+  const json = await response.json();
+  const valueRanges: { values?: string[][] }[] = json.valueRanges ?? [];
+  return ranges.map((_, i) => valueRanges[i]?.values ?? []);
+}
+
+/** Marks the protections the app adds, so it can tell them from the owner's own. */
+export const APP_PROTECTION_DESCRIPTION = "micobro:protected";
+
+/**
+ * Additive-only: gives each tab in `titles` a warning-only protection on its
+ * header row and its id column (column A), unless the app already added one.
+ * Editing those cells stays possible; Sheets just asks first. Never changes
+ * or removes any existing protection.
+ */
+export async function ensureProtectedRanges(
+  spreadsheetId: string,
+  titles: string[]
+): Promise<void> {
+  const fields = "sheets(properties(sheetId,title),protectedRanges(description))";
+  const metaUrl = `${SHEETS_API_BASE}/${spreadsheetId}?fields=${encodeURIComponent(fields)}`;
+  const metaResponse = await authorizedFetch(metaUrl, { method: "GET" });
+  if (!metaResponse.ok) {
+    const body = await metaResponse.text();
+    throw new Error(`Sheets read metadata failed (${metaResponse.status}): ${body}`);
+  }
+  const meta = await metaResponse.json();
+  const sheets: {
+    properties: { sheetId: number; title: string };
+    protectedRanges?: { description?: string }[];
+  }[] = meta.sheets ?? [];
+
+  const requests = sheets
+    .filter((s) => titles.includes(s.properties.title))
+    .filter(
+      (s) => !(s.protectedRanges ?? []).some((p) => p.description === APP_PROTECTION_DESCRIPTION)
+    )
+    .flatMap((s) => {
+      const sheetId = s.properties.sheetId;
+      const protect = (range: Record<string, number>) => ({
+        addProtectedRange: {
+          protectedRange: {
+            range: { sheetId, ...range },
+            description: APP_PROTECTION_DESCRIPTION,
+            warningOnly: true
+          }
+        }
+      });
+      return [
+        protect({ startRowIndex: 0, endRowIndex: 1 }),
+        protect({ startColumnIndex: 0, endColumnIndex: 1 })
+      ];
+    });
+  if (requests.length === 0) return;
+
+  const response = await authorizedFetch(`${SHEETS_API_BASE}/${spreadsheetId}:batchUpdate`, {
+    method: "POST",
+    body: JSON.stringify({ requests })
+  });
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`Sheets protect ranges failed (${response.status}): ${body}`);
+  }
+}
+
 export interface DriveFile {
   id: string;
   name: string;

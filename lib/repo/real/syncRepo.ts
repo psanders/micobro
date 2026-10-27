@@ -7,11 +7,83 @@ import { isSignedInToGoogle, signInWithGoogle, signOutOfGoogle } from "../../syn
 import { getSheetId } from "../../sync/config";
 import { provisionSheet } from "../../sync/provisionSheet";
 import { pushPendingMutations, LAST_PUSHED_AT_KEY, MAX_RETRIES } from "../../sync/push";
-import { pullEntities, LAST_PULLED_AT_KEY } from "../../sync/pull";
+import {
+  pullEntities,
+  LAST_PULLED_AT_KEY,
+  HELD_DELETIONS_KEY,
+  SYNC_PROBLEMS_KEY
+} from "../../sync/pull";
+import {
+  createCreateBackup,
+  createListBackups,
+  createRestoreBackup,
+  createSqliteBackupDriver
+} from "../../backups";
+import { verifyPin } from "../../security/pin";
+import { BackupFailedError } from "../../sync/syncErrors";
+import { createExpoSqlExecutor } from "../../db/sqlExecutor";
+import type { DeletionMode } from "../../sync/pull";
+import type { BackupDriver } from "../../backups";
+import type { SqlExecutor } from "../../db/sqlExecutor";
 import type { Database } from "../../db/client";
 import type { SyncRepo, SyncStatus } from "../types";
 
-export function createRealSyncRepo({ db }: { db: Database }): SyncRepo {
+function parseJson<T>(raw: string | undefined, fallback: T): T {
+  if (!raw) return fallback;
+  try {
+    return JSON.parse(raw) as T;
+  } catch {
+    return fallback;
+  }
+}
+
+export interface RealSyncRepoDeps {
+  db: Database;
+  /** Synchronous SQL for applying pulls; defaults to the app's expo-sqlite connection. */
+  sql?: SqlExecutor;
+  backupDriver?: BackupDriver;
+}
+
+export function createRealSyncRepo({
+  db,
+  sql = createExpoSqlExecutor(db),
+  backupDriver = createSqliteBackupDriver(db)
+}: RealSyncRepoDeps): SyncRepo {
+  const createBackup = createCreateBackup({ driver: backupDriver });
+  const listBackups = createListBackups({ driver: backupDriver });
+  const restoreBackup = createRestoreBackup({ driver: backupDriver, verifyPin });
+
+  async function metaValue(key: string): Promise<string | undefined> {
+    const rows = await db.select().from(syncMeta).where(eq(syncMeta.key, key));
+    return rows[0]?.value;
+  }
+
+  /**
+   * Backup → push → pull, then push again when the pull queued Sheet work
+   * (cascaded deletes, rows written back, kept rows) so it lands in the same
+   * sync. Sequential: pull's guard needs push to have drained the queue
+   * first, and the two must never race over the same Sheet rows.
+   */
+  async function fullSync(deletions: DeletionMode) {
+    if (await getSheetId()) {
+      try {
+        await createBackup({});
+      } catch (err) {
+        throw new BackupFailedError(err);
+      }
+    }
+    const push = await pushPendingMutations(db);
+    const pull = await pullEntities(db, { deletions, sql });
+    if (pull.queued > 0) {
+      const again = await pushPendingMutations(db);
+      return {
+        push: { pushed: push.pushed + again.pushed, failed: again.failed },
+        pull
+      };
+    }
+    return { push, pull };
+  }
+
   async function getStatus(): Promise<SyncStatus> {
     const connected = isSignedInToGoogle();
     const sheetId = await getSheetId();
@@ -54,7 +126,9 @@ export function createRealSyncRepo({ db }: { db: Database }): SyncRepo {
       lastPushedAt: lastPushedAtRaw ? new Date(Number(lastPushedAtRaw)) : null,
       lastPulledAt: lastPulledAtRaw ? new Date(Number(lastPulledAtRaw)) : null,
       pendingCount: pending.length,
-      stuckCount: stuck.length
+      stuckCount: stuck.length,
+      heldDeletions: parseJson(await metaValue(HELD_DELETIONS_KEY), null),
+      syncProblems: parseJson(await metaValue(SYNC_PROBLEMS_KEY), [])
     };
   }
 
@@ -74,13 +148,9 @@ export function createRealSyncRepo({ db }: { db: Database }): SyncRepo {
       await signOutOfGoogle();
     },
     pushNow: () => pushPendingMutations(db),
-    async syncNow() {
-      // Sequential, not concurrent: pull's remote-wins-with-guard needs
-      // push to have fully drained pending_mutations first, and the two
-      // must never race over the same Sheet rows (design.md §5).
-      const push = await pushPendingMutations(db);
-      const pull = await pullEntities(db);
-      return { push, pull };
-    }
+    syncNow: () => fullSync("auto"),
+    resolveHeldDeletions: (choice) => fullSync(choice),
+    listBackups: () => listBackups({}),
+    restoreBackup: (name, pin) => restoreBackup({ name, pin })
   };
 }

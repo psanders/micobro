@@ -35,7 +35,8 @@ function makeDbStub(
     .mockResolvedValueOnce(pendingRows)
     .mockResolvedValueOnce(stuckRows)
     .mockResolvedValueOnce(pushMetaRows)
-    .mockResolvedValueOnce(pullMetaRows);
+    .mockResolvedValueOnce(pullMetaRows)
+    .mockResolvedValue([]);
   const from = jest.fn().mockReturnValue({ where });
   const select = jest.fn().mockReturnValue({ from });
   return { select } as unknown as Database;
