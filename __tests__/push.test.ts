@@ -16,13 +16,24 @@ jest.mock("../lib/sync/sheetsClient", () => ({
   readRange: jest.fn().mockResolvedValue([])
 }));
 
+jest.mock("../lib/sync/clientesLayout", () => ({
+  ensureClientesLayout: jest.fn().mockResolvedValue(true)
+}));
+
+const mockQueueCedulaResend = jest.fn().mockResolvedValue(0);
+jest.mock("../lib/sync/queueCedulaResend", () => ({
+  createQueueCedulaResend: () => mockQueueCedulaResend
+}));
+
 import { pushPendingMutations } from "../lib/sync/push";
+import { ensureClientesLayout } from "../lib/sync/clientesLayout";
 import { appendRow, updateRow, readRange } from "../lib/sync/sheetsClient";
 import type { Database } from "../lib/db/client";
 
 const appendRowMock = appendRow as jest.Mock;
 const updateRowMock = updateRow as jest.Mock;
 const readRangeMock = readRange as jest.Mock;
+const ensureClientesLayoutMock = ensureClientesLayout as jest.Mock;
 
 const basePayload = JSON.stringify({
   id: "customer-1",
@@ -105,6 +116,91 @@ describe("pushPendingMutations", () => {
     appendRowMock.mockClear();
     updateRowMock.mockClear();
     readRangeMock.mockReset().mockResolvedValue([]);
+    ensureClientesLayoutMock.mockReset().mockResolvedValue(true);
+    mockQueueCedulaResend.mockClear();
+  });
+
+  it("writes the customer's cédula formatted, right after the name", async () => {
+    const mutation = {
+      id: "m-ced",
+      entity: "customer",
+      entityId: "customer-1",
+      operation: "create",
+      payload: JSON.stringify({ ...JSON.parse(basePayload), cedula: "00112345678" }),
+      status: "pending",
+      retryCount: 0
+    };
+
+    await pushPendingMutations(makeDbStub([mutation]));
+
+    expect(appendRowMock).toHaveBeenCalledWith("sheet-1", "Clientes!A:G", [
+      "customer-1",
+      "Juana Pérez",
+      "001-1234567-8",
+      "8091234567",
+      "",
+      "2026-01-01T00:00:00.000Z",
+      "2026-01-01T00:00:00.000Z"
+    ]);
+  });
+
+  it("leaves the Cédula cell empty for a customer without one", async () => {
+    const mutation = {
+      id: "m-noced",
+      entity: "customer",
+      entityId: "customer-1",
+      operation: "create",
+      payload: basePayload,
+      status: "pending",
+      retryCount: 0
+    };
+
+    await pushPendingMutations(makeDbStub([mutation]));
+
+    expect(appendRowMock.mock.calls[0][2][2]).toBe("");
+  });
+
+  it("queues the one-time cédula re-send before reading the pending queue", async () => {
+    const db = makeDbStub([]);
+
+    await pushPendingMutations(db);
+
+    expect(mockQueueCedulaResend).toHaveBeenCalledTimes(1);
+    expect(mockQueueCedulaResend.mock.invocationCallOrder[0]).toBeLessThan(
+      (db.select as jest.Mock).mock.invocationCallOrder[0]
+    );
+  });
+
+  it("holds customer mutations, untouched, while the Clientes layout is unconfirmed, and still pushes other entities", async () => {
+    ensureClientesLayoutMock.mockResolvedValue(false);
+    const customerMutation = {
+      id: "m-cust",
+      entity: "customer",
+      entityId: "customer-1",
+      operation: "create",
+      payload: basePayload,
+      status: "pending",
+      retryCount: 0
+    };
+    const loanMutation = {
+      id: "m-loan",
+      entity: "loan",
+      entityId: "loan-1",
+      operation: "create",
+      payload: loanPayload,
+      status: "pending",
+      retryCount: 0
+    };
+    const db = makeDbStub([customerMutation, loanMutation]);
+
+    const result = await pushPendingMutations(db);
+
+    expect(appendRowMock).toHaveBeenCalledTimes(1);
+    expect(appendRowMock.mock.calls[0][1]).toBe("Préstamos!A:P");
+    // Only the loan is cleared; the customer's row is neither deleted nor marked failed.
+    expect(db.delete).toHaveBeenCalledTimes(1);
+    expect(db.update).not.toHaveBeenCalled();
+    expect(result).toEqual({ pushed: 1, failed: 0 });
   });
 
   it("pushes create mutations and clears them from the queue", async () => {
@@ -191,7 +287,7 @@ describe("pushPendingMutations", () => {
     expect(readRangeMock).toHaveBeenCalledWith("sheet-1", "Clientes!A:A");
     expect(updateRowMock).toHaveBeenCalledWith(
       "sheet-1",
-      "Clientes!A3:F3",
+      "Clientes!A3:G3",
       expect.arrayContaining(["customer-1"])
     );
     expect(appendRowMock).not.toHaveBeenCalled();

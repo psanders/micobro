@@ -28,7 +28,7 @@ const SPREADSHEET_MIME = "application/vnd.google-apps.spreadsheet";
 // corresponding ENTITY_RANGES width and the push.ts row mappers — a test guards
 // the width. Money is stored as integer cents (see the "(centavos)" columns).
 const TAB_HEADERS: Record<string, string[]> = {
-  customer: ["ID", "Nombre", "Teléfono", "Dirección", "Creado", "Actualizado"],
+  customer: ["ID", "Nombre", "Cédula", "Teléfono", "Dirección", "Creado", "Actualizado"],
   loan: [
     "ID",
     "Cliente ID",

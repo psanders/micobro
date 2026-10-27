@@ -22,6 +22,8 @@ import { customers, loans, pendingMutations, syncMeta } from "../db/schema";
 import { readRange } from "./sheetsClient";
 import { getSheetId } from "./config";
 import { ENTITY_RANGES } from "./push";
+import { isClientesLayoutReady } from "./clientesLayout";
+import { normalizeCedula } from "../utils/cedula";
 import { logger } from "../logger";
 import type { Database } from "../db/client";
 import type { Customer } from "../customers/customer.schema";
@@ -48,9 +50,11 @@ function parseNumber(value: string): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
-// Inverse of customerRowValues in push.ts — same "Clientes!A:F" column order.
+// Inverse of customerRowValues in push.ts — same "Clientes!A:G" column order.
+// The cédula is accepted with or without dashes and stored as digits only; an
+// empty cell clears it (remote wins), like any other optional field.
 function rowToCustomer(row: string[]): Customer | null {
-  const [id, name, phone, address, createdAtRaw, updatedAtRaw] = row;
+  const [id, name, cedulaRaw, phone, address, createdAtRaw, updatedAtRaw] = row;
   const createdAt = createdAtRaw ? parseDate(createdAtRaw) : null;
   const updatedAt = updatedAtRaw ? parseDate(updatedAtRaw) : null;
   if (!id || !name || !phone || !createdAt || !updatedAt) return null;
@@ -59,7 +63,7 @@ function rowToCustomer(row: string[]): Customer | null {
     name,
     phone,
     address: address || null,
-    cedula: null,
+    cedula: normalizeCedula(cedulaRaw ?? "") || null,
     avatarKey: null,
     createdAt,
     updatedAt
@@ -166,12 +170,13 @@ async function pullCustomers(db: Database, sheetId: string): Promise<PullResult>
     const existing = await db.select().from(customers).where(eq(customers.id, record.id));
     const current = existing[0];
     if (!current) {
-      await db.insert(customers).values({ ...record, cedula: null, avatarKey: null });
+      await db.insert(customers).values({ ...record, avatarKey: null });
       pulled += 1;
     } else if (
       current.name !== record.name ||
       current.phone !== record.phone ||
       current.address !== record.address ||
+      current.cedula !== record.cedula ||
       current.updatedAt.getTime() !== record.updatedAt.getTime()
     ) {
       await db
@@ -180,6 +185,7 @@ async function pullCustomers(db: Database, sheetId: string): Promise<PullResult>
           name: record.name,
           phone: record.phone,
           address: record.address,
+          cedula: record.cedula,
           updatedAt: record.updatedAt
         })
         .where(eq(customers.id, record.id));
@@ -255,7 +261,12 @@ export async function pullEntities(db: Database): Promise<PullResult> {
   // getValidAccessToken), which throws if a second call starts before the
   // first settles. Parallelizing this saves little latency in practice
   // (two Sheets ranges) and isn't worth that hazard.
-  const customerResult = await pullCustomers(db, sheetId);
+  // Customer rows are only read once the Clientes tab is confirmed to be in
+  // the Cédula layout (push confirms it) — read in the old layout, Teléfono
+  // would land in cedula and Dirección in phone.
+  const customerResult = (await isClientesLayoutReady(db))
+    ? await pullCustomers(db, sheetId)
+    : { pulled: 0, skipped: 0, malformed: 0 };
   const loanResult = await pullLoans(db, sheetId);
 
   const result: PullResult = {

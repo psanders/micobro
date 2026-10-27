@@ -25,6 +25,7 @@ import {
   createDriveFile,
   ensureSheetTab,
   findDriveFiles,
+  insertColumnWithHeader,
   readRange,
   updateRow
 } from "../lib/sync/sheetsClient";
@@ -94,6 +95,28 @@ describe("fake Google server through sheetsClient", () => {
       ["p1", "150000"],
       ["p2", ""]
     ]);
+  });
+
+  it("inserts a column, shifting existing cells right, with its header", async () => {
+    const sheetId = await createDriveFile({ name: "Datos", mimeType: SHEET_MIME });
+    await ensureSheetTab(sheetId, "Clientes", ["ID", "Nombre", "Teléfono"]);
+    await appendRow(sheetId, "Clientes!A:C", ["c1", "María", "8091234567"]);
+
+    await insertColumnWithHeader(sheetId, "Clientes", 2, "Cédula");
+
+    expect(server.rows(sheetId, "Clientes")).toEqual([
+      ["ID", "Nombre", "Cédula", "Teléfono"],
+      ["c1", "María", "", "8091234567"]
+    ]);
+  });
+
+  it("reads only the requested columns and rows of a range", async () => {
+    const sheetId = await createDriveFile({ name: "Datos", mimeType: SHEET_MIME });
+    await ensureSheetTab(sheetId, "Clientes", ["ID", "Nombre", "Cédula"]);
+    await appendRow(sheetId, "Clientes!A:C", ["c1", "María", "001-1234567-8"]);
+
+    expect(await readRange(sheetId, "Clientes!C1:C1")).toEqual([["Cédula"]]);
+    expect(await readRange(sheetId, "Clientes!A:A")).toEqual([["ID"], ["c1"]]);
   });
 
   it("answers 404 for an unknown spreadsheet", async () => {

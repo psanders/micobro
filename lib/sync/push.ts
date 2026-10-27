@@ -11,6 +11,9 @@ import { eq, and, or, lt } from "drizzle-orm";
 import { pendingMutations, syncMeta } from "../db/schema";
 import { appendRow, updateRow, readRange } from "./sheetsClient";
 import { getSheetId } from "./config";
+import { ensureClientesLayout } from "./clientesLayout";
+import { createQueueCedulaResend } from "./queueCedulaResend";
+import { formatCedula } from "../utils/cedula";
 import { logger } from "../logger";
 import type { Database } from "../db/client";
 
@@ -25,17 +28,21 @@ export const LAST_PUSHED_AT_KEY = "lastPushedAt";
 // Exported so provisioning (lib/sync/provisionSheet.ts) creates tabs whose
 // names and column widths match exactly what push writes here.
 export const ENTITY_RANGES: Record<string, string> = {
-  customer: "Clientes!A:F",
+  customer: "Clientes!A:G",
   loan: "Préstamos!A:P",
   payment: "Pagos!A:G",
   visit: "Visitas!A:H",
   cashClose: "Cierres!A:E"
 };
 
+// Cédula sits right after the name and is written formatted ("001-1234567-8"):
+// appends use USER_ENTERED, which would parse the raw 11 digits as a number
+// and drop the leading zeros.
 function customerRowValues(payload: Record<string, unknown>): (string | number | null)[] {
   return [
     payload.id as string,
     payload.name as string,
+    formatCedula(payload.cedula as string | null),
     payload.phone as string,
     (payload.address as string) ?? "",
     payload.createdAt as string,
@@ -119,7 +126,7 @@ export interface PushResult {
   failed: number;
 }
 
-/** "Clientes!A:F" -> "Clientes!A5:F5" for a specific 1-based row number. */
+/** "Clientes!A:G" -> "Clientes!A5:G5" for a specific 1-based row number. */
 function rowRangeAt(range: string, rowNumber: number): string {
   const [tab, cols] = range.split("!");
   const [startCol, endCol] = cols.split(":");
@@ -143,6 +150,14 @@ export async function pushPendingMutations(db: Database): Promise<PushResult> {
     return { pushed: 0, failed: 0 };
   }
 
+  // Queued before the pending select so this same push carries the re-sent
+  // customers, and always before any pull (pull only runs after push).
+  await createQueueCedulaResend({ db })({});
+
+  // Customer rows are only written once the Sheet's Clientes tab is known to
+  // be in the Cédula layout; until then they stay queued, untouched.
+  const customersReady = await ensureClientesLayout(db, sheetId);
+
   // "failed" rows below the retry cap must stay eligible, or a single
   // transient failure (e.g. a push attempted while offline) makes that
   // mutation permanently invisible to every future push — silent data loss.
@@ -164,6 +179,7 @@ export async function pushPendingMutations(db: Database): Promise<PushResult> {
     if (!range) continue;
 
     if (mutation.operation !== "create" && mutation.operation !== "update") continue;
+    if (mutation.entity === "customer" && !customersReady) continue;
 
     try {
       const payload = JSON.parse(mutation.payload);

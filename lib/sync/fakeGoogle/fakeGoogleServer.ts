@@ -3,7 +3,7 @@
  *
  * In-memory stand-in for the slice of the Drive v3 and Sheets v4 REST APIs
  * that `sheetsClient.ts` calls: list/create Drive files, read sheet tab
- * titles, add a tab, and read/write/append values. `fetch(url, init)` has the
+ * titles, add a tab, insert a column, and read/write/append values. `fetch(url, init)` has the
  * same shape as the real one, so `sheetsClient.ts` swaps it in with no other
  * change. Nothing is persisted; a fresh server is an empty Drive.
  */
@@ -13,6 +13,8 @@ interface DriveEntry {
   mimeType: string;
   parents: string[];
   tabs: Map<string, string[][]>;
+  /** Numeric tab ids, as Sheets' `sheets.properties.sheetId`. */
+  tabIds: Map<string, number>;
 }
 
 export interface FakeGoogleServer {
@@ -28,10 +30,31 @@ const json = (body: unknown, status = 200) =>
 const notFound = (what: string) =>
   json({ error: { code: 404, message: `${what} not found` } }, 404);
 
-function parseA1(range: string): { tab: string; startRow: number | null } {
+interface A1 {
+  tab: string;
+  startRow: number | null;
+  endRow: number | null;
+  /** 0-based column bounds (inclusive); null when the range names no column. */
+  startCol: number | null;
+  endCol: number | null;
+}
+
+function columnIndex(letters: string): number {
+  return [...letters].reduce((n, char) => n * 26 + char.charCodeAt(0) - 64, 0) - 1;
+}
+
+function parseA1(range: string): A1 {
   const [tab, cells = ""] = range.split("!");
-  const match = cells.match(/^[A-Z]+(\d+)?/);
-  return { tab, startRow: match?.[1] ? Number(match[1]) : null };
+  const [start = "", end = start] = cells.split(":");
+  const startMatch = start.match(/^([A-Z]*)(\d*)$/);
+  const endMatch = end.match(/^([A-Z]*)(\d*)$/);
+  return {
+    tab,
+    startRow: startMatch?.[2] ? Number(startMatch[2]) : null,
+    endRow: endMatch?.[2] ? Number(endMatch[2]) : null,
+    startCol: startMatch?.[1] ? columnIndex(startMatch[1]) : null,
+    endCol: endMatch?.[1] ? columnIndex(endMatch[1]) : null
+  };
 }
 
 function matchesQuery(entry: DriveEntry, q: string): boolean {
@@ -70,6 +93,9 @@ export function createFakeGoogleServer(): FakeGoogleServer {
           parents: body.parents ?? [],
           tabs: new Map(
             body.mimeType === "application/vnd.google-apps.spreadsheet" ? [["Sheet1", []]] : []
+          ),
+          tabIds: new Map(
+            body.mimeType === "application/vnd.google-apps.spreadsheet" ? [["Sheet1", 0]] : []
           )
         });
         return json({ id });
@@ -89,22 +115,57 @@ export function createFakeGoogleServer(): FakeGoogleServer {
       if (!sheet) return notFound("Spreadsheet");
 
       if (batch && method === "POST") {
+        const tabById = (id: number) =>
+          sheet.tabs.get([...sheet.tabIds].find(([, tabId]) => tabId === id)?.[0] ?? "");
         for (const request of body.requests ?? []) {
           const title = request.addSheet?.properties?.title;
-          if (title) sheet.tabs.set(title, []);
+          if (title) {
+            sheet.tabs.set(title, []);
+            sheet.tabIds.set(title, sheet.tabIds.size);
+          }
+          const insert = request.insertDimension?.range;
+          if (insert?.dimension === "COLUMNS") {
+            const rows = tabById(insert.sheetId);
+            if (!rows) return notFound(`Tab ${insert.sheetId}`);
+            const width = insert.endIndex - insert.startIndex;
+            for (const row of rows) {
+              if (row.length > insert.startIndex) {
+                row.splice(insert.startIndex, 0, ...Array<string>(width).fill(""));
+              }
+            }
+          }
+          const update = request.updateCells;
+          if (update) {
+            const rows = tabById(update.start.sheetId);
+            if (!rows) return notFound(`Tab ${update.start.sheetId}`);
+            update.rows.forEach(
+              (row: { values: { userEnteredValue: { stringValue: string } }[] }, r: number) => {
+                const target = (rows[update.start.rowIndex + r] ??= []);
+                row.values.forEach((cell, c) => {
+                  const col = update.start.columnIndex + c;
+                  while (target.length < col) target.push("");
+                  target[col] = cell.userEnteredValue.stringValue;
+                });
+              }
+            );
+          }
         }
         return json({});
       }
 
       if (valuesAt === -1 && method === "GET") {
-        return json({ sheets: [...sheet.tabs.keys()].map((title) => ({ properties: { title } })) });
+        return json({
+          sheets: [...sheet.tabs.keys()].map((title) => ({
+            properties: { title, sheetId: sheet.tabIds.get(title) }
+          }))
+        });
       }
 
       if (valuesAt !== -1) {
         const rawRange = decodeURIComponent(rest.slice(valuesAt + "/values/".length));
         const isAppend = rawRange.endsWith(":append");
         const range = isAppend ? rawRange.slice(0, -":append".length) : rawRange;
-        const { tab, startRow } = parseA1(range);
+        const { tab, startRow, endRow, startCol, endCol } = parseA1(range);
         const rows = sheet.tabs.get(tab);
         if (!rows) return notFound(`Tab ${tab}`);
         const values: string[][] = (body.values ?? []).map((row: unknown[]) =>
@@ -113,7 +174,14 @@ export function createFakeGoogleServer(): FakeGoogleServer {
 
         if (method === "GET") {
           const from = startRow ? startRow - 1 : 0;
-          return json({ values: rows.slice(from) });
+          const picked = rows
+            .slice(from, endRow ?? undefined)
+            .map((row) =>
+              startCol === null ? row : row.slice(startCol, (endCol ?? startCol) + 1)
+            );
+          // Like the real API, trailing empty rows are omitted.
+          while (picked.length && picked[picked.length - 1].length === 0) picked.pop();
+          return json({ values: picked });
         }
         if (method === "POST" && isAppend) {
           rows.push(...values);
