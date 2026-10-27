@@ -1,5 +1,7 @@
 /**
  * Copyright (C) 2026 by Pedro Sanders. MIT License.
+ *
+ * Contract: openspec/changes/cartera-figures-fix/design.md.
  */
 export interface PositionByType {
   loanCount: number;
@@ -8,25 +10,30 @@ export interface PositionByType {
 }
 
 export interface OwnerPosition {
-  /** Capital lent on active loans (capital pendiente for crédito abierto). */
-  lentCents: number;
+  /**
+   * Capital still to collect ("Prestado activo"): a term loan's balance
+   * minus its interest share, or a crédito abierto's capital pendiente.
+   */
+  capitalCents: number;
   /** Still to collect: the sum of every active loan's balance. */
   receivableCents: number;
   /**
-   * Margen de beneficio: the interest the lender earns on active loans —
-   * a term loan's total interest, or a crédito abierto's intereses sumados
-   * plus the interest its next payment will cost.
+   * Interés por cobrar: the interest still inside `receivableCents` — a term
+   * loan's flat interest share of its balance, or a crédito abierto's
+   * intereses sumados. Always `capitalCents + interestCents === receivableCents`.
    */
-  marginCents: number;
+  interestCents: number;
   overdue: {
-    /** Still to collect on late loans. */
+    /** Past due (term: cuotas due before today; crédito abierto: intereses sumados), net of what was paid. */
     cents: number;
+    /** Loans with a past-due amount above zero. */
     loanCount: number;
     /** Share of `receivableCents`, rounded; 0 when nothing is to collect. */
     percent: number;
   };
   byType: { term: PositionByType; openCredit: PositionByType };
   month: {
+    /** Every payment made this month, whatever its loan's state now. */
     collectedCents: number;
     /** Still due by month end, net of what is already paid. */
     remainingCents: number;
