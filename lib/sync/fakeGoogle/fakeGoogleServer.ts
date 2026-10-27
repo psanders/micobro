@@ -3,7 +3,8 @@
  *
  * In-memory stand-in for the slice of the Drive v3 and Sheets v4 REST APIs
  * that `sheetsClient.ts` calls: list/create Drive files, read sheet tab
- * titles, add a tab, insert a column, and read/write/append values. `fetch(url, init)` has the
+ * titles, add a tab, insert a column, delete rows, protect ranges, and
+ * read (one range or a batch)/write/append values. `fetch(url, init)` has the
  * same shape as the real one, so `sheetsClient.ts` swaps it in with no other
  * change. Nothing is persisted; a fresh server is an empty Drive.
  */
@@ -15,6 +16,12 @@ interface DriveEntry {
   tabs: Map<string, string[][]>;
   /** Numeric tab ids, as Sheets' `sheets.properties.sheetId`. */
   tabIds: Map<string, number>;
+  protectedRanges: {
+    protectedRangeId: number;
+    range: unknown;
+    description?: string;
+    warningOnly?: boolean;
+  }[];
 }
 
 export interface FakeGoogleServer {
@@ -67,6 +74,20 @@ function matchesQuery(entry: DriveEntry, q: string): boolean {
   return true;
 }
 
+/** Values in `range`, as the real API returns them; null when the tab doesn't exist. */
+function readValues(sheet: DriveEntry, range: string): string[][] | null {
+  const { tab, startRow, endRow, startCol, endCol } = parseA1(range);
+  const rows = sheet.tabs.get(tab);
+  if (!rows) return null;
+  const from = startRow ? startRow - 1 : 0;
+  const picked = rows
+    .slice(from, endRow ?? undefined)
+    .map((row) => (startCol === null ? row : row.slice(startCol, (endCol ?? startCol) + 1)));
+  // Like the real API, trailing empty rows are omitted.
+  while (picked.length && picked[picked.length - 1].length === 0) picked.pop();
+  return picked;
+}
+
 export function createFakeGoogleServer(): FakeGoogleServer {
   const entries = new Map<string, DriveEntry>();
   let counter = 0;
@@ -96,7 +117,8 @@ export function createFakeGoogleServer(): FakeGoogleServer {
           ),
           tabIds: new Map(
             body.mimeType === "application/vnd.google-apps.spreadsheet" ? [["Sheet1", 0]] : []
-          )
+          ),
+          protectedRanges: []
         });
         return json({ id });
       }
@@ -104,6 +126,16 @@ export function createFakeGoogleServer(): FakeGoogleServer {
 
     if (parsed.hostname === "sheets.googleapis.com") {
       const rest = parsed.pathname.replace("/v4/spreadsheets/", "");
+      if (rest.endsWith("/values:batchGet") && method === "GET") {
+        const sheet = entries.get(rest.slice(0, -"/values:batchGet".length));
+        if (!sheet) return notFound("Spreadsheet");
+        const valueRanges = parsed.searchParams.getAll("ranges").map((range) => ({
+          range,
+          values: readValues(sheet, range)
+        }));
+        if (valueRanges.some((v) => v.values === null)) return notFound("Tab");
+        return json({ valueRanges });
+      }
       const batch = rest.endsWith(":batchUpdate");
       const valuesAt = rest.indexOf("/values/");
       const spreadsheetId = batch
@@ -134,6 +166,19 @@ export function createFakeGoogleServer(): FakeGoogleServer {
               }
             }
           }
+          const remove = request.deleteDimension?.range;
+          if (remove?.dimension === "ROWS") {
+            const rows = tabById(remove.sheetId);
+            if (!rows) return notFound(`Tab ${remove.sheetId}`);
+            rows.splice(remove.startIndex, remove.endIndex - remove.startIndex);
+          }
+          const protect = request.addProtectedRange?.protectedRange;
+          if (protect) {
+            sheet.protectedRanges.push({
+              ...protect,
+              protectedRangeId: sheet.protectedRanges.length + 1
+            });
+          }
           const update = request.updateCells;
           if (update) {
             const rows = tabById(update.start.sheetId);
@@ -155,9 +200,15 @@ export function createFakeGoogleServer(): FakeGoogleServer {
 
       if (valuesAt === -1 && method === "GET") {
         return json({
-          sheets: [...sheet.tabs.keys()].map((title) => ({
-            properties: { title, sheetId: sheet.tabIds.get(title) }
-          }))
+          sheets: [...sheet.tabs.keys()].map((title) => {
+            const sheetId = sheet.tabIds.get(title);
+            return {
+              properties: { title, sheetId },
+              protectedRanges: sheet.protectedRanges.filter(
+                (p) => (p.range as { sheetId?: number }).sheetId === sheetId
+              )
+            };
+          })
         });
       }
 
@@ -165,7 +216,7 @@ export function createFakeGoogleServer(): FakeGoogleServer {
         const rawRange = decodeURIComponent(rest.slice(valuesAt + "/values/".length));
         const isAppend = rawRange.endsWith(":append");
         const range = isAppend ? rawRange.slice(0, -":append".length) : rawRange;
-        const { tab, startRow, endRow, startCol, endCol } = parseA1(range);
+        const { tab, startRow, startCol } = parseA1(range);
         const rows = sheet.tabs.get(tab);
         if (!rows) return notFound(`Tab ${tab}`);
         const values: string[][] = (body.values ?? []).map((row: unknown[]) =>
@@ -173,24 +224,22 @@ export function createFakeGoogleServer(): FakeGoogleServer {
         );
 
         if (method === "GET") {
-          const from = startRow ? startRow - 1 : 0;
-          const picked = rows
-            .slice(from, endRow ?? undefined)
-            .map((row) =>
-              startCol === null ? row : row.slice(startCol, (endCol ?? startCol) + 1)
-            );
-          // Like the real API, trailing empty rows are omitted.
-          while (picked.length && picked[picked.length - 1].length === 0) picked.pop();
-          return json({ values: picked });
+          return json({ values: readValues(sheet, range) });
         }
         if (method === "POST" && isAppend) {
           rows.push(...values);
           return json({});
         }
         if (method === "PUT") {
+          // Writes only the addressed cells, from the range's first column.
           const from = (startRow ?? 1) - 1;
+          const col = startCol ?? 0;
           values.forEach((row, offset) => {
-            rows[from + offset] = row;
+            const target = (rows[from + offset] ??= []);
+            row.forEach((cell, c) => {
+              while (target.length < col + c) target.push("");
+              target[col + c] = cell;
+            });
           });
           return json({});
         }

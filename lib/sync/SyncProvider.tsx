@@ -30,6 +30,7 @@ import {
 } from "react";
 import { Alert } from "react-native";
 import NetInfo from "@react-native-community/netinfo";
+import { router } from "expo-router";
 import { useSyncRepo } from "../repo/RepoProvider";
 import { onMutationQueued } from "./syncEvents";
 import { shouldAutoPush } from "./autoPushPolicy";
@@ -38,7 +39,7 @@ import { friendlySyncErrorMessage } from "./friendlySyncError";
 import { logger } from "../logger";
 import type { SyncStatus } from "../repo/types";
 import type { PushResult } from "./push";
-import type { PullResult } from "./pull";
+import type { PullResult } from "./pullResult";
 
 const EMPTY_STATUS: SyncStatus = {
   connected: false,
@@ -46,15 +47,44 @@ const EMPTY_STATUS: SyncStatus = {
   lastPushedAt: null,
   lastPulledAt: null,
   pendingCount: 0,
-  stuckCount: 0
+  stuckCount: 0,
+  heldDeletions: null,
+  syncProblems: []
 };
+
+export interface SyncOptions {
+  reviewAlert?: boolean;
+}
+
+function offerReview(pull: PullResult) {
+  if (!pull.held && pull.problems.length === 0) return;
+  Alert.alert(
+    "Revisa tu sincronización",
+    pull.held
+      ? "Se borraron filas en tu hoja. Confirma si también quieres borrarlas de este teléfono."
+      : "Hay filas en tu hoja que no se pudieron leer. Revisa cuáles corregir.",
+    [
+      { text: "Más tarde", style: "cancel" },
+      { text: "Revisar", onPress: () => router.push("/sincronizar") }
+    ]
+  );
+}
 
 interface SyncContextValue {
   isOnline: boolean;
   isSyncing: boolean;
   status: SyncStatus;
-  /** Manually triggered push-then-pull — surfaces failures to the lender. */
-  sync: () => Promise<{ push: PushResult; pull: PullResult } | null>;
+  /**
+   * Manually triggered backup, push and pull — surfaces failures to the lender.
+   * When the pull leaves something to review (held deletions, broken tabs) it
+   * offers to open Sincronización con Google, unless `reviewAlert` is false
+   * (that screen shows it already).
+   */
+  sync: (options?: SyncOptions) => Promise<{ push: PushResult; pull: PullResult } | null>;
+  /** The owner's Aplicar / Restaurar for held Sheet deletions — surfaces failures like `sync`. */
+  resolveHeldDeletions: (
+    choice: "apply" | "restore"
+  ) => Promise<{ push: PushResult; pull: PullResult } | null>;
   refreshStatus: () => Promise<SyncStatus>;
 }
 
@@ -108,7 +138,18 @@ export function SyncProvider({ children }: { children: ReactNode }) {
     [runGuarded, syncRepo]
   );
 
-  const sync = useCallback(() => runSync(false), [runSync]);
+  const sync = useCallback(
+    async (options: SyncOptions = {}) => {
+      const result = await runSync(false);
+      if (result && options.reviewAlert !== false) offerReview(result.pull);
+      return result;
+    },
+    [runSync]
+  );
+  const resolveHeldDeletions = useCallback(
+    (choice: "apply" | "restore") => runGuarded(() => syncRepo.resolveHeldDeletions(choice), false),
+    [runGuarded, syncRepo]
+  );
 
   // Refs so the NetInfo/event listeners (subscribed once) always see the
   // latest values without needing to resubscribe.
@@ -193,7 +234,9 @@ export function SyncProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <SyncContext.Provider value={{ isOnline, isSyncing, status, sync, refreshStatus }}>
+    <SyncContext.Provider
+      value={{ isOnline, isSyncing, status, sync, resolveHeldDeletions, refreshStatus }}
+    >
       {children}
     </SyncContext.Provider>
   );

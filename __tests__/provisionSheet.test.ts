@@ -13,7 +13,8 @@ jest.mock("../lib/sync/config", () => ({
 jest.mock("../lib/sync/sheetsClient", () => ({
   findDriveFiles: jest.fn(),
   createDriveFile: jest.fn(),
-  ensureSheetTab: jest.fn()
+  ensureSheetTab: jest.fn(),
+  ensureProtectedRanges: jest.fn()
 }));
 
 jest.mock("../lib/sync/push", () => {
@@ -23,7 +24,12 @@ jest.mock("../lib/sync/push", () => {
 
 import { provisionSheet } from "../lib/sync/provisionSheet";
 import { getSheetId, setSheetId } from "../lib/sync/config";
-import { findDriveFiles, createDriveFile, ensureSheetTab } from "../lib/sync/sheetsClient";
+import {
+  findDriveFiles,
+  createDriveFile,
+  ensureSheetTab,
+  ensureProtectedRanges
+} from "../lib/sync/sheetsClient";
 import { ENTITY_RANGES, pushPendingMutations } from "../lib/sync/push";
 import type { Database } from "../lib/db/client";
 
@@ -32,6 +38,7 @@ const setSheetIdMock = setSheetId as jest.Mock;
 const findDriveFilesMock = findDriveFiles as jest.Mock;
 const createDriveFileMock = createDriveFile as jest.Mock;
 const ensureSheetTabMock = ensureSheetTab as jest.Mock;
+const ensureProtectedRangesMock = ensureProtectedRanges as jest.Mock;
 const pushMock = pushPendingMutations as jest.Mock;
 
 const db = {} as unknown as Database;
@@ -58,6 +65,7 @@ describe("provisionSheet", () => {
     findDriveFilesMock.mockReset();
     createDriveFileMock.mockReset();
     ensureSheetTabMock.mockReset().mockResolvedValue(undefined);
+    ensureProtectedRangesMock.mockReset().mockResolvedValue(undefined);
     pushMock.mockReset().mockResolvedValue({ pushed: 0, failed: 0 });
   });
 
@@ -192,5 +200,33 @@ describe("provisionSheet", () => {
     const sheetsClient = jest.requireMock("../lib/sync/sheetsClient") as Record<string, unknown>;
     expect(sheetsClient.addSheetTabs).toBeUndefined();
     expect(sheetsClient.deleteSheet).toBeUndefined();
+  });
+
+  it("protects the id column and header row of every synced tab, also on a stored sheet", async () => {
+    // Arrange
+    getSheetIdMock.mockResolvedValue("sheet-existing");
+
+    // Act
+    await provisionSheet(db);
+
+    // Assert
+    expect(ensureProtectedRangesMock).toHaveBeenCalledWith("sheet-existing", [
+      "Clientes",
+      "Préstamos",
+      "Pagos",
+      "Visitas",
+      "Cierres"
+    ]);
+  });
+
+  it("still connects when protecting fails", async () => {
+    // Arrange
+    getSheetIdMock.mockResolvedValue("sheet-existing");
+    ensureProtectedRangesMock.mockRejectedValueOnce(
+      new Error("Sheets protect ranges failed (500)")
+    );
+
+    // Act + Assert
+    await expect(provisionSheet(db)).resolves.toBe("sheet-existing");
   });
 });

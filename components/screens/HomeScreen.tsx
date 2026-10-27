@@ -119,7 +119,8 @@ export function HomeScreen() {
     isSignedIn: status.connected,
     isOnline,
     pendingCount: status.pendingCount,
-    stuckCount: status.stuckCount
+    stuckCount: status.stuckCount,
+    needsReview: !!status.heldDeletions || status.syncProblems.length > 0
   });
   const name = profile.data?.name;
   const percent = day && day.goalCents > 0 ? day.collectedCents / day.goalCents : 0;

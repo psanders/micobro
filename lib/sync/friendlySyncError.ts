@@ -9,6 +9,7 @@
  * sometimes a raw HTTP response body (see sheetsClient.ts).
  */
 import { isErrorWithCode, statusCodes } from "./googleAuth";
+import { BackupFailedError } from "./syncErrors";
 
 const GOOGLE_SIGN_IN_MESSAGES: Record<string, string> = {
   [statusCodes.SIGN_IN_CANCELLED]: "Conexión con Google cancelada.",
@@ -36,6 +37,10 @@ function httpStatusMessage(status: number): string | null {
 }
 
 export function friendlySyncErrorMessage(err: unknown): string {
+  if (err instanceof BackupFailedError) {
+    return "No se sincronizó porque no se pudo guardar la copia de seguridad. Revisa que el teléfono tenga espacio libre e inténtalo de nuevo.";
+  }
+
   if (isErrorWithCode(err) && GOOGLE_SIGN_IN_MESSAGES[err.code]) {
     return GOOGLE_SIGN_IN_MESSAGES[err.code]!;
   }

@@ -14,6 +14,11 @@ export const customers = sqliteTable("customers", {
   // Semantic key into a curated set (see lib/customers/avatarKeys.ts /
   // components/avatars.ts) — not a photo, no camera/storage permissions.
   avatarKey: text("avatar_key"),
+  // When the Sheet last confirmed holding this row (set by push on success,
+  // and by pull for every row it reads). Only rows with this set can be
+  // treated as deleted when they go missing from the Sheet — see
+  // lib/sync/pullPlan.ts. Null for rows the Sheet never confirmed.
+  pushedAt: integer("pushed_at", { mode: "timestamp" }),
   createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
   updatedAt: integer("updated_at", { mode: "timestamp" }).notNull()
 });
@@ -88,6 +93,11 @@ export const loans = sqliteTable("loans", {
   // Open-credit loans run interest-only cycles on an outstanding capital
   // balance instead of a fixed cuota schedule — see `lib/loans/openCredit.ts`.
   loanType: text("loan_type"),
+  // When the Sheet last confirmed holding this row (set by push on success,
+  // and by pull for every row it reads). Only rows with this set can be
+  // treated as deleted when they go missing from the Sheet — see
+  // lib/sync/pullPlan.ts. Null for rows the Sheet never confirmed.
+  pushedAt: integer("pushed_at", { mode: "timestamp" }),
   createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
   updatedAt: integer("updated_at", { mode: "timestamp" }).notNull()
 });
@@ -101,6 +111,11 @@ export const payments = sqliteTable("payments", {
   paidAt: integer("paid_at", { mode: "timestamp" }).notNull(),
   method: text("method"),
   notes: text("notes"),
+  // When the Sheet last confirmed holding this row (set by push on success,
+  // and by pull for every row it reads). Only rows with this set can be
+  // treated as deleted when they go missing from the Sheet — see
+  // lib/sync/pullPlan.ts. Null for rows the Sheet never confirmed.
+  pushedAt: integer("pushed_at", { mode: "timestamp" }),
   createdAt: integer("created_at", { mode: "timestamp" }).notNull()
 });
 
@@ -114,6 +129,11 @@ export const visits = sqliteTable("visits", {
   promiseDate: integer("promise_date", { mode: "timestamp" }),
   promiseAmountCents: integer("promise_amount_cents"),
   note: text("note"),
+  // When the Sheet last confirmed holding this row (set by push on success,
+  // and by pull for every row it reads). Only rows with this set can be
+  // treated as deleted when they go missing from the Sheet — see
+  // lib/sync/pullPlan.ts. Null for rows the Sheet never confirmed.
+  pushedAt: integer("pushed_at", { mode: "timestamp" }),
   createdAt: integer("created_at", { mode: "timestamp" }).notNull()
 });
 

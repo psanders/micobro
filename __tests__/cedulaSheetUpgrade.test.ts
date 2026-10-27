@@ -27,10 +27,8 @@ jest.mock("../lib/sync/config", () => ({
   })
 }));
 
-import fs from "fs";
-import path from "path";
-import { drizzle } from "drizzle-orm/sqlite-proxy";
 import * as schema from "../lib/db/schema";
+import { createTestDb } from "./helpers/testDb";
 import { createFakeGoogleServer } from "../lib/sync/fakeGoogle/fakeGoogleServer";
 import { appendRow, createDriveFile, ensureSheetTab } from "../lib/sync/sheetsClient";
 import { createRealSyncRepo } from "../lib/repo/real/syncRepo";
@@ -42,44 +40,6 @@ const NEW_HEADER = ["ID", "Nombre", "Cédula", "Teléfono", "Dirección", "Cread
 const LOAN_HEADERS = Array.from({ length: 16 }, (_, i) => `col${i}`);
 const CREATED = new Date("2026-01-01T00:00:00.000Z");
 const UPDATED = new Date("2026-01-02T00:00:00.000Z");
-
-type Raw = {
-  exec(sql: string): void;
-  prepare(sql: string): {
-    run(...params: unknown[]): void;
-    all(...params: unknown[]): Record<string, unknown>[];
-  };
-};
-
-function createTestDb(): { db: Database; raw: Raw } {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { DatabaseSync } = require("node:sqlite");
-  const raw: Raw = new DatabaseSync(":memory:");
-  const dir = path.join(__dirname, "../lib/db/migrations");
-  for (const file of fs
-    .readdirSync(dir)
-    .filter((f) => f.endsWith(".sql"))
-    .sort()) {
-    for (const statement of fs
-      .readFileSync(path.join(dir, file), "utf8")
-      .split("--> statement-breakpoint")) {
-      if (statement.trim()) raw.exec(statement);
-    }
-  }
-  const db = drizzle(
-    async (sql, params, method) => {
-      const stmt = raw.prepare(sql);
-      if (method === "run") {
-        stmt.run(...params);
-        return { rows: [] };
-      }
-      const rows = stmt.all(...params).map((row) => Object.values(row));
-      return { rows: method === "get" ? rows[0] : rows };
-    },
-    { schema }
-  );
-  return { db: db as unknown as Database, raw };
-}
 
 const iso = (date: Date) => date.toISOString();
 
@@ -168,11 +128,12 @@ describe("upgrading a pre-Cédula sheet", () => {
   });
 
   it("shifts the old rows, fills in every cédula, and never erases one locally", async () => {
-    const { db } = createTestDb();
+    const t = createTestDb();
+    const { db } = t;
     const sheetId = await seedPreCedulaSheet();
     await seedLocal(db);
 
-    await createRealSyncRepo({ db }).syncNow();
+    await createRealSyncRepo(t).syncNow();
 
     expect(server.rows(sheetId, "Clientes")).toEqual([
       NEW_HEADER,
@@ -185,7 +146,8 @@ describe("upgrading a pre-Cédula sheet", () => {
   });
 
   it("holds customers untouched while the layout move fails, then completes it on a later sync", async () => {
-    const { db } = createTestDb();
+    const t = createTestDb();
+    const { db } = t;
     const sheetId = await seedPreCedulaSheet();
     await seedLocal(db);
 
@@ -195,7 +157,7 @@ describe("upgrading a pre-Cédula sheet", () => {
         ? Promise.reject(new TypeError("Network request failed"))
         : server.fetch(url, init)) as unknown as typeof fetch;
 
-    await createRealSyncRepo({ db }).syncNow();
+    await createRealSyncRepo(t).syncNow();
 
     expect(server.rows(sheetId, "Clientes")[0]).toEqual(OLD_HEADER);
     expect(server.rows(sheetId, "Clientes")).toHaveLength(3);
@@ -207,7 +169,7 @@ describe("upgrading a pre-Cédula sheet", () => {
     expect(await localCedulas(db)).toEqual({ c1: "00112345678", c2: null, c3: "40200000001" });
 
     global.fetch = server.fetch as unknown as typeof fetch;
-    await createRealSyncRepo({ db }).syncNow();
+    await createRealSyncRepo(t).syncNow();
 
     expect(server.rows(sheetId, "Clientes")[0]).toEqual(NEW_HEADER);
     expect(server.rows(sheetId, "Clientes")[1][2]).toBe("001-1234567-8");
@@ -215,28 +177,30 @@ describe("upgrading a pre-Cédula sheet", () => {
   });
 
   it("never inserts the column twice, even after this device forgets it did", async () => {
-    const { db, raw } = createTestDb();
+    const t = createTestDb();
+    const { db, raw } = t;
     const sheetId = await seedPreCedulaSheet();
     await seedLocal(db);
-    await createRealSyncRepo({ db }).syncNow();
+    await createRealSyncRepo(t).syncNow();
 
     raw.exec("DELETE FROM sync_meta");
-    await createRealSyncRepo({ db }).syncNow();
+    await createRealSyncRepo(t).syncNow();
 
     expect(server.rows(sheetId, "Clientes")[0]).toEqual(NEW_HEADER);
     expect(server.rows(sheetId, "Clientes")[1]).toHaveLength(7);
   });
 
   it("brings a cédula edited in the Sheet back to the app", async () => {
-    const { db } = createTestDb();
+    const t = createTestDb();
+    const { db } = t;
     const sheetId = await seedPreCedulaSheet();
     await seedLocal(db);
-    await createRealSyncRepo({ db }).syncNow();
+    await createRealSyncRepo(t).syncNow();
 
     // The lender corrects José's row directly in the Sheet.
     server.rows(sheetId, "Clientes")[2][2] = "402-9999999-9";
     server.rows(sheetId, "Clientes")[2][6] = "2026-02-01T00:00:00.000Z";
-    await createRealSyncRepo({ db }).syncNow();
+    await createRealSyncRepo(t).syncNow();
 
     expect((await localCedulas(db)).c2).toBe("40299999999");
   });

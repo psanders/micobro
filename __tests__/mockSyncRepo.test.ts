@@ -6,6 +6,7 @@
  * Conectar screen can advance in demo mode.
  */
 import { createMockSyncRepo } from "../lib/repo/mock/syncRepo.mock";
+import { EMPTY_PULL_RESULT } from "../lib/sync/pullResult";
 
 describe("mock sync repo", () => {
   it("starts disconnected", async () => {
@@ -36,7 +37,7 @@ describe("mock sync repo", () => {
     const repo = createMockSyncRepo();
     const result = await repo.syncNow();
     expect(result.push.pushed).toBeGreaterThan(0);
-    expect(result.pull).toEqual({ pulled: 0, skipped: 0, malformed: 0 });
+    expect(result.pull).toEqual(EMPTY_PULL_RESULT);
     const status = await repo.getStatus();
     expect(status.lastPushedAt).toBeInstanceOf(Date);
     expect(status.lastPulledAt).toBeInstanceOf(Date);

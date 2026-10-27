@@ -2,8 +2,8 @@
  * Copyright (C) 2026 by Pedro Sanders. MIT License.
  *
  * "Eliminar mis datos": erases everything Micobro keeps on this phone — every
- * table, the app's AsyncStorage keys (onboarding flag, sheet id, recent
- * searches), the PIN — and signs out of Google. The lender's backup sheet in
+ * table, the pre-sync backups, the app's AsyncStorage keys (onboarding flag,
+ * sheet id, recent searches), the PIN — and signs out of Google. The lender's backup sheet in
  * their own Drive is theirs and is left alone. Requires the current PIN, and
  * checks it here (not only in the UI) so nothing erases without it.
  */
@@ -28,6 +28,8 @@ export interface EraseDeviceDataDeps {
   verifyPin: (pin: string) => Promise<boolean>;
   clearPin: () => Promise<void>;
   signOutOfGoogle: () => Promise<void>;
+  /** Deletes the pre-sync backup files; their list lives in sync_meta, so it runs first. */
+  deleteBackups: () => void;
 }
 
 export const eraseDeviceDataSchema = z.object({
@@ -54,11 +56,13 @@ export function createEraseDeviceData({
   storage,
   verifyPin,
   clearPin,
-  signOutOfGoogle
+  signOutOfGoogle,
+  deleteBackups
 }: EraseDeviceDataDeps) {
   const fn = async ({ pin }: EraseDeviceDataInput): Promise<boolean> => {
     if (!(await verifyPin(pin))) return false;
 
+    deleteBackups();
     for (const table of TABLES) {
       await db.delete(table);
     }
