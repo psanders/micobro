@@ -21,14 +21,16 @@
 ## Goals / Non-Goals
 
 **Goals:**
+
 - Cédula in `Clientes!C`, synced both ways (see the specs).
-- Each lender's sheet migrates to the new layout when *their* app updates:
+- Each lender's sheet migrates to the new layout when _their_ app updates:
   old-version apps keep working against sheets that haven't migrated.
 - No customer row is ever written or read in the wrong layout, and no local
   cédula is ever erased by the migration.
 
 **Non-Goals:**
-- Keeping an old-version app compatible with a sheet that has *already*
+
+- Keeping an old-version app compatible with a sheet that has _already_
   migrated (see Risks: multiple devices).
 - Syncing `avatarKey`, or adding the loan code (calculated from the id, never stored).
 - Fixing the unordered pending-mutations query in general.
