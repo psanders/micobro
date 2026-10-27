@@ -6,7 +6,7 @@
  * touched by this code path), and malformed-row skipping.
  *
  * Row arrays mirror push.ts's customerRowValues/loanRowValues column order
- * exactly (Clientes!A:F, Préstamos!A:P) — this is the round-trip contract
+ * exactly (Clientes!A:G, Préstamos!A:P) — this is the round-trip contract
  * task 1.1 asks to protect, enforced here black-box (through the public
  * pullEntities function) the same way push.test.ts already tests push.ts.
  */
@@ -18,7 +18,12 @@ jest.mock("../lib/sync/sheetsClient", () => ({
   readRange: jest.fn()
 }));
 
+jest.mock("../lib/sync/clientesLayout", () => ({
+  isClientesLayoutReady: jest.fn().mockResolvedValue(true)
+}));
+
 import { pullEntities } from "../lib/sync/pull";
+import { isClientesLayoutReady } from "../lib/sync/clientesLayout";
 import { readRange } from "../lib/sync/sheetsClient";
 import { ENTITY_RANGES } from "../lib/sync/push";
 import { customers, loans } from "../lib/db/schema";
@@ -30,11 +35,21 @@ function entityInsertCalls(insertMock: jest.Mock) {
 }
 
 const readRangeMock = readRange as jest.Mock;
+const isClientesLayoutReadyMock = isClientesLayoutReady as jest.Mock;
 
-const CUSTOMER_HEADER = ["ID", "Nombre", "Teléfono", "Dirección", "Creado", "Actualizado"];
+const CUSTOMER_HEADER = [
+  "ID",
+  "Nombre",
+  "Cédula",
+  "Teléfono",
+  "Dirección",
+  "Creado",
+  "Actualizado"
+];
 const customerRow = (overrides: Partial<Record<string, string>> = {}) => [
   overrides.id ?? "customer-1",
   overrides.name ?? "Juana Pérez",
+  overrides.cedula ?? "",
   overrides.phone ?? "8091234567",
   overrides.address ?? "",
   overrides.createdAt ?? "2026-01-01T00:00:00.000Z",
@@ -108,6 +123,76 @@ function makeDbStub(selectResults: unknown[][]) {
 describe("pullEntities", () => {
   beforeEach(() => {
     readRangeMock.mockReset();
+    isClientesLayoutReadyMock.mockReset().mockResolvedValue(true);
+  });
+
+  const localCustomer = (cedula: string | null) => ({
+    id: "customer-1",
+    name: "Juana Pérez",
+    phone: "8091234567",
+    address: null,
+    cedula,
+    avatarKey: null,
+    createdAt: new Date("2026-01-01T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-02T00:00:00.000Z")
+  });
+
+  it.each([["402-0000000-1"], ["40200000001"]])(
+    "stores a cédula typed in the Sheet as %s as digits only",
+    async (cell) => {
+      mockRanges({ customer: [CUSTOMER_HEADER, customerRow({ cedula: cell })] });
+      const db = makeDbStub([[], [localCustomer(null)]]);
+
+      const result = await pullEntities(db);
+
+      expect(db.updateSet).toHaveBeenCalledWith(
+        expect.objectContaining({ cedula: "40200000001", phone: "8091234567" })
+      );
+      expect(result.pulled).toBe(1);
+    }
+  );
+
+  it("clears the local cédula when the Sheet's Cédula cell is emptied", async () => {
+    mockRanges({ customer: [CUSTOMER_HEADER, customerRow({ cedula: "" })] });
+    const db = makeDbStub([[], [localCustomer("00112345678")]]);
+
+    await pullEntities(db);
+
+    expect(db.updateSet).toHaveBeenCalledWith(expect.objectContaining({ cedula: null }));
+  });
+
+  it("inserts a new customer typed into the Sheet together with its cédula", async () => {
+    mockRanges({ customer: [CUSTOMER_HEADER, customerRow({ cedula: "001-1234567-8" })] });
+    const db = makeDbStub([[], []]);
+
+    await pullEntities(db);
+
+    const insertValuesMock = (db.insert as jest.Mock).mock.results[0].value.values as jest.Mock;
+    expect(insertValuesMock).toHaveBeenCalledWith(
+      expect.objectContaining({ id: "customer-1", cedula: "00112345678" })
+    );
+  });
+
+  it("keeps a guarded customer's local cédula even when the Sheet's cell is empty", async () => {
+    mockRanges({ customer: [CUSTOMER_HEADER, customerRow({ cedula: "" })] });
+    const db = makeDbStub([[{ id: "pm-resend", status: "failed" }]]);
+
+    const result = await pullEntities(db);
+
+    expect(db.update).not.toHaveBeenCalled();
+    expect(result.skipped).toBe(1);
+  });
+
+  it("does not read customers until the Clientes layout is confirmed", async () => {
+    isClientesLayoutReadyMock.mockResolvedValue(false);
+    mockRanges({ customer: [CUSTOMER_HEADER, customerRow()] });
+    const db = makeDbStub([]);
+
+    const result = await pullEntities(db);
+
+    expect(readRangeMock).not.toHaveBeenCalledWith("sheet-1", ENTITY_RANGES.customer);
+    expect(entityInsertCalls(db.insert as jest.Mock)).toHaveLength(0);
+    expect(result.pulled).toBe(0);
   });
 
   it("inserts a new local customer for a row present remotely but absent locally", async () => {

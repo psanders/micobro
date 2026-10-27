@@ -160,6 +160,64 @@ export async function ensureSheetTab(
   await writeHeaderRow(spreadsheetId, `${title}!A1`, headers);
 }
 
+/**
+ * Inserts an empty column at 0-based `columnIndex` in the tab titled `title`
+ * — Sheets shifts every cell from there on one column right — and writes
+ * `header` into its first row. Both happen in one batchUpdate, which Sheets
+ * applies atomically, so a failure can never leave the column inserted with
+ * no header (a caller that detects the layout by that header would then
+ * insert a second one).
+ */
+export async function insertColumnWithHeader(
+  spreadsheetId: string,
+  title: string,
+  columnIndex: number,
+  header: string
+): Promise<void> {
+  const metaUrl = `${SHEETS_API_BASE}/${spreadsheetId}?fields=${encodeURIComponent("sheets.properties(sheetId,title)")}`;
+  const metaResponse = await authorizedFetch(metaUrl, { method: "GET" });
+  if (!metaResponse.ok) {
+    const body = await metaResponse.text();
+    throw new Error(`Sheets read metadata failed (${metaResponse.status}): ${body}`);
+  }
+  const meta = await metaResponse.json();
+  const tab = (meta.sheets ?? []).find(
+    (s: { properties: { title: string } }) => s.properties.title === title
+  );
+  if (!tab) throw new Error(`Sheets tab not found: ${title}`);
+  const tabId = tab.properties.sheetId as number;
+
+  const response = await authorizedFetch(`${SHEETS_API_BASE}/${spreadsheetId}:batchUpdate`, {
+    method: "POST",
+    body: JSON.stringify({
+      requests: [
+        {
+          insertDimension: {
+            range: {
+              sheetId: tabId,
+              dimension: "COLUMNS",
+              startIndex: columnIndex,
+              endIndex: columnIndex + 1
+            },
+            inheritFromBefore: true
+          }
+        },
+        {
+          updateCells: {
+            start: { sheetId: tabId, rowIndex: 0, columnIndex },
+            rows: [{ values: [{ userEnteredValue: { stringValue: header } }] }],
+            fields: "userEnteredValue"
+          }
+        }
+      ]
+    })
+  });
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`Sheets batchUpdate failed (${response.status}): ${body}`);
+  }
+}
+
 /** Writes a single header row at `range` (e.g. "Clientes!A1"). */
 export async function writeHeaderRow(
   spreadsheetId: string,

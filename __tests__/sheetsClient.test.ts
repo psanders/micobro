@@ -11,7 +11,7 @@ jest.mock("../lib/sync/googleAuth", () => ({
   getValidAccessToken: jest.fn().mockResolvedValue("token-1")
 }));
 
-import { ensureSheetTab } from "../lib/sync/sheetsClient";
+import { ensureSheetTab, insertColumnWithHeader } from "../lib/sync/sheetsClient";
 
 function jsonResponse(body: unknown, ok = true): Response {
   return {
@@ -57,5 +57,59 @@ describe("ensureSheetTab", () => {
     const body = JSON.parse(batchUpdateCall![1].body as string);
     expect(body.requests).toEqual([{ addSheet: { properties: { title: "Cierres" } } }]);
     expect(JSON.stringify(body)).not.toContain("deleteSheet");
+  });
+});
+
+describe("insertColumnWithHeader", () => {
+  let fetchMock: jest.Mock;
+
+  beforeEach(() => {
+    fetchMock = jest.fn();
+    global.fetch = fetchMock as unknown as typeof fetch;
+  });
+
+  it("inserts the column and writes its header in one batchUpdate on the tab's numeric id", async () => {
+    fetchMock
+      .mockResolvedValueOnce(
+        jsonResponse({
+          sheets: [
+            { properties: { title: "Sheet1", sheetId: 0 } },
+            { properties: { title: "Clientes", sheetId: 1234 } }
+          ]
+        })
+      )
+      .mockResolvedValueOnce(jsonResponse({}));
+
+    await insertColumnWithHeader("sheet-1", "Clientes", 2, "Cédula");
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    const body = JSON.parse(fetchMock.mock.calls[1][1].body as string);
+    expect(body.requests).toEqual([
+      {
+        insertDimension: {
+          range: { sheetId: 1234, dimension: "COLUMNS", startIndex: 2, endIndex: 3 },
+          inheritFromBefore: true
+        }
+      },
+      {
+        updateCells: {
+          start: { sheetId: 1234, rowIndex: 0, columnIndex: 2 },
+          rows: [{ values: [{ userEnteredValue: { stringValue: "Cédula" } }] }],
+          fields: "userEnteredValue"
+        }
+      }
+    ]);
+    expect(JSON.stringify(body)).not.toContain("deleteSheet");
+  });
+
+  it("throws without writing anything when the tab doesn't exist", async () => {
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse({ sheets: [{ properties: { title: "Sheet1", sheetId: 0 } }] })
+    );
+
+    await expect(insertColumnWithHeader("sheet-1", "Clientes", 2, "Cédula")).rejects.toThrow(
+      "Clientes"
+    );
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 });
