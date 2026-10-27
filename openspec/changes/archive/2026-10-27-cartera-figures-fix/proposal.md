@@ -3,8 +3,8 @@
 A simulated portfolio (60 loans, 450 payments) run through `composePosition`
 showed three Mi cartera figures that don't hold up:
 
-- **Margen de beneficio** reported a term loan's *whole* interest no matter
-  how much was paid, next to an *original* principal, so "prestado + margen"
+- **Margen de beneficio** reported a term loan's _whole_ interest no matter
+  how much was paid, next to an _original_ principal, so "prestado + margen"
   never matched "por cobrar" (RD$1,179,350 vs RD$887,448). For crédito
   abierto it added the next cycle's interest, which isn't in "por cobrar" yet.
 - **En atraso** reported the entire balance of any loan with one late cuota
