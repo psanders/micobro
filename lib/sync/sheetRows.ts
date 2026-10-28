@@ -105,7 +105,7 @@ function customerFromRow(row: string[]): SheetCustomer {
   };
 }
 
-// Préstamos!A:P — same order as loanRowValues in push.ts.
+// Préstamos!A:Q — same order as loanRowValues in push.ts.
 function loanFromRow(row: string[]): SheetLoan {
   const loanType = cell(row, 13);
   return {
@@ -124,7 +124,8 @@ function loanFromRow(row: string[]): SheetLoan {
     skipSundays: bool(cell(row, 12), "Salta domingos"),
     loanType: loanType ? oneOf(loanType, loanTypes, "el tipo") : null,
     createdAt: date(cell(row, 14), "Creado"),
-    updatedAt: date(cell(row, 15), "Actualizado")
+    updatedAt: date(cell(row, 15), "Actualizado"),
+    penaltyCents: integer(cell(row, 16), "La penalidad")
   };
 }
 

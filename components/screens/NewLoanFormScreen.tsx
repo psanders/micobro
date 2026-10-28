@@ -52,15 +52,22 @@ const frequencyLabels: Record<LoanFrequency, string> = {
 };
 
 /**
- * "Tipo de préstamo": Tradicional (term, fixed cuotas) or Crédito Abierto
+ * "Tipo de préstamo": Tradicional (term, fixed cuotas), Tradicional Plus (a
+ * term loan where a fixed penalty covers a missed quincena and moves the rest
+ * of the schedule — see `lib/loans/tradicionalPlus.ts`) or Crédito Abierto
  * (open credit, interest-only cycles on an outstanding capital — see
  * `lib/loans/openCredit.ts`). Selecting Crédito Abierto hides the fields
- * that only make sense for a term loan (Plazo, mora, Saltar domingos).
+ * that only make sense for a term loan (Plazo, mora, Saltar domingos);
+ * Tradicional Plus locks Quincenal and swaps mora for the Penalidad.
  */
 const loanTypeOptions: { value: LoanType; label: string }[] = [
   { value: "term", label: "Tradicional" },
+  { value: "term_plus", label: "Tradicional Plus" },
   { value: "open_credit", label: "Crédito abierto (compuesto)" }
 ];
+
+/** Tradicional Plus is quincenal only, for now (see the loan-configuration spec). */
+const TRADICIONAL_PLUS_FREQUENCY: LoanFrequency = "biweekly";
 
 /** "un mes" in "el primer interés vence un mes después" — one cycle of each frequency. */
 const firstInterestAfter: Record<LoanFrequency, string> = {
@@ -125,7 +132,8 @@ export function NewLoanFormScreen({
   const frequencyTouched = useRef(false);
   const handleLoanTypeChange = (next: LoanType) => {
     setLoanType(next);
-    if (!frequencyTouched.current) setFrequency(next === "open_credit" ? "monthly" : "weekly");
+    if (next === "term_plus") setFrequency(TRADICIONAL_PLUS_FREQUENCY);
+    else if (!frequencyTouched.current) setFrequency(next === "open_credit" ? "monthly" : "weekly");
   };
   const handleFrequencyChange = (next: LoanFrequency) => {
     frequencyTouched.current = true;
@@ -155,11 +163,14 @@ export function NewLoanFormScreen({
   // only loans created before grace existed get the 3-day default.
   const [ocGraceEnabled, setOcGraceEnabled] = useState(false);
   const [ocGraceDays, setOcGraceDays] = useState(String(OPEN_CREDIT_DEFAULT_GRACE_DAYS));
+  // Tradicional Plus: the fixed amount that covers a quincena instead of its cuota.
+  const [penalty, setPenalty] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   const selectedCustomer = (customers ?? []).find((customer) => customer.id === customerId);
   const isOpenCredit = loanType === "open_credit";
+  const isPlus = loanType === "term_plus";
 
   // Changing the frequency changes what "healthy default" means (mañana vs.
   // en 1 semana) — a date the lender picked for the old frequency isn't
@@ -197,6 +208,7 @@ export function NewLoanFormScreen({
     const ocGrace = openCreditGraceDays(loan);
     setOcGraceEnabled(ocGrace > 0);
     if (ocGrace > 0) setOcGraceDays(String(ocGrace));
+    setPenalty(loan.penaltyCents != null ? String(loan.penaltyCents / 100) : "");
     setPrefilled(true);
   }, [source.data]);
 
@@ -250,18 +262,24 @@ export function NewLoanFormScreen({
         ...(!isOpenCredit && { termCount: Number(termCount) }),
         frequency,
         startDate,
-        loanType: isOpenCredit ? "open_credit" : undefined,
+        loanType: isOpenCredit ? "open_credit" : isPlus ? "term_plus" : undefined,
         ...(isOpenCredit && {
           graceDays: ocGraceEnabled && ocGraceDays.trim() !== "" ? Number(ocGraceDays) : 0
         }),
         // Mora and Saltar domingos are meaningless for open credit — no
         // mora ever applies to it (capitalization is the penalty instead).
-        ...(!isOpenCredit && {
+        ...(!isOpenCredit &&
+          !isPlus && {
+            graceDays: graceDays.trim() === "" ? undefined : Number(graceDays),
+            moraEnabled,
+            ...(moraEnabled && {
+              moraRate: moraRate.trim() === "" ? undefined : Number(moraRate)
+            })
+          }),
+        // Tradicional Plus has no mora: the penalty replaces it, after the grace.
+        ...(isPlus && {
           graceDays: graceDays.trim() === "" ? undefined : Number(graceDays),
-          moraEnabled,
-          ...(moraEnabled && {
-            moraRate: moraRate.trim() === "" ? undefined : Number(moraRate)
-          })
+          ...(penalty.trim() !== "" && { penalty: Number(penalty) })
         }),
         ...(frequency === "daily" && !isOpenCredit && { skipSundays })
       };
@@ -367,15 +385,28 @@ export function NewLoanFormScreen({
           onChange={handleLoanTypeChange}
         />
 
-        <SelectField
-          label="Frecuencia de pago"
-          value={frequency}
-          options={loanFrequencies.map((option) => ({
-            value: option,
-            label: frequencyLabels[option]
-          }))}
-          onChange={handleFrequencyChange}
-        />
+        {isPlus ? (
+          <View style={styles.field} testID="loan-form-frequency-locked">
+            <Text style={styles.label}>Frecuencia de pago</Text>
+            <View style={[styles.dateInput, styles.lockedInput]}>
+              <Text style={styles.dateInputText}>
+                {frequencyLabels[TRADICIONAL_PLUS_FREQUENCY]}
+              </Text>
+              <Icon name="lock" size={16} color={colors.slate} />
+            </View>
+            <Text style={styles.switchHint}>Tradicional Plus es solo quincenal por ahora.</Text>
+          </View>
+        ) : (
+          <SelectField
+            label="Frecuencia de pago"
+            value={frequency}
+            options={loanFrequencies.map((option) => ({
+              value: option,
+              label: frequencyLabels[option]
+            }))}
+            onChange={handleFrequencyChange}
+          />
+        )}
 
         <View style={styles.field}>
           <Text style={styles.label}>Primer pago</Text>
@@ -482,14 +513,53 @@ export function NewLoanFormScreen({
           </View>
         )}
 
-        {!isOpenCredit && (
+        {isPlus && (
+          <>
+            <View style={styles.field}>
+              <Text style={styles.label}>Penalidad (RD$)</Text>
+              <TextInput
+                style={styles.input}
+                keyboardType="number-pad"
+                testID="loan-form-penalty"
+                value={penalty}
+                onChangeText={setPenalty}
+                placeholder="300"
+              />
+              {hasCentavos(penalty) ? (
+                <Text style={styles.wholePesosError}>{WHOLE_PESOS_ONLY_MESSAGE}</Text>
+              ) : (
+                <Text style={styles.switchHint}>
+                  Si no puede pagar la cuota, paga la penalidad y el plan se corre una quincena. No
+                  abona al préstamo.
+                </Text>
+              )}
+            </View>
+
+            <View style={styles.field}>
+              <Text style={styles.label}>Período de gracia (días)</Text>
+              <TextInput
+                style={styles.input}
+                keyboardType="number-pad"
+                testID="loan-form-plus-grace-days"
+                value={graceDays}
+                onChangeText={(t) => setGraceDays(t.replace(/[^0-9]/g, ""))}
+                placeholder={String(DEFAULT_GRACE_DAYS)}
+              />
+              <Text style={styles.switchHint}>
+                Pasados estos días sin pago, la quincena se convierte en una penalidad pendiente.
+              </Text>
+            </View>
+          </>
+        )}
+
+        {!isOpenCredit && !isPlus && (
           <View style={[styles.field, styles.switchRow]}>
             <Text style={styles.label}>Cobrar mora por atraso</Text>
             <Toggle value={moraEnabled} onValueChange={setMoraEnabled} />
           </View>
         )}
 
-        {!isOpenCredit && moraEnabled && (
+        {!isOpenCredit && !isPlus && moraEnabled && (
           <>
             <View style={styles.field}>
               <Text style={styles.label}>Período de gracia (días)</Text>
@@ -605,6 +675,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between"
   },
   dateInputText: { fontSize: 15, color: colors.ink, fontWeight: "600" },
+  lockedInput: { backgroundColor: colors.subtle },
   dateInputHint: { fontSize: 12, color: colors.muted },
   anchorWarning: { fontSize: 12, color: colors.amber, marginTop: 6 },
   deliveryHint: { fontSize: 12, fontWeight: "600", color: colors.brandDeep },

@@ -14,9 +14,11 @@ export type LoanStatus = (typeof loanStatuses)[number];
 /**
  * "term" (fixed-cuota loan, the existing model) | "open_credit" (crédito
  * abierto: interest-only cycles on an outstanding capital balance, no fixed
- * term — see `lib/loans/openCredit.ts`).
+ * term — see `lib/loans/openCredit.ts`) | "term_plus" (Tradicional Plus: a
+ * term loan where a fixed penalty covers a missed cycle and moves the rest of
+ * the schedule one cycle later — see `lib/loans/tradicionalPlus.ts`).
  */
-export const loanTypes = ["term", "open_credit"] as const;
+export const loanTypes = ["term", "open_credit", "term_plus"] as const;
 export type LoanType = (typeof loanTypes)[number];
 
 /**
@@ -72,24 +74,39 @@ const loanTermsShape = {
   // non-daily frequencies, and for open credit (Change 2's sunday-skip
   // doesn't apply to the cycle model — see the proposal's non-goals).
   skipSundays: z.boolean().optional(),
-  // "term" (default, omitted) | "open_credit". See `LoanType` above.
+  // "term" (default, omitted) | "open_credit" | "term_plus". See `LoanType` above.
   loanType: z.enum(loanTypes).optional(),
+  // Tradicional Plus only: the fixed amount (whole pesos) that covers a
+  // cycle instead of its cuota. Required for "term_plus" (see the .refine
+  // below), ignored for every other type.
+  penalty: z
+    .number()
+    .positive("La penalidad debe ser mayor a cero")
+    .int("La penalidad debe ser en pesos enteros")
+    .transform(toCents)
+    .optional(),
   notes: z.string().optional()
 };
 
-// A term loan still needs its cuota count; an open-credit loan doesn't
-// collect one at all (Nuevo Préstamo hides the field — see the
-// loan-configuration spec).
+// A term loan (Tradicional or Tradicional Plus) still needs its cuota
+// count; an open-credit loan doesn't collect one at all (Nuevo Préstamo
+// hides the field — see the loan-configuration spec).
 const requireTermCount = (data: { loanType?: LoanType; termCount?: number }) =>
-  (data.loanType ?? "term") !== "term" || data.termCount !== undefined;
+  (data.loanType ?? "term") === "open_credit" || data.termCount !== undefined;
 const termCountRequired = { message: "El plazo debe ser mayor a cero", path: ["termCount"] };
+
+// Tradicional Plus can't run without its penalty amount.
+const requirePenalty = (data: { loanType?: LoanType; penalty?: number }) =>
+  data.loanType !== "term_plus" || data.penalty !== undefined;
+const penaltyRequired = { message: "La penalidad es obligatoria", path: ["penalty"] };
 
 export const createLoanSchema = z
   .object({
     customerId: z.string().min(1, "El cliente es obligatorio"),
     ...loanTermsShape
   })
-  .refine(requireTermCount, termCountRequired);
+  .refine(requireTermCount, termCountRequired)
+  .refine(requirePenalty, penaltyRequired);
 
 export type CreateLoanInput = z.infer<typeof createLoanSchema>;
 
@@ -99,7 +116,8 @@ export const updateLoanSchema = z
     id: z.string().min(1, "El id es obligatorio"),
     ...loanTermsShape
   })
-  .refine(requireTermCount, termCountRequired);
+  .refine(requireTermCount, termCountRequired)
+  .refine(requirePenalty, penaltyRequired);
 
 export type UpdateLoanInput = z.infer<typeof updateLoanSchema>;
 export type LoanTermsInput = Omit<UpdateLoanInput, "id">;
@@ -124,6 +142,7 @@ export const ARCHIVED_LOAN_STATUS: LoanStatus = "cancelled";
  */
 export function loanTermsFields(terms: LoanTermsInput) {
   const isOpenCredit = terms.loanType === "open_credit";
+  const isPlus = terms.loanType === "term_plus";
   return {
     principalCents: terms.principal,
     interestRateBps: Math.round(terms.interestRate * 100),
@@ -134,10 +153,12 @@ export function loanTermsFields(terms: LoanTermsInput) {
     frequency: terms.frequency,
     notes: terms.notes ?? null,
     graceDays: terms.graceDays ?? null,
-    moraEnabled: terms.moraEnabled ?? null,
-    moraRateBps: terms.moraRate != null ? Math.round(terms.moraRate * 100) : null,
+    // Tradicional Plus never charges mora — the penalty replaces it.
+    moraEnabled: isPlus ? false : (terms.moraEnabled ?? null),
+    moraRateBps: !isPlus && terms.moraRate != null ? Math.round(terms.moraRate * 100) : null,
     skipSundays: terms.skipSundays ?? null,
-    loanType: isOpenCredit ? ("open_credit" as const) : null
+    loanType: isOpenCredit ? ("open_credit" as const) : isPlus ? ("term_plus" as const) : null,
+    penaltyCents: isPlus ? (terms.penalty as number) : null
   };
 }
 
@@ -168,6 +189,8 @@ export interface Loan {
    * `lib/loans/openCredit.ts`.
    */
   loanType: LoanType | null;
+  /** Tradicional Plus's fixed penalty; null for every other type. See `lib/loans/tradicionalPlus.ts`. */
+  penaltyCents: number | null;
   createdAt: Date;
   updatedAt: Date;
 }

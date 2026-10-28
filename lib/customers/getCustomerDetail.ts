@@ -10,7 +10,8 @@ import {
   buildCustomerLoanSummary,
   buildArchivedLoanSummary,
   cycleIndexForPayment,
-  MORA_NOTE
+  MORA_NOTE,
+  PENALTY_NOTE
 } from "../loans/loanViews";
 import { computeLoanMora, loanMoraPolicy } from "../loans/mora";
 import { effectiveLoanType, ARCHIVED_LOAN_STATUS } from "../loans/loan.schema";
@@ -52,6 +53,7 @@ export function createGetCustomerDetail({ db }: GetCustomerDetailDeps) {
     const archivedLoans: CustomerDetailView["archivedLoans"] = [];
     const activity: CustomerDetailView["recentActivity"] = [];
     let inMora = false;
+    let inAtraso = false;
     for (const loan of customerLoans) {
       const loanPayments = (await db
         .select()
@@ -96,6 +98,11 @@ export function createGetCustomerDetail({ db }: GetCustomerDetailDeps) {
             moraCents,
             moraDays
           });
+          // Tradicional Plus never accrues mora, so lateness has to come from
+          // its schedule — otherwise a customer owing penalties reads "Al día".
+          if (view.tradicionalPlus && view.schedule.some((item) => item.status === "overdue")) {
+            inAtraso = true;
+          }
           activeLoans.push(buildCustomerLoanSummary(view, loan));
         }
       }
@@ -118,12 +125,15 @@ export function createGetCustomerDetail({ db }: GetCustomerDetailDeps) {
           (a, b) => a.paidAt.getTime() - b.paidAt.getTime()
         )) {
           const isMora = payment.notes === MORA_NOTE;
-          if (!isMora) cuotaNumber += 1;
+          const isPenalty = payment.notes === PENALTY_NOTE;
+          if (!isMora && !isPenalty) cuotaNumber += 1;
           activity.push({
             id: payment.id,
             description: isMora
               ? `Pago de mora · ${formatCurrency(payment.amountCents)}`
-              : `Pago cuota ${cuotaNumber} · ${formatCurrency(payment.amountCents)}`,
+              : isPenalty
+                ? `Pago de penalidad · ${formatCurrency(payment.amountCents)}`
+                : `Pago cuota ${cuotaNumber} · ${formatCurrency(payment.amountCents)}`,
             at: payment.paidAt
           });
         }
@@ -148,7 +158,7 @@ export function createGetCustomerDetail({ db }: GetCustomerDetailDeps) {
       address: customer.address,
       cedula: customer.cedula,
       sinceYear: customer.createdAt.getFullYear(),
-      standing: inMora ? "mora" : "al_dia",
+      standing: inMora ? "mora" : inAtraso ? "atraso" : "al_dia",
       activeLoans,
       archivedLoans: archivedLoans.sort((a, b) => b.archivedAt.getTime() - a.archivedAt.getTime()),
       recentActivity: activity.slice(0, 5)

@@ -26,6 +26,7 @@ function loan(overrides: Partial<Loan> = {}): Loan {
     moraRateBps: null,
     skipSundays: null,
     loanType: null,
+    penaltyCents: null,
     createdAt: TODAY,
     updatedAt: TODAY,
     ...overrides
@@ -182,5 +183,28 @@ describe("composePosition", () => {
 
     expect(position.month.collectedCents).toBe(20000);
     expect(position.receivableCents).toBe(1200000);
+  });
+
+  it("counts a Tradicional Plus loan as término fijo, late on a missed cycle, without penalties in to-collect", () => {
+    // Arrange — quincenal RD$10,000 at 20% (4 × RD$3,000), first cycle due 5 Oct
+    const plus = loan({
+      id: "plus",
+      frequency: "biweekly",
+      startDate: new Date(2026, 8, 20),
+      loanType: "term_plus",
+      moraEnabled: false,
+      penaltyCents: 30000
+    });
+    const penalty = payment("plus", 30000, new Date(2026, 9, 5, 10), "penalidad");
+
+    // Act
+    const late = composePosition({ loans: [plus], payments: [], today: TODAY });
+    const moved = composePosition({ loans: [plus], payments: [penalty], today: TODAY });
+
+    // Assert — unpaid: late; after a penalty: al día, nothing collected toward the balance
+    expect(late.byType.term.loanCount).toBe(1);
+    expect(late.overdue.loanCount).toBe(1);
+    expect(moved.overdue.loanCount).toBe(0);
+    expect(moved.receivableCents).toBe(1200000);
   });
 });

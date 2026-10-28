@@ -42,6 +42,7 @@ function makeLoan(
     moraRateBps: null,
     skipSundays: null,
     loanType: "open_credit",
+    penaltyCents: null,
     createdAt: START,
     updatedAt: START
   };

@@ -61,6 +61,7 @@ const loan = (
   moraRateBps: null,
   skipSundays: null,
   loanType: null,
+  penaltyCents: null,
   pushedAt: T1,
   createdAt: T0,
   updatedAt: T1,

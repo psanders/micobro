@@ -240,7 +240,9 @@ export function HomeScreen() {
                     amount={formatCurrency(visit.amountCents)}
                     subLabel={
                       visit.status === "overdue"
-                        ? "Mora"
+                        ? visit.hasMora
+                          ? "Mora"
+                          : "Atraso"
                         : visit.status === "pending"
                           ? "Hoy"
                           : undefined
