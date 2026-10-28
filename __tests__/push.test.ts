@@ -21,6 +21,10 @@ jest.mock("../lib/sync/clientesLayout", () => ({
   ensureClientesLayout: jest.fn().mockResolvedValue(true)
 }));
 
+jest.mock("../lib/sync/prestamosLayout", () => ({
+  ensurePenaltyHeader: jest.fn().mockResolvedValue(undefined)
+}));
+
 const mockQueueCedulaResend = jest.fn().mockResolvedValue(0);
 jest.mock("../lib/sync/queueCedulaResend", () => ({
   createQueueCedulaResend: () => mockQueueCedulaResend
@@ -199,7 +203,7 @@ describe("pushPendingMutations", () => {
     const result = await pushPendingMutations(db);
 
     expect(appendRowMock).toHaveBeenCalledTimes(1);
-    expect(appendRowMock.mock.calls[0][1]).toBe("Préstamos!A:P");
+    expect(appendRowMock.mock.calls[0][1]).toBe("Préstamos!A:Q");
     // Only the loan is cleared; the customer's row is neither deleted nor marked failed.
     expect(db.delete).toHaveBeenCalledTimes(1);
     expect(db.update).not.toHaveBeenCalledWith(pendingMutations);
@@ -337,7 +341,7 @@ describe("pushPendingMutations", () => {
     const result = await pushPendingMutations(db);
 
     // Assert
-    expect(appendRowMock).toHaveBeenCalledWith("sheet-1", "Préstamos!A:P", [
+    expect(appendRowMock).toHaveBeenCalledWith("sheet-1", "Préstamos!A:Q", [
       "loan-1",
       "customer-1",
       500000,
@@ -353,7 +357,8 @@ describe("pushPendingMutations", () => {
       "",
       "",
       "2026-01-01T00:00:00.000Z",
-      "2026-01-01T00:00:00.000Z"
+      "2026-01-01T00:00:00.000Z",
+      ""
     ]);
     expect(result).toEqual({ pushed: 1, failed: 0 });
   });
@@ -395,7 +400,7 @@ describe("pushPendingMutations", () => {
     // Assert
     expect(appendRowMock).toHaveBeenCalledWith(
       "sheet-1",
-      "Préstamos!A:P",
+      "Préstamos!A:Q",
       expect.arrayContaining(["TRUE", 1500])
     );
   });
@@ -437,7 +442,7 @@ describe("pushPendingMutations", () => {
     // Assert
     expect(appendRowMock).toHaveBeenCalledWith(
       "sheet-1",
-      "Préstamos!A:P",
+      "Préstamos!A:Q",
       expect.arrayContaining(["FALSE", ""])
     );
   });
@@ -479,7 +484,7 @@ describe("pushPendingMutations", () => {
     // Assert
     expect(appendRowMock).toHaveBeenCalledWith(
       "sheet-1",
-      "Préstamos!A:P",
+      "Préstamos!A:Q",
       expect.arrayContaining(["TRUE"])
     );
   });
@@ -542,7 +547,7 @@ describe("pushPendingMutations", () => {
     // Assert
     expect(appendRowMock).toHaveBeenCalledWith(
       "sheet-1",
-      "Préstamos!A:P",
+      "Préstamos!A:Q",
       expect.arrayContaining(["open_credit"])
     );
   });
@@ -563,9 +568,39 @@ describe("pushPendingMutations", () => {
     // Act
     await pushPendingMutations(db);
 
-    // Assert — loanType is the column immediately before createdAt/updatedAt
+    // Assert — loanType is the column immediately before createdAt/updatedAt/penalty
     const values = appendRowMock.mock.calls[0][2] as unknown[];
-    expect(values[values.length - 3]).toBe("");
+    expect(values[values.length - 4]).toBe("");
+    expect(values[values.length - 1]).toBe("");
+  });
+
+  it("emits loanType and the penalty for a Tradicional Plus loan", async () => {
+    // Arrange
+    const mutation = {
+      id: "mut-plus",
+      entity: "loan",
+      entityId: "loan-plus",
+      operation: "create",
+      payload: JSON.stringify({
+        ...JSON.parse(loanPayload),
+        id: "loan-plus",
+        frequency: "biweekly",
+        moraEnabled: false,
+        loanType: "term_plus",
+        penaltyCents: 30000
+      }),
+      status: "pending",
+      retryCount: 0
+    };
+    const db = makeDbStub([mutation]);
+
+    // Act
+    await pushPendingMutations(db);
+
+    // Assert — penalty is appended after Actualizado
+    const values = appendRowMock.mock.calls[0][2] as unknown[];
+    expect(values[values.length - 4]).toBe("term_plus");
+    expect(values[values.length - 1]).toBe(30000);
   });
 
   it("updates the existing Préstamos row in place for a loan update mutation", async () => {
@@ -589,7 +624,7 @@ describe("pushPendingMutations", () => {
     expect(readRangeMock).toHaveBeenCalledWith("sheet-1", "Préstamos!A:A");
     expect(updateRowMock).toHaveBeenCalledWith(
       "sheet-1",
-      "Préstamos!A2:P2",
+      "Préstamos!A2:Q2",
       expect.arrayContaining(["loan-1"])
     );
     expect(appendRowMock).not.toHaveBeenCalled();

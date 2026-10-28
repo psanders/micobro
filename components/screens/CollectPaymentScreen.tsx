@@ -26,6 +26,7 @@ import { useAsync } from "../../lib/hooks/useAsync";
 import { computePaymentSplit } from "../../lib/payments/paymentSplit";
 import { resolveOpenCreditPayOptions } from "../../lib/payments/openCreditPayOptions";
 import type { OpenCreditPayOption } from "../../lib/payments/openCreditPayOptions";
+import { resolveTradicionalPlusPayOptions } from "../../lib/payments/tradicionalPlusPayOptions";
 import { cuotaLabel as formatCuotaLabel } from "../../lib/loans/loanViews";
 import {
   formatAmount,
@@ -44,7 +45,7 @@ import { colors, fonts } from "../../lib/ui/theme";
 import type { PaymentMethod } from "../../lib/payments/payment.schema";
 import type { ReceiptLine } from "../../lib/repo/types";
 
-type PayOption = "arrears" | "cuota" | "mora" | "settle" | "custom";
+type PayOption = "arrears" | "cuota" | "mora" | "settle" | "custom" | "penalty";
 
 export function CollectPaymentScreen({ loanId }: { loanId: string }) {
   const router = useRouter();
@@ -133,8 +134,35 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
   const mora = ctx?.moraCents ?? 0;
   const settleAmount = (ctx?.remainingBalanceCents ?? 0) + mora;
 
+  // Tradicional Plus: only "Cobrar cuota" / "Cobrar penalidad", each for its
+  // exact amount — no mora, no saldar, no otro monto (collect-payment spec).
+  const plus = ctx?.tradicionalPlus ?? null;
+  const plusView = useMemo(() => (plus ? resolveTradicionalPlusPayOptions(plus) : null), [plus]);
+
   const options = useMemo(() => {
-    const opts: { key: PayOption; label: string; value: string; valueColor?: string }[] = [];
+    const opts: {
+      key: PayOption;
+      label: string;
+      value: string;
+      valueColor?: string;
+      disabled?: boolean;
+      note?: string | null;
+    }[] = [];
+    if (plusView) {
+      for (const [key, option] of [
+        ["cuota", plusView.cuota],
+        ["penalty", plusView.penalty]
+      ] as const) {
+        opts.push({
+          key,
+          label: option.label,
+          value: formatCurrency(option.amountCents),
+          disabled: !option.enabled,
+          note: option.note
+        });
+      }
+      return opts;
+    }
     if (mora > 0) {
       opts.push({
         key: "arrears",
@@ -160,9 +188,12 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
     }
     opts.push({ key: "custom", label: "Otro monto", value: "Escribir", valueColor: colors.slate });
     return opts;
-  }, [cuota, mora, settleAmount, ctx?.remainingInstallments]);
+  }, [cuota, mora, settleAmount, ctx?.remainingInstallments, plusView]);
 
-  const effectiveOption: PayOption = selectedOption ?? (mora > 0 ? "arrears" : "cuota");
+  const effectiveOption: PayOption =
+    selectedOption ??
+    (plusView ? (plusView.defaultOption ?? "cuota") : mora > 0 ? "arrears" : "cuota");
+  const selectedDisabled = options.find((o) => o.key === effectiveOption)?.disabled ?? false;
 
   const customAmountCents = useMemo(() => {
     return parseAmountToCents(customAmountText) ?? 0;
@@ -180,8 +211,10 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
         return settleAmount;
       case "custom":
         return customAmountCents;
+      case "penalty":
+        return plusView?.penalty.amountCents ?? 0;
     }
-  }, [effectiveOption, cuota, mora, settleAmount, customAmountCents]);
+  }, [effectiveOption, cuota, mora, settleAmount, customAmountCents, plusView]);
 
   const split = useMemo(
     () =>
@@ -198,6 +231,19 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
     if (!ctx) return [];
     const cuotaLabel = formatCuotaLabel(ctx.currentInstallmentNumber, ctx.installmentsTotal);
     switch (effectiveOption) {
+      case "penalty": {
+        const count = plusView?.penalty.count ?? 1;
+        return [
+          {
+            label: count > 1 ? `Penalidades (${count}) · no abonan` : "Penalidad · no abona",
+            amountCents: plusView?.penalty.amountCents ?? 0
+          },
+          {
+            label: `El plan se corre ${count > 1 ? `${count} quincenas` : "una quincena"}`,
+            amountCents: 0
+          }
+        ];
+      }
       case "mora":
         return [{ label: "Mora (prioridad)", amountCents: mora }];
       case "arrears":
@@ -252,7 +298,7 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
       default:
         return [{ label: cuotaLabel, amountCents: cuota }];
     }
-  }, [ctx, effectiveOption, cuota, mora, customAmountCents, split]);
+  }, [ctx, effectiveOption, cuota, mora, customAmountCents, split, plusView]);
 
   const hint =
     effectiveOption === "custom"
@@ -263,7 +309,9 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
     if (!ctx || submitting) return;
     const isOpenCredit = ctx.openCredit !== null;
     const totalCents = isOpenCredit ? ocAmountCents : amount;
-    if (totalCents <= 0) return;
+    if (totalCents <= 0 || selectedDisabled) return;
+    const penaltyCount =
+      plusView && effectiveOption === "penalty" ? plusView.penalty.count : undefined;
 
     setSubmitting(true);
     try {
@@ -282,8 +330,9 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
         loanId: ctx.loanId,
         amountCents: totalCents,
         method,
-        moraCents: isOpenCredit ? 0 : split.moraPortionCents,
-        lines
+        moraCents: isOpenCredit || plusView ? 0 : split.moraPortionCents,
+        lines,
+        ...(penaltyCount !== undefined && { penaltyCount })
       });
       router.replace({
         pathname: "/pago-confirmado",
@@ -306,8 +355,15 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
           balanceAfter: JSON.stringify(receipt.balanceAfter)
         }
       });
-    } catch {
-      Alert.alert("Error", "No se pudo registrar el cobro. Inténtalo de nuevo.");
+    } catch (err) {
+      // A Tradicional Plus cobro can be refused by the loan's own rules
+      // (e.g. penalties owed first) — that reason is worth showing.
+      Alert.alert(
+        "Error",
+        plusView && err instanceof Error
+          ? err.message
+          : "No se pudo registrar el cobro. Inténtalo de nuevo."
+      );
     } finally {
       setSubmitting(false);
     }
@@ -721,6 +777,7 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
                     value={option.value}
                     valueColor={option.valueColor}
                     selected={effectiveOption === option.key}
+                    disabled={option.disabled}
                     onPress={() => {
                       setSelectedOption(option.key);
                       if (option.key === "custom") {
@@ -728,6 +785,11 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
                       }
                     }}
                   />
+                  {option.disabled && option.note ? (
+                    <Text style={styles.optionNote} testID={`option-note-${option.key}`}>
+                      {option.note}
+                    </Text>
+                  ) : null}
                   {option.key === "custom" && effectiveOption === "custom" ? (
                     <View style={styles.customInputCard}>
                       <Text style={styles.customInputLabel}>RD$</Text>
@@ -805,9 +867,9 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
             style={[
               styles.cta,
               { paddingBottom: 18 + insets.bottom },
-              (submitting || amount <= 0) && styles.ctaDisabled
+              (submitting || amount <= 0 || selectedDisabled) && styles.ctaDisabled
             ]}
-            disabled={submitting || amount <= 0}
+            disabled={submitting || amount <= 0 || selectedDisabled}
             onPress={handleConfirm}
           >
             {submitting ? (
@@ -827,6 +889,13 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
 
 const styles = StyleSheet.create({
   wholePesosError: { fontSize: 12, fontFamily: fonts.medium, color: colors.red },
+  optionNote: {
+    fontSize: 12,
+    fontFamily: fonts.medium,
+    color: colors.amber,
+    marginTop: 4,
+    marginLeft: 4
+  },
   screen: { flex: 1, backgroundColor: colors.bg },
   loading: { marginTop: 40 },
   content: { paddingHorizontal: 20, paddingTop: 8, paddingBottom: 24, gap: 18 },

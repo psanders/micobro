@@ -81,6 +81,55 @@ describe("createCreateLoan", () => {
       );
     });
 
+    it("persists a Tradicional Plus loan with its penalty and no mora", async () => {
+      // Arrange
+      const db = makeDbStub();
+      const createLoan = createCreateLoan({ db: db as unknown as Database });
+
+      // Act — a mora toggle sent along is ignored: the penalty replaces mora
+      const result = await createLoan({
+        customerId: "customer-1",
+        principal: 10000,
+        interestRate: 30,
+        termCount: 10,
+        frequency: "biweekly",
+        graceDays: 3,
+        moraEnabled: true,
+        moraRate: 10,
+        loanType: "term_plus",
+        penalty: 300
+      });
+
+      // Assert
+      expect(result.loanType).toBe("term_plus");
+      expect(result.penaltyCents).toBe(30000);
+      expect(result.moraEnabled).toBe(false);
+      expect(result.moraRateBps).toBeNull();
+      expect(result.graceDays).toBe(3);
+      expect(db.values).toHaveBeenCalledWith(
+        expect.objectContaining({ loanType: "term_plus", penaltyCents: 30000 })
+      );
+    });
+
+    it("stores no penalty for a Tradicional loan even if one is sent", async () => {
+      // Arrange
+      const db = makeDbStub();
+      const createLoan = createCreateLoan({ db: db as unknown as Database });
+
+      // Act
+      const result = await createLoan({
+        customerId: "customer-1",
+        principal: 5000,
+        interestRate: 10,
+        termCount: 12,
+        frequency: "weekly",
+        penalty: 300
+      });
+
+      // Assert
+      expect(result.penaltyCents).toBeNull();
+    });
+
     it("stores loanType null (term) when omitted", async () => {
       // Arrange
       const db = makeDbStub();
@@ -135,6 +184,46 @@ describe("createCreateLoan", () => {
         })
       ).rejects.toBeInstanceOf(ValidationError);
       expect(db.insert).not.toHaveBeenCalled();
+    });
+
+    it("throws ValidationError for a Tradicional Plus loan without a penalty", async () => {
+      // Arrange
+      const db = makeDbStub();
+      const createLoan = createCreateLoan({ db: db as unknown as Database });
+
+      // Act
+      const result = createLoan({
+        customerId: "customer-1",
+        principal: 10000,
+        interestRate: 30,
+        termCount: 10,
+        frequency: "biweekly",
+        loanType: "term_plus"
+      });
+
+      // Assert
+      await expect(result).rejects.toMatchObject({
+        fieldErrors: [expect.objectContaining({ field: "penalty" })]
+      });
+      expect(db.insert).not.toHaveBeenCalled();
+    });
+
+    it("throws ValidationError for a Tradicional Plus loan missing termCount", async () => {
+      // Arrange
+      const db = makeDbStub();
+      const createLoan = createCreateLoan({ db: db as unknown as Database });
+
+      // Act + Assert
+      await expect(
+        createLoan({
+          customerId: "customer-1",
+          principal: 10000,
+          interestRate: 30,
+          frequency: "biweekly",
+          loanType: "term_plus",
+          penalty: 300
+        })
+      ).rejects.toBeInstanceOf(ValidationError);
     });
 
     it("throws ValidationError for a term loan (default) missing termCount", async () => {

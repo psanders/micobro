@@ -44,6 +44,7 @@ const loan: Loan = {
   moraRateBps: null,
   skipSundays: null,
   loanType: null,
+  penaltyCents: null,
   createdAt: daysAgo(31),
   updatedAt: daysAgo(31)
 };
@@ -255,6 +256,7 @@ describe("addFrequencyInterval / defaultFirstPaymentDate", () => {
       moraRateBps: null,
       skipSundays: null,
       loanType: null,
+      penaltyCents: null,
       createdAt: now,
       updatedAt: now
     };
@@ -334,6 +336,7 @@ describe("NewLoanFormScreen startDate round-trip (monthly)", () => {
       moraRateBps: null,
       skipSundays: null,
       loanType: null,
+      penaltyCents: null,
       createdAt: startDate,
       updatedAt: startDate
     };
@@ -452,6 +455,7 @@ describe("installmentDueDate with skipSundays", () => {
       moraRateBps: null,
       skipSundays: null,
       loanType: null,
+      penaltyCents: null,
       createdAt: saturday,
       updatedAt: saturday,
       ...overrides
@@ -629,6 +633,7 @@ describe("buildCustomerLoanSummary", () => {
     moraRateBps: null,
     skipSundays: null,
     loanType: "open_credit",
+    penaltyCents: null,
     createdAt: today,
     updatedAt: today
   };

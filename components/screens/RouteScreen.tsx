@@ -66,7 +66,9 @@ function visitPresentation(visit: RouteVisit): {
         metaColor: "#A8521F",
         metaBold: true,
         amountColor: colors.orangeDeep,
-        subLabel: "+ mora",
+        // Only when mora actually accrued — a Tradicional Plus loan (or one with
+        // mora off) is late without any mora on top.
+        subLabel: visit.hasMora ? "+ mora" : undefined,
         variant: isExpired(visit) ? "overdue" : "default"
       };
     case "done":

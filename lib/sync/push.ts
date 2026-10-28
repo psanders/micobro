@@ -16,6 +16,7 @@ import { appendRow, updateRow, readRange, deleteRows } from "./sheetsClient";
 import { PULLED_TABLES, isPulledEntity } from "./syncedTables";
 import { getSheetId } from "./config";
 import { ensureClientesLayout } from "./clientesLayout";
+import { ensurePenaltyHeader } from "./prestamosLayout";
 import { createQueueCedulaResend } from "./queueCedulaResend";
 import { formatCedula } from "../utils/cedula";
 import { logger } from "../logger";
@@ -33,7 +34,7 @@ export const LAST_PUSHED_AT_KEY = "lastPushedAt";
 // names and column widths match exactly what push writes here.
 export const ENTITY_RANGES: Record<string, string> = {
   customer: "Clientes!A:G",
-  loan: "Préstamos!A:P",
+  loan: "Préstamos!A:Q",
   payment: "Pagos!A:G",
   visit: "Visitas!A:H",
   cashClose: "Cierres!A:E"
@@ -72,7 +73,10 @@ function loanRowValues(payload: Record<string, unknown>): (string | number | nul
     payload.skipSundays == null ? "" : payload.skipSundays ? "TRUE" : "FALSE",
     (payload.loanType as string | null) ?? "",
     payload.createdAt as string,
-    payload.updatedAt as string
+    payload.updatedAt as string,
+    // Appended after Actualizado (not next to Tipo) so Sheets made before
+    // Tradicional Plus need no column shift — see prestamosLayout.ts.
+    (payload.penaltyCents as number | null) ?? ""
   ];
 }
 
@@ -183,6 +187,8 @@ export async function pushPendingMutations(db: Database): Promise<PushResult> {
   // Customer rows are only written once the Sheet's Clientes tab is known to
   // be in the Cédula layout; until then they stay queued, untouched.
   const customersReady = await ensureClientesLayout(db, sheetId);
+  // Labels the appended Penalidad column on older Sheets; rows don't wait on it.
+  await ensurePenaltyHeader(db, sheetId);
 
   // "failed" rows below the retry cap must stay eligible, or a single
   // transient failure (e.g. a push attempted while offline) makes that

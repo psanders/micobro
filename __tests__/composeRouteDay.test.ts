@@ -46,6 +46,7 @@ function loan(overrides: Partial<Loan>): Loan {
     moraRateBps: null,
     skipSundays: null,
     loanType: null,
+    penaltyCents: null,
     createdAt: daysBeforeToday(10),
     updatedAt: daysBeforeToday(10),
     ...overrides
@@ -244,6 +245,67 @@ describe("composeRouteDay", () => {
     expect(day.clientCount).toBe(2);
   });
 
+  it("puts a Tradicional Plus loan with owed penalties on the route as overdue for the penalties", () => {
+    // Arrange — quincenal, cycles due 20 and 5 days ago, both past their 3
+    // días de gracia: two owed penalties (RD$600), no mora
+    const plus = loan({
+      frequency: "biweekly",
+      startDate: daysBeforeToday(35),
+      termCount: 4,
+      graceDays: 3,
+      moraEnabled: false,
+      loanType: "term_plus",
+      penaltyCents: 30000
+    });
+
+    // Act
+    const day = composeRouteDay({
+      customers: [customer({})],
+      loans: [plus],
+      payments: [],
+      today: TODAY
+    });
+
+    // Assert
+    expect(day.visits).toHaveLength(1);
+    expect(day.visits[0]).toMatchObject({
+      status: "overdue",
+      overdueDays: 20,
+      amountCents: 60000,
+      hasMora: false
+    });
+  });
+
+  it("moves a Tradicional Plus loan off today's route once its penalty is paid", () => {
+    // Arrange — cycle due yesterday, penalty paid before today: next cycle in 14 days
+    const plus = loan({
+      frequency: "biweekly",
+      startDate: daysBeforeToday(16),
+      termCount: 4,
+      graceDays: 3,
+      moraEnabled: false,
+      loanType: "term_plus",
+      penaltyCents: 30000
+    });
+    const penalty = payment({
+      amountCents: 30000,
+      notes: "penalidad",
+      paidAt: daysBeforeToday(1),
+      createdAt: daysBeforeToday(1)
+    });
+
+    // Act
+    const day = composeRouteDay({
+      customers: [customer({})],
+      loans: [plus],
+      payments: [penalty],
+      today: TODAY
+    });
+
+    // Assert
+    expect(day.visits).toHaveLength(0);
+  });
+
   it("ignores loans that are not active", () => {
     // Arrange
     const defaultedLoan = loan({
@@ -280,6 +342,7 @@ describe("composeRouteDay", () => {
         termCount: 0,
         frequency: "weekly",
         loanType: "open_credit",
+        penaltyCents: null,
         startDate: daysBeforeToday(7),
         ...overrides
       });

@@ -33,6 +33,7 @@ function baseLoan(overrides: Partial<Loan> = {}): Loan {
     moraRateBps: null,
     skipSundays: null,
     loanType: "open_credit",
+    penaltyCents: null,
     createdAt: TODAY,
     updatedAt: TODAY,
     ...overrides

@@ -67,7 +67,8 @@ describe("parseSheetRow round trip", () => {
       skipSundays: true,
       loanType: "open_credit",
       createdAt: created,
-      updatedAt: updated
+      updatedAt: updated,
+      penaltyCents: null
     };
 
     // Act
@@ -83,6 +84,69 @@ describe("parseSheetRow round trip", () => {
         updatedAt: new Date(updated)
       }
     });
+  });
+
+  it("reads a Tradicional Plus loan's type and penalty back", () => {
+    // Arrange
+    const payload = {
+      id: "l2",
+      customerId: "c1",
+      principalCents: 1000000,
+      interestRateBps: 3000,
+      termCount: 10,
+      frequency: "biweekly",
+      startDate: created,
+      status: "active",
+      notes: null,
+      graceDays: 3,
+      moraEnabled: false,
+      moraRateBps: null,
+      skipSundays: null,
+      loanType: "term_plus",
+      createdAt: created,
+      updatedAt: updated,
+      penaltyCents: 30000
+    };
+
+    // Act
+    const result = parseSheetRow("loan", asSheetRow(ROW_MAPPERS.loan(payload)));
+
+    // Assert
+    expect(result).toEqual({
+      ok: true,
+      record: expect.objectContaining({ loanType: "term_plus", penaltyCents: 30000 })
+    });
+  });
+
+  it("reads a loan row from a Sheet without the Penalidad column", () => {
+    // Arrange — 16 cells, as written before Tradicional Plus
+    const row = asSheetRow(
+      ROW_MAPPERS.loan({
+        id: "l3",
+        customerId: "c1",
+        principalCents: 500000,
+        interestRateBps: 1000,
+        termCount: 12,
+        frequency: "weekly",
+        startDate: created,
+        status: "active",
+        notes: null,
+        graceDays: null,
+        moraEnabled: null,
+        moraRateBps: null,
+        skipSundays: null,
+        loanType: null,
+        createdAt: created,
+        updatedAt: updated,
+        penaltyCents: null
+      }).slice(0, 16)
+    );
+
+    // Act
+    const result = parseSheetRow("loan", row);
+
+    // Assert
+    expect(result).toEqual({ ok: true, record: expect.objectContaining({ penaltyCents: null }) });
   });
 
   it("reads a payment back", () => {

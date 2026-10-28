@@ -32,6 +32,7 @@ const loan: Loan = {
   moraRateBps: null,
   skipSundays: null,
   loanType: "open_credit",
+  penaltyCents: null,
   createdAt: d("2026-01-05"),
   updatedAt: d("2026-01-05")
 };
