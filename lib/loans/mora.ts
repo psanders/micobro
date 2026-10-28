@@ -11,7 +11,7 @@
  */
 import { MORA_NOTE, installmentDueDate, principalPaidCents } from "./loanViews";
 import { cuotaCents as computeCuotaCents, totalRepayCents } from "./loanMath";
-import { DEFAULT_GRACE_DAYS } from "./loan.schema";
+import { DEFAULT_GRACE_DAYS, effectiveLoanType } from "./loan.schema";
 import { roundToPeso } from "../utils/money";
 import type { Loan } from "./loan.schema";
 import type { Payment } from "../payments/payment.schema";
@@ -170,6 +170,9 @@ export function computeLoanMora(
   today: Date = new Date(),
   policy: MoraPolicy = DEFAULT_MORA_POLICY
 ): AccruedMora {
+  // Tradicional Plus never accrues mora — an unpaid cycle becomes an owed
+  // penalty instead (see lib/loans/tradicionalPlus.ts).
+  if (effectiveLoanType(loan) === "term_plus") return { moraCents: 0, moraDays: 0 };
   const overdue = oldestOverdueInstallment(loan, payments, today);
   if (!overdue) return { moraCents: 0, moraDays: 0 };
 

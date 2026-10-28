@@ -93,6 +93,10 @@ export const loans = sqliteTable("loans", {
   // Open-credit loans run interest-only cycles on an outstanding capital
   // balance instead of a fixed cuota schedule — see `lib/loans/openCredit.ts`.
   loanType: text("loan_type"),
+  // Tradicional Plus's fixed penalty, in cents. Null for every other loan
+  // type. Penalties paid are counted from `payments` rows flagged
+  // `notes: "penalidad"`, not stored here — see `lib/loans/tradicionalPlus.ts`.
+  penaltyCents: integer("penalty_cents"),
   // When the Sheet last confirmed holding this row (set by push on success,
   // and by pull for every row it reads). Only rows with this set can be
   // treated as deleted when they go missing from the Sheet — see

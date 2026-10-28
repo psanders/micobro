@@ -18,6 +18,14 @@ import type { Customer } from "../customers/customer.schema";
 import type { Payment } from "../payments/payment.schema";
 import { openCreditReceiptBreakdown } from "./openCredit";
 import { addFrequencyInterval } from "./frequency";
+import { MORA_NOTE, PENALTY_NOTE, isPrincipalPayment } from "../payments/paymentNotes";
+import {
+  penaltyLabel,
+  tradicionalPlusDueDates,
+  tradicionalPlusReceipt,
+  tradicionalPlusState,
+  tradicionalPlusView
+} from "./tradicionalPlus";
 // Re-exported so existing imports from loanViews keep working.
 export { addFrequencyInterval } from "./frequency";
 import type { OpenCreditCycle, OpenCreditState } from "./openCredit";
@@ -35,7 +43,8 @@ import type {
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-export const MORA_NOTE = "mora";
+// Re-exported so existing imports from loanViews keep working.
+export { MORA_NOTE, PENALTY_NOTE } from "../payments/paymentNotes";
 
 /** "loan-3" → "L-00003"; UUIDs hash to a stable 5-digit code. */
 export function loanCode(id: string): string {
@@ -104,10 +113,13 @@ export function installmentDueDate(loan: Loan, number: number): Date {
  * `buildLoanDetailView`'s `endDate`. `null` for a crédito abierto loan,
  * which has no fixed term (empty schedule) — shared by `buildPaymentReceipt`
  * and `collectPayment`/the mock repo's `collect`, both of which need it
- * without building the whole schedule.
+ * without building the whole schedule. A Tradicional Plus loan's end date
+ * moves with every penalty, so it needs the loan's `payments`.
  */
-export function loanEndDate(loan: Loan): Date | null {
-  if (effectiveLoanType(loan) !== "term" || loan.termCount <= 0) return null;
+export function loanEndDate(loan: Loan, payments: Payment[] = []): Date | null {
+  const type = effectiveLoanType(loan);
+  if (type === "open_credit" || loan.termCount <= 0) return null;
+  if (type === "term_plus") return tradicionalPlusState(loan, payments).endDate;
   return installmentDueDate(loan, loan.termCount);
 }
 
@@ -140,7 +152,7 @@ export function healthyFirstPaymentFloor(
 }
 
 export function principalPaidCents(payments: Payment[]): number {
-  return payments.filter((p) => p.notes !== MORA_NOTE).reduce((sum, p) => sum + p.amountCents, 0);
+  return payments.filter(isPrincipalPayment).reduce((sum, p) => sum + p.amountCents, 0);
 }
 
 export interface LoanViewInput {
@@ -162,6 +174,14 @@ export function buildLoanDetailView({
   moraDays = 0,
   today = new Date()
 }: LoanViewInput): LoanDetailView {
+  // Tradicional Plus: penalties move the due dates and replace mora.
+  const plus =
+    effectiveLoanType(loan) === "term_plus" ? tradicionalPlusState(loan, payments, today) : null;
+  const plusDueDates = plus ? tradicionalPlusDueDates(loan, payments) : null;
+  if (plus) {
+    moraCents = 0;
+    moraDays = 0;
+  }
   const cuota = cuotaCents(loan.principalCents, loan.interestRateBps, loan.termCount);
   const lastCuota = lastCuotaCents(loan.principalCents, loan.interestRateBps, loan.termCount);
   const repayCents = totalRepayCents(loan.principalCents, loan.interestRateBps);
@@ -176,7 +196,7 @@ export function buildLoanDetailView({
     // The last cuota absorbs the rounding remainder (see `lastCuotaCents`).
     const amountCents = number === loan.termCount ? lastCuota : cuota;
     cumulative += amountCents;
-    const dueDate = installmentDueDate(loan, number);
+    const dueDate = plusDueDates ? plusDueDates[number - 1]! : installmentDueDate(loan, number);
     const status: LoanScheduleItem["status"] =
       paidCents >= cumulative ? "paid" : dueDate < startOfToday ? "overdue" : "upcoming";
     const withMora = status === "overdue" && !moraAttached && moraCents > 0;
@@ -193,7 +213,15 @@ export function buildLoanDetailView({
   const firstUnpaid = schedule.find((item) => item.status !== "paid") ?? null;
 
   const dueTodayLines: DueTodayLine[] = [];
-  for (const item of overdue) {
+  // Owed penalties come before any cuota, so they're the whole amount due.
+  if (plus && plus.owedPenalties > 0) {
+    dueTodayLines.push({
+      kind: "penalty",
+      penaltyCount: plus.owedPenalties,
+      amountCents: plus.owedCents
+    });
+  }
+  for (const item of dueTodayLines.length > 0 ? [] : overdue) {
     dueTodayLines.push({
       kind: "installment",
       installmentNumber: item.number,
@@ -247,7 +275,8 @@ export function buildLoanDetailView({
     // Callers building an open-credit view override this after the fact
     // (buildLoanDetailView's cuota/schedule math is term-only) — see
     // getLoanDetailView.ts / repo/mock/index.ts's viewOf.
-    openCredit: null
+    openCredit: null,
+    tradicionalPlus: plus ? tradicionalPlusView(plus) : null
   };
 }
 
@@ -304,7 +333,7 @@ function cuotaNumbersByPaymentId(loan: Loan, loanPayments: Payment[]): Map<strin
   let cuotaNumber = 0;
   const numbers = new Map<string, number>();
   for (const payment of chronological) {
-    if (payment.notes === MORA_NOTE) continue;
+    if (!isPrincipalPayment(payment)) continue;
     if (payment.amountCents >= cuota) {
       cuotaNumber += 1;
       numbers.set(payment.id, cuotaNumber);
@@ -329,6 +358,16 @@ export function buildPaymentHistoryView(loan: Loan, allPayments: Payment[]): Pay
   let moraPaidCents = 0;
   const entries: PaymentHistoryEntry[] = [];
   for (const payment of chronological) {
+    if (payment.notes === PENALTY_NOTE) {
+      entries.push({
+        id: payment.id,
+        date: payment.paidAt,
+        label: penaltyLabel(1),
+        subLabel: `Corre el plan una quincena · ${methodLabels[payment.method ?? "cash"]} · Recibo #${receiptNumberOf.get(payment.id)}`,
+        amountCents: payment.amountCents
+      });
+      continue;
+    }
     const isMora = payment.notes === MORA_NOTE;
     if (isMora) {
       moraPaidCents += payment.amountCents;
@@ -394,17 +433,26 @@ export function buildPaymentReceipt(
       ? openCreditReceiptBreakdown(loan, loanPayments, target.id, formatShortDate)
       : null;
 
+  const plus =
+    effectiveLoanType(loan) === "term_plus"
+      ? tradicionalPlusReceipt(loan, loanPayments, siblings, formatShortDate)
+      : null;
+
   const lines: ReceiptLine[] = openCredit
     ? openCredit.lines
-    : [...siblings]
-        .sort((a, b) => (a.notes === MORA_NOTE ? 0 : 1) - (b.notes === MORA_NOTE ? 0 : 1))
-        .map((p) => {
-          if (p.notes === MORA_NOTE)
-            return { label: "Mora (prioridad)", amountCents: p.amountCents };
-          const cuotaNumber = cuotaNumbers.get(p.id);
-          const label = cuotaNumber ? cuotaLabel(cuotaNumber, loan.termCount) : "Abono a cuenta";
-          return { label, amountCents: p.amountCents };
-        });
+    : [
+        ...(plus?.penaltyLine ? [plus.penaltyLine] : []),
+        ...[...siblings]
+          .filter((p) => p.notes !== PENALTY_NOTE)
+          .sort((a, b) => (a.notes === MORA_NOTE ? 0 : 1) - (b.notes === MORA_NOTE ? 0 : 1))
+          .map((p) => {
+            if (p.notes === MORA_NOTE)
+              return { label: "Mora (prioridad)", amountCents: p.amountCents };
+            const cuotaNumber = cuotaNumbers.get(p.id);
+            const label = cuotaNumber ? cuotaLabel(cuotaNumber, loan.termCount) : "Abono a cuenta";
+            return { label, amountCents: p.amountCents };
+          })
+      ];
 
   return {
     paymentId: target.id,
@@ -415,7 +463,7 @@ export function buildPaymentReceipt(
     customerName: customer.name,
     lines,
     loanStartDate: loan.startDate,
-    loanEndDate: loanEndDate(loan),
+    loanEndDate: plus ? plus.endDate : loanEndDate(loan),
     isOpenCredit: openCredit !== null,
     balanceAfter: openCredit?.balanceAfter ?? []
   };
@@ -494,7 +542,10 @@ export function buildCustomerLoanSummary(
     };
   }
 
-  const nextLine = view.dueTodayLines.find((line) => line.kind === "installment");
+  // A Tradicional Plus loan owing penalties has only a "penalty" line — still something due.
+  const nextLine = view.dueTodayLines.find(
+    (line) => line.kind === "installment" || line.kind === "penalty"
+  );
   return {
     loanId: view.id,
     code: view.code,

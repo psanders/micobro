@@ -1,0 +1,1 @@
+ALTER TABLE `loans` ADD `penalty_cents` integer;

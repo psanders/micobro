@@ -39,8 +39,10 @@ import {
   cycleIndexForPayment,
   loanCode,
   loanEndDate,
-  MORA_NOTE
+  MORA_NOTE,
+  PENALTY_NOTE
 } from "../../loans/loanViews";
+import { tradicionalPlusReceipt } from "../../loans/tradicionalPlus";
 import { cuotaCents, totalRepayCents } from "../../loans/loanMath";
 import { formatCurrency } from "../../utils/money";
 import { formatShortDate } from "../../utils/dates";
@@ -335,12 +337,15 @@ export function createMockRepos(): Repos {
           let cuotaNumber = 0;
           for (const payment of loanPayments) {
             const isMora = payment.notes === MORA_NOTE;
-            if (!isMora) cuotaNumber += 1;
+            const isPenalty = payment.notes === PENALTY_NOTE;
+            if (!isMora && !isPenalty) cuotaNumber += 1;
             activity.push({
               id: payment.id,
               description: isMora
                 ? `Pago de mora · ${formatCurrency(payment.amountCents)}`
-                : `Pago cuota ${cuotaNumber} · ${formatCurrency(payment.amountCents)}`,
+                : isPenalty
+                  ? `Pago de penalidad · ${formatCurrency(payment.amountCents)}`
+                  : `Pago cuota ${cuotaNumber} · ${formatCurrency(payment.amountCents)}`,
               at: payment.paidAt
             });
           }
@@ -362,7 +367,17 @@ export function createMockRepos(): Repos {
           address: customer.address,
           cedula: meta?.cedula ?? customer.cedula,
           sinceYear: customer.createdAt.getFullYear(),
-          standing: customerInMora(id) ? "mora" : "al_dia",
+          standing: customerInMora(id)
+            ? "mora"
+            : activeLoans.length > 0 &&
+                customerLoans.some(
+                  (l) =>
+                    l.status === "active" &&
+                    viewOf(l).tradicionalPlus !== null &&
+                    viewOf(l).schedule.some((item) => item.status === "overdue")
+                )
+              ? "atraso"
+              : "al_dia",
           activeLoans,
           archivedLoans: customerLoans
             .filter((l) => l.status === ARCHIVED_LOAN_STATUS)
@@ -435,7 +450,8 @@ export function createMockRepos(): Repos {
             moraDays: 0,
             remainingInstallments: 0,
             remainingBalanceCents: view.balanceCents,
-            openCredit: view.openCredit
+            openCredit: view.openCredit,
+            tradicionalPlus: null
           };
         }
 
@@ -451,11 +467,13 @@ export function createMockRepos(): Repos {
           cuotaCents: Math.min(cuota, view.balanceCents),
           currentInstallmentNumber: Math.min(view.installmentsPaid + 1, view.installmentsTotal),
           installmentsTotal: view.installmentsTotal,
-          moraCents: state.moraCents,
-          moraDays: state.moraDays,
+          // Tradicional Plus never charges mora (the view already zeroes it).
+          moraCents: view.tradicionalPlus ? 0 : state.moraCents,
+          moraDays: view.tradicionalPlus ? 0 : state.moraDays,
           remainingInstallments: view.installmentsTotal - view.installmentsPaid,
           remainingBalanceCents: view.balanceCents,
-          openCredit: null
+          openCredit: null,
+          tradicionalPlus: view.tradicionalPlus
         };
       },
       collect: async (input) => {
@@ -468,7 +486,24 @@ export function createMockRepos(): Repos {
         const installmentCents = input.amountCents - moraCents;
 
         let paymentId = "";
-        if (moraCents > 0) {
+        // Tradicional Plus penalties: one row each, as in lib/payments/collectPayment.ts.
+        const penaltyCount = input.penaltyCount ?? 0;
+        const penaltyRows: Payment[] = [];
+        for (let i = 0; i < penaltyCount; i++) {
+          const row: Payment = {
+            id: Crypto.randomUUID(),
+            loanId: input.loanId,
+            amountCents: input.amountCents / penaltyCount,
+            paidAt,
+            method: input.method,
+            notes: PENALTY_NOTE,
+            createdAt: paidAt
+          };
+          payments.push(row);
+          penaltyRows.push(row);
+          paymentId = row.id;
+        }
+        if (penaltyCount === 0 && moraCents > 0) {
           const row: Payment = {
             id: Crypto.randomUUID(),
             loanId: input.loanId,
@@ -487,7 +522,7 @@ export function createMockRepos(): Repos {
             moraDays: remaining > 0 ? state.moraDays : 0
           });
         }
-        if (installmentCents > 0) {
+        if (penaltyCount === 0 && installmentCents > 0) {
           const row: Payment = {
             id: Crypto.randomUUID(),
             loanId: input.loanId,
@@ -506,6 +541,15 @@ export function createMockRepos(): Repos {
           loan && effectiveLoanType(loan) === "open_credit"
             ? openCreditReceiptBreakdown(loan, payments, paymentId, formatShortDate)
             : null;
+        const plus =
+          loan && effectiveLoanType(loan) === "term_plus"
+            ? tradicionalPlusReceipt(
+                loan,
+                payments.filter((p) => p.loanId === loan.id),
+                penaltyRows,
+                formatShortDate
+              )
+            : null;
 
         return {
           paymentId,
@@ -514,10 +558,15 @@ export function createMockRepos(): Repos {
           totalCents: input.amountCents,
           method: input.method,
           customerName: customer?.name ?? "Cliente",
-          lines: openCredit?.lines ?? input.lines,
+          lines: openCredit?.lines ?? (plus?.penaltyLine ? [plus.penaltyLine] : input.lines),
           // `null`, not paidAt — see the note in lib/payments/collectPayment.ts.
           loanStartDate: loan?.startDate ?? null,
-          loanEndDate: loan ? loanEndDate(loan) : null,
+          loanEndDate: loan
+            ? loanEndDate(
+                loan,
+                payments.filter((p) => p.loanId === loan.id)
+              )
+            : null,
           isOpenCredit: openCredit !== null,
           balanceAfter: openCredit?.balanceAfter ?? []
         };

@@ -31,7 +31,11 @@ export interface CustomerSearchResult {
   loanCount: number;
 }
 
-export type CustomerStanding = "al_dia" | "mora";
+/**
+ * "atraso" is a Tradicional Plus loan past its due date: late, but never in
+ * mora (an unpaid cycle becomes a penalty instead — see lib/loans/tradicionalPlus.ts).
+ */
+export type CustomerStanding = "al_dia" | "mora" | "atraso";
 
 /**
  * Crédito abierto projection for the Cliente Detalle loan card, in place of
@@ -162,11 +166,33 @@ export interface LoanScheduleItem {
 
 /** One line of the "Total a pagar hoy" breakdown. */
 export interface DueTodayLine {
-  kind: "installment" | "mora";
+  kind: "installment" | "mora" | "penalty";
   installmentNumber?: number;
   dueDate?: Date;
   moraDays?: number;
+  /** Owed Tradicional Plus penalties on a "penalty" line. */
+  penaltyCount?: number;
   amountCents: number;
+}
+
+/**
+ * Where a Tradicional Plus loan stands — see `lib/loans/tradicionalPlus.ts`.
+ * Penalties never count toward the balance; each one paid moved the
+ * remaining schedule one cycle later.
+ */
+export interface TradicionalPlusView {
+  penaltyCents: number;
+  graceDays: number;
+  /** Penalties paid so far — "Corrida N veces". */
+  timesMoved: number;
+  /** Cycles past their grace with nothing paid. */
+  owedPenalties: number;
+  owedCents: number;
+  nextCuotaCents: number;
+  canCollectCuota: boolean;
+  canCollectPenalty: boolean;
+  /** How many penalties "Cobrar penalidad" collects: every owed one, else one. */
+  penaltyCountToCollect: number;
 }
 
 /**
@@ -209,6 +235,8 @@ export interface LoanDetailView {
   archivedAt: Date | null;
   /** Populated instead of the term fields above's meaningful use when this is a crédito abierto loan; `null` for a term loan. */
   openCredit: OpenCreditView | null;
+  /** Set for a Tradicional Plus loan (the term fields above already carry its moved schedule); `null` otherwise. */
+  tradicionalPlus: TradicionalPlusView | null;
 }
 
 /** One row of the Histórico de Pagos list. */
@@ -262,6 +290,8 @@ export interface CollectContext {
   remainingBalanceCents: number;
   /** Set instead when this is a crédito abierto loan; `null` for a term loan. */
   openCredit: OpenCreditView | null;
+  /** Set for a Tradicional Plus loan; `null` otherwise. */
+  tradicionalPlus: TradicionalPlusView | null;
 }
 
 export interface ReceiptLine {
@@ -276,6 +306,12 @@ export interface CollectInput {
   /** Mora-first split, as previewed on screen. */
   moraCents: number;
   lines: ReceiptLine[];
+  /**
+   * Tradicional Plus only: how many penalties this cobro pays ("Cobrar
+   * penalidad"). Omitted for a cuota. `collectPayment` re-checks it against
+   * the loan's own state.
+   */
+  penaltyCount?: number;
 }
 
 export interface PaymentReceipt {

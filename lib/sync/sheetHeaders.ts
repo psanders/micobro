@@ -27,7 +27,8 @@ export const TAB_HEADERS: Record<string, string[]> = {
     "Salta domingos",
     "Tipo",
     "Creado",
-    "Actualizado"
+    "Actualizado",
+    "Penalidad (centavos)"
   ],
   payment: ["ID", "Préstamo ID", "Monto (centavos)", "Pagado", "Método", "Notas", "Creado"],
   visit: [
