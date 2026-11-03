@@ -76,6 +76,15 @@ tenants, roles, invites, verifiable tokens and API keys. Gaps 1 and 3 need
 changes in Identity itself, which suits a product you own. Gaps 2, 4 and 5
 are BFF work.
 
-Still open for Phase 2, on the Fineract side: one Fineract tenant per
-lending business (a separate database each), or one shared Fineract tenant
-with an office per business.
+**Decision (2026-11-03): one Fineract tenant, with its own database, per
+lending business.** The Identity workspace maps 1:1 to a Fineract tenant.
+The BFF reads the workspace from the token and sends Fineract the matching
+`Fineract-Platform-TenantId`, so one business's data never shares a database
+with another's. What this brings:
+
+- Onboarding a business provisions a Fineract tenant: a registry entry, a
+  new database and its migrations, then the BFF's catalog (products, mora
+  charges, payment types, the grace setting).
+- The nightly close runs per tenant.
+- Every business costs a database, so backups, migrations on Fineract
+  upgrades, and monitoring are per tenant too.
