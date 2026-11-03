@@ -7,7 +7,7 @@ package-lock.json
 # psstack plugin files — not our source
 .claude/
 
-# drizzle-generated — CLAUDE.md says never hand-edit these
+# drizzle-generated — AGENTS.md says never hand-edit these
 lib/db/migrations/
 
 # marketing website — separate npm package with its own tooling

@@ -2,8 +2,7 @@
 
 Project-specific guidance for everything under `docs-site/` (the Mintlify docs and their
 assets). Authored with `/ps:docs`. This is the _what's-allowed-and-for-whom_ layer; the
-_how-to-write_ method lives in the skill, the coding conventions in the repo-root
-`CLAUDE.md`, and the asset mechanics in `images/ASSETS.md` — don't restate those here.
+_how-to-write_ method lives in the skill, the coding conventions in the repo-root `AGENTS.md`, and the asset mechanics in `images/ASSETS.md` — don't restate those here.
 
 ## Scope — the Android app only
 

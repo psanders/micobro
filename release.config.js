@@ -6,7 +6,7 @@
 // published to the npm registry.
 //
 // `copy` and `design` are non-standard types this repo already commits with
-// (see CLAUDE.md § Commits). Historically they've warranted a real release
+// (see AGENTS.md § Conventions). Historically they've warranted a real release
 // (e.g. 9c46247 "design(pencil): ..." shipped as v0.2.1), so both are wired
 // as patch-level releases here instead of being silently dropped.
 module.exports = {

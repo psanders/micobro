@@ -1,6 +1,6 @@
 // Extends the standard Conventional Commits rules, plus two types this repo
 // already uses in practice: `copy` (user-facing text changes) and `design`
-// (Pencil/visual changes) — see CLAUDE.md § Commits.
+// (Pencil/visual changes) — see AGENTS.md § Conventions.
 module.exports = {
   extends: ["@commitlint/config-conventional"],
   rules: {
