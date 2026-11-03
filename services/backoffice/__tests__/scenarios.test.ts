@@ -21,6 +21,28 @@
  */
 import { randomUUID } from "crypto";
 import { Backoffice } from "../server/backoffice";
+import { MemoryStore, type BackofficeStore } from "../server/store";
+import { ensureTenant, migrate, PostgresStore } from "../server/postgresStore";
+import { Pool } from "pg";
+
+/**
+ * With BACKOFFICE_DATABASE_URL set (`npm run backoffice:live`), every
+ * scenario runs on the Postgres store, each under a fresh tenant id;
+ * otherwise on the in-memory one.
+ */
+const pool = process.env.BACKOFFICE_DATABASE_URL
+  ? new Pool({ connectionString: process.env.BACKOFFICE_DATABASE_URL })
+  : null;
+if (pool) {
+  beforeAll(() => migrate(pool));
+  afterAll(() => pool.end());
+}
+async function newStore(): Promise<BackofficeStore> {
+  if (!pool) return new MemoryStore();
+  const tenantId = `test-${randomUUID()}`;
+  await ensureTenant(pool, tenantId, "Scenario");
+  return new PostgresStore(pool, tenantId);
+}
 import { FakeFineract } from "../fineract/fakeFineract";
 import { HttpFineract } from "../fineract/httpFineract";
 import { FakeMicobroClient, type NewLoan } from "../client/fakeMicobroClient";
@@ -49,7 +71,8 @@ const phone = () => `809${RUN}${String(++phoneSeq).padStart(4, "0")}`;
 
 async function setup() {
   const fineract = live ?? new FakeFineract();
-  const backoffice = new Backoffice(fineract);
+  const store = await newStore();
+  const backoffice = new Backoffice(fineract, store);
   const app = new FakeMicobroClient((body) => backoffice.handleSync(body));
   /** Moves only Fineract's business date (no nightly close). */
   const setBusinessDate = (date: string) => fineract.setBusinessDate(date);
@@ -59,7 +82,7 @@ async function setup() {
     await backoffice.closeDay(toBusinessDate(app.now));
   };
   await today(2026, 1, 1);
-  return { fineract, backoffice, app, today, setBusinessDate };
+  return { fineract, backoffice, app, today, setBusinessDate, store };
 }
 
 /** Server state on the device's current day. */
@@ -345,7 +368,7 @@ describe("cobros", () => {
     const second = await app.sync();
     expect(second.results[0]!.drift).toEqual([]);
     expect((await stateOf(backoffice, app, loanId)).moraCents).toBe(0);
-    expect([...backoffice.store.waivers.values()].map((w) => [w.waivedCents, w.deviceId])).toEqual([
+    expect((await backoffice.store.listWaivers()).map((w) => [w.waivedCents, w.deviceId])).toEqual([
       [4991, "device-1"],
       [3472, "device-1"]
     ]);
@@ -468,6 +491,28 @@ describe("cobros", () => {
     const second = await app.sync();
     expect(second.results[0]!.status).toBe("applied");
     await expectServerMatchesApp(backoffice, app, loanId);
+  });
+
+  it("the back office keeps its state across a restart", async () => {
+    const { app, fineract, store, loanId, today } = await sanLoan();
+    await today(2026, 1, 8);
+    app.collect(loanId, 650);
+    const batch = {
+      contractVersion: CONTRACT_VERSION,
+      deviceId: "device-1",
+      sentAt: toOffsetIso(app.now),
+      mutations: app.outbox.map((e) => e.mutation)
+    };
+    await new Backoffice(fineract, store).handleSync(batch);
+    // A new process: a new Backoffice over the same store (a fresh
+    // PostgresStore connection when running on Postgres).
+    const restarted = new Backoffice(
+      fineract,
+      store instanceof PostgresStore ? new PostgresStore(pool!, store.tenantId) : store
+    );
+    const again = await restarted.handleSync(batch);
+    expect(again.results.map((r) => r.status)).toEqual(["duplicate"]);
+    expect((await restarted.getLoanState(loanId, "2026-01-08")).paidCents).toBe(65000);
   });
 
   it("replaying the same batch is harmless (idempotent by mutation id)", async () => {
@@ -628,8 +673,8 @@ describe("things Fineract has no home for", () => {
     app.archiveLoan(loanId);
     const res = await app.sync();
     expect(res.results.every((r) => r.status === "applied" && r.drift.length === 0)).toBe(true);
-    expect(backoffice.store.visits.size).toBe(1);
-    expect(backoffice.store.cashCloses.size).toBe(1);
+    expect(await backoffice.store.listVisits()).toHaveLength(1);
+    expect(await backoffice.store.listCashCloses()).toHaveLength(1);
     expect((await backoffice.getLoanState(loanId, "2026-01-08")).status).toBe("archived");
   });
 });

@@ -8,6 +8,9 @@ services:
     environment:
       POSTGRES_USER: fineract
       POSTGRES_PASSWORD: fineract
+    # Published for the back office's own database (micobro_backoffice).
+    ports:
+      - "5433:5432"
     volumes:
       - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
       - pgdata:/var/lib/postgresql/data

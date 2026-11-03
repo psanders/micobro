@@ -33,10 +33,7 @@ import {
   type MutationResult,
   type SyncResponse,
   type cashCloseCreate,
-  type loanTerms,
-  type moraWaive,
-  type paymentCollect,
-  type visitLog
+  type moraWaive
 } from "@micobro/contract";
 import {
   FineractDomainError,
@@ -61,8 +58,13 @@ import {
   versionedExternalId
 } from "./mapping";
 
-type LoanTerms = z.infer<typeof loanTerms>;
-type Collect = z.infer<typeof paymentCollect>;
+import {
+  MemoryStore,
+  type BackofficeStore,
+  type Collect,
+  type LoanRecord,
+  type LoanTerms
+} from "./store";
 
 /** Outcomes a later replay of the same mutation can turn into "applied". */
 const RETRYABLE: string[] = ["NOT_FOUND", "NOT_YET", "UPSTREAM"];
@@ -78,65 +80,6 @@ class Rejection extends Error {
   ) {
     super(message);
   }
-}
-
-interface LoanRecord {
-  loanId: string;
-  fineractId: number;
-  terms: LoanTerms;
-  archived: boolean;
-  /** How many times the loan was replayed (external-id version). */
-  version: number;
-  /** Cobros in arrival order — the journal a replay re-applies. */
-  cobros: { cobroId: string; collect: Collect }[];
-  /** Voided payment row ids. */
-  voided: Set<string>;
-  /** When the nightly close charged the loan off (mora stopped). */
-  chargedOffOn: string | null;
-}
-
-interface PartRecord {
-  loanId: string;
-  kind: "installment" | "mora" | "penalty";
-  collectedOn: string;
-  amountCents: number;
-  /**
-   * The Fineract external id of its repayment. Not the transaction id:
-   * Fineract re-creates every later repayment under a new id whenever one is
-   * undone or a backdated one is posted.
-   */
-  externalId: string;
-  chargeId: number | null;
-}
-
-export interface BackofficeStore {
-  /** mutationId → result, for idempotent replays. */
-  results: Map<string, MutationResult>;
-  customers: Map<string, number>;
-  loans: Map<string, LoanRecord>;
-  parts: Map<string, PartRecord>;
-  visits: Map<string, z.infer<typeof visitLog>>;
-  cashCloses: Map<string, z.infer<typeof cashCloseCreate>>;
-  /** Mora forgiven by collectors: what was asked, what Fineract waived, and why. */
-  waivers: Map<
-    string,
-    z.infer<typeof moraWaive> & { waivedCents: number; deviceId: string; waivedOn: string }
-  >;
-  /** The last business date the nightly close ran for. */
-  lastClosed: string | null;
-}
-
-export function emptyStore(): BackofficeStore {
-  return {
-    results: new Map(),
-    customers: new Map(),
-    loans: new Map(),
-    parts: new Map(),
-    visits: new Map(),
-    cashCloses: new Map(),
-    waivers: new Map(),
-    lastClosed: null
-  };
 }
 
 /** Penalties added by `repairMora` for mora Fineract's job missed. */
@@ -170,7 +113,7 @@ export class Backoffice {
 
   constructor(
     private readonly fineract: FineractPort,
-    readonly store: BackofficeStore = emptyStore(),
+    readonly store: BackofficeStore = new MemoryStore(),
     readonly policy: BackofficePolicy = { graceDays: 0 }
   ) {}
 
@@ -191,7 +134,7 @@ export class Backoffice {
     await this.configure();
     for (;;) {
       const crossings = await this.moraStopDates();
-      const from = this.store.lastClosed;
+      const from = await this.store.getLastClosed();
       const early = crossings
         .map((c) => c.stopOn)
         .filter((d) => compareDates(d, date) < 0 && (!from || compareDates(d, from) > 0))
@@ -203,8 +146,9 @@ export class Backoffice {
         if (compareDates(c.stopOn, step) > 0) continue;
         await this.fineract.chargeOff(c.loan.fineractId, step);
         c.loan.chargedOffOn = step;
+        await this.store.putLoan(c.loan);
       }
-      this.store.lastClosed = step;
+      await this.store.setLastClosed(step);
       if (step === date) return;
     }
   }
@@ -212,7 +156,7 @@ export class Backoffice {
   /** Loans still accruing mora, and the day their oldest unpaid cuota turns 90 days late. */
   private async moraStopDates(): Promise<{ loan: LoanRecord; stopOn: string }[]> {
     const out: { loan: LoanRecord; stopOn: string }[] = [];
-    for (const loan of this.store.loans.values()) {
+    for (const loan of await this.store.listLoans()) {
       if (moraRateBps(loan.terms) === 0) continue;
       const fl = await this.fineract.getLoan(loan.fineractId);
       if (fl.chargedOff || fl.status !== "active") continue;
@@ -229,7 +173,7 @@ export class Backoffice {
     this.deviceId = request.deviceId;
     const results: MutationResult[] = [];
     for (const m of request.mutations) {
-      const previous = this.store.results.get(m.mutationId);
+      const previous = await this.store.getResult(m.mutationId);
       if (previous) {
         results.push({
           ...previous,
@@ -240,7 +184,7 @@ export class Backoffice {
       const result = await this.apply(m);
       // Only final outcomes are remembered; NOT_FOUND/UPSTREAM may succeed on retry.
       if (result.status === "applied" || !RETRYABLE.includes(result.error?.code ?? "")) {
-        this.store.results.set(m.mutationId, result);
+        await this.store.putResult(result);
       }
       results.push(result);
     }
@@ -296,28 +240,29 @@ export class Backoffice {
       case "loan.update":
         return this.updateLoan(m.entityId, m.payload);
       case "loan.archive":
-      case "loan.restore":
-        this.loanRecord(m.entityId).archived = m.type === "loan.archive";
+      case "loan.restore": {
+        const loan = await this.loanRecord(m.entityId);
+        loan.archived = m.type === "loan.archive";
+        await this.store.putLoan(loan);
         return [];
+      }
       case "payment.collect": {
-        const loan = this.loanRecord(m.payload.loanId);
+        const loan = await this.loanRecord(m.payload.loanId);
         loan.cobros.push({ cobroId: m.entityId, collect: m.payload });
-        try {
-          return await this.applyCollect(loan, m.payload);
-        } catch (error) {
-          loan.cobros.pop();
-          throw error;
-        }
+        // Saved only once applied: a failed cobro must not join the journal.
+        const drift = await this.applyCollect(loan, m.payload);
+        await this.store.putLoan(loan);
+        return drift;
       }
       case "payment.void":
         return this.voidPayment(m.payload.loanId, m.payload.paymentId);
       case "mora.waive":
         return this.waiveMora(m.entityId, m.payload, businessDateOf(m.occurredAt));
       case "visit.log":
-        if (!this.store.customers.has(m.payload.customerId)) {
+        if ((await this.store.getCustomer(m.payload.customerId)) === null) {
           throw new Rejection("NOT_FOUND", `Unknown customer ${m.payload.customerId}`);
         }
-        this.store.visits.set(m.entityId, m.payload);
+        await this.store.putVisit(m.entityId, m.payload);
         return [];
       case "cashClose.create":
         return this.closeCash(m.entityId, m.payload);
@@ -332,10 +277,10 @@ export class Backoffice {
     activationDate: string
   ): Promise<Drift[]> {
     const existing =
-      this.store.customers.get(id) ?? (await this.fineract.findClientIdByExternalId(id));
+      (await this.store.getCustomer(id)) ?? (await this.fineract.findClientIdByExternalId(id));
     if (existing) {
       await this.fineract.updateClient(existing, { fullname: c.name, mobileNo: c.phone });
-      this.store.customers.set(id, existing);
+      await this.store.putCustomer(id, existing);
       return [];
     }
     const clientId = await this.fineract.createClient({
@@ -344,14 +289,14 @@ export class Backoffice {
       mobileNo: c.phone,
       activationDate
     });
-    this.store.customers.set(id, clientId);
+    await this.store.putCustomer(id, clientId);
     return [];
   }
 
   // ── Loans ───────────────────────────────────────────────────────────────
 
-  private loanRecord(loanId: string): LoanRecord {
-    const loan = this.store.loans.get(loanId);
+  private async loanRecord(loanId: string): Promise<LoanRecord> {
+    const loan = await this.store.getLoan(loanId);
     if (!loan) throw new Rejection("NOT_FOUND", `Unknown loan ${loanId}`);
     return loan;
   }
@@ -391,7 +336,7 @@ export class Backoffice {
 
   private async createLoan(id: string, terms: LoanTerms): Promise<Drift[]> {
     this.assertMappable(terms);
-    const clientId = this.store.customers.get(terms.customerId);
+    const clientId = await this.store.getCustomer(terms.customerId);
     if (!clientId) throw new Rejection("NOT_FOUND", `Unknown customer ${terms.customerId}`);
 
     let fineractId = await this.fineract.findLoanIdByExternalId(id);
@@ -410,7 +355,7 @@ export class Backoffice {
       );
       await this.skipSundays(fineractId, terms);
     }
-    this.store.loans.set(id, {
+    await this.store.putLoan({
       loanId: id,
       fineractId,
       terms,
@@ -418,14 +363,14 @@ export class Backoffice {
       chargedOffOn: null,
       version: 0,
       cobros: [],
-      voided: new Set()
+      voided: []
     });
     return this.scheduleDrift(terms, await this.fineract.getLoan(fineractId));
   }
 
   /** Editar préstamo, as a replay — Fineract refuses term changes on an active loan. */
   private async updateLoan(id: string, change: Omit<LoanTerms, "customerId">): Promise<Drift[]> {
-    const loan = this.loanRecord(id);
+    const loan = await this.loanRecord(id);
     const terms: LoanTerms = { ...change, customerId: loan.terms.customerId };
     this.assertMappable(terms);
     if (terms.type !== loan.terms.type || terms.frequency !== loan.terms.frequency) {
@@ -470,9 +415,7 @@ export class Backoffice {
     loan.version += 1;
     // The replay re-records every part; drop the old ones so mora netting
     // only sees cobros already re-applied.
-    for (const [paymentId, part] of this.store.parts) {
-      if (part.loanId === loan.loanId) this.store.parts.delete(paymentId);
-    }
+    await this.store.deletePartsOfLoan(loan.loanId);
     for (const { collect } of loan.cobros) {
       await this.applyCollect(loan, collect);
     }
@@ -480,6 +423,7 @@ export class Backoffice {
     // what is late now (see G-LOAN-CORRECTION in GAP-ANALYSIS.md).
     await this.fineract.runOverdueJob();
     await this.repairMora(loan, [], null);
+    await this.store.putLoan(loan);
   }
 
   private scheduleDrift(terms: Omit<LoanTerms, "customerId">, fl: FineractLoan): Drift[] {
@@ -523,11 +467,11 @@ export class Backoffice {
   private async applyCollect(loan: LoanRecord, collect: Collect): Promise<Drift[]> {
     const collectedOn = businessDateOf(collect.collectedAt);
     const before = await this.loanState(loan, collectedOn);
-    const parts = collect.parts.filter((p) => !loan.voided.has(p.paymentId));
+    const parts = collect.parts.filter((p) => !loan.voided.includes(p.paymentId));
     // A cobro dated before the last nightly close reaches Fineract after its
     // mora job already ran without it. Fix the mora first, while the wrong
     // charges are still unpaid (Fineract won't waive a paid charge).
-    const lastClosed = this.store.lastClosed;
+    const lastClosed = await this.store.getLastClosed();
     if (lastClosed && compareDates(collectedOn, lastClosed) < 0) {
       await this.repairMora(
         loan,
@@ -556,7 +500,7 @@ export class Backoffice {
   private async postParts(loan: LoanRecord, collect: Collect): Promise<void> {
     const collectedOn = businessDateOf(collect.collectedAt);
     const paymentTypeId = await this.fineract.ensurePaymentType(PAYMENT_TYPE_NAME[collect.method]);
-    const parts = collect.parts.filter((p) => !loan.voided.has(p.paymentId));
+    const parts = collect.parts.filter((p) => !loan.voided.includes(p.paymentId));
 
     // Mora parts are plain repayments now: Fineract owns the mora and
     // allocates every repayment oldest cuota first (its mora, interest,
@@ -585,7 +529,7 @@ export class Backoffice {
         externalId
       });
       if (part.kind === "penalty") await this.movePendingCuotas(loan);
-      this.store.parts.set(part.paymentId, {
+      await this.store.putPart(part.paymentId, {
         loanId: loan.loanId,
         kind: part.kind,
         collectedOn,
@@ -611,7 +555,7 @@ export class Backoffice {
     current: Collect | null
   ): Promise<void> {
     const rate = moraRateBps(loan.terms);
-    const until = this.store.lastClosed;
+    const until = await this.store.getLastClosed();
     if (rate === 0 || !until) return;
     const fl = await this.fineract.getLoan(loan.fineractId);
     const live = fl.transactions.filter((t) => t.type === "repayment" && !t.reversed);
@@ -723,24 +667,28 @@ export class Backoffice {
   }
 
   private async voidPayment(loanId: string, paymentId: string): Promise<Drift[]> {
-    const loan = this.loanRecord(loanId);
-    const part = this.store.parts.get(paymentId);
+    const loan = await this.loanRecord(loanId);
+    const part = await this.store.getPart(paymentId);
     if (!part || part.loanId !== loanId)
       throw new Rejection("NOT_FOUND", `Unknown payment ${paymentId}`);
     if (part.kind === "penalty") {
       // The penalty moved every unpaid cuota, and Fineract refuses to
       // reschedule back to an earlier date: rebuild the loan without it.
-      loan.voided.add(paymentId);
-      this.store.parts.delete(paymentId);
+      loan.voided.push(paymentId);
+      await this.store.deletePart(paymentId);
       await this.replayLoan(loan, loan.terms);
+      await this.store.putLoan(loan);
       return [];
     }
     await this.undoByExternalId(loan, part.externalId);
-    loan.voided.add(paymentId);
-    this.store.parts.delete(paymentId);
+    loan.voided.push(paymentId);
+    await this.store.deletePart(paymentId);
+    await this.store.putLoan(loan);
     // Without this cobro, some days are late again: add the mora Fineract's
     // job won't re-create for days it already counted.
     await this.repairMora(loan, [], null);
+    // The repair may have replayed the loan (a new external-id version).
+    await this.store.putLoan(loan);
     return [];
   }
 
@@ -756,7 +704,7 @@ export class Backoffice {
     waive: z.infer<typeof moraWaive>,
     waivedOn: string
   ): Promise<Drift[]> {
-    const loan = this.loanRecord(waive.loanId);
+    const loan = await this.loanRecord(waive.loanId);
     const fl = await this.fineract.getLoan(loan.fineractId);
     const open = fl.charges
       .filter((c) => isMoraCharge(c) && !c.waived && c.amountOutstanding > 0)
@@ -768,7 +716,7 @@ export class Backoffice {
       await this.fineract.waiveLoanCharge(loan.fineractId, c.id);
       waivedCents += amount;
     }
-    this.store.waivers.set(id, { ...waive, waivedCents, deviceId: this.deviceId, waivedOn });
+    await this.store.putWaiver(id, { ...waive, waivedCents, deviceId: this.deviceId, waivedOn });
     return waivedCents === waive.amountCents
       ? []
       : [{ field: "waivedCents", client: waive.amountCents, server: waivedCents }];
@@ -776,14 +724,14 @@ export class Backoffice {
 
   // ── Cash close ──────────────────────────────────────────────────────────
 
-  private closeCash(id: string, close: z.infer<typeof cashCloseCreate>): Drift[] {
+  private async closeCash(id: string, close: z.infer<typeof cashCloseCreate>): Promise<Drift[]> {
     let serverTotal = 0;
     for (const paymentId of close.paymentIds) {
-      const part = this.store.parts.get(paymentId);
+      const part = await this.store.getPart(paymentId);
       if (!part) throw new Rejection("NOT_FOUND", `Cash close counts unknown payment ${paymentId}`);
       serverTotal += part.amountCents;
     }
-    this.store.cashCloses.set(id, close);
+    await this.store.putCashClose(id, close);
     return serverTotal === close.amountCents
       ? []
       : [{ field: "amountCents", client: close.amountCents, server: serverTotal }];
@@ -793,7 +741,7 @@ export class Backoffice {
 
   /** GET /v1/loans/{id}/state?asOf=YYYY-MM-DD */
   async getLoanState(loanId: string, asOf: string): Promise<LoanStateV1> {
-    return (await this.loanState(this.loanRecord(loanId), asOf)).state;
+    return (await this.loanState(await this.loanRecord(loanId), asOf)).state;
   }
 
   private async loanState(

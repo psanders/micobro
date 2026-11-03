@@ -13,12 +13,12 @@
 
 ## 2. Contract
 
-- [ ] 2.1 Add to `@micobro/contract` the connect and disconnect request and response schemas, and the device-credential `Authorization` rule. Verify: contract unit tests parse valid examples and reject bad ones.
+- [x] 2.1 Add to `@micobro/contract` the connect and disconnect request and response schemas, and the device-credential `Authorization` rule. Verify: contract unit tests parse valid examples and reject bad ones.
 
 ## 3. Back office: persistent store
 
-- [ ] 3.1 Turn `BackofficeStore` into an async, tenant-scoped interface; keep the in-memory implementation; update `Backoffice` to use it. Verify: the existing back office suite still passes on the fake.
-- [ ] 3.2 Add the Postgres implementation (`pg`), with migrations for:
+- [x] 3.1 Turn `BackofficeStore` into an async, tenant-scoped interface; keep the in-memory implementation; update `Backoffice` to use it. Verify: the existing back office suite still passes on the fake.
+- [x] 3.2 Add the Postgres implementation (`pg`), with migrations for:
   - results, customers, loans, cobro journal, parts, waivers, visits, cash closes;
   - devices and connection tokens;
   - every table with a tenant id.

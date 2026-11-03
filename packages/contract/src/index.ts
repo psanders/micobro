@@ -5,3 +5,4 @@
  * to the back office) and by `@micobro/backoffice`.
  */
 export * from "./v1";
+export * from "./connect";
