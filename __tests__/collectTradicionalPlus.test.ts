@@ -1,8 +1,8 @@
 /**
  * Copyright (C) 2026 by Pedro Sanders. MIT License.
  *
- * Spec: collect-payment "Penalties first when penalties are owed" and
- * tradicional-plus-schedule "Partial payments are not accepted" — the real
+ * Spec: collect-payment "Tradicional Plus cobro options" and
+ * tradicional-plus-schedule "Owed penalties can be paid in part" — the real
  * collect re-checks a Tradicional Plus cobro against the stored payments,
  * writes one penalty row per penalty, and names the moved date on the receipt.
  */
@@ -13,7 +13,6 @@ jest.mock("expo-crypto", () => {
 
 import { createCollectPayment } from "../lib/payments/collectPayment";
 import { customers, loans, payments } from "../lib/db/schema";
-import { PENALTY_NOTE } from "../lib/loans/loanViews";
 import type { Database } from "../lib/db/client";
 import type { Loan } from "../lib/loans/loan.schema";
 import type { Payment } from "../lib/payments/payment.schema";
@@ -121,8 +120,8 @@ describe("collectPayment — Tradicional Plus", () => {
     });
 
     expect(paymentRows()).toEqual([
-      expect.objectContaining({ amountCents: 30_000, notes: PENALTY_NOTE }),
-      expect.objectContaining({ amountCents: 30_000, notes: PENALTY_NOTE })
+      expect.objectContaining({ amountCents: 30_000, tipo: "penalidad" }),
+      expect.objectContaining({ amountCents: 30_000, tipo: "penalidad" })
     ]);
     expect(receipt.lines).toEqual([
       { label: expect.stringMatching(/^Penalidades \(2\) · Cuota 1 pasa al /), amountCents: 60_000 }
@@ -133,13 +132,14 @@ describe("collectPayment — Tradicional Plus", () => {
     );
   });
 
-  it("rejects collecting fewer penalties than are owed", async () => {
+  it("rejects more penalties than are owed", async () => {
     jest.setSystemTime(new Date(2026, 2, 20, 10));
-    const { db } = makeDbStub();
+    const { db, paymentRows } = makeDbStub();
 
     await expect(
-      createCollectPayment({ db })({ ...base, amountCents: 30_000, penaltyCount: 1 })
-    ).rejects.toThrow("El monto no coincide con la penalidad de este préstamo.");
+      createCollectPayment({ db })({ ...base, amountCents: 90_000, penaltyCount: 3 })
+    ).rejects.toThrow("Debe cobrar entre 1 y 2 penalidades.");
+    expect(paymentRows()).toHaveLength(0);
   });
 
   it("rejects a penalty before the cycle is due", async () => {

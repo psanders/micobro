@@ -49,24 +49,51 @@ const EMPTY_STATUS: SyncStatus = {
   pendingCount: 0,
   stuckCount: 0,
   heldDeletions: null,
-  syncProblems: []
+  syncProblems: [],
+  tipoNoticePending: false
 };
 
 export interface SyncOptions {
   reviewAlert?: boolean;
 }
 
-function offerReview(pull: PullResult) {
-  if (!pull.held && pull.problems.length === 0) return;
+/** Offers Sincronización con Google when the pull left something to review; `then` runs after it closes (or right away). */
+function offerReview(pull: PullResult, then: () => void) {
+  if (!pull.held && pull.problems.length === 0) {
+    then();
+    return;
+  }
   Alert.alert(
     "Revisa tu sincronización",
     pull.held
       ? "Se borraron filas en tu hoja. Confirma si también quieres borrarlas de este teléfono."
       : "Hay filas en tu hoja que no se pudieron leer. Revisa cuáles corregir.",
     [
-      { text: "Más tarde", style: "cancel" },
-      { text: "Revisar", onPress: () => router.push("/sincronizar") }
-    ]
+      { text: "Más tarde", style: "cancel", onPress: then },
+      {
+        text: "Revisar",
+        onPress: () => {
+          router.push("/sincronizar");
+          then();
+        }
+      }
+    ],
+    { onDismiss: then }
+  );
+}
+
+/**
+ * After this phone moved an existing Pagos tab to the Tipo layout (see
+ * lib/sync/pagosLayout.ts): a phone on an older build reads mora and penalty
+ * rows as cuotas, so ask the lender to update the others. Not cancelable; it
+ * clears only on "Entendido", so it shows again if the app is killed first.
+ */
+function showTipoNotice(onAcknowledge: () => void) {
+  Alert.alert(
+    "Actualiza Micobro en tus otros teléfonos",
+    'Tu hoja ahora guarda el tipo de cada pago en la columna "Tipo". Si otro teléfono usa esta misma hoja, actualízalo a la última versión de Micobro antes de cobrar con él. Hasta entonces puede leer mal las moras y penalidades.',
+    [{ text: "Entendido", onPress: onAcknowledge }],
+    { cancelable: false }
   );
 }
 
@@ -129,22 +156,53 @@ export function SyncProvider({ children }: { children: ReactNode }) {
     [refreshStatus]
   );
 
+  // One notice on screen at a time; the stored flag survives an app kill.
+  const tipoNoticeShownRef = useRef(false);
+  const maybeShowTipoNotice = useCallback(async () => {
+    if (tipoNoticeShownRef.current) return;
+    const next = await syncRepo.getStatus();
+    if (!next.tipoNoticePending) return;
+    tipoNoticeShownRef.current = true;
+    showTipoNotice(() => {
+      syncRepo
+        .acknowledgeTipoNotice()
+        .catch((err: unknown) => logger.warn("could not clear the Tipo notice", { err }))
+        .finally(() => {
+          tipoNoticeShownRef.current = false;
+          void refreshStatus();
+        });
+    });
+  }, [syncRepo, refreshStatus]);
+
   const runPush = useCallback(
-    (silent: boolean) => runGuarded(() => syncRepo.pushNow(), silent),
-    [runGuarded, syncRepo]
+    async (silent: boolean) => {
+      const result = await runGuarded(() => syncRepo.pushNow(), silent);
+      if (result) void maybeShowTipoNotice();
+      return result;
+    },
+    [runGuarded, syncRepo, maybeShowTipoNotice]
   );
   const runSync = useCallback(
-    (silent: boolean) => runGuarded(() => syncRepo.syncNow(), silent),
-    [runGuarded, syncRepo]
+    async (silent: boolean) => {
+      const result = await runGuarded(() => syncRepo.syncNow(), silent);
+      // The manual sync (not silent) shows the notice after its review alert.
+      if (result && silent) void maybeShowTipoNotice();
+      return result;
+    },
+    [runGuarded, syncRepo, maybeShowTipoNotice]
   );
 
   const sync = useCallback(
     async (options: SyncOptions = {}) => {
       const result = await runSync(false);
-      if (result && options.reviewAlert !== false) offerReview(result.pull);
+      if (result && options.reviewAlert !== false) {
+        offerReview(result.pull, () => void maybeShowTipoNotice());
+      } else if (result) {
+        void maybeShowTipoNotice();
+      }
       return result;
     },
-    [runSync]
+    [runSync, maybeShowTipoNotice]
   );
   const resolveHeldDeletions = useCallback(
     (choice: "apply" | "restore") => runGuarded(() => syncRepo.resolveHeldDeletions(choice), false),

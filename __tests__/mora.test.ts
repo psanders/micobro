@@ -17,7 +17,6 @@ import {
   loanMoraPolicy,
   daysLateExcludingSundays
 } from "../lib/loans/mora";
-import { MORA_NOTE } from "../lib/loans/loanViews";
 import type { Loan } from "../lib/loans/loan.schema";
 import type { Payment } from "../lib/payments/payment.schema";
 
@@ -57,6 +56,7 @@ function payment(overrides: Partial<Payment>): Payment {
     paidAt: new Date(),
     method: "cash",
     notes: null,
+    tipo: "cuota",
     createdAt: new Date(),
     ...overrides
   };
@@ -183,7 +183,7 @@ describe("computeLoanMora", () => {
 
   it("nets out mora already collected on or after the oldest overdue due date", () => {
     // Arrange — cuota1 (RD$100) due 21 days ago, unpaid; RD$5 of mora already collected
-    const payments = [payment({ amountCents: 500, notes: MORA_NOTE, paidAt: daysAgo(10) })];
+    const payments = [payment({ amountCents: 500, tipo: "mora", paidAt: daysAgo(10) })];
 
     // Act
     const gross = computeLoanMora(baseLoan, []);
@@ -196,7 +196,7 @@ describe("computeLoanMora", () => {
 
   it("ignores mora payments made before the oldest overdue due date", () => {
     // Arrange
-    const payments = [payment({ amountCents: 500, notes: MORA_NOTE, paidAt: daysAgo(27) })];
+    const payments = [payment({ amountCents: 500, tipo: "mora", paidAt: daysAgo(27) })];
 
     // Act
     const gross = computeLoanMora(baseLoan, []);
@@ -208,7 +208,7 @@ describe("computeLoanMora", () => {
 
   it("clamps net mora to zero when collected exceeds gross", () => {
     // Arrange
-    const payments = [payment({ amountCents: 999999, notes: MORA_NOTE, paidAt: daysAgo(10) })];
+    const payments = [payment({ amountCents: 999999, tipo: "mora", paidAt: daysAgo(10) })];
 
     // Act
     const result = computeLoanMora(baseLoan, payments);

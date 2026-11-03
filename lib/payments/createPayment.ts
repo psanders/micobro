@@ -29,6 +29,7 @@ export function createCreatePayment({ db }: CreatePaymentDeps) {
       paidAt: params.paidAt ?? now,
       method: params.method ?? null,
       notes: params.notes ?? null,
+      tipo: params.tipo ?? "cuota",
       createdAt: now
     };
 

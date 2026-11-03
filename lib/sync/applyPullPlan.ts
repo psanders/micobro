@@ -136,6 +136,11 @@ export function applyPullPlanTo(
       }
       store.insert(entity, insert.record);
       result.inserted += 1;
+      if (insert.resend) {
+        // Its kind came from Notas: push writes Tipo and blanks Notas.
+        store.queue(entity, insert.record.id, "update", "");
+        result.queued += 1;
+      }
     }
   }
 

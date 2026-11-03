@@ -47,6 +47,7 @@ function payment(amountCents: number, paidAt: Date): Payment {
     paidAt,
     method: "cash",
     notes: null,
+    tipo: "cuota",
     createdAt: paidAt
   };
 }

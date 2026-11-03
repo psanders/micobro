@@ -15,13 +15,12 @@ import {
 import {
   buildCustomerLoanSummary,
   buildLoanDetailView,
-  buildPaymentHistoryView,
-  PENALTY_NOTE
+  buildPaymentHistoryView
 } from "../lib/loans/loanViews";
 import { computeLoanMora, loanMoraPolicy } from "../lib/loans/mora";
 import { resolveTradicionalPlusPayOptions } from "../lib/payments/tradicionalPlusPayOptions";
 import type { Loan } from "../lib/loans/loan.schema";
-import type { Payment } from "../lib/payments/payment.schema";
+import type { Payment, PaymentKind } from "../lib/payments/payment.schema";
 
 // Quincenal steps 15 days: cycle 1 = 1 Mar, 2 = 16 Mar, 3 = 31 Mar, …
 const start = new Date(2026, 1, 14);
@@ -49,7 +48,7 @@ const loan: Loan = {
 };
 
 let seq = 0;
-function pay(at: Date, amountCents: number, notes: string | null = null): Payment {
+function pay(at: Date, amountCents: number, tipo: PaymentKind = "cuota"): Payment {
   seq += 1;
   return {
     id: `p${seq}`,
@@ -57,12 +56,13 @@ function pay(at: Date, amountCents: number, notes: string | null = null): Paymen
     amountCents,
     paidAt: at,
     method: "cash",
-    notes,
+    notes: null,
+    tipo,
     createdAt: at
   };
 }
 const cuota = (at: Date) => pay(at, 130_000);
-const penalty = (at: Date) => pay(at, 30_000, PENALTY_NOTE);
+const penalty = (at: Date) => pay(at, 30_000, "penalidad");
 const sameDay = (a: Date | null, b: Date) => a?.toDateString() === b.toDateString();
 
 describe("tradicionalPlusState", () => {
@@ -125,7 +125,9 @@ describe("tradicionalPlusState", () => {
 
     expect(state.timesMoved).toBe(13);
     expect(state.owedPenalties).toBe(0);
-    expect(state.canCollectCuota).toBe(true);
+    // Cuota 1 now sits at cycle 14, not yet due.
+    expect(sameDay(state.nextDueDate, new Date(2026, 1, 14 + 15 * 14))).toBe(true);
+    expect(state.canCollectCuota).toBe(false);
   });
 
   it("owes nothing while the cycle is within its grace", () => {
@@ -157,7 +159,7 @@ describe("tradicionalPlusState", () => {
 
     expect(state.owedPenalties).toBe(2);
     expect(state.owedCents).toBe(60_000);
-    expect(state.penaltyCountToCollect).toBe(2);
+    expect(state.maxPenaltyCount).toBe(2);
   });
 
   it("brings the loan al día once the owed penalties are paid", () => {
@@ -172,10 +174,10 @@ describe("tradicionalPlusState", () => {
     expect(state.nextCuotaCents).toBe(130_000);
   });
 
-  it("only offers a penalty once the next cycle is due", () => {
+  it("offers neither the cuota nor a penalty before the next cycle is due", () => {
     const state = tradicionalPlusState(loan, [], day(2, 25));
 
-    expect(state.canCollectCuota).toBe(true);
+    expect(state.canCollectCuota).toBe(false);
     expect(state.canCollectPenalty).toBe(false);
   });
 
@@ -222,7 +224,7 @@ describe("Tradicional Plus loan detail view", () => {
     expect(view.schedule[0]).toMatchObject({ status: "overdue", amountCents: 130_000 });
   });
 
-  it("shows the next cuota when nothing is owed, at its moved date", () => {
+  it("owes nothing today before the moved cuota's date, and keeps that date", () => {
     const payments = [penalty(day(3, 1))];
 
     const view = buildLoanDetailView({
@@ -233,9 +235,8 @@ describe("Tradicional Plus loan detail view", () => {
       today: day(3, 2)
     });
 
-    expect(view.dueTodayLines).toEqual([
-      expect.objectContaining({ kind: "installment", installmentNumber: 1, amountCents: 130_000 })
-    ]);
+    expect(view.dueTodayLines).toEqual([]);
+    expect(view.dueTodayCents).toBe(0);
     expect(sameDay(view.schedule[0]!.dueDate, day(3, 16))).toBe(true);
     expect(view.tradicionalPlus?.timesMoved).toBe(1);
   });
@@ -299,24 +300,28 @@ describe("resolveTradicionalPlusPayOptions", () => {
 
     expect(options.defaultOption).toBe("cuota");
     expect(options.cuota).toMatchObject({ enabled: true, amountCents: 130_000 });
-    expect(options.penalty).toMatchObject({ enabled: true, amountCents: 30_000, count: 1 });
+    expect(options.penalty).toMatchObject({ enabled: true, amountCents: 30_000, max: 1 });
+    expect(options.combo).toBeNull();
   });
 
-  it("disables the penalty before the cycle is due", () => {
+  it("disables both options before the cycle is due", () => {
     const options = optionsAt([], day(2, 24));
 
-    expect(options.defaultOption).toBe("cuota");
+    expect(options.defaultOption).toBeNull();
     expect(options.penalty).toMatchObject({ enabled: false, note: "La cuota aún no vence" });
+    expect(options.cuota).toMatchObject({ enabled: false, note: "Vence el 01/03" });
   });
 
-  it("preselects every owed penalty and locks the cuota", () => {
+  it("preselects every owed penalty plus the cuota and locks the cuota alone", () => {
     const options = optionsAt([], day(3, 20));
 
-    expect(options.defaultOption).toBe("penalty");
+    expect(options.defaultOption).toBe("combo");
     expect(options.penalty).toMatchObject({
-      label: "Cobrar penalidad (2)",
+      label: "Cobrar penalidad",
       amountCents: 60_000,
-      count: 2,
+      min: 1,
+      max: 2,
+      initial: 2,
       enabled: true
     });
     expect(options.cuota).toMatchObject({

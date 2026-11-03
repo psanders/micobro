@@ -13,6 +13,7 @@
  * touched: the app wins, and push writes its whole row back.
  */
 import { TAB_HEADERS } from "./sheetHeaders";
+import { legacyPaymentKind } from "../payments/paymentNotes";
 import { isBlankRow, parseSheetRow } from "./sheetRows";
 import { PULLED_ENTITIES } from "./syncedTables";
 import type { SheetRecords } from "./sheetRows";
@@ -36,6 +37,12 @@ export interface PlanInput {
   guarded: Set<string>;
   now: Date;
   newId: () => string;
+  /**
+   * Once, the first time this phone confirms a Pagos tab another phone
+   * migrated: existing payments take their kind from a valid Tipo cell.
+   * Otherwise a pull never changes an existing payment's `tipo`.
+   */
+  adoptPaymentTipo?: boolean;
 }
 
 export interface TabProblem {
@@ -59,14 +66,18 @@ export interface PlannedDeletion extends EntityRef {
   root: EntityRef;
 }
 
+/**
+ * `resend`: the row's kind came from Notas' legacy flag (Tipo empty), so
+ * push must write its Tipo and blank its Notas — pull itself writes no cells.
+ */
 export type PlannedInsert = {
-  [E in PulledEntity]: { entity: E; record: LocalRecords[E] };
+  [E in PulledEntity]: { entity: E; record: LocalRecords[E]; resend?: boolean };
 }[PulledEntity];
 export type PlannedUpdate = {
   [E in PulledEntity]: { entity: E; id: string; changes: Partial<LocalRecords[E]> };
 }[PulledEntity];
 export type PlannedNewRow = {
-  [E in PulledEntity]: { entity: E; sheetRow: number; record: LocalRecords[E] };
+  [E in PulledEntity]: { entity: E; sheetRow: number; record: LocalRecords[E]; resend?: boolean };
 }[PulledEntity];
 
 export interface PullPlan {
@@ -151,7 +162,7 @@ function sameValue(a: unknown, b: unknown): boolean {
 
 /** The Sheet's values that differ from the local row; empty timestamps keep the local value. */
 function diff<E extends PulledEntity>(
-  sheet: SheetRecords[E],
+  sheet: object,
   local: LocalRecords[E]
 ): Partial<LocalRecords[E]> {
   const changes: Record<string, unknown> = {};
@@ -161,6 +172,32 @@ function diff<E extends PulledEntity>(
     if (!sameValue(value, (local as Record<string, unknown>)[key])) changes[key] = value;
   }
   return changes as Partial<LocalRecords[E]>;
+}
+
+/**
+ * A new payment's kind: a valid Tipo cell, else Notas' legacy flag (the
+ * flag then leaves Notas, and the row is resent), else "cuota".
+ */
+function settlePaymentKind(record: SheetRecords["payment"]): {
+  record: SheetRecords["payment"];
+  fromNotes: boolean;
+} {
+  if (record.tipo) return { record, fromNotes: false };
+  const legacy = legacyPaymentKind(record.notes);
+  if (legacy) return { record: { ...record, tipo: legacy, notes: null }, fromNotes: true };
+  return { record: { ...record, tipo: "cuota" }, fromNotes: false };
+}
+
+/** An existing payment's changes: never its kind, unless adopting a migrated Tipo. */
+function paymentChanges(
+  sheet: SheetRecords["payment"],
+  local: LocalRecords["payment"],
+  adopt: boolean
+): Partial<LocalRecords["payment"]> {
+  const { tipo, ...rest } = sheet;
+  const changes = diff<"payment">(rest, local);
+  if (adopt && tipo && tipo !== local.tipo) changes.tipo = tipo;
+  return changes;
 }
 
 function toLocalRecord<E extends PulledEntity>(
@@ -319,20 +356,35 @@ export function buildPullPlan(input: PlanInput): PullPlan {
       const current = id ? localById[entity].get(id) : undefined;
       if (current) {
         plan.seen[entity].push(id);
-        const changes = diff(record, current as LocalRecords[typeof entity]);
+        const changes =
+          entity === "payment"
+            ? paymentChanges(
+                record as SheetRecords["payment"],
+                current as LocalRecords["payment"],
+                !!input.adoptPaymentTipo
+              )
+            : diff(record, current as LocalRecords[typeof entity]);
         if (Object.keys(changes).length > 0) {
           plan.updates.push({ entity, id, changes } as PlannedUpdate);
         }
-      } else if (id) {
+        continue;
+      }
+      const settled =
+        entity === "payment" ? settlePaymentKind(record as SheetRecords["payment"]) : null;
+      const sheetRecord = (settled?.record ?? record) as SheetRecords[typeof entity];
+      const resend = settled?.fromNotes ? { resend: true } : {};
+      if (id) {
         plan.inserts.push({
           entity,
-          record: toLocalRecord(entity, record, id, now)
+          record: toLocalRecord(entity, sheetRecord, id, now),
+          ...resend
         } as PlannedInsert);
       } else {
         plan.newRows.push({
           entity,
           sheetRow,
-          record: toLocalRecord(entity, record, newId(), now)
+          record: toLocalRecord(entity, sheetRecord, newId(), now),
+          ...resend
         } as PlannedNewRow);
       }
     }

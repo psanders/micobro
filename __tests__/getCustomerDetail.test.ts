@@ -69,6 +69,7 @@ function paymentRow(overrides: Partial<Payment>): Payment {
     paidAt: daysAgo(24),
     method: "cash",
     notes: null,
+    tipo: "cuota",
     createdAt: daysAgo(24),
     ...overrides
   };
@@ -146,7 +147,7 @@ describe("createGetCustomerDetail", () => {
 
     it("reads Al día once the cycle is covered by a penalty", async () => {
       // Arrange
-      const penalty = paymentRow({ amountCents: 30000, notes: "penalidad", paidAt: daysAgo(1) });
+      const penalty = paymentRow({ amountCents: 30000, tipo: "penalidad", paidAt: daysAgo(1) });
       const db = makeDbStub({
         customers: [baseCustomerRow],
         loans: [plus(20)],
@@ -339,7 +340,7 @@ describe("createGetCustomerDetail", () => {
         loanId: "loan-term-1",
         amountCents: 75000,
         paidAt: daysAgo(10),
-        notes: "mora"
+        tipo: "mora"
       });
       const ocPayment = paymentRow({
         id: "oc-1",

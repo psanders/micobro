@@ -30,7 +30,9 @@ export const TAB_HEADERS: Record<string, string[]> = {
     "Actualizado",
     "Penalidad (centavos)"
   ],
-  payment: ["ID", "Préstamo ID", "Monto (centavos)", "Pagado", "Método", "Notas", "Creado"],
+  // Tipo (H) is appended after Creado so pre-Tipo Sheets need no column
+  // shift — see pagosLayout.ts. Notas (F) is free text.
+  payment: ["ID", "Préstamo ID", "Monto (centavos)", "Pagado", "Método", "Notas", "Creado", "Tipo"],
   visit: [
     "ID",
     "Cliente ID",

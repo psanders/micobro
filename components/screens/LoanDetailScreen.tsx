@@ -441,6 +441,28 @@ export function LoanDetailScreen({ loanId }: { loanId: string }) {
                     </View>
                     <View style={styles.divider} />
                     <View style={styles.dueLines}>
+                      {loan.tradicionalPlus && loan.dueTodayLines.length === 0 ? (
+                        // Tradicional Plus before the cuota's date: nothing is
+                        // owed today; the next cuota is informational only.
+                        <>
+                          <View style={styles.dueLine} testID="due-nothing-today">
+                            <View style={styles.dueLineLeft}>
+                              <View style={styles.dueDot} />
+                              <Text style={styles.dueLineText}>Nada pendiente hoy</Text>
+                            </View>
+                          </View>
+                          {loan.tradicionalPlus.nextDueDate ? (
+                            <View style={[styles.dueLine, styles.dueNextLine]}>
+                              <Text style={styles.dueNextText}>
+                                {`Próxima cuota: ${formatShortDate(loan.tradicionalPlus.nextDueDate)}`}
+                              </Text>
+                              <Text style={styles.dueNextAmount}>
+                                {formatCurrency(loan.tradicionalPlus.nextCuotaCents)}
+                              </Text>
+                            </View>
+                          ) : null}
+                        </>
+                      ) : null}
                       {loan.dueTodayLines.map((line, index) => (
                         <View key={index} style={styles.dueLine}>
                           <View style={styles.dueLineLeft}>
@@ -647,6 +669,9 @@ const styles = StyleSheet.create({
   dueLineLeft: { flexDirection: "row", alignItems: "center", gap: 8 },
   dueDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: colors.brandDeep },
   dueLineText: { fontSize: 13, fontFamily: fonts.medium, color: colors.ink },
+  dueNextLine: { paddingLeft: 14 },
+  dueNextText: { fontSize: 12, fontFamily: fonts.medium, color: colors.slate },
+  dueNextAmount: { fontSize: 12, fontFamily: fonts.semiBold, color: colors.slate },
   dueLineAmount: { fontSize: 13, fontFamily: fonts.bold, color: colors.ink },
   planHead: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   planLink: { fontSize: 11, fontFamily: fonts.bold, color: colors.brandDeep },
