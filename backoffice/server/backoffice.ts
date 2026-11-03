@@ -44,7 +44,7 @@ import {
   type FineractPort,
   type LoanCharge
 } from "../fineract/port";
-import { addDays, compareDates, daysBetween } from "../dates";
+import { addDays, compareDates, daysBetween, weekday } from "../dates";
 import { dueDateFor, simulateMora } from "../fineract/model";
 import { randomUUID } from "crypto";
 import {
@@ -364,13 +364,6 @@ export class Backoffice {
         "G-OPEN-CREDIT"
       );
     }
-    if (terms.frequency === "daily" && terms.skipSundays) {
-      throw new Rejection(
-        "UNSUPPORTED",
-        "Per-loan Sunday skipping has no Fineract mapping yet",
-        "G-SKIP-SUNDAYS"
-      );
-    }
     if (terms.termCount === null) {
       throw new Rejection("UNSUPPORTED", "A term loan needs termCount");
     }
@@ -415,6 +408,7 @@ export class Backoffice {
         terms.startDate,
         centsToPesos(terms.principalCents)
       );
+      await this.skipSundays(fineractId, terms);
     }
     this.store.loans.set(id, {
       loanId: id,
@@ -458,6 +452,7 @@ export class Backoffice {
       terms.startDate,
       centsToPesos(terms.principalCents)
     );
+    await this.skipSundays(loan.fineractId, terms);
 
     loan.terms = terms;
     loan.version += 1;
@@ -669,6 +664,27 @@ export class Backoffice {
       for (const { collect } of loan.cobros) {
         if (collect !== current) await this.postParts(loan, collect);
       }
+    }
+  }
+
+  /**
+   * A daily loan that skips Sundays: Fineract has no per-loan working days,
+   * and it refuses variable installments on flat-interest products. So
+   * after disbursal the BFF reschedules from each cuota that lands on a
+   * Sunday to the Monday; Fineract moves every later cuota with it (about
+   * one reschedule per week of the loan).
+   */
+  private async skipSundays(fineractId: number, terms: Omit<LoanTerms, "customerId">) {
+    if (terms.frequency !== "daily" || !terms.skipSundays) return;
+    for (;;) {
+      const fl = await this.fineract.getLoan(fineractId);
+      const sunday = fl.periods.find((p) => cuotaOf(p) > 0 && weekday(p.dueDate) === 0);
+      if (!sunday) return;
+      await this.fineract.rescheduleLoan(fineractId, {
+        rescheduleFromDate: sunday.dueDate,
+        adjustedDueDate: addDays(sunday.dueDate, 1),
+        submittedOnDate: terms.startDate
+      });
     }
   }
 

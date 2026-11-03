@@ -8,6 +8,7 @@
  * requires identical observations — that's what keeps the fake honest.
  */
 import { randomUUID } from "crypto";
+import { addDays, weekday } from "../dates";
 import { FineractDomainError, type FineractPort } from "./port";
 import {
   overdueCharge,
@@ -436,6 +437,30 @@ export const probes: Record<string, (ctx: ProbeContext) => Promise<unknown>> = {
       undoKeepsLaterIds: afterUndo[b] === afterBackdated[b],
       undoKeepsEarlierIds: afterUndo[c] === afterBackdated[c]
     };
+  },
+
+  /** Sunday skipping: reschedule from each Sunday cuota to the Monday (a 24-day daily loan). */
+  async sundayReschedules(ctx) {
+    await ctx.setBusinessDate("2026-01-01");
+    const loanId = await openLoan(ctx, {
+      principal: 1000,
+      ratePct: 20,
+      n: 24,
+      frequency: "daily",
+      start: "2026-01-01"
+    });
+    let moves = 0;
+    for (;;) {
+      const sunday = (await ctx.port.getLoan(loanId)).periods.find((p) => weekday(p.dueDate) === 0);
+      if (!sunday) break;
+      await ctx.port.rescheduleLoan(loanId, {
+        rescheduleFromDate: sunday.dueDate,
+        adjustedDueDate: addDays(sunday.dueDate, 1),
+        submittedOnDate: "2026-01-01"
+      });
+      moves += 1;
+    }
+    return { moves, dates: (await ctx.port.getLoan(loanId)).periods.map((p) => p.dueDate) };
   }
 };
 

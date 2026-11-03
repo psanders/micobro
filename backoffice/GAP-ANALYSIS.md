@@ -207,6 +207,14 @@ correct but noisy.
 and Fineract can't move a loan between products. That needs a new Fineract
 loan (refused as UNSUPPORTED for now).
 
+**G-SKIP-SUNDAYS: per-loan Sunday skipping.** Fineract's working days are
+tenant-wide and *move* a Sunday cuota onto Monday's, and it refuses variable
+installments on flat-interest products.
+*Resolved in the BFF, verified live:* after disbursal, reschedule from each
+cuota that lands on a Sunday to the Monday; Fineract moves every later cuota
+with it (4 reschedules for a 24-day loan, matching the app's dates exactly).
+Fineract's mora job still counts Sundays as late days; the app doesn't.
+
 ### Not mapped yet (refused as UNSUPPORTED)
 
 **G-OPEN-CREDIT: crédito abierto.** Fineract has no revolving product.
@@ -217,15 +225,25 @@ principal grace until the last period and a long nominal term; (2) a
 BFF-owned ledger using Micobro's own `openCredit.ts` engine, posting only
 journal entries to Fineract's GL. Needs its own spike. (2) is the safer bet.
 
-**G-SKIP-SUNDAYS: per-loan Sunday skipping.** Fineract's working days and
-holiday rules are tenant-wide and *move* a due date. Micobro *counts only*
-Monday–Saturday for that loan. Candidate: product `allowVariableInstallments`,
-with the BFF writing the app's due dates before disbursal. Unverified.
-Fineract's mora job counts every calendar day, Sundays included.
-
 **G-TP-VOID: voiding a Tradicional Plus penalty.** The penalty's reschedule
 would also have to be undone. Not verified whether an approved reschedule
 can be reversed, so the BFF refuses for now.
+
+### Not in Micobro yet
+
+**G-FEES: legal and closing costs (gastos legales, gastos de cierre).**
+Fineract supports both, verified live on a 10,000 / 30% / 10-week loan:
+- *Collected at disbursement* (charge time "Disbursement", flat or % of
+  principal): RD$500 legal + 3% closing = RD$800, recorded as a payment at
+  disbursement. Cuotas stay 1,300.
+- *Financed into the cuotas* (charge time "Installment fee"): RD$50 per
+  cuota, or a % of each cuota's principal, added to every cuota (1,300 →
+  1,353 in the probe).
+- *One-off on a date* (charge time "Specified due date") for a cost charged
+  later, like a notary fee.
+Micobro has no fees today, so the app's Nuevo préstamo, the contract
+(`loan.create`) and the schedule all need a fees field before the back
+office can carry them.
 
 ### Decisions the back office owns (Fineract has no equivalent)
 

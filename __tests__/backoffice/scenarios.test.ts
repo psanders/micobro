@@ -195,23 +195,25 @@ describe("term loans", () => {
     expect(res.results[1]!.drift).toEqual([{ field: "graceDays", client: 7, server: 0 }]);
   });
 
-  it("G-SKIP-SUNDAYS: a daily loan that skips Sundays is refused, not silently mis-scheduled", async () => {
-    const { app } = await setup();
+  it("G-SKIP-SUNDAYS: a daily loan that skips Sundays gets the app's exact due dates", async () => {
+    const { app, backoffice } = await setup();
     const customerId = app.createCustomer({ name: "Luis", phone: phone() });
-    app.createLoan({
+    const loanId = app.createLoan({
       customerId,
       principal: 1000,
       interestRate: 20,
       termCount: 24,
       frequency: "daily",
       startDate: new Date(2026, 0, 1),
-      skipSundays: true
+      skipSundays: true,
+      moraEnabled: false
     });
     const res = await app.sync();
-    expect(res.results[1]).toMatchObject({
-      status: "rejected",
-      error: { code: "UNSUPPORTED", gap: "G-SKIP-SUNDAYS" }
-    });
+    expect(res.results[1]).toMatchObject({ status: "applied", drift: [] });
+    const dates = (await backoffice.getLoanState(loanId, "2026-01-01")).schedule.map(
+      (s) => s.dueDate
+    );
+    expect(dates.filter((d) => new Date(`${d}T12:00:00Z`).getUTCDay() === 0)).toEqual([]);
   });
 
   it("G-OPEN-CREDIT: crédito abierto is refused and stays in the outbox", async () => {

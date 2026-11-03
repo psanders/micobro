@@ -74,3 +74,8 @@ export function toOffsetIso(date: Date): string {
     `${sign}${pad(Math.floor(abs / 60))}:${pad(abs % 60)}`
   );
 }
+
+/** 0 = Sunday … 6 = Saturday, for a `YYYY-MM-DD` business date. */
+export function weekday(date: string): number {
+  return parse(date).getUTCDay();
+}
