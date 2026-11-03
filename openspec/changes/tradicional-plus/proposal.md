@@ -59,6 +59,8 @@ the schedule and the atraso numbers.
   column (H) for every loan type, existing Sheets and phones migrate once, and
   pull never changes an existing payment's kind.
 - `google-connect`: new Sheets are provisioned with Tipo.
+- `owner-position`: Mi cartera counts a Tradicional Plus loan's owed penalties
+  as en atraso and assumes they're paid (moving the plan) in the month outlook.
 - `loan-detail`: the header, balance card, "Total a pagar hoy" (including
   "Nada pendiente hoy" before the cuota is due) and Plan de pagos for a
   Tradicional Plus loan (penalty amount, times moved, owed penalties, shifted

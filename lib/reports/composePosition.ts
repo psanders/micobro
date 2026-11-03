@@ -14,13 +14,15 @@
  *   (the next open-credit cycle) is not counted.
  * - Past due is term cuotas due before today (the loan screen's ATRASO
  *   rule; grace days only delay mora), net of what was paid toward cuotas,
- *   or a crédito abierto's intereses sumados. A loan is late iff that is
- *   above zero.
+ *   or a crédito abierto's intereses sumados, or a Tradicional Plus loan's
+ *   owed penalties (see `plusFigures`). A loan is late iff that is above
+ *   zero.
  * - Cobrado este mes is every payment dated this month, whatever its
  *   loan's state now. Mora is not projected; the month outlook is the
  *   best case if every installment due by month end is paid.
  */
-import { totalInterestCents, totalRepayCents } from "../loans/loanMath";
+import { cuotaCents, lastCuotaCents, totalInterestCents, totalRepayCents } from "../loans/loanMath";
+import { tradicionalPlusDueDates, tradicionalPlusState } from "../loans/tradicionalPlus";
 import { buildLoanDetailView, principalPaidCents } from "../loans/loanViews";
 import { effectiveLoanType } from "../loans/loan.schema";
 import { openCreditState } from "../loans/openCredit";
@@ -105,15 +107,60 @@ function figuresFor(
     if (item.dueDate.getTime() <= monthEnd.getTime()) dueThroughMonthEnd += item.amountCents;
     if (item.dueDate.getTime() < startOfToday) dueBeforeTodayCents += item.amountCents;
   }
+  const plus =
+    effectiveLoanType(loan) === "term_plus"
+      ? plusFigures(loan, loanPayments, today, monthEnd)
+      : null;
   return {
     capitalCents: view.balanceCents - interestCents,
     receivableCents: view.balanceCents,
     interestCents,
     // Mora rows never pay cuotas.
-    pastDueCents: Math.max(0, dueBeforeTodayCents - principalPaidCents(loanPayments)),
-    dueByMonthEndCents: Math.max(0, dueThroughMonthEnd - view.paidCents),
+    pastDueCents:
+      plus?.pastDueCents ?? Math.max(0, dueBeforeTodayCents - principalPaidCents(loanPayments)),
+    dueByMonthEndCents:
+      plus?.dueByMonthEndCents ?? Math.max(0, dueThroughMonthEnd - view.paidCents),
     isOpenCredit: false
   };
+}
+
+/**
+ * Tradicional Plus: what's late is the owed penalties (paying them moves the
+ * missed cuotas forward rather than collecting them), or, with none owed yet,
+ * the cuota past its date within grace — like Tradicional's ATRASO. The month
+ * outlook assumes the owed penalties get paid: those, plus every unpaid cuota
+ * that still falls by month end once the plan has moved for them.
+ */
+function plusFigures(
+  loan: Loan,
+  loanPayments: Payment[],
+  today: Date,
+  monthEnd: Date
+): Pick<LoanFigures, "pastDueCents" | "dueByMonthEndCents"> {
+  const state = tradicionalPlusState(loan, loanPayments, today);
+  const pastDueCents =
+    state.owedPenalties > 0 ? state.owedCents : state.isOverdue ? state.nextCuotaCents : 0;
+
+  const owedPaid: Payment[] = Array.from({ length: state.owedPenalties }, (_, i) => ({
+    id: `owed-penalty-${i}`,
+    loanId: loan.id,
+    amountCents: state.penaltyCents,
+    paidAt: today,
+    method: null,
+    notes: null,
+    tipo: "penalidad",
+    createdAt: today
+  }));
+  const dueDates = tradicionalPlusDueDates(loan, [...loanPayments, ...owedPaid]);
+  let cuotasByMonthEnd = 0;
+  for (let number = state.installmentsPaid + 1; number <= loan.termCount; number++) {
+    if (dueDates[number - 1]!.getTime() > monthEnd.getTime()) break;
+    cuotasByMonthEnd +=
+      number === loan.termCount
+        ? lastCuotaCents(loan.principalCents, loan.interestRateBps, loan.termCount)
+        : cuotaCents(loan.principalCents, loan.interestRateBps, loan.termCount);
+  }
+  return { pastDueCents, dueByMonthEndCents: state.owedCents + cuotasByMonthEnd };
 }
 
 export function composePosition({
