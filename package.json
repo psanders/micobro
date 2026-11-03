@@ -1,7 +1,7 @@
 {
   "name": "micobro",
   "description": "Offline-first loan tracking for independent lenders in the Dominican Republic, syncing local SQLite with Google Sheets.",
-  "version": "0.19.0",
+  "version": "0.20.1",
   "private": true,
   "main": "expo-router/entry",
   "engines": {
@@ -79,7 +79,7 @@
     "react-native-view-shot": "^5.1.0",
     "react-native-web": "^0.21.2",
     "react-native-worklets": "0.8.3",
-    "zod": "^4.1.13"
+    "zod": "^4.6.6"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.2.1",

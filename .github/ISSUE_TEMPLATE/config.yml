@@ -1,0 +1,7 @@
+# Lenders ask for help through soporte.yml (the app links to it from Mi cuenta → Ayuda y
+# soporte). Bugs and decided work use bug.yml and work.yml; ideas aren't issues until decided.
+blank_issues_enabled: false
+contact_links:
+  - name: "Micobro: guía de uso"
+    url: https://docs.micobro.app
+    about: Cómo usar la app, paso a paso.

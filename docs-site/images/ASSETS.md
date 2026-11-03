@@ -4,7 +4,7 @@ Every image used by a page under `docs-site/` gets a row here. The point is trac
 a screen changes, this file tells you which screenshots went stale and where they came from.
 
 Written in English (internal build doc), unlike the `.mdx` pages themselves. See
-`docs-site/CLAUDE.md` for the editorial policy that governs what may appear in an asset.
+`docs-site/AGENTS.md` for the editorial policy that governs what may appear in an asset.
 
 ## Rules
 

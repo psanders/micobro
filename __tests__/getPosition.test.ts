@@ -46,7 +46,9 @@ describe("createGetPosition", () => {
 
     const position = await createGetPosition({ db })({});
 
-    expect(position.lentCents).toBe(500000);
+    // cycle 1 not ended: capital pendiente 500,000, no intereses sumados
+    expect(position.capitalCents).toBe(500000);
+    expect(position.interestCents).toBe(0);
     expect(position.byType.openCredit.loanCount).toBe(1);
   });
 
