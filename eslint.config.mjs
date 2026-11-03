@@ -17,6 +17,7 @@ export default tseslint.config(
       "babel.config.js",
       "metro.config.js",
       "jest.config.js",
+      "backoffice/jest.live.config.js",
       "drizzle.config.ts",
       "commitlint.config.js",
       "release.config.js",

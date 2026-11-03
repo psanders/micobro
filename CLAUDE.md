@@ -52,6 +52,9 @@ Single package — mobile is the only surface, so there's no monorepo/`common` s
   only in the lib; `designs/assets` and `designs/images` are symlinks to the
   root folders so image paths keep resolving.
 - `.maestro/` — E2E smoke flows (machine-level Maestro CLI, not an npm dep).
+- `backoffice/` — Phase 1 proof of concept for a Fineract-backed back office
+  (contract, fake app client, fake BFF, FakeFineract calibrated against a
+  real server). Not imported by the app. Start at `backoffice/README.md`.
 - `site/` — the Vite marketing site served at `micobro.app`.
 - `docs-site/` — the Mintlify docs (`docs.json` + `.mdx`), authored with
   `/ps:docs`. Its own `docs-site/CLAUDE.md` is the editorial policy: audience,
