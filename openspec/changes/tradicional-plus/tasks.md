@@ -39,12 +39,12 @@
 
 Do not merge until each one is decided and, where it applies, built.
 
-- [ ] 8.1 Penalty flag lives in the editable Pagos "Notas" cell. Editing or clearing it in the Sheet turns a penalty into principal: the balance drops and the schedule moves back, with no warning. Mora has the same latent risk. Decide: protect the column (Sheets protected range) or move the payment kind to its own column (e.g. "Tipo": cuota / mora / penalidad) and stop reading `notes`. Verify: a pull of a Pagos row with an edited kind can't change a loan's balance or schedule.
+- [x] 8.1 (#191: kind moved to Pagos "Tipo", H) Penalty flag lives in the editable Pagos "Notas" cell. Editing or clearing it in the Sheet turns a penalty into principal: the balance drops and the schedule moves back, with no warning. Mora has the same latent risk. Decide: protect the column (Sheets protected range) or move the payment kind to its own column (e.g. "Tipo": cuota / mora / penalidad) and stop reading `notes`. Verify: a pull of a Pagos row with an edited kind can't change a loan's balance or schedule.
 - [ ] 8.2 Older app builds reject `term_plus` rows on pull and show them as row errors. Decide the rollout: gate creating Tradicional Plus behind a minimum version recorded in the Sheet, or require every device to update first. Verify: an old-version pull of a Sheet with a `term_plus` loan doesn't corrupt or drop data.
-- [ ] 8.3 "Total a pagar hoy" shows the next cuota right after a penalty is paid, though nothing is due until the next quincena — invites collecting twice. Decide: show "Nada pendiente hoy" (and the next date) for Tradicional Plus, or for every loan type.
-- [ ] 8.4 Penalties collected are invisible on the loan detail ("Pagado RD$0") and excluded from Mi cartera's margin. Decide: add "Penalidades cobradas" to the detail and count them as income in Mi cartera.
+- [x] 8.3 (#191: "Nada pendiente hoy" for Tradicional Plus) "Total a pagar hoy" shows the next cuota right after a penalty is paid, though nothing is due until the next quincena — invites collecting twice. Decide: show "Nada pendiente hoy" (and the next date) for Tradicional Plus, or for every loan type.
+- [ ] 8.4 (#191 leaves the loan detail out; Mi cartera pending a decision, see #191) Penalties collected are invisible on the loan detail ("Pagado RD$0") and excluded from Mi cartera's margin. Decide: add "Penalidades cobradas" to the detail and count them as income in Mi cartera.
 - [ ] 8.5 Home "Meta de hoy" counts the full cuota even when the borrower legitimately pays the penalty. Decide whether the goal should count the penalty as met.
-- [ ] 8.6 Receipt numbers skip one per extra penalty row (R-00002 → R-00004 after two penalties). Decide: one receipt number per cobro.
+- [x] 8.6 (#191: one number per cobro with penalties) Receipt numbers skip one per extra penalty row (R-00002 → R-00004 after two penalties). Decide: one receipt number per cobro.
 - [ ] 8.7 Form polish: the validation error shows the field key ("penalty: La penalidad es obligatoria"), stays after the field is filled until resubmit, and the "300" placeholder looks like a typed value.
 - [ ] 8.8 Not covered end to end: Google Sheet sync on a real account (unit tests only) and the thermal printer. Run both before merge.
 
