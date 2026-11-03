@@ -137,6 +137,8 @@ export interface FineractPort {
    * allows it on a product, never on a single loan.
    */
   ensureOverdueCharge(name: string, percentPerDay: number): Promise<number>;
+  /** One-time setup the tenant needs before first use (currency, business dates…). Optional. */
+  prepareTenant?(): Promise<void>;
   /** Tenant-wide `penalty-wait-period`: late days that are never charged. */
   setPenaltyGraceDays(days: number): Promise<void>;
   /** Fineract's BUSINESS_DATE (and COB date). Transactions after it are refused. */

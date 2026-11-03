@@ -27,12 +27,12 @@
 
 ## 4. Back office: credentials and HTTP
 
-- [ ] 4.1 Connection tokens: issue (Crockford base32, grouped, 7-day expiry, hash only), consume once, and refuse used, expired and unknown tokens the same way. Verify: unit tests for each case.
-- [ ] 4.2 Device credentials: issue on connect, verify by hash, revoke (device and admin). Verify: unit tests, including use after revoke.
-- [ ] 4.3 `node:http` server with `POST /v1/connect`, `POST /v1/sync`, `POST /v1/disconnect` and `GET /health`, plus per-IP rate limiting on connect. Verify: HTTP tests for 200/401/403, and for a `deviceId` mismatch.
+- [x] 4.1 Connection tokens: issue (Crockford base32, grouped, 7-day expiry, hash only), consume once, and refuse used, expired and unknown tokens the same way. Verify: unit tests for each case.
+- [x] 4.2 Device credentials: issue on connect, verify by hash, revoke (device and admin). Verify: unit tests, including use after revoke.
+- [x] 4.3 `node:http` server with `POST /v1/connect`, `POST /v1/sync`, `POST /v1/disconnect` and `GET /health`, plus per-IP rate limiting on connect. Verify: HTTP tests for 200/401/403, and for a `deviceId` mismatch.
 - [ ] 4.4 Tenant router: the credential's tenant → a `Backoffice` bound to that tenant's `HttpFineract` and a tenant-scoped store. Verify: a live test with two provisioned tenants sending the same app id to each, both isolated.
-- [ ] 4.5 Nightly close per tenant: a scheduler at 00:05 America/Santo_Domingo, plus a `close-day` admin command. Verify: test with a fake clock; manual run against live Fineract.
-- [ ] 4.6 Admin CLI (`npm run backoffice -- <command>`): `issue-token <tenant>`, `revoke-device <id>`, `close-day <tenant> [date]`, `serve`. Verify: an end-to-end run against the compose stack.
+- [x] 4.5 Nightly close per tenant: a scheduler at 00:05 America/Santo_Domingo, plus a `close-day` admin command. Verify: test with a fake clock; manual run against live Fineract.
+- [x] 4.6 Admin CLI (`npm run backoffice -- <command>`): `issue-token <tenant>`, `revoke-device <id>`, `close-day <tenant> [date]`, `serve`. Verify: an end-to-end run against the compose stack.
 
 ## 5. App: back office target (no UI)
 

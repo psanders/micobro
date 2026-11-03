@@ -172,6 +172,12 @@ builds and an `expo export` must be checked as part of the work.
   allocation, so the server's result is the same.
 - **[A big initial upload on a weak connection]** → 100 per batch, resumable
   from the outbox; the app stays usable.
+- **[A sync waits behind a long nightly close]** A business's work runs
+  one request at a time, so a sync queued behind a catch-up close waits
+  until it's done. Seen in testing: a 10-month catch-up on a tenant full of
+  test loans hit the overdue job's 3-minute limit. → Closes normally take
+  seconds. After downtime, run the catch-up (`close-day`) before opening
+  the server to devices. Revisit if real tenants see it.
 - **[Metro or EAS and workspace packages]** → verified in the tasks before
   any UI work ships.
 

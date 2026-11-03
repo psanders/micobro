@@ -119,6 +119,7 @@ export class Backoffice {
 
   private async configure() {
     if (this.configured) return;
+    await this.fineract.prepareTenant?.();
     await this.fineract.setPenaltyGraceDays(this.policy.graceDays);
     this.configured = true;
   }

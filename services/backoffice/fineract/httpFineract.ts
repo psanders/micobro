@@ -86,6 +86,10 @@ export class HttpFineract implements FineractPort {
 
   // ── Setup (tenant configuration the BFF needs) ───────────────────────────
 
+  prepareTenant(): Promise<void> {
+    return this.configureTenant();
+  }
+
   /** Enables DOP, business dates, and the reschedule reason code. Idempotent. */
   async configureTenant(): Promise<void> {
     const currencies = await this.request<{ selectedCurrencyOptions: { code: string }[] }>(
