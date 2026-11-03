@@ -542,6 +542,7 @@ describe("Tradicional Plus (PR #189, mutations built by hand until it merges)", 
     await today(2026, 1, 16);
     const before = await backoffice.getLoanState(loanId, "2026-01-16");
     expect(before.nextDueDate).toBe("2026-01-16");
+    const penaltyPaymentId = randomUUID();
 
     const res = await send([
       {
@@ -552,7 +553,7 @@ describe("Tradicional Plus (PR #189, mutations built by hand until it merges)", 
           loanId,
           collectedAt: at("2026-01-16"),
           method: "cash",
-          parts: [{ paymentId: randomUUID(), kind: "penalty", amountCents: 50000 }],
+          parts: [{ paymentId: penaltyPaymentId, kind: "penalty", amountCents: 50000 }],
           clientView: null
         }
       }
@@ -569,6 +570,21 @@ describe("Tradicional Plus (PR #189, mutations built by hand until it merges)", 
       "2026-04-16"
     ]);
     expect(after.balanceCents).toBe(before.balanceCents);
+
+    // G-TP-VOID: voiding the penalty puts every cuota back where it was.
+    const penaltyId = penaltyPaymentId;
+    const voided = await send([
+      {
+        type: "payment.void",
+        entityId: penaltyId,
+        occurredAt: at("2026-01-16"),
+        payload: { loanId, paymentId: penaltyId }
+      }
+    ]);
+    expect(voided.results[0]!.status).toBe("applied");
+    const restored = await backoffice.getLoanState(loanId, "2026-01-16");
+    expect(restored.schedule.map((s) => s.dueDate)).toEqual(before.schedule.map((s) => s.dueDate));
+    expect(restored.balanceCents).toBe(before.balanceCents);
   });
 });
 

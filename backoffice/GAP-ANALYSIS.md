@@ -203,6 +203,7 @@ approval, modify, approve, disburse, re-post the cobro journal under
 versioned external ids (`<id>~v2`), then run the mora job and the mora
 repair. Replaying leaves reversed transactions in the audit trail, which is
 correct but noisy.
+The same replay voids a Tradicional Plus penalty (G-TP-VOID).
 *Still open:* changing loan type or frequency means a different product,
 and Fineract can't move a loan between products. That needs a new Fineract
 loan (refused as UNSUPPORTED for now).
@@ -227,9 +228,12 @@ journal entries to Fineract's GL. Needs its own spike. (2) is the safer bet.
 *Deferred (2026-11-03):* skipped for now; the BFF keeps refusing it as
 UNSUPPORTED.
 
-**G-TP-VOID: voiding a Tradicional Plus penalty.** The penalty's reschedule
-would also have to be undone. Not verified whether an approved reschedule
-can be reversed, so the BFF refuses for now.
+**G-TP-VOID: voiding a Tradicional Plus penalty.** The penalty moved every
+unpaid cuota one quincena, and Fineract refuses to reschedule a cuota to an
+earlier date (`adjustedDueDate.before.rescheduleFromDate`, verified live).
+*Resolved in the BFF, verified live:* the loan is rebuilt without the
+penalty, using the same replay as Editar préstamo. Every cuota goes back to
+where it was; any other penalties re-create their own reschedules.
 
 ### Not in Micobro yet
 

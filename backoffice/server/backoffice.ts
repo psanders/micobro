@@ -436,6 +436,18 @@ export class Backoffice {
         "G-LOAN-CORRECTION"
       );
     }
+    await this.replayLoan(loan, terms);
+    return this.scheduleDrift(terms, await this.fineract.getLoan(loan.fineractId));
+  }
+
+  /**
+   * Rebuilds a loan in Fineract from its terms and cobro journal: undo every
+   * repayment and the disbursal, modify, approve, disburse, re-apply the
+   * live cobros under new external ids, then redo the mora. Used by Editar
+   * préstamo (G-LOAN-CORRECTION) and to void a Tradicional Plus penalty,
+   * since Fineract can't reschedule a cuota back to an earlier date (G-TP-VOID).
+   */
+  private async replayLoan(loan: LoanRecord, terms: LoanTerms): Promise<void> {
     const fl = await this.fineract.getLoan(loan.fineractId);
     for (const tx of fl.transactions) {
       if (tx.type === "repayment" && !tx.reversed && tx.externalId) {
@@ -459,7 +471,7 @@ export class Backoffice {
     // The replay re-records every part; drop the old ones so mora netting
     // only sees cobros already re-applied.
     for (const [paymentId, part] of this.store.parts) {
-      if (part.loanId === id) this.store.parts.delete(paymentId);
+      if (part.loanId === loan.loanId) this.store.parts.delete(paymentId);
     }
     for (const { collect } of loan.cobros) {
       await this.applyCollect(loan, collect);
@@ -468,7 +480,6 @@ export class Backoffice {
     // what is late now (see G-LOAN-CORRECTION in GAP-ANALYSIS.md).
     await this.fineract.runOverdueJob();
     await this.repairMora(loan, [], null);
-    return this.scheduleDrift(terms, await this.fineract.getLoan(loan.fineractId));
   }
 
   private scheduleDrift(terms: Omit<LoanTerms, "customerId">, fl: FineractLoan): Drift[] {
@@ -717,12 +728,12 @@ export class Backoffice {
     if (!part || part.loanId !== loanId)
       throw new Rejection("NOT_FOUND", `Unknown payment ${paymentId}`);
     if (part.kind === "penalty") {
-      // An approved Fineract reschedule can't be undone by itself.
-      throw new Rejection(
-        "UNSUPPORTED",
-        "Voiding a Tradicional Plus penalty would need to undo a loan reschedule",
-        "G-TP-VOID"
-      );
+      // The penalty moved every unpaid cuota, and Fineract refuses to
+      // reschedule back to an earlier date: rebuild the loan without it.
+      loan.voided.add(paymentId);
+      this.store.parts.delete(paymentId);
+      await this.replayLoan(loan, loan.terms);
+      return [];
     }
     await this.undoByExternalId(loan, part.externalId);
     loan.voided.add(paymentId);
