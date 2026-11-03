@@ -21,10 +21,11 @@ import { formatCedula } from "../utils/cedula";
 import { logger } from "../logger";
 import type { Database } from "../db/client";
 
-// Exported so syncRepo.getStatus() can compute pendingCount/stuckCount against
-// the exact same cap this query retries against.
-export const MAX_RETRIES = 5;
-export const LAST_PUSHED_AT_KEY = "lastPushedAt";
+// Shared with the back office push (lib/sync/backoffice/push.ts) through
+// ./outbox, which has no Google imports; re-exported here for existing callers.
+import { MAX_RETRIES, LAST_PUSHED_AT_KEY, type PushResult } from "./outbox";
+export { MAX_RETRIES, LAST_PUSHED_AT_KEY };
+export type { PushResult };
 
 // Assumes the lender's Google Sheet has tabs named "Clientes", "Préstamos",
 // "Pagos", and "Visitas" with columns in the order the row-value mappers
@@ -124,11 +125,6 @@ export const ROW_MAPPERS: Record<
   visit: visitRowValues,
   cashClose: cashCloseRowValues
 };
-
-export interface PushResult {
-  pushed: number;
-  failed: number;
-}
 
 /** "Clientes!A:G" -> "Clientes!A5:G5" for a specific 1-based row number. */
 export function rowRangeAt(range: string, rowNumber: number): string {

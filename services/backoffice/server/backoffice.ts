@@ -91,6 +91,17 @@ function isMoraCharge(c: LoanCharge): boolean {
   return c.overdue || (c.externalId?.startsWith(MORA_ADJUSTMENT_PREFIX) ?? false);
 }
 
+/** Whether two loan terms would build the same Fineract loan (the app's `clientView` and notes aside). */
+function sameTerms(a: LoanTerms, b: LoanTerms): boolean {
+  const canonical = (t: LoanTerms) =>
+    JSON.stringify(
+      Object.entries(t)
+        .filter(([key]) => key !== "clientView" && key !== "notes")
+        .sort(([x], [y]) => x.localeCompare(y))
+    );
+  return canonical(a) === canonical(b);
+}
+
 /** Installment amount toward the cuotas (excludes penalties), in cents. */
 function cuotaOf(p: FineractLoan["periods"][number]): number {
   return pesosToCents(p.principalDue + p.interestDue);
@@ -381,6 +392,14 @@ export class Backoffice {
         "Changing loan type or frequency needs a new Fineract loan",
         "G-LOAN-CORRECTION"
       );
+    }
+    // An update on an archived loan is how the app restores it (its outbox
+    // can't tell a restore from an edit). Unchanged terms need no replay.
+    const restored = loan.archived;
+    loan.archived = false;
+    if (sameTerms(loan.terms, terms)) {
+      if (restored) await this.store.putLoan(loan);
+      return [];
     }
     await this.replayLoan(loan, terms);
     return this.scheduleDrift(terms, await this.fineract.getLoan(loan.fineractId));

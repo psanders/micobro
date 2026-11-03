@@ -546,6 +546,21 @@ describe("cobros", () => {
 });
 
 describe("loan corrections (Editar préstamo)", () => {
+  it("an update with unchanged terms restores an archived loan without rebuilding it", async () => {
+    const { app, backoffice, fineract } = await setup();
+    const customerId = app.createCustomer({ name: "Rosa", phone: phone() });
+    const loanId = app.createLoan({ ...SAN, customerId });
+    app.archiveLoan(loanId);
+    await app.sync();
+    expect((await backoffice.getLoanState(loanId, "2026-01-01")).status).toBe("archived");
+    // The app's restore reaches the outbox as a plain loan update.
+    app.updateLoan(loanId, SAN);
+    const res = await app.sync();
+    expect(res.results[0]).toMatchObject({ status: "applied", drift: [] });
+    expect((await backoffice.getLoanState(loanId, "2026-01-01")).status).toBe("active");
+    expect(callsOf(fineract)?.some((c) => c.startsWith("undoDisbursal")) ?? false).toBe(false);
+  });
+
   it("replays the loan in Fineract and re-applies its cobros on the new schedule", async () => {
     const { app, backoffice, fineract, today } = await setup();
     const customerId = app.createCustomer({ name: "María", phone: phone() });

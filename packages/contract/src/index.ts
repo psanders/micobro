@@ -6,3 +6,4 @@
  */
 export * from "./v1";
 export * from "./connect";
+export * from "./dates";

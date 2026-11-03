@@ -99,18 +99,21 @@ an admin command.
   `sync_meta`. Google Sheet push and pull are skipped while connected.
 - **Mapping** (outbox row → contract mutation):
 
-  | Outbox row                             | Contract mutation                                                         |
-  | -------------------------------------- | ------------------------------------------------------------------------- |
-  | customer create/update                 | `customer.upsert`                                                         |
-  | loan create                            | `loan.create`, with `clientView` from the app's loan engines at send time |
-  | loan update, status → cancelled        | `loan.archive`                                                            |
-  | loan update, status cancelled → active | `loan.restore`                                                            |
-  | any other loan update                  | `loan.update`                                                             |
-  | payment create                         | `payment.collect`                                                         |
-  | payment delete                         | `payment.void`                                                            |
-  | visit create                           | `visit.log`                                                               |
-  | cashClose create                       | `cashClose.create`                                                        |
+  | Outbox row                                    | Contract mutation                                                         |
+  | --------------------------------------------- | ------------------------------------------------------------------------- |
+  | customer create/update                        | `customer.upsert`                                                         |
+  | loan create                                   | `loan.create`, with `clientView` from the app's loan engines at send time |
+  | loan update, status cancelled                 | `loan.archive`                                                            |
+  | any other loan update (an edit, or a restore) | `loan.update`                                                             |
+  | payment create                                | `payment.collect`                                                         |
+  | payment delete                                | `payment.void`                                                            |
+  | visit create                                  | `visit.log`                                                               |
+  | cashClose create                              | `cashClose.create`                                                        |
 
+- **Restores:** an outbox row can't tell a restore from an edit (both
+  carry the whole loan, and an edit is only possible while the loan is
+  active). The server's `loan.update` restores an archived loan, and skips
+  the Fineract replay when the terms didn't change.
 - **Grouping cobros:** consecutive payment-create rows for the same loan
   and `paidAt` become one `payment.collect`. Its entity id and mutation id
   are the first row's, so retries are stable, and an ack clears every row

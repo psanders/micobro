@@ -163,6 +163,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     // Swaps Google sign-in and the Sheets/Drive REST calls for an on-screen
     // account chooser and an in-memory Drive (lib/sync/fakeGoogle) — e2e/demo only.
     useFakeGoogle: process.env.EXPO_PUBLIC_USE_FAKE_GOOGLE === "true",
+    // The back office a lender can connect to with a token
+    // (lib/sync/backoffice). Empty: connecting isn't offered.
+    backofficeUrl: process.env.EXPO_PUBLIC_BACKOFFICE_URL ?? "",
     eas: {
       projectId: "7b6f3228-32a6-44c6-bc41-378b27eb2086"
     }

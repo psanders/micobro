@@ -334,6 +334,11 @@ export interface SyncStatus {
   heldDeletions: DeletionCounts | null;
   /** Rows the last pull couldn't read — their tabs were skipped until fixed. */
   syncProblems: TabProblem[];
+  /**
+   * The lending business this device is connected to, when it is. While
+   * active (not revoked), sync goes to the back office instead of the Sheet.
+   */
+  backoffice?: { businessName: string; revoked: boolean } | null;
 }
 
 export interface SyncRepo {

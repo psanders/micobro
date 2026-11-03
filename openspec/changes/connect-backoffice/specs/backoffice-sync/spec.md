@@ -24,9 +24,9 @@ sending the same batch twice changes nothing.
 
 The app SHALL map its changes to contract mutations: a customer create or
 edit → `customer.upsert`; a new loan → `loan.create` with the schedule the
-app showed; an edited loan → `loan.update`; archive and restore →
-`loan.archive` and `loan.restore`; payment rows → `payment.collect`; a
-deleted payment → `payment.void`; a visit → `visit.log`; a cierre →
+app showed; an archived loan → `loan.archive`; any other loan change
+(an edit, or a restore) → `loan.update`; payment rows → `payment.collect`;
+a deleted payment → `payment.void`; a visit → `visit.log`; a cierre →
 `cashClose.create`.
 
 #### Scenario: A cobro with mora
@@ -38,6 +38,11 @@ deleted payment → `payment.void`; a visit → `visit.log`; a cierre →
 
 - **WHEN** the lender archives a loan
 - **THEN** the back office receives `loan.archive` for that loan, not a loan edit
+
+#### Scenario: Restoring a loan
+
+- **WHEN** the lender restores an archived loan
+- **THEN** the back office receives `loan.update` with the loan's unchanged terms, shows the loan as restored, and does not rebuild it in Fineract
 
 ### Requirement: Cash closes list the payments they counted
 

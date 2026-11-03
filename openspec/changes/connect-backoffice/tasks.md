@@ -37,9 +37,9 @@
 ## 5. App: back office target (no UI)
 
 - [ ] 5.1 Add `@micobro/contract` to the app, and check Metro (`npx expo export` for Android and iOS) and an EAS dev build. Verify: both exports succeed, and the dev build launches.
-- [ ] 5.2 Connection state: the credential in `expo-secure-store`; the business id, name and connected flag in `sync_meta`; `EXPO_PUBLIC_BACKOFFICE_URL` through `app.config.ts`. Verify: unit tests with mocked secure store.
-- [ ] 5.3 Back office client over `fetch` (`connect`, `sync`, `disconnect`), with Spanish messages for each failure. Verify: tests against a stubbed `fetch`.
-- [ ] 5.4 Outbox → contract adapter:
+- [x] 5.2 Connection state: the credential in `expo-secure-store`; the business id, name and connected flag in `sync_meta`; `EXPO_PUBLIC_BACKOFFICE_URL` through `app.config.ts`. Verify: unit tests with mocked secure store.
+- [x] 5.3 Back office client over `fetch` (`connect`, `sync`, `disconnect`), with Spanish messages for each failure. Verify: tests against a stubbed `fetch`.
+- [x] 5.4 Outbox → contract adapter:
   - the entity and operation mapping;
   - archive and restore detection;
   - cobro grouping by loan and `paidAt`;
@@ -49,7 +49,7 @@
 
   Verify: one test per mapping, plus a grouped cobro.
 
-- [ ] 5.5 Result handling:
+- [x] 5.5 Result handling:
   - applied/duplicate → rows deleted;
   - NOT_YET/NOT_FOUND → stay pending without counting;
   - UPSTREAM/timeout → `retryCount` + 1;
@@ -59,9 +59,9 @@
 
   Verify: tests per result.
 
-- [ ] 5.6 Route push by connection state, and skip Sheet push and pull while connected, keeping the single-flight and silent-automatic rules. Verify: `SyncProvider`/push tests for connected vs not connected.
-- [ ] 5.7 Initial upload: in one transaction, replace the outbox with a snapshot in dependency order (an archived loan followed by its archive); send in batches of 100 until empty. Verify: a test with a seeded DB, and an interrupted upload resuming without duplicates.
-- [ ] 5.8 Disconnect: revoke on the server when online, always erase locally, keep data and the outbox. Verify: tests online and offline.
+- [x] 5.6 Route push by connection state, and skip Sheet push and pull while connected, keeping the single-flight and silent-automatic rules. Verify: `SyncProvider`/push tests for connected vs not connected.
+- [x] 5.7 Initial upload: in one transaction, replace the outbox with a snapshot in dependency order (an archived loan followed by its archive); send in batches of 100 until empty. Verify: a test with a seeded DB, and an interrupted upload resuming without duplicates.
+- [x] 5.8 Disconnect: revoke on the server when online, always erase locally, keep data and the outbox. Verify: tests online and offline.
 
 ## 6. App: UI (after 1.1 is approved)
 
