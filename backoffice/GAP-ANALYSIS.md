@@ -224,6 +224,8 @@ term, where unpaid interest is capitalized. Candidates, none tested:
 principal grace until the last period and a long nominal term; (2) a
 BFF-owned ledger using Micobro's own `openCredit.ts` engine, posting only
 journal entries to Fineract's GL. Needs its own spike. (2) is the safer bet.
+*Deferred (2026-11-03):* skipped for now; the BFF keeps refusing it as
+UNSUPPORTED.
 
 **G-TP-VOID: voiding a Tradicional Plus penalty.** The penalty's reschedule
 would also have to be undone. Not verified whether an approved reschedule
