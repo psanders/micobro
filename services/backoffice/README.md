@@ -25,6 +25,8 @@ npm test -- services/backoffice       # fake only, no Docker needed
 npm run backoffice:up                 # Fineract on :8088 (first boot ~1 min)
 npm run backoffice:live               # same suites against the real server
 npm run backoffice:reset              # wipe Fineract's data (the mora job slows as test loans pile up)
+npm run backoffice:provision -- acme "Acme Préstamos"   # a new lending business = its own tenant + database
+FINERACT_TENANT=acme npm run backoffice:live            # run the live suite on that tenant
 npm run backoffice:down
 ```
 

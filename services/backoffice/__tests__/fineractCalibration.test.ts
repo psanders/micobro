@@ -35,7 +35,7 @@ describe("FakeFineract matches what a real Fineract server does", () => {
   if (live) {
     const http = new HttpFineract({
       baseUrl: process.env.FINERACT_URL ?? "http://localhost:8088/fineract-provider/api/v1",
-      tenantId: "default",
+      tenantId: process.env.FINERACT_TENANT ?? "default",
       username: "mifos",
       password: "password"
     });

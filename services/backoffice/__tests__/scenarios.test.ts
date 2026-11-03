@@ -31,7 +31,7 @@ const LIVE = process.env.FINERACT_LIVE === "1";
 const live = LIVE
   ? new HttpFineract({
       baseUrl: process.env.FINERACT_URL ?? "http://localhost:8088/fineract-provider/api/v1",
-      tenantId: "default",
+      tenantId: process.env.FINERACT_TENANT ?? "default",
       username: "mifos",
       password: "password"
     })
@@ -103,6 +103,28 @@ async function expectServerMatchesApp(
     totalRepayCents: view.totalRepayCents
   });
 }
+
+describe("tenants (live only)", () => {
+  // Each lending business is its own Fineract tenant with its own database.
+  const other = process.env.FINERACT_OTHER_TENANT;
+  (live && other ? it : it.skip)("one business's clients are invisible to another's", async () => {
+    const otherTenant = new HttpFineract({
+      baseUrl: process.env.FINERACT_URL ?? "http://localhost:8088/fineract-provider/api/v1",
+      tenantId: other!,
+      username: "mifos",
+      password: "password"
+    });
+    const externalId = randomUUID();
+    await live!.createClient({
+      externalId,
+      fullname: "Solo aquí",
+      mobileNo: phone(),
+      activationDate: "2026-01-01"
+    });
+    expect(await live!.findClientIdByExternalId(externalId)).not.toBeNull();
+    expect(await otherTenant.findClientIdByExternalId(externalId)).toBeNull();
+  });
+});
 
 describe("customers", () => {
   it("creates a Fineract client per customer, keyed by the app's id", async () => {

@@ -82,9 +82,20 @@ The BFF reads the workspace from the token and sends Fineract the matching
 `Fineract-Platform-TenantId`, so one business's data never shares a database
 with another's. What this brings:
 
-- Onboarding a business provisions a Fineract tenant: a registry entry, a
-  new database and its migrations, then the BFF's catalog (products, mora
-  charges, payment types, the grace setting).
+- Onboarding a business provisions a Fineract tenant
+  (`fineract/provision-tenant.sh`, verified live): create its database,
+  register it in Fineract's tenant registry, restart Fineract. On startup
+  Fineract creates the tenant's tables. The BFF then sets up the catalog on
+  first use (products, mora charges, payment types, the grace setting).
+  - Fineract has **no API to create tenants**; the registry is written
+    directly.
+  - A tenant added while Fineract runs **isn't usable until a restart**.
+    Another instance can create its tables, but the running one still
+    fails with "Rounding mode is not initialized for tenant". Locally that
+    means about 30 s of downtime per new business. In production, run two
+    or more Fineract instances and restart them one at a time.
+  - The full live suite (43 tests) passes on a freshly provisioned tenant,
+    and a client created in one tenant isn't visible from another.
 - The nightly close runs per tenant.
 - Every business costs a database, so backups, migrations on Fineract
   upgrades, and monitoring are per tenant too.

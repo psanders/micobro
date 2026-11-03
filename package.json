@@ -27,6 +27,7 @@
     "backoffice:up": "docker compose -f services/backoffice/fineract/compose.yaml up -d",
     "backoffice:down": "docker compose -f services/backoffice/fineract/compose.yaml down",
     "backoffice:reset": "docker compose -f services/backoffice/fineract/compose.yaml down -v && docker compose -f services/backoffice/fineract/compose.yaml up -d",
+    "backoffice:provision": "services/backoffice/fineract/provision-tenant.sh",
     "backoffice:live": "FINERACT_LIVE=1 jest -c services/backoffice/jest.live.config.js",
     "test:e2e": "maestro test .maestro",
     "e2e:videos": "mkdir -p videos && maestro test .maestro -e APP_ID=com.micobro.app -e RECORD=true",
