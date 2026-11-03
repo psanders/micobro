@@ -3,8 +3,8 @@
  *
  * Pure builders shared by the mock and real repos: given a loan, its
  * payments, and (optionally) accrued mora, derive the schedule and the
- * detail/summary views the collection screens render. Mora rows
- * (payments flagged `notes: "mora"`) never count toward principal. The
+ * detail/summary views the collection screens render. Mora and penalty
+ * rows (`tipo` "mora" / "penalidad") never count toward principal. The
  * cuota is interest-inclusive (flat add-on, see `./loanMath`) and the
  * balance is against the full principal-plus-interest repay amount, not
  * bare principal.
@@ -18,7 +18,7 @@ import type { Customer } from "../customers/customer.schema";
 import type { Payment } from "../payments/payment.schema";
 import { openCreditReceiptBreakdown } from "./openCredit";
 import { addFrequencyInterval } from "./frequency";
-import { MORA_NOTE, PENALTY_NOTE, isPrincipalPayment } from "../payments/paymentNotes";
+import { isMoraPayment, isPenaltyPayment, isPrincipalPayment } from "../payments/paymentNotes";
 import {
   penaltyLabel,
   tradicionalPlusDueDates,
@@ -42,9 +42,6 @@ import type {
 } from "../repo/types";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
-
-// Re-exported so existing imports from loanViews keep working.
-export { MORA_NOTE, PENALTY_NOTE } from "../payments/paymentNotes";
 
 /** "loan-3" → "L-00003"; UUIDs hash to a stable 5-digit code. */
 export function loanCode(id: string): string {
@@ -236,7 +233,11 @@ export function buildLoanDetailView({
   if (moraCents > 0) {
     dueTodayLines.push({ kind: "mora", moraDays, amountCents: moraCents });
   }
-  if (dueTodayLines.length === 0 && firstUnpaid) {
+  // Tradicional Plus: a cuota is due only on or after its date, so before it
+  // nothing is owed today ("Nada pendiente hoy"). Other types keep showing
+  // the next cuota.
+  const plusNotDue = plus !== null && !plus.canCollectCuota && plus.owedPenalties === 0;
+  if (dueTodayLines.length === 0 && firstUnpaid && !plusNotDue) {
     dueTodayLines.push({
       kind: "installment",
       installmentNumber: firstUnpaid.number,
@@ -280,16 +281,40 @@ export function buildLoanDetailView({
   };
 }
 
+/** A cobro's rows share one loan and one `paidAt` instant. */
+function cobroKey(payment: Payment): string {
+  return `${payment.loanId}|${payment.paidAt.getTime()}`;
+}
+
 /**
  * Receipt number for every payment row, assigned by creation order across
- * the whole `payments` table — matching how `collectPayment` mints them
- * (`R-${index in the whole table}`).
+ * the whole `payments` table. A cobro containing a penalty row takes ONE
+ * number for all its rows; every other row takes its own, as it always has
+ * (so a mora + cuota cobro still uses two and reprints the lower one, and no
+ * released receipt changes number). `collectPayment` mints the live number
+ * with this same function, so the live receipt always equals the reprint.
  */
 export function buildReceiptNumberIndex(allPayments: Payment[]): Map<string, string> {
   const byCreatedAt = [...allPayments].sort(
     (a, b) => a.createdAt.getTime() - b.createdAt.getTime()
   );
-  return new Map(byCreatedAt.map((p, i) => [p.id, `R-${String(i + 1).padStart(5, "0")}`]));
+  const penaltyCobros = new Set(byCreatedAt.filter(isPenaltyPayment).map(cobroKey));
+  const numberOfCobro = new Map<string, string>();
+  const index = new Map<string, string>();
+  let next = 0;
+  for (const payment of byCreatedAt) {
+    const key = cobroKey(payment);
+    const shared = penaltyCobros.has(key) ? numberOfCobro.get(key) : undefined;
+    if (shared) {
+      index.set(payment.id, shared);
+      continue;
+    }
+    next += 1;
+    const number = `R-${String(next).padStart(5, "0")}`;
+    if (penaltyCobros.has(key)) numberOfCobro.set(key, number);
+    index.set(payment.id, number);
+  }
+  return index;
 }
 
 /**
@@ -327,7 +352,7 @@ export function canonicalReceiptNumbers(
  * (receipt label "Cuota N/Total", via `cuotaLabel`, matching the live
  * just-collected receipt's format).
  */
-function cuotaNumbersByPaymentId(loan: Loan, loanPayments: Payment[]): Map<string, number> {
+export function cuotaNumbersByPaymentId(loan: Loan, loanPayments: Payment[]): Map<string, number> {
   const cuota = cuotaCents(loan.principalCents, loan.interestRateBps, loan.termCount);
   const chronological = [...loanPayments].sort((a, b) => a.paidAt.getTime() - b.paidAt.getTime());
   let cuotaNumber = 0;
@@ -358,7 +383,7 @@ export function buildPaymentHistoryView(loan: Loan, allPayments: Payment[]): Pay
   let moraPaidCents = 0;
   const entries: PaymentHistoryEntry[] = [];
   for (const payment of chronological) {
-    if (payment.notes === PENALTY_NOTE) {
+    if (isPenaltyPayment(payment)) {
       entries.push({
         id: payment.id,
         date: payment.paidAt,
@@ -368,8 +393,7 @@ export function buildPaymentHistoryView(loan: Loan, allPayments: Payment[]): Pay
       });
       continue;
     }
-    const isMora = payment.notes === MORA_NOTE;
-    if (isMora) {
+    if (isMoraPayment(payment)) {
       moraPaidCents += payment.amountCents;
       entries.push({
         id: payment.id,
@@ -401,6 +425,32 @@ export function buildPaymentHistoryView(loan: Loan, allPayments: Payment[]): Pay
     lastPaymentAt: chronological.length ? chronological[chronological.length - 1]!.paidAt : null,
     entries
   };
+}
+
+/**
+ * A term cobro's receipt lines: the penalty line first (Tradicional Plus),
+ * then mora, then each cuota row as "Cuota N/Total" (or "Abono a cuenta").
+ * Shared by the reprint (`buildPaymentReceipt`) and the live receipt
+ * (`collectPayment`), so both print the same lines.
+ */
+export function cobroReceiptLines(
+  loan: Loan,
+  cobroPayments: Payment[],
+  cuotaNumbers: Map<string, number>,
+  penaltyLine: ReceiptLine | null
+): ReceiptLine[] {
+  return [
+    ...(penaltyLine ? [penaltyLine] : []),
+    ...[...cobroPayments]
+      .filter((p) => !isPenaltyPayment(p))
+      .sort((a, b) => (isMoraPayment(a) ? 0 : 1) - (isMoraPayment(b) ? 0 : 1))
+      .map((p) => {
+        if (isMoraPayment(p)) return { label: "Mora (prioridad)", amountCents: p.amountCents };
+        const cuotaNumber = cuotaNumbers.get(p.id);
+        const label = cuotaNumber ? cuotaLabel(cuotaNumber, loan.termCount) : "Abono a cuenta";
+        return { label, amountCents: p.amountCents };
+      })
+  ];
 }
 
 /**
@@ -440,19 +490,7 @@ export function buildPaymentReceipt(
 
   const lines: ReceiptLine[] = openCredit
     ? openCredit.lines
-    : [
-        ...(plus?.penaltyLine ? [plus.penaltyLine] : []),
-        ...[...siblings]
-          .filter((p) => p.notes !== PENALTY_NOTE)
-          .sort((a, b) => (a.notes === MORA_NOTE ? 0 : 1) - (b.notes === MORA_NOTE ? 0 : 1))
-          .map((p) => {
-            if (p.notes === MORA_NOTE)
-              return { label: "Mora (prioridad)", amountCents: p.amountCents };
-            const cuotaNumber = cuotaNumbers.get(p.id);
-            const label = cuotaNumber ? cuotaLabel(cuotaNumber, loan.termCount) : "Abono a cuenta";
-            return { label, amountCents: p.amountCents };
-          })
-      ];
+    : cobroReceiptLines(loan, siblings, cuotaNumbers, plus?.penaltyLine ?? null);
 
   return {
     paymentId: target.id,
@@ -546,6 +584,8 @@ export function buildCustomerLoanSummary(
   const nextLine = view.dueTodayLines.find(
     (line) => line.kind === "installment" || line.kind === "penalty"
   );
+  // Tradicional Plus with nothing due today: the card still names the next cuota's amount.
+  const plusNext = !nextLine && view.tradicionalPlus ? view.tradicionalPlus.nextCuotaCents : 0;
   return {
     loanId: view.id,
     code: view.code,
@@ -554,7 +594,7 @@ export function buildCustomerLoanSummary(
     installmentsPaid: view.installmentsPaid,
     installmentsTotal: view.installmentsTotal,
     nextDueDate: view.nextDueDate,
-    nextAmountCents: nextLine ? view.dueTodayCents : 0,
+    nextAmountCents: nextLine ? view.dueTodayCents : plusNext,
     openCredit: null
   };
 }

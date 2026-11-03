@@ -189,10 +189,16 @@ export interface TradicionalPlusView {
   owedPenalties: number;
   owedCents: number;
   nextCuotaCents: number;
+  /** The next cuota to pay (1-based), or null once paid off. */
+  nextCuotaNumber: number | null;
+  /** The next cuota's due date after every move so far, or null once paid off. */
+  nextDueDate: Date | null;
+  /** A cuota alone: nothing owed and the cuota is due (today or past). */
   canCollectCuota: boolean;
+  /** Owed penalties, or the next cycle is due (today or within grace). */
   canCollectPenalty: boolean;
-  /** How many penalties "Cobrar penalidad" collects: every owed one, else one. */
-  penaltyCountToCollect: number;
+  /** Most penalties one cobro can take: every owed one, else one. */
+  maxPenaltyCount: number;
 }
 
 /**
@@ -307,11 +313,18 @@ export interface CollectInput {
   moraCents: number;
   lines: ReceiptLine[];
   /**
-   * Tradicional Plus only: how many penalties this cobro pays ("Cobrar
-   * penalidad"). Omitted for a cuota. `collectPayment` re-checks it against
-   * the loan's own state.
+   * Tradicional Plus only: how many penalties this cobro pays. With N owed
+   * (N >= 1): 1..N. With none owed: exactly 1, only when the cuota is due.
+   * Omitted for a cuota alone. `collectPayment` re-checks it against the
+   * loan's own state.
    */
   penaltyCount?: number;
+  /**
+   * Tradicional Plus only ("Penalidades + cuota"): adds the next cuota to the
+   * same cobro. Requires `penaltyCount` === N >= 1. `amountCents` must be
+   * `penaltyCount * penaltyCents + nextCuotaCents`.
+   */
+  withCuota?: boolean;
 }
 
 export interface PaymentReceipt {
@@ -370,6 +383,11 @@ export interface SyncStatus {
   heldDeletions: DeletionCounts | null;
   /** Rows the last pull couldn't read — their tabs were skipped until fixed. */
   syncProblems: TabProblem[];
+  /**
+   * This phone just moved an existing Pagos tab to the Tipo layout: tell the
+   * lender to update Micobro on every other phone that shares the Sheet.
+   */
+  tipoNoticePending: boolean;
 }
 
 export interface SyncRepo {
@@ -389,6 +407,8 @@ export interface SyncRepo {
   listBackups(): Promise<Backup[]>;
   /** Replaces local data with a backup's; needs the PIN. */
   restoreBackup(name: string, pin: string): Promise<RestoreBackupResult>;
+  /** The lender tapped "Entendido" on the Tipo notice. */
+  acknowledgeTipoNotice(): Promise<void>;
 }
 
 export interface ProfileRepo {

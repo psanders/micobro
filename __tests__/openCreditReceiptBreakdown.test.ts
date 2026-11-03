@@ -55,6 +55,7 @@ const pay = (id: string, iso: string, amountCents: number): Payment => ({
   paidAt: d(iso),
   method: "cash",
   notes: null,
+  tipo: "cuota",
   createdAt: d(iso)
 });
 

@@ -1,19 +1,24 @@
 ---
 title: "Préstamos"
-description: "Crea un préstamo Tradicional o de Crédito Abierto y revisa la cuota antes de guardar."
+description: "Crea un préstamo Tradicional, Tradicional Plus o de Crédito Abierto y revisa la cuota antes de guardar."
 ---
 
 Un préstamo se le crea a un cliente que ya registraste. Lo que escojas al crearlo define
 cuánto te paga, cada cuánto y hasta cuándo.
 
-## Los dos tipos de préstamo
+## Los tres tipos de préstamo
 
 Al crear el préstamo, lo primero que escoges es el **Tipo de préstamo**.
 
-<CardGroup cols={2}>
+<CardGroup cols={3}>
   <Card title="Tradicional" icon="calendar-check">
     Un monto que se paga en un número fijo de cuotas. Cada cuota baja la deuda hasta que el préstamo
     queda saldado.
+  </Card>
+  <Card title="Tradicional Plus" icon="calendar-plus">
+    Cuotas fijas cada quincena. Si el cliente no paga pasados los días de gracia, debe una
+    **Penalidad** fija por cada quincena sin pagar, y cada penalidad que paga corre el plan una
+    quincena.
   </Card>
   <Card title="Crédito Abierto" icon="rotate">
     El cliente paga el interés del ciclo y el capital sigue ahí. No hay una fecha en que se acabe:
@@ -44,6 +49,25 @@ En un préstamo **Tradicional** además pones:
 
 En un **Crédito Abierto** en lugar de la tasa pones **Interés por ciclo (%)**: lo que te
 paga cada vez, sin tocar el capital.
+
+### Tradicional Plus
+
+Un **Tradicional Plus** se paga siempre **Quincenal** y no cobra mora. Además de la tasa y el
+plazo pones:
+
+| Campo                        | Qué es                                                                                  |
+| ---------------------------- | --------------------------------------------------------------------------------------- |
+| **Penalidad (RD$)**          | Lo que el cliente debe por cada quincena que deja pasar sin pagar.                      |
+| **Período de gracia (días)** | Cuántos días después de la fecha de la cuota esperas antes de que se deba la penalidad. |
+
+La penalidad no baja la deuda: corre todo el plan una quincena más. Por eso un cliente que
+paga penalidades termina de pagar más tarde, pero sigue pagando las mismas cuotas.
+
+<Note>
+  Después de crear el préstamo, el **Período de gracia (días)** no se cambia en la app. Si necesitas
+  cambiarlo, hazlo en la pestaña **Préstamos** de tu hoja de Google. Si lo subes, se borran las
+  penalidades que ya se debían.
+</Note>
 
 ### Saltar domingos
 

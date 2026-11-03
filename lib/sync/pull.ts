@@ -20,6 +20,7 @@ import { readRange, readRanges, updateRow } from "./sheetsClient";
 import { getSheetId } from "./config";
 import { ENTITY_RANGES } from "./push";
 import { isClientesLayoutReady } from "./clientesLayout";
+import { PAGOS_ADOPT_TIPO_KEY, isPagosLayoutReady } from "./pagosLayout";
 import { buildPullPlan, countDeletions, guardKey, needsDeletionConfirmation } from "./pullPlan";
 import { applyPullPlanTo, createSqlPullStore } from "./applyPullPlan";
 import { createExpoSqlExecutor } from "../db/sqlExecutor";
@@ -141,11 +142,18 @@ export async function pullEntities(
   // the Cédula layout (push confirms it) — read in the old layout, Teléfono
   // would land in cedula and Dirección in phone.
   const customersReady = await isClientesLayoutReady(db);
+  // Payment rows likewise wait for the Pagos tab's Tipo column (push
+  // confirms it): read before it, every mora and penalty would be a cuota.
+  const paymentsReady = await isPagosLayoutReady(db);
+  const adoptRows = await db.select().from(syncMeta).where(eq(syncMeta.key, PAGOS_ADOPT_TIPO_KEY));
+  const adoptPaymentTipo = paymentsReady && adoptRows.length > 0;
   const ranges = PULLED_ENTITIES.map((entity) => ENTITY_RANGES[entity]);
   const values = await readTabs(sheetId, ranges);
   const tabs = {} as ByEntity<string[][] | null>;
   PULLED_ENTITIES.forEach((entity, i) => {
-    tabs[entity] = entity === "customer" && !customersReady ? null : (values[i] ?? null);
+    const held =
+      (entity === "customer" && !customersReady) || (entity === "payment" && !paymentsReady);
+    tabs[entity] = held ? null : (values[i] ?? null);
   });
 
   const local = await readLocal(db);
@@ -155,7 +163,8 @@ export async function pullEntities(
     local,
     guarded: await readGuarded(db),
     now,
-    newId: () => Crypto.randomUUID()
+    newId: () => Crypto.randomUUID(),
+    adoptPaymentTipo
   });
 
   const localCounts = {} as ByEntity<number>;
@@ -176,6 +185,11 @@ export async function pullEntities(
       now
     });
   });
+
+  // The one-time adoption is spent once a readable Pagos tab was applied.
+  if (adoptPaymentTipo && tabs.payment && !plan.brokenTabs.includes("payment")) {
+    await setMeta(db, PAGOS_ADOPT_TIPO_KEY, null);
+  }
 
   const held = hold ? countDeletions(plan.deletions) : null;
   await setMeta(db, HELD_DELETIONS_KEY, held ? JSON.stringify(held) : null);

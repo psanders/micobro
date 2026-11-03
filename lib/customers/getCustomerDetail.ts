@@ -9,10 +9,9 @@ import {
   buildLoanDetailView,
   buildCustomerLoanSummary,
   buildArchivedLoanSummary,
-  cycleIndexForPayment,
-  MORA_NOTE,
-  PENALTY_NOTE
+  cycleIndexForPayment
 } from "../loans/loanViews";
+import { isMoraPayment, isPenaltyPayment } from "../payments/paymentNotes";
 import { computeLoanMora, loanMoraPolicy } from "../loans/mora";
 import { effectiveLoanType, ARCHIVED_LOAN_STATUS } from "../loans/loan.schema";
 import { openCreditState } from "../loans/openCredit";
@@ -124,8 +123,8 @@ export function createGetCustomerDetail({ db }: GetCustomerDetailDeps) {
         for (const payment of [...loanPayments].sort(
           (a, b) => a.paidAt.getTime() - b.paidAt.getTime()
         )) {
-          const isMora = payment.notes === MORA_NOTE;
-          const isPenalty = payment.notes === PENALTY_NOTE;
+          const isMora = isMoraPayment(payment);
+          const isPenalty = isPenaltyPayment(payment);
           if (!isMora && !isPenalty) cuotaNumber += 1;
           activity.push({
             id: payment.id,

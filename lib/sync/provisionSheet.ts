@@ -17,11 +17,13 @@ import {
   findDriveFiles,
   createDriveFile,
   ensureSheetTab,
-  ensureProtectedRanges
+  ensureProtectedRanges,
+  ensureColumnProtection
 } from "./sheetsClient";
 import { getSheetId, setSheetId } from "./config";
 import { ENTITY_RANGES, pushPendingMutations } from "./push";
 import { TAB_HEADERS } from "./sheetHeaders";
+import { TIPO_PROTECTION_DESCRIPTION } from "./pagosLayout";
 import { logger } from "../logger";
 import type { Database } from "../db/client";
 
@@ -48,6 +50,13 @@ async function ensureAllTabs(spreadsheetId: string): Promise<void> {
   // fail a connect: a later connect tries again.
   try {
     await ensureProtectedRanges(spreadsheetId, Object.values(ENTITY_RANGES).map(tabTitle));
+    // Pagos' Tipo column (H) is filled only by the app — see pagosLayout.ts.
+    await ensureColumnProtection(
+      spreadsheetId,
+      tabTitle(ENTITY_RANGES.payment),
+      TAB_HEADERS.payment.length - 1,
+      TIPO_PROTECTION_DESCRIPTION
+    );
   } catch (err) {
     logger.warn("could not protect the id columns", { spreadsheetId, error: String(err) });
   }

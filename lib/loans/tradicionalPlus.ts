@@ -4,13 +4,14 @@
  * Tradicional Plus: a term loan whose cycles are each covered by either its
  * cuota or a fixed penalty. A penalty never touches the balance; it moves
  * every remaining cuota one cycle later, with no limit. A cycle left unpaid
- * past its due date plus the grace period becomes one owed penalty, and owed
- * penalties must be paid before any cuota. No mora.
+ * past its due date plus the grace period becomes one owed penalty. Some or
+ * all owed penalties can be paid on their own; a cuota is accepted only with
+ * every owed penalty paid first (in the same cobro or before it) and only on
+ * or after its due date. No mora.
  *
  * Nothing about the moves is stored: they're counted from the `payments`
- * rows flagged `PENALTY_NOTE`, so a Sheet edit or a deleted row can't leave
- * the schedule out of step with the payments (see
- * `lib/payments/paymentNotes.ts`). Kept free of `loanViews.ts` imports
+ * rows with `tipo: "penalidad"`, so a deleted row can't leave the schedule
+ * out of step with the payments (see `lib/payments/paymentNotes.ts`). Kept free of `loanViews.ts` imports
  * (which imports this module) — the schedule only needs
  * `addFrequencyInterval`, since Tradicional Plus is quincenal-only and never
  * skips Sundays.
@@ -24,6 +25,18 @@ import type { Payment } from "../payments/payment.schema";
 import type { ReceiptLine, TradicionalPlusView } from "../repo/types";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * Chronological order; within one cobro (equal `paidAt`), penalty rows come
+ * before cuota rows, so a cobro's result never depends on row order.
+ */
+export function chronologicalPayments(payments: Payment[]): Payment[] {
+  return [...payments].sort(
+    (a, b) =>
+      a.paidAt.getTime() - b.paidAt.getTime() ||
+      (isPenaltyPayment(b) ? 1 : 0) - (isPenaltyPayment(a) ? 1 : 0)
+  );
+}
 
 /** Penalties paid so far — each one moved the schedule one cycle. */
 export function penaltiesPaid(payments: Payment[]): number {
@@ -54,7 +67,7 @@ function installmentAmount(loan: Loan, number: number): number {
  * one sits at its number plus every penalty paid so far.
  */
 export function tradicionalPlusDueDates(loan: Loan, payments: Payment[]): Date[] {
-  const chronological = [...payments].sort((a, b) => a.paidAt.getTime() - b.paidAt.getTime());
+  const chronological = chronologicalPayments(payments);
   const movesWhenPaid: number[] = [];
   let moves = 0;
   let principal = 0;
@@ -102,12 +115,14 @@ export interface TradicionalPlusState {
   /** From the day after the next uncovered cycle's due date — like Tradicional's ATRASO. */
   isOverdue: boolean;
   paidOff: boolean;
-  /** A cuota is accepted only when no penalties are owed. */
+  /** The next cuota's due date is today or past. */
+  isDue: boolean;
+  /** A cuota alone: no penalties owed and the cuota is due. */
   canCollectCuota: boolean;
   /** Owed penalties, or the next cycle is due (today or within grace). */
   canCollectPenalty: boolean;
-  /** How many penalties "Cobrar penalidad" collects: every owed one, else one. */
-  penaltyCountToCollect: number;
+  /** Most penalties one cobro can take: every owed one, else one. */
+  maxPenaltyCount: number;
 }
 
 /** Where a Tradicional Plus loan stands on `today`, derived from its payments alone. */
@@ -167,9 +182,10 @@ export function tradicionalPlusState(
     daysLate,
     isOverdue,
     paidOff,
-    canCollectCuota: !paidOff && owedPenalties === 0,
+    isDue,
+    canCollectCuota: !paidOff && owedPenalties === 0 && isDue,
     canCollectPenalty: !paidOff && penaltyCents > 0 && (owedPenalties > 0 || isDue),
-    penaltyCountToCollect: Math.max(1, owedPenalties)
+    maxPenaltyCount: owedPenalties > 0 ? owedPenalties : 1
   };
 }
 
@@ -182,9 +198,11 @@ export function tradicionalPlusView(state: TradicionalPlusState): TradicionalPlu
     owedPenalties: state.owedPenalties,
     owedCents: state.owedCents,
     nextCuotaCents: state.nextCuotaCents,
+    nextCuotaNumber: state.nextCuotaNumber,
+    nextDueDate: state.nextDueDate,
     canCollectCuota: state.canCollectCuota,
     canCollectPenalty: state.canCollectPenalty,
-    penaltyCountToCollect: state.penaltyCountToCollect
+    maxPenaltyCount: state.maxPenaltyCount
   };
 }
 
@@ -204,6 +222,8 @@ export interface TradicionalPlusReceipt {
  * The penalty line and end date for the cobro that wrote `cobroPayments`
  * (rows sharing one `paidAt`), as the loan stood right after it — so a
  * reprint months later still reads the date the cobro moved the cuota to.
+ * The line reads the schedule after the cobro's penalties but before its
+ * cuota, so "Penalidades + cuota" prints the cuota it then paid.
  */
 export function tradicionalPlusReceipt(
   loan: Loan,
@@ -217,9 +237,15 @@ export function tradicionalPlusReceipt(
   const penalties = cobroPayments.filter(isPenaltyPayment);
   if (penalties.length === 0) return { penaltyLine: null, endDate: state.endDate };
 
+  const cobroIds = new Set(cobroPayments.map((p) => p.id));
+  const afterPenalties = tradicionalPlusState(
+    loan,
+    asOfCobro.filter((p) => !cobroIds.has(p.id) || isPenaltyPayment(p)),
+    paidAt
+  );
   const moved =
-    state.nextCuotaNumber && state.nextDueDate
-      ? ` · Cuota ${state.nextCuotaNumber} pasa al ${formatDate(state.nextDueDate)}`
+    afterPenalties.nextCuotaNumber && afterPenalties.nextDueDate
+      ? ` · Cuota ${afterPenalties.nextCuotaNumber} pasa al ${formatDate(afterPenalties.nextDueDate)}`
       : "";
   return {
     penaltyLine: {

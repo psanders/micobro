@@ -2,8 +2,7 @@
 
 Project-specific guidance for everything under `docs-site/` (the Mintlify docs and their
 assets). Authored with `/ps:docs`. This is the _what's-allowed-and-for-whom_ layer; the
-_how-to-write_ method lives in the skill, the coding conventions in the repo-root
-`CLAUDE.md`, and the asset mechanics in `images/ASSETS.md` — don't restate those here.
+_how-to-write_ method lives in the skill, the coding conventions in the repo-root `AGENTS.md`, and the asset mechanics in `images/ASSETS.md` — don't restate those here.
 
 ## Scope — the Android app only
 
@@ -47,8 +46,9 @@ No jargon from the codebase, no English technical words where a plain Spanish on
 - **The sync mechanism.** OAuth, PKCE, tokens, the Sheets REST API, retry and queue
   behavior. The lender connects a Google account and their data shows up in a spreadsheet:
   that is the whole story they need.
-- **Anything unreleased.** Pull/two-way sync and conflict resolution are not built. Don't
-  describe them as if they were, and don't promise dates.
+- **Anything unreleased.** Don't describe a feature before it ships, and don't promise dates.
+  Two-way sync shipped in #187: Sheet edits and deletions come back to the phone, and the app
+  wins a conflict. Describe that behavior, never the mechanism.
 
 ## The disclosure rule
 

@@ -1,0 +1,1 @@
+ALTER TABLE `payments` ADD `tipo` text DEFAULT 'cuota' NOT NULL;

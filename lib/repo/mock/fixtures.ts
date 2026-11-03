@@ -361,6 +361,7 @@ const payment = (
   paidAt,
   method,
   notes: null,
+  tipo: "cuota",
   createdAt: paidAt
 });
 

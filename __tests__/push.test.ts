@@ -21,6 +21,10 @@ jest.mock("../lib/sync/clientesLayout", () => ({
   ensureClientesLayout: jest.fn().mockResolvedValue(true)
 }));
 
+jest.mock("../lib/sync/pagosLayout", () => ({
+  ensurePagosLayout: jest.fn().mockResolvedValue(true)
+}));
+
 jest.mock("../lib/sync/prestamosLayout", () => ({
   ensurePenaltyHeader: jest.fn().mockResolvedValue(undefined)
 }));
@@ -648,14 +652,15 @@ describe("pushPendingMutations", () => {
     const result = await pushPendingMutations(db);
 
     // Assert
-    expect(appendRowMock).toHaveBeenCalledWith("sheet-1", "Pagos!A:G", [
+    expect(appendRowMock).toHaveBeenCalledWith("sheet-1", "Pagos!A:H", [
       "payment-1",
       "loan-1",
       25000,
       "2026-01-08T00:00:00.000Z",
       "",
       "",
-      "2026-01-08T00:00:00.000Z"
+      "2026-01-08T00:00:00.000Z",
+      "cuota"
     ]);
     expect(result).toEqual({ pushed: 1, failed: 0 });
   });

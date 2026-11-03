@@ -158,7 +158,8 @@ describe("parseSheetRow round trip", () => {
       paidAt: updated,
       method: "transfer",
       notes: null,
-      createdAt: created
+      createdAt: created,
+      tipo: "cuota"
     };
 
     // Act

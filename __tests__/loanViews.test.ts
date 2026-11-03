@@ -59,6 +59,7 @@ const cuotaPayment = (id: string, paidAt: Date, amountCents = 270000): Payment =
   paidAt,
   method: "cash",
   notes: null,
+  tipo: "cuota",
   createdAt: paidAt
 });
 
@@ -152,7 +153,7 @@ describe("buildLoanDetailView", () => {
       loan,
       customerName: "Cliente",
       business: null,
-      payments: [...threePaid, { ...cuotaPayment("p-mora", daysAgo(1), 75000), notes: "mora" }],
+      payments: [...threePaid, { ...cuotaPayment("p-mora", daysAgo(1), 75000), tipo: "mora" }],
       today
     });
     expect(view.paidCents).toBe(810000);
@@ -550,7 +551,8 @@ describe("buildPaymentReceipt", () => {
       amountCents: 15000,
       paidAt,
       method: "cash",
-      notes: "mora",
+      notes: null,
+      tipo: "mora",
       createdAt: paidAt
     };
     const cuotaRow = cuotaPayment("p4", paidAt);
@@ -600,6 +602,7 @@ describe("buildPaymentReceipt", () => {
       paidAt: daysAgo(3),
       method: "cash",
       notes: null,
+      tipo: "cuota",
       createdAt: daysAgo(3)
     };
 
@@ -666,6 +669,7 @@ describe("buildCustomerLoanSummary", () => {
         paidAt: new Date(today.getTime() - 4 * DAY_MS),
         method: "cash",
         notes: null,
+        tipo: "cuota",
         createdAt: today
       }
     ];
@@ -717,6 +721,7 @@ describe("buildCustomerLoanSummary", () => {
         paidAt: new Date(today.getTime() - 4 * DAY_MS),
         method: "cash",
         notes: null,
+        tipo: "cuota",
         createdAt: today
       };
       const state = openCreditState(openCreditLoan, [paidWithinCycle1], today);
@@ -733,6 +738,7 @@ describe("buildCustomerLoanSummary", () => {
         paidAt: new Date(today.getTime() + 30 * DAY_MS),
         method: "cash",
         notes: null,
+        tipo: "cuota",
         createdAt: today
       };
 

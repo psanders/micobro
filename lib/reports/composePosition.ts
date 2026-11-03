@@ -5,12 +5,28 @@
  * active loans that still owe something, computed with the same loan math
  * the detail screens use (`loanViews.ts` for term loans, `openCredit.ts`
  * for crédito abierto) so the report never disagrees with a loan's own
- * screen. Mora is not projected; the month outlook is the best case if
- * every installment due by month end is paid.
+ * screen. Contract: openspec/changes/cartera-figures-fix/design.md.
+ *
+ * - Each loan's balance is split into capital and interest that add up to
+ *   it exactly: a term loan's interest is its flat share of the balance
+ *   (balance × total interest / total repay, rounded to the peso); a
+ *   crédito abierto's is its intereses sumados. Interest not yet charged
+ *   (the next open-credit cycle) is not counted.
+ * - Past due is term cuotas due before today (the loan screen's ATRASO
+ *   rule; grace days only delay mora), net of what was paid toward cuotas,
+ *   or a crédito abierto's intereses sumados, or a Tradicional Plus loan's
+ *   owed penalties (see `plusFigures`). A loan is late iff that is above
+ *   zero.
+ * - Cobrado este mes is every payment dated this month, whatever its
+ *   loan's state now. Mora is not projected; the month outlook is the
+ *   best case if every installment due by month end is paid.
  */
-import { buildLoanDetailView } from "../loans/loanViews";
+import { cuotaCents, lastCuotaCents, totalInterestCents, totalRepayCents } from "../loans/loanMath";
+import { tradicionalPlusDueDates, tradicionalPlusState } from "../loans/tradicionalPlus";
+import { buildLoanDetailView, principalPaidCents } from "../loans/loanViews";
 import { effectiveLoanType } from "../loans/loan.schema";
 import { openCreditState } from "../loans/openCredit";
+import { roundToPeso } from "../utils/money";
 import type { Loan } from "../loans/loan.schema";
 import type { Payment } from "../payments/payment.schema";
 import type { OwnerPosition } from "./position.schema";
@@ -22,10 +38,12 @@ export interface ComposePositionInput {
 }
 
 interface LoanFigures {
-  lentCents: number;
+  capitalCents: number;
   receivableCents: number;
-  marginCents: number;
-  isLate: boolean;
+  /** Interest inside `receivableCents`; capital + interest = receivable. */
+  interestCents: number;
+  /** Past due (no grace), net of payments; the loan is late iff > 0. */
+  pastDueCents: number;
   /** Still due by month end, net of payments (never negative). */
   dueByMonthEndCents: number;
   isOpenCredit: boolean;
@@ -39,6 +57,12 @@ function startOfMonth(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth(), 1);
 }
 
+function startOfDay(date: Date): Date {
+  const day = new Date(date);
+  day.setHours(0, 0, 0, 0);
+  return day;
+}
+
 function figuresFor(
   loan: Loan,
   loanPayments: Payment[],
@@ -49,10 +73,12 @@ function figuresFor(
     const state = openCreditState(loan, loanPayments, today);
     if (state.isClosed || state.balanceCents <= 0) return null;
     return {
-      lentCents: state.principalBalanceCents,
+      capitalCents: state.principalBalanceCents,
       receivableCents: state.balanceCents,
-      marginCents: state.capitalizedInterestCents + state.interestDueCents,
-      isLate: state.capitalizedInterestCents > 0,
+      // The next cycle's `interestDueCents` isn't in the balance yet.
+      interestCents: state.capitalizedInterestCents,
+      // Open credit only capitalizes after its own grace.
+      pastDueCents: state.capitalizedInterestCents,
       dueByMonthEndCents:
         state.nextDueDate.getTime() <= monthEnd.getTime() ? state.catchUpCents : 0,
       isOpenCredit: true
@@ -68,18 +94,73 @@ function figuresFor(
   });
   if (view.balanceCents <= 0) return null;
 
+  // Flat add-on interest: every peso repaid carries the same interest share.
+  const repay = totalRepayCents(loan.principalCents, loan.interestRateBps);
+  const interest = totalInterestCents(loan.principalCents, loan.interestRateBps);
+  const interestCents = repay > 0 ? roundToPeso((view.balanceCents * interest) / repay) : 0;
+
+  // Same cutoff as the schedule's `overdue` status: due before today.
+  const startOfToday = startOfDay(today).getTime();
   let dueThroughMonthEnd = 0;
+  let dueBeforeTodayCents = 0;
   for (const item of view.schedule) {
     if (item.dueDate.getTime() <= monthEnd.getTime()) dueThroughMonthEnd += item.amountCents;
+    if (item.dueDate.getTime() < startOfToday) dueBeforeTodayCents += item.amountCents;
   }
+  const plus =
+    effectiveLoanType(loan) === "term_plus"
+      ? plusFigures(loan, loanPayments, today, monthEnd)
+      : null;
   return {
-    lentCents: loan.principalCents,
+    capitalCents: view.balanceCents - interestCents,
     receivableCents: view.balanceCents,
-    marginCents: view.totalInterestCents,
-    isLate: view.schedule.some((item) => item.status === "overdue"),
-    dueByMonthEndCents: Math.max(0, dueThroughMonthEnd - view.paidCents),
+    interestCents,
+    // Mora rows never pay cuotas.
+    pastDueCents:
+      plus?.pastDueCents ?? Math.max(0, dueBeforeTodayCents - principalPaidCents(loanPayments)),
+    dueByMonthEndCents:
+      plus?.dueByMonthEndCents ?? Math.max(0, dueThroughMonthEnd - view.paidCents),
     isOpenCredit: false
   };
+}
+
+/**
+ * Tradicional Plus: what's late is the owed penalties (paying them moves the
+ * missed cuotas forward rather than collecting them), or, with none owed yet,
+ * the cuota past its date within grace — like Tradicional's ATRASO. The month
+ * outlook assumes the owed penalties get paid: those, plus every unpaid cuota
+ * that still falls by month end once the plan has moved for them.
+ */
+function plusFigures(
+  loan: Loan,
+  loanPayments: Payment[],
+  today: Date,
+  monthEnd: Date
+): Pick<LoanFigures, "pastDueCents" | "dueByMonthEndCents"> {
+  const state = tradicionalPlusState(loan, loanPayments, today);
+  const pastDueCents =
+    state.owedPenalties > 0 ? state.owedCents : state.isOverdue ? state.nextCuotaCents : 0;
+
+  const owedPaid: Payment[] = Array.from({ length: state.owedPenalties }, (_, i) => ({
+    id: `owed-penalty-${i}`,
+    loanId: loan.id,
+    amountCents: state.penaltyCents,
+    paidAt: today,
+    method: null,
+    notes: null,
+    tipo: "penalidad",
+    createdAt: today
+  }));
+  const dueDates = tradicionalPlusDueDates(loan, [...loanPayments, ...owedPaid]);
+  let cuotasByMonthEnd = 0;
+  for (let number = state.installmentsPaid + 1; number <= loan.termCount; number++) {
+    if (dueDates[number - 1]!.getTime() > monthEnd.getTime()) break;
+    cuotasByMonthEnd +=
+      number === loan.termCount
+        ? lastCuotaCents(loan.principalCents, loan.interestRateBps, loan.termCount)
+        : cuotaCents(loan.principalCents, loan.interestRateBps, loan.termCount);
+  }
+  return { pastDueCents, dueByMonthEndCents: state.owedCents + cuotasByMonthEnd };
 }
 
 export function composePosition({
@@ -98,9 +179,9 @@ export function composePosition({
   }
 
   const position: OwnerPosition = {
-    lentCents: 0,
+    capitalCents: 0,
     receivableCents: 0,
-    marginCents: 0,
+    interestCents: 0,
     overdue: { cents: 0, loanCount: 0, percent: 0 },
     byType: {
       term: { loanCount: 0, outstandingCents: 0 },
@@ -115,27 +196,27 @@ export function composePosition({
     const figures = figuresFor(loan, loanPayments, today, monthEnd);
     if (!figures) continue;
 
-    position.lentCents += figures.lentCents;
+    position.capitalCents += figures.capitalCents;
     position.receivableCents += figures.receivableCents;
-    position.marginCents += figures.marginCents;
+    position.interestCents += figures.interestCents;
     position.month.remainingCents += figures.dueByMonthEndCents;
 
     const bucket = figures.isOpenCredit ? position.byType.openCredit : position.byType.term;
     bucket.loanCount += 1;
     bucket.outstandingCents += figures.receivableCents;
 
-    if (figures.isLate) {
-      position.overdue.cents += figures.receivableCents;
+    if (figures.pastDueCents > 0) {
+      position.overdue.cents += figures.pastDueCents;
       position.overdue.loanCount += 1;
     }
+  }
 
-    for (const payment of loanPayments) {
-      if (
-        payment.paidAt.getTime() >= monthStart &&
-        payment.paidAt.getTime() <= monthEnd.getTime()
-      ) {
-        position.month.collectedCents += payment.amountCents;
-      }
+  // Every payment this month counts, mora included, whatever its loan's
+  // state now (settled, archived, or not in `loans` at all).
+  for (const payment of payments) {
+    const paidAt = payment.paidAt.getTime();
+    if (paidAt >= monthStart && paidAt <= monthEnd.getTime()) {
+      position.month.collectedCents += payment.amountCents;
     }
   }
 

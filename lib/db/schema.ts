@@ -95,7 +95,7 @@ export const loans = sqliteTable("loans", {
   loanType: text("loan_type"),
   // Tradicional Plus's fixed penalty, in cents. Null for every other loan
   // type. Penalties paid are counted from `payments` rows flagged
-  // `notes: "penalidad"`, not stored here — see `lib/loans/tradicionalPlus.ts`.
+  // `tipo: "penalidad"`, not stored here — see `lib/loans/tradicionalPlus.ts`.
   penaltyCents: integer("penalty_cents"),
   // When the Sheet last confirmed holding this row (set by push on success,
   // and by pull for every row it reads). Only rows with this set can be
@@ -114,7 +114,13 @@ export const payments = sqliteTable("payments", {
   amountCents: integer("amount_cents").notNull(),
   paidAt: integer("paid_at", { mode: "timestamp" }).notNull(),
   method: text("method"),
+  // Free text only; never read for the payment's kind (that's `tipo`).
   notes: text("notes"),
+  // The payment's kind: "cuota" | "mora" | "penalidad". No CHECK
+  // constraint (adding one would rebuild the table); the app validates it.
+  // Rows from before this column were backfilled from the legacy `notes`
+  // flags — see `lib/payments/paymentNotes.ts` `legacyPaymentKind`.
+  tipo: text("tipo").notNull().default("cuota"),
   // When the Sheet last confirmed holding this row (set by push on success,
   // and by pull for every row it reads). Only rows with this set can be
   // treated as deleted when they go missing from the Sheet — see
