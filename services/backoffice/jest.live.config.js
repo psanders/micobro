@@ -8,8 +8,8 @@
  * its business date.
  */
 module.exports = {
-  rootDir: "..",
+  rootDir: "../..",
   testEnvironment: "node",
   maxWorkers: 1,
-  testMatch: ["<rootDir>/__tests__/backoffice/**/*.test.ts"]
+  testMatch: ["<rootDir>/services/backoffice/__tests__/**/*.test.ts"]
 };

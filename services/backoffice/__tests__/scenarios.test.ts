@@ -20,12 +20,12 @@
  * @jest-environment node
  */
 import { randomUUID } from "crypto";
-import { Backoffice } from "../../backoffice/server/backoffice";
-import { FakeFineract } from "../../backoffice/fineract/fakeFineract";
-import { HttpFineract } from "../../backoffice/fineract/httpFineract";
-import { FakeMicobroClient, type NewLoan } from "../../backoffice/client/fakeMicobroClient";
-import { CONTRACT_VERSION, type Mutation } from "../../backoffice/contract/v1";
-import { toBusinessDate, toOffsetIso } from "../../backoffice/dates";
+import { Backoffice } from "../server/backoffice";
+import { FakeFineract } from "../fineract/fakeFineract";
+import { HttpFineract } from "../fineract/httpFineract";
+import { FakeMicobroClient, type NewLoan } from "../client/fakeMicobroClient";
+import { CONTRACT_VERSION, type Mutation } from "@micobro/contract";
+import { toBusinessDate, toOffsetIso } from "../dates";
 
 const LIVE = process.env.FINERACT_LIVE === "1";
 const live = LIVE

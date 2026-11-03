@@ -14,28 +14,33 @@
  * the calendar.
  */
 import { randomUUID } from "crypto";
-import { CONTRACT_VERSION, type Mutation, type SyncResponse, syncResponse } from "../contract/v1";
+import {
+  CONTRACT_VERSION,
+  type Mutation,
+  type SyncResponse,
+  syncResponse
+} from "@micobro/contract";
 import { toBusinessDate, toOffsetIso } from "../dates";
-import { createCustomerSchema } from "../../lib/customers/customer.schema";
+import { createCustomerSchema } from "../../../lib/customers/customer.schema";
 import {
   createLoanSchema,
   effectiveLoanType,
   loanTermsFields,
   type Loan,
   type LoanFrequency
-} from "../../lib/loans/loan.schema";
-import { loanCostSummary } from "../../lib/loans/loanMath";
-import { buildLoanDetailView, installmentDueDate, MORA_NOTE } from "../../lib/loans/loanViews";
+} from "../../../lib/loans/loan.schema";
+import { loanCostSummary } from "../../../lib/loans/loanMath";
+import { buildLoanDetailView, installmentDueDate, MORA_NOTE } from "../../../lib/loans/loanViews";
 import {
   computeLoanMora,
   effectiveGraceDays,
   effectiveMoraRateBps,
   isMoraEnabled,
   loanMoraPolicy
-} from "../../lib/loans/mora";
-import { OPEN_CREDIT_DEFAULT_GRACE_DAYS } from "../../lib/loans/openCredit";
-import { computePaymentSplit } from "../../lib/payments/paymentSplit";
-import type { Payment, PaymentMethod } from "../../lib/payments/payment.schema";
+} from "../../../lib/loans/mora";
+import { OPEN_CREDIT_DEFAULT_GRACE_DAYS } from "../../../lib/loans/openCredit";
+import { computePaymentSplit } from "../../../lib/payments/paymentSplit";
+import type { Payment, PaymentMethod } from "../../../lib/payments/payment.schema";
 
 /** POST /v1/sync. In tests: the Backoffice in-process; later: HTTP with a bearer token. */
 export type Transport = (body: unknown) => Promise<unknown>;

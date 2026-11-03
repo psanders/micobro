@@ -3,6 +3,10 @@
   "description": "Offline-first loan tracking for independent lenders in the Dominican Republic, syncing local SQLite with Google Sheets.",
   "version": "0.20.1",
   "private": true,
+  "workspaces": [
+    "packages/*",
+    "services/*"
+  ],
   "main": "expo-router/entry",
   "engines": {
     "node": ">=22"
@@ -20,10 +24,10 @@
     "build:ipa": "eas build --platform ios --profile production --local --output micobro-ios.ipa",
     "typecheck": "tsc --noEmit",
     "test": "jest",
-    "backoffice:up": "docker compose -f backoffice/fineract/compose.yaml up -d",
-    "backoffice:down": "docker compose -f backoffice/fineract/compose.yaml down",
-    "backoffice:reset": "docker compose -f backoffice/fineract/compose.yaml down -v && docker compose -f backoffice/fineract/compose.yaml up -d",
-    "backoffice:live": "FINERACT_LIVE=1 jest -c backoffice/jest.live.config.js",
+    "backoffice:up": "docker compose -f services/backoffice/fineract/compose.yaml up -d",
+    "backoffice:down": "docker compose -f services/backoffice/fineract/compose.yaml down",
+    "backoffice:reset": "docker compose -f services/backoffice/fineract/compose.yaml down -v && docker compose -f services/backoffice/fineract/compose.yaml up -d",
+    "backoffice:live": "FINERACT_LIVE=1 jest -c services/backoffice/jest.live.config.js",
     "test:e2e": "maestro test .maestro",
     "e2e:videos": "mkdir -p videos && maestro test .maestro -e APP_ID=com.micobro.app -e RECORD=true",
     "lint": "eslint .",

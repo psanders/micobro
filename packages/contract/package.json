@@ -1,0 +1,11 @@
+{
+  "name": "@micobro/contract",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Micobro ↔ back office wire contract (Zod schemas, versioned)",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "dependencies": {
+    "zod": "^4.6.6"
+  }
+}

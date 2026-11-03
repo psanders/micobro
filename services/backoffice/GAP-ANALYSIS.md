@@ -17,17 +17,17 @@ represent, or represents differently?** No UI, no real connection.
 
 ## How the answers were checked
 
-| Piece | File | What it is |
-| --- | --- | --- |
-| Contract v1 | `contract/v1.ts` | Zod schemas for what the app sends (a batch of mutations, replaying the outbox the way `pending_mutations` is replayed to the Sheet today) and what the server returns. |
-| Fake Micobro app | `client/fakeMicobroClient.ts` | Keeps rows shaped like the app's and runs the app's **real** engines (`loanMath`, `mora`, `loanViews`, `paymentSplit`). Every cobro carries the numbers the app showed (`clientView`). |
-| Fake back office | `server/backoffice.ts`, `server/mapping.ts` | The future BFF. Applies mutations to Fineract, runs the nightly close, and reports **drift**: any difference between the app's numbers and the server's. |
-| Fineract port | `fineract/port.ts` | The slice of Fineract's REST API in use. |
-| Fineract model | `fineract/model.ts` | Fineract's schedule, allocation and mora-job rules as pure functions. FakeFineract is built on them, and the BFF uses them to repair mora (G-OFFLINE-MORA). |
-| FakeFineract | `fineract/fakeFineract.ts` | In-memory Fineract on top of the model. |
-| HttpFineract | `fineract/httpFineract.ts` | The same port over a real server. |
-| Calibration | `fineract/calibration.ts`, `fineract/observed.json` | 16 probes run on both FakeFineract and a real server. They must return identical results. `observed.json` records what the real server returned. |
-| Scenarios | `__tests__/backoffice/scenarios.test.ts` | 25 end-to-end scenarios: app → contract → BFF → Fineract. |
+| Piece            | File                                                | What it is                                                                                                                                                                             |
+| ---------------- | --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Contract v1      | `packages/contract` (`@micobro/contract`)           | Zod schemas for what the app sends (a batch of mutations, replaying the outbox the way `pending_mutations` is replayed to the Sheet today) and what the server returns.                |
+| Fake Micobro app | `client/fakeMicobroClient.ts`                       | Keeps rows shaped like the app's and runs the app's **real** engines (`loanMath`, `mora`, `loanViews`, `paymentSplit`). Every cobro carries the numbers the app showed (`clientView`). |
+| Fake back office | `server/backoffice.ts`, `server/mapping.ts`         | The future BFF. Applies mutations to Fineract, runs the nightly close, and reports **drift**: any difference between the app's numbers and the server's.                               |
+| Fineract port    | `fineract/port.ts`                                  | The slice of Fineract's REST API in use.                                                                                                                                               |
+| Fineract model   | `fineract/model.ts`                                 | Fineract's schedule, allocation and mora-job rules as pure functions. FakeFineract is built on them, and the BFF uses them to repair mora (G-OFFLINE-MORA).                            |
+| FakeFineract     | `fineract/fakeFineract.ts`                          | In-memory Fineract on top of the model.                                                                                                                                                |
+| HttpFineract     | `fineract/httpFineract.ts`                          | The same port over a real server.                                                                                                                                                      |
+| Calibration      | `fineract/calibration.ts`, `fineract/observed.json` | 16 probes run on both FakeFineract and a real server. They must return identical results. `observed.json` records what the real server returned.                                       |
+| Scenarios        | `__tests__/scenarios.test.ts`                       | 25 end-to-end scenarios: app → contract → BFF → Fineract.                                                                                                                              |
 
 `npm test` runs the probes and scenarios on the fake. `npm run backoffice:live`
 runs them on a real Fineract (`npm run backoffice:up` first;
@@ -95,7 +95,7 @@ on the loan, and it eats part of the cobro (verified live: two on-time
 cuotas synced five days late left RD$17.36 of mora and one cuota unpaid).
 Fineract has no setting for this; `backdate-penalties-enabled` only
 controls backfilling.
-*Resolved in the BFF, verified live:* before posting a cobro dated before
+_Resolved in the BFF, verified live:_ before posting a cobro dated before
 the last close, the BFF replays the loan with Fineract's own rules
 (`simulateMora`) as if every cobro had arrived the day it was made. It
 waives the charges that shouldn't exist and adds a "Mora (ajuste)" penalty
@@ -107,7 +107,7 @@ repair.
 
 **G-MORA-ALLOCATION: a cobro pays the oldest cuota first, its mora included.**
 Fineract pays installment by installment: that cuota's mora, then interest,
-then principal. Mora accrued after a cuota's due date sits in the *next*
+then principal. Mora accrued after a cuota's due date sits in the _next_
 cuota's period, so "one cuota plus its mora" doesn't clear it. There is no
 "solo mora" and no "solo cuota". The app's cobro split (mora first across
 the whole loan) no longer describes what happens. After cutover, the app
@@ -131,7 +131,7 @@ weekly, 10%).
 flag doesn't stop the charges; only charge-off does. Cobros are still
 accepted afterwards, booked as recoveries. Charge-off can only be undone
 while it is the loan's last transaction.
-*Decision (2026-11-03):* keep charge-off at 90 days. With accounting on, the
+_Decision (2026-11-03):_ keep charge-off at 90 days. With accounting on, the
 loan is booked as a loss at that point, and later cobros as recoveries,
 the standard treatment for non-performing loans.
 
@@ -146,7 +146,7 @@ show the mora the server will charge. `lib/loans/mora.ts` (and Mikro's
 `lateFee.ts`) need to move to Fineract's rule. That's an app behavior
 change and needs its own OpenSpec change. Until then, every mora cobro
 reports `moraBeforeCents` drift.
-*Decision (2026-11-03):* switch at cutover (Phase 2). The shipped app keeps
+_Decision (2026-11-03):_ switch at cutover (Phase 2). The shipped app keeps
 today's mora for lenders on Google Sheets; the new rule ships with the
 back office connection.
 
@@ -171,16 +171,16 @@ remainders on the last cuota (HALF_EVEN, tenant `rounding-mode` 6).
 Example: 1,000 at 10% over 3 cuotas. The app shows 367 / 367 / 366. Fineract
 schedules 366 / 366 / 368. Totals always match; some cuotas don't. Common
 round numbers (5,000 / 30% / 10; 7,000 / 20% / 6; 1,000 / 12% / 7) match.
-*Options:* (a) after cutover, show the server's schedule (the app stops
+_Options:_ (a) after cutover, show the server's schedule (the app stops
 deriving it); (b) make the BFF write the app's amounts through Fineract's
 variable installments (unverified); (c) change the app's rounding to match
 Fineract's before cutover.
-*Decision (2026-11-03):* (a). After cutover the app shows the server's
+_Decision (2026-11-03):_ (a). After cutover the app shows the server's
 schedule. Loans imported at cutover may move a peso between cuotas.
 
 **G-PHONE-UNIQUE: Fineract refuses two clients with the same `mobileNo`.**
 In the DR, relatives often share a phone, and the app allows it today.
-*Decision (2026-11-03):* require unique phones, as Fineract does. The app
+_Decision (2026-11-03):_ require unique phones, as Fineract does. The app
 must refuse a phone another customer already uses (an app change, so it
 needs an OpenSpec change). Existing duplicates in a lender's data will be
 refused at cutover import and have to be fixed first.
@@ -189,7 +189,7 @@ refused at cutover import and have to be fixed first.
 date.**
 If a device's clock is ahead, or the nightly close hasn't moved the date
 yet, the cobro is refused (`error.msg.loan.transaction.cannot.be.a.future.date`).
-*Resolved in the contract:* this comes back as `NOT_YET`, which is
+_Resolved in the contract:_ this comes back as `NOT_YET`, which is
 retryable. The mutation stays in the outbox and goes through on a later
 sync. Operational consequence: each tenant's nightly close must run every
 night, in America/Santo_Domingo time.
@@ -197,21 +197,21 @@ night, in America/Santo_Domingo time.
 **G-LOAN-CORRECTION: Fineract won't change the terms of an active loan.**
 Editar préstamo works at any time in the app. Fineract refuses to modify an
 active loan (verified).
-*Resolved in the BFF, verified live:* replay. Undo the disbursal (Fineract
+_Resolved in the BFF, verified live:_ replay. Undo the disbursal (Fineract
 reverses every repayment along with it and drops the mora), undo the
 approval, modify, approve, disburse, re-post the cobro journal under
 versioned external ids (`<id>~v2`), then run the mora job and the mora
 repair. Replaying leaves reversed transactions in the audit trail, which is
 correct but noisy.
 The same replay voids a Tradicional Plus penalty (G-TP-VOID).
-*Still open:* changing loan type or frequency means a different product,
+_Still open:_ changing loan type or frequency means a different product,
 and Fineract can't move a loan between products. That needs a new Fineract
 loan (refused as UNSUPPORTED for now).
 
 **G-SKIP-SUNDAYS: per-loan Sunday skipping.** Fineract's working days are
-tenant-wide and *move* a Sunday cuota onto Monday's, and it refuses variable
+tenant-wide and _move_ a Sunday cuota onto Monday's, and it refuses variable
 installments on flat-interest products.
-*Resolved in the BFF, verified live:* after disbursal, reschedule from each
+_Resolved in the BFF, verified live:_ after disbursal, reschedule from each
 cuota that lands on a Sunday to the Monday; Fineract moves every later cuota
 with it (4 reschedules for a 24-day loan, matching the app's dates exactly).
 Fineract's mora job still counts Sundays as late days; the app doesn't.
@@ -225,13 +225,13 @@ term, where unpaid interest is capitalized. Candidates, none tested:
 principal grace until the last period and a long nominal term; (2) a
 BFF-owned ledger using Micobro's own `openCredit.ts` engine, posting only
 journal entries to Fineract's GL. Needs its own spike. (2) is the safer bet.
-*Deferred (2026-11-03):* skipped for now; the BFF keeps refusing it as
+_Deferred (2026-11-03):_ skipped for now; the BFF keeps refusing it as
 UNSUPPORTED.
 
 **G-TP-VOID: voiding a Tradicional Plus penalty.** The penalty moved every
 unpaid cuota one quincena, and Fineract refuses to reschedule a cuota to an
 earlier date (`adjustedDueDate.before.rescheduleFromDate`, verified live).
-*Resolved in the BFF, verified live:* the loan is rebuilt without the
+_Resolved in the BFF, verified live:_ the loan is rebuilt without the
 penalty, using the same replay as Editar préstamo. Every cuota goes back to
 where it was; any other penalties re-create their own reschedules.
 
@@ -239,17 +239,18 @@ where it was; any other penalties re-create their own reschedules.
 
 **G-FEES: legal and closing costs (gastos legales, gastos de cierre).**
 Fineract supports both, verified live on a 10,000 / 30% / 10-week loan:
-- *Collected at disbursement* (charge time "Disbursement", flat or % of
+
+- _Collected at disbursement_ (charge time "Disbursement", flat or % of
   principal): RD$500 legal + 3% closing = RD$800, recorded as a payment at
   disbursement. Cuotas stay 1,300.
-- *Financed into the cuotas* (charge time "Installment fee"): RD$50 per
+- _Financed into the cuotas_ (charge time "Installment fee"): RD$50 per
   cuota, or a % of each cuota's principal, added to every cuota (1,300 →
   1,353 in the probe).
-- *One-off on a date* (charge time "Specified due date") for a cost charged
+- _One-off on a date_ (charge time "Specified due date") for a cost charged
   later, like a notary fee.
-Micobro has no fees today, so the app's Nuevo préstamo, the contract
-(`loan.create`) and the schedule all need a fees field before the back
-office can carry them.
+  Micobro has no fees today, so the app's Nuevo préstamo, the contract
+  (`loan.create`) and the schedule all need a fees field before the back
+  office can carry them.
 
 ### Decisions the back office owns (Fineract has no equivalent)
 
@@ -262,7 +263,7 @@ Tradicional Plus products carry no mora charge.
 **G-ARCHIVE: archive / restore.** In the app, archiving only hides a loan
 (status `cancelled`). In Fineract it could mean write-off, which has
 accounting impact, or nothing.
-*Decision (2026-11-03):* hide only. Archive stays a back office flag;
+_Decision (2026-11-03):_ hide only. Archive stays a back office flag;
 nothing changes in Fineract, and the loan keeps accruing and stays on the
 books. A write-off, when needed, is a separate explicit action.
 
@@ -288,7 +289,7 @@ about, and a mismatch is reported as drift.
 - **Accounting.** The POC products use accounting rule "none". Turning on
   cash or accrual accounting means designing a chart of accounts per
   tenant, including the loss and recovery accounts for charge-off (G-MORA-STOP)
-and how mora waivers post.
+  and how mora waivers post.
 - **Time zones.** Contract instants carry the device's UTC offset, and
   their date part is the business date. The tenant's timezone is set to
   America/Santo_Domingo (no DST).

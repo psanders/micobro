@@ -1,0 +1,10 @@
+{
+  "name": "@micobro/backoffice",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Micobro back office (BFF in front of Apache Fineract) — Phase 1 proof of concept",
+  "dependencies": {
+    "@micobro/contract": "0.0.0",
+    "zod": "^4.6.6"
+  }
+}

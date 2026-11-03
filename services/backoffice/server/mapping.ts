@@ -12,7 +12,7 @@ import {
   PeriodFrequency,
   type LoanProductSpec
 } from "../fineract/port";
-import type { frequencies, loanTerms } from "../contract/v1";
+import type { frequencies, loanTerms } from "@micobro/contract";
 
 type Frequency = (typeof frequencies)[number];
 type LoanTerms = z.infer<typeof loanTerms>;

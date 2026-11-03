@@ -37,7 +37,7 @@ import {
   type moraWaive,
   type paymentCollect,
   type visitLog
-} from "../contract/v1";
+} from "@micobro/contract";
 import {
   FineractDomainError,
   type FineractLoan,

@@ -1,11 +1,11 @@
-# backoffice/ — Phase 1 Fineract proof of concept
+# services/backoffice — Phase 1 Fineract proof of concept (`@micobro/backoffice`)
 
 Not shipped in the app, and nothing under `app/`, `components/` or `lib/`
 imports it. It's a proof of concept for connecting Micobro to a back office
-built on Apache Fineract. The findings are in **[GAP-ANALYSIS.md](GAP-ANALYSIS.md)**.
+built on Apache Fineract. The findings are in **[GAP-ANALYSIS.md](GAP-ANALYSIS.md)**. The wire contract
+lives in its own workspace, `packages/contract` (`@micobro/contract`).
 
 ```
-contract/v1.ts                  app ↔ back office wire contract (Zod)
 client/fakeMicobroClient.ts     the app, using its real loan/mora code
 server/backoffice.ts            the BFF: applies mutations to Fineract
 server/mapping.ts               Micobro concept → Fineract request
@@ -21,7 +21,7 @@ fineract/compose.yaml           local Fineract + Postgres
 ## Run
 
 ```sh
-npm test -- __tests__/backoffice      # fake only, no Docker needed
+npm test -- services/backoffice       # fake only, no Docker needed
 npm run backoffice:up                 # Fineract on :8088 (first boot ~1 min)
 npm run backoffice:live               # same suites against the real server
 npm run backoffice:reset              # wipe Fineract's data (the mora job slows as test loans pile up)
@@ -38,9 +38,9 @@ before you trust the scenarios again.
 const { app, backoffice, today } = await setup();
 const customerId = app.createCustomer({ name: "María", phone: phone() });
 const loanId = app.createLoan({ ...SAN, customerId });
-await today(2026, 1, 28);              // device clock + the back office's nightly close
-app.collect(loanId, 2035);             // 3 late cuotas + their mora
-const res = await app.sync();          // one batch, per-mutation results
+await today(2026, 1, 28); // device clock + the back office's nightly close
+app.collect(loanId, 2035); // 3 late cuotas + their mora
+const res = await app.sync(); // one batch, per-mutation results
 expect(res.results[0].status).toBe("applied");
 expect((await stateOf(backoffice, app, loanId)).moraCents).toBe(0);
 ```

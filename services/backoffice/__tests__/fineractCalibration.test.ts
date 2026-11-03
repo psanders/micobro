@@ -11,11 +11,11 @@
  */
 import fs from "fs";
 import path from "path";
-import { FakeFineract } from "../../backoffice/fineract/fakeFineract";
-import { HttpFineract } from "../../backoffice/fineract/httpFineract";
-import { probes } from "../../backoffice/fineract/calibration";
+import { FakeFineract } from "../fineract/fakeFineract";
+import { HttpFineract } from "../fineract/httpFineract";
+import { probes } from "../fineract/calibration";
 
-const OBSERVED = path.join(__dirname, "../../backoffice/fineract/observed.json");
+const OBSERVED = path.join(__dirname, "../fineract/observed.json");
 const live = process.env.FINERACT_LIVE === "1";
 const observed: Record<string, unknown> = fs.existsSync(OBSERVED)
   ? JSON.parse(fs.readFileSync(OBSERVED, "utf8"))
