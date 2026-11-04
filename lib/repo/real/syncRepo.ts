@@ -27,6 +27,8 @@ import type { BackupDriver } from "../../backups";
 import type { SqlExecutor } from "../../db/sqlExecutor";
 import type { Database } from "../../db/client";
 import type { SyncRepo, SyncStatus } from "../types";
+import { createAppBackoffice, type AppBackoffice } from "../../sync/backoffice";
+import { EMPTY_PULL_RESULT } from "../../sync/pullResult";
 
 function parseJson<T>(raw: string | undefined, fallback: T): T {
   if (!raw) return fallback;
@@ -42,12 +44,15 @@ export interface RealSyncRepoDeps {
   /** Synchronous SQL for applying pulls; defaults to the app's expo-sqlite connection. */
   sql?: SqlExecutor;
   backupDriver?: BackupDriver;
+  /** The back office target; defaults to the phone's real one. */
+  backoffice?: AppBackoffice;
 }
 
 export function createRealSyncRepo({
   db,
   sql = createExpoSqlExecutor(db),
-  backupDriver = createSqliteBackupDriver(db)
+  backupDriver = createSqliteBackupDriver(db),
+  backoffice = createAppBackoffice(db)
 }: RealSyncRepoDeps): SyncRepo {
   const createBackup = createCreateBackup({ driver: backupDriver });
   const listBackups = createListBackups({ driver: backupDriver });
@@ -65,6 +70,17 @@ export function createRealSyncRepo({
    * first, and the two must never race over the same Sheet rows.
    */
   async function fullSync(deletions: DeletionMode) {
+    // Connected to a back office: back up, push there, and leave the Sheet
+    // alone (no push, no pull).
+    if (await backoffice.connection.isActive()) {
+      try {
+        await createBackup({});
+      } catch (err) {
+        throw new BackupFailedError(err);
+      }
+      const { pushed, failed } = await backoffice.push();
+      return { push: { pushed, failed }, pull: EMPTY_PULL_RESULT };
+    }
     if (await getSheetId()) {
       try {
         await createBackup({});
@@ -82,6 +98,11 @@ export function createRealSyncRepo({
       };
     }
     return { push, pull };
+  }
+
+  async function backofficeStatus(): Promise<SyncStatus["backoffice"]> {
+    const state = await backoffice.connection.get();
+    return state ? { businessName: state.businessName, revoked: !!state.revokedAt } : null;
   }
 
   async function getStatus(): Promise<SyncStatus> {
@@ -128,7 +149,8 @@ export function createRealSyncRepo({
       pendingCount: pending.length,
       stuckCount: stuck.length,
       heldDeletions: parseJson(await metaValue(HELD_DELETIONS_KEY), null),
-      syncProblems: parseJson(await metaValue(SYNC_PROBLEMS_KEY), [])
+      syncProblems: parseJson(await metaValue(SYNC_PROBLEMS_KEY), []),
+      backoffice: await backofficeStatus()
     };
   }
 
@@ -147,7 +169,13 @@ export function createRealSyncRepo({
     async disconnect() {
       await signOutOfGoogle();
     },
-    pushNow: () => pushPendingMutations(db),
+    async pushNow() {
+      if (await backoffice.connection.isActive()) {
+        const { pushed, failed } = await backoffice.push();
+        return { pushed, failed };
+      }
+      return pushPendingMutations(db);
+    },
     syncNow: () => fullSync("auto"),
     resolveHeldDeletions: (choice) => fullSync(choice),
     listBackups: () => listBackups({}),

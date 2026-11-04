@@ -21,6 +21,28 @@
  */
 import { randomUUID } from "crypto";
 import { Backoffice } from "../server/backoffice";
+import { MemoryStore, type BackofficeStore } from "../server/store";
+import { ensureTenant, migrate, PostgresStore } from "../server/postgresStore";
+import { Pool } from "pg";
+
+/**
+ * With BACKOFFICE_DATABASE_URL set (`npm run backoffice:live`), every
+ * scenario runs on the Postgres store, each under a fresh tenant id;
+ * otherwise on the in-memory one.
+ */
+const pool = process.env.BACKOFFICE_DATABASE_URL
+  ? new Pool({ connectionString: process.env.BACKOFFICE_DATABASE_URL })
+  : null;
+if (pool) {
+  beforeAll(() => migrate(pool));
+  afterAll(() => pool.end());
+}
+async function newStore(): Promise<BackofficeStore> {
+  if (!pool) return new MemoryStore();
+  const tenantId = `test-${randomUUID()}`;
+  await ensureTenant(pool, tenantId, "Scenario");
+  return new PostgresStore(pool, tenantId);
+}
 import { FakeFineract } from "../fineract/fakeFineract";
 import { HttpFineract } from "../fineract/httpFineract";
 import { FakeMicobroClient, type NewLoan } from "../client/fakeMicobroClient";
@@ -49,7 +71,8 @@ const phone = () => `809${RUN}${String(++phoneSeq).padStart(4, "0")}`;
 
 async function setup() {
   const fineract = live ?? new FakeFineract();
-  const backoffice = new Backoffice(fineract);
+  const store = await newStore();
+  const backoffice = new Backoffice(fineract, store);
   const app = new FakeMicobroClient((body) => backoffice.handleSync(body));
   /** Moves only Fineract's business date (no nightly close). */
   const setBusinessDate = (date: string) => fineract.setBusinessDate(date);
@@ -59,7 +82,7 @@ async function setup() {
     await backoffice.closeDay(toBusinessDate(app.now));
   };
   await today(2026, 1, 1);
-  return { fineract, backoffice, app, today, setBusinessDate };
+  return { fineract, backoffice, app, today, setBusinessDate, store };
 }
 
 /** Server state on the device's current day. */
@@ -167,6 +190,27 @@ describe("term loans", () => {
         .map((c) => c.split(" ")[0]) ?? ["createLoan", "approveLoan", "disburseLoan"]
     ).toEqual(["createLoan", "approveLoan", "disburseLoan"]);
     await expectServerMatchesApp(backoffice, app, loanId);
+  });
+
+  it("a loan that started before its customer was added (uploaded history) still goes through", async () => {
+    const { app, backoffice, today } = await setup();
+    await today(2026, 2, 1);
+    // Added to the app in February, for a loan the lender made on January 1.
+    const customerId = app.createCustomer({ name: "María", phone: phone() });
+    const loanId = app.createLoan({ ...SAN, customerId });
+    const res = await app.sync();
+    expect(res.results.map((r) => r.status)).toEqual(["applied", "applied"]);
+    // Same schedule as the app; its back mora is charged at the next nightly
+    // close: Feb 2, cuotas 1–4 are 25, 18, 11 and 4 days late → 58 days × 2.17.
+    await today(2026, 2, 2);
+    const state = await stateOf(backoffice, app, loanId);
+    const view = app.view(loanId);
+    expect(state).toMatchObject({
+      balanceCents: view.balanceCents,
+      totalRepayCents: view.totalRepayCents,
+      nextDueDate: "2026-01-08",
+      moraCents: 58 * 217
+    });
   });
 
   it("G-ROUNDING: Fineract rounds principal and interest separately, so some cuotas differ", async () => {
@@ -345,7 +389,7 @@ describe("cobros", () => {
     const second = await app.sync();
     expect(second.results[0]!.drift).toEqual([]);
     expect((await stateOf(backoffice, app, loanId)).moraCents).toBe(0);
-    expect([...backoffice.store.waivers.values()].map((w) => [w.waivedCents, w.deviceId])).toEqual([
+    expect((await backoffice.store.listWaivers()).map((w) => [w.waivedCents, w.deviceId])).toEqual([
       [4991, "device-1"],
       [3472, "device-1"]
     ]);
@@ -470,6 +514,28 @@ describe("cobros", () => {
     await expectServerMatchesApp(backoffice, app, loanId);
   });
 
+  it("the back office keeps its state across a restart", async () => {
+    const { app, fineract, store, loanId, today } = await sanLoan();
+    await today(2026, 1, 8);
+    app.collect(loanId, 650);
+    const batch = {
+      contractVersion: CONTRACT_VERSION,
+      deviceId: "device-1",
+      sentAt: toOffsetIso(app.now),
+      mutations: app.outbox.map((e) => e.mutation)
+    };
+    await new Backoffice(fineract, store).handleSync(batch);
+    // A new process: a new Backoffice over the same store (a fresh
+    // PostgresStore connection when running on Postgres).
+    const restarted = new Backoffice(
+      fineract,
+      store instanceof PostgresStore ? new PostgresStore(pool!, store.tenantId) : store
+    );
+    const again = await restarted.handleSync(batch);
+    expect(again.results.map((r) => r.status)).toEqual(["duplicate"]);
+    expect((await restarted.getLoanState(loanId, "2026-01-08")).paidCents).toBe(65000);
+  });
+
   it("replaying the same batch is harmless (idempotent by mutation id)", async () => {
     const { app, backoffice, loanId, today } = await sanLoan();
     await today(2026, 1, 8);
@@ -501,6 +567,21 @@ describe("cobros", () => {
 });
 
 describe("loan corrections (Editar préstamo)", () => {
+  it("an update with unchanged terms restores an archived loan without rebuilding it", async () => {
+    const { app, backoffice, fineract } = await setup();
+    const customerId = app.createCustomer({ name: "Rosa", phone: phone() });
+    const loanId = app.createLoan({ ...SAN, customerId });
+    app.archiveLoan(loanId);
+    await app.sync();
+    expect((await backoffice.getLoanState(loanId, "2026-01-01")).status).toBe("archived");
+    // The app's restore reaches the outbox as a plain loan update.
+    app.updateLoan(loanId, SAN);
+    const res = await app.sync();
+    expect(res.results[0]).toMatchObject({ status: "applied", drift: [] });
+    expect((await backoffice.getLoanState(loanId, "2026-01-01")).status).toBe("active");
+    expect(callsOf(fineract)?.some((c) => c.startsWith("undoDisbursal")) ?? false).toBe(false);
+  });
+
   it("replays the loan in Fineract and re-applies its cobros on the new schedule", async () => {
     const { app, backoffice, fineract, today } = await setup();
     const customerId = app.createCustomer({ name: "María", phone: phone() });
@@ -628,8 +709,8 @@ describe("things Fineract has no home for", () => {
     app.archiveLoan(loanId);
     const res = await app.sync();
     expect(res.results.every((r) => r.status === "applied" && r.drift.length === 0)).toBe(true);
-    expect(backoffice.store.visits.size).toBe(1);
-    expect(backoffice.store.cashCloses.size).toBe(1);
+    expect(await backoffice.store.listVisits()).toHaveLength(1);
+    expect(await backoffice.store.listCashCloses()).toHaveLength(1);
     expect((await backoffice.getLoanState(loanId, "2026-01-08")).status).toBe("archived");
   });
 });
