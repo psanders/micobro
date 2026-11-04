@@ -306,6 +306,16 @@ export class HttpFineract implements FineractPort {
     await this.request("PUT", `/clients/${clientId}`, change);
   }
 
+  async activateClientBy(clientId: number, date: string): Promise<void> {
+    const client = await this.request<{ activationDate: DateArray }>("GET", `/clients/${clientId}`);
+    if (isoOf(client.activationDate) <= date) return;
+    await this.request("PUT", `/clients/${clientId}`, {
+      ...FORMAT,
+      activationDate: date,
+      submittedOnDate: date
+    });
+  }
+
   // ── Loans ───────────────────────────────────────────────────────────────
 
   async findLoanIdByExternalId(externalId: string): Promise<number | null> {

@@ -208,6 +208,19 @@ _Still open:_ changing loan type or frequency means a different product,
 and Fineract can't move a loan between products. That needs a new Fineract
 loan (refused as UNSUPPORTED for now).
 
+**G-CLIENT-ACTIVATION: Fineract refuses a loan submitted before its
+client's activation date.**
+The client is activated on the day the customer was added to the app. A
+lender who adds a customer today and enters their loan from January (the
+normal case when uploading existing history) gets
+`error.msg.loan.submittal.cannot.be.before.client.activation.date`, which
+would leave the loan stuck as CONFLICT. Found by the connect-backoffice
+live test.
+_Resolved in the BFF, verified live:_ before submitting a loan (or
+replaying one to an earlier start), move the client's activation and
+submitted dates back to the loan's start. Fineract accepts this on an
+active client.
+
 **G-SKIP-SUNDAYS: per-loan Sunday skipping.** Fineract's working days are
 tenant-wide and _move_ a Sunday cuota onto Monday's, and it refuses variable
 installments on flat-interest products.

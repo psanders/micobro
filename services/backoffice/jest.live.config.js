@@ -11,5 +11,7 @@ module.exports = {
   rootDir: "../..",
   testEnvironment: "node",
   maxWorkers: 1,
+  // The app code that connectLive drives reads React Native's __DEV__.
+  globals: { __DEV__: false },
   testMatch: ["<rootDir>/services/backoffice/__tests__/**/*.test.ts"]
 };

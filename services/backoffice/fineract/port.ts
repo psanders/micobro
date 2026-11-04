@@ -151,6 +151,13 @@ export interface FineractPort {
   findClientIdByExternalId(externalId: string): Promise<number | null>;
   createClient(req: CreateClientRequest): Promise<number>;
   updateClient(clientId: number, change: { fullname: string; mobileNo: string }): Promise<void>;
+  /**
+   * Moves the client's activation (and submitted) date back to `date` when
+   * it is later; no-op otherwise. Fineract refuses a loan submitted before
+   * its client's activation, and a lender's history often has loans that
+   * started before the customer was added to the app.
+   */
+  activateClientBy(clientId: number, date: string): Promise<void>;
 
   findLoanIdByExternalId(externalId: string): Promise<number | null>;
   /** Submits the application (status "submitted"). */

@@ -354,6 +354,7 @@ export class Backoffice {
     let fineractId = await this.fineract.findLoanIdByExternalId(id);
     if (!fineractId) {
       const productId = await this.ensureProduct(terms);
+      await this.fineract.activateClientBy(clientId, terms.startDate);
       fineractId = await this.fineract.createLoan({
         externalId: id,
         clientId,
@@ -422,6 +423,8 @@ export class Backoffice {
     await this.fineract.undoDisbursal(loan.fineractId);
     await this.fineract.undoApproval(loan.fineractId);
     const productId = await this.ensureProduct(terms);
+    const clientId = await this.store.getCustomer(terms.customerId);
+    if (clientId) await this.fineract.activateClientBy(clientId, terms.startDate);
     await this.fineract.modifyLoan(loan.fineractId, this.loanRequestTerms(terms, productId));
     await this.fineract.approveLoan(loan.fineractId, terms.startDate);
     await this.fineract.disburseLoan(

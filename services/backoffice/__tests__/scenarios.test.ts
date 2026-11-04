@@ -192,6 +192,27 @@ describe("term loans", () => {
     await expectServerMatchesApp(backoffice, app, loanId);
   });
 
+  it("a loan that started before its customer was added (uploaded history) still goes through", async () => {
+    const { app, backoffice, today } = await setup();
+    await today(2026, 2, 1);
+    // Added to the app in February, for a loan the lender made on January 1.
+    const customerId = app.createCustomer({ name: "María", phone: phone() });
+    const loanId = app.createLoan({ ...SAN, customerId });
+    const res = await app.sync();
+    expect(res.results.map((r) => r.status)).toEqual(["applied", "applied"]);
+    // Same schedule as the app; its back mora is charged at the next nightly
+    // close: Feb 2, cuotas 1–4 are 25, 18, 11 and 4 days late → 58 days × 2.17.
+    await today(2026, 2, 2);
+    const state = await stateOf(backoffice, app, loanId);
+    const view = app.view(loanId);
+    expect(state).toMatchObject({
+      balanceCents: view.balanceCents,
+      totalRepayCents: view.totalRepayCents,
+      nextDueDate: "2026-01-08",
+      moraCents: 58 * 217
+    });
+  });
+
   it("G-ROUNDING: Fineract rounds principal and interest separately, so some cuotas differ", async () => {
     const { app } = await setup();
     const customerId = app.createCustomer({ name: "Pedro", phone: phone() });

@@ -160,6 +160,14 @@ builds and an `expo export` must be checked as part of the work.
 
 ## Risks / Trade-offs
 
+- **[A hung Fineract request stalls a whole business]** → `HttpFineract`
+  has no request timeout, and each tenant's mutations run one at a time, so
+  one stuck call makes every phone in that business read "sin conexión".
+  Seen once in the live suite (Fineract idle, back office waiting ~7 min),
+  not reproduced in five later runs. Mitigation before pilot: a per-request
+  timeout, and making the loan create resumable (today a retry after a
+  failure between create and disburse finds the loan and skips approval
+  and disbursal).
 - **[Lenders lose the Sheet when they connect]** → a clear warning before
   confirming, and the Sheet stays in their Drive. Only pilot businesses get
   tokens in this version.

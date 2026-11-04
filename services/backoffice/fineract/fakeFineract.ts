@@ -58,6 +58,7 @@ interface Client {
   externalId: string;
   fullname: string;
   mobileNo: string;
+  activationDate: string;
 }
 
 /** A model charge plus the external id Fineract stores on manually added charges. */
@@ -172,7 +173,8 @@ export class FakeFineract implements FineractPort {
       id,
       externalId: req.externalId,
       fullname: req.fullname,
-      mobileNo: req.mobileNo
+      mobileNo: req.mobileNo,
+      activationDate: req.activationDate
     });
     return id;
   }
@@ -187,6 +189,23 @@ export class FakeFineract implements FineractPort {
     this.assertMobileNoFree(change.mobileNo, clientId);
     client.fullname = change.fullname;
     client.mobileNo = change.mobileNo;
+  }
+
+  async activateClientBy(clientId: number, date: string): Promise<void> {
+    const client = this.clients.get(clientId);
+    if (!client) throw new FineractDomainError("Client not found", "error.msg.client.id.invalid");
+    if (client.activationDate <= date) return;
+    this.calls.push(`activateClientBy ${clientId} ${date}`);
+    client.activationDate = date;
+  }
+
+  private assertSubmittableFor(clientId: number, submittedOnDate: string) {
+    if (submittedOnDate < this.clients.get(clientId)!.activationDate) {
+      throw new FineractDomainError(
+        "The date on which a loan is submitted cannot be earlier than client's activation date.",
+        "error.msg.loan.submittal.cannot.be.before.client.activation.date"
+      );
+    }
   }
 
   private assertMobileNoFree(mobileNo: string, selfId: number | null) {
@@ -219,6 +238,7 @@ export class FakeFineract implements FineractPort {
         "error.msg.loan.duplicate.externalId"
       );
     }
+    this.assertSubmittableFor(req.clientId, req.submittedOnDate);
     const { externalId, clientId, ...terms } = req;
     const id = this.nextId();
     this.loans.set(id, {
@@ -251,6 +271,7 @@ export class FakeFineract implements FineractPort {
         "error.msg.loan.application.cannot.be.modified"
       );
     }
+    this.assertSubmittableFor(loan.clientId, terms.submittedOnDate);
     loan.terms = terms;
   }
 
