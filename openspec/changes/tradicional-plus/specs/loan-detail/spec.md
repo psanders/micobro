@@ -20,7 +20,11 @@ schedule has moved, the screen SHALL show how many times ("Corrida N veces").
 
 For a Tradicional Plus loan, "TOTAL A PAGAR HOY" SHALL show the owed penalties
 (count × amount) as its only line while any are owed, and otherwise the next
-cuota, as for Tradicional. It SHALL never show a mora line.
+cuota once it is due. Before the next cuota's due date it SHALL show RD$ 0 in
+the al-día colour, "Nada pendiente hoy" and, as information only, "Próxima
+cuota: dd/mm" with the cuota's amount; the customer card SHALL keep "Próxima
+dd/mm · RD$…" with that amount. It SHALL never show a mora line. Other loan
+types SHALL be unchanged.
 
 #### Scenario: Penalties owed
 
@@ -28,10 +32,17 @@ cuota, as for Tradicional. It SHALL never show a mora line.
 - **THEN** the card totals RD$600 with a "2 penalidades" line and no cuota or
   mora line
 
-#### Scenario: Nothing owed
+#### Scenario: Nothing owed, cuota due
 
-- **WHEN** the loan owes no penalties
+- **WHEN** the loan owes no penalties and its next cuota is due today
 - **THEN** the card shows the next cuota's amount as the only line
+
+#### Scenario: Nothing owed, cuota not due
+
+- **WHEN** a penalty paid on 1 March moved cuota 1 to 16 March and today is
+  2 March
+- **THEN** the card shows RD$ 0, "Nada pendiente hoy" and "Próxima cuota:
+  16/03" with RD$1,300
 
 ### Requirement: Tradicional Plus Plan de pagos
 

@@ -17,7 +17,8 @@ export function createMockSyncRepo(): SyncRepo {
     pendingCount: 3,
     stuckCount: 0,
     heldDeletions: null,
-    syncProblems: []
+    syncProblems: [],
+    tipoNoticePending: false
   };
   const backups: Backup[] = [1, 2, 3].map((daysAgo) => ({
     name: `micobro-backup-${Date.now() - daysAgo * DAY}.db`,
@@ -72,6 +73,9 @@ export function createMockSyncRepo(): SyncRepo {
       const { verifyPin } = await import("../../security/pin");
       if (!(await verifyPin(pin))) return "wrong-pin";
       return backups.some((b) => b.name === name) ? "restored" : "not-found";
+    },
+    async acknowledgeTipoNotice() {
+      state.tipoNoticePending = false;
     }
   };
 }

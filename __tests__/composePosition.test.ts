@@ -11,7 +11,7 @@
  */
 import { composePosition } from "../lib/reports/composePosition";
 import type { Loan } from "../lib/loans/loan.schema";
-import type { Payment } from "../lib/payments/payment.schema";
+import type { Payment, PaymentKind } from "../lib/payments/payment.schema";
 import type { OwnerPosition } from "../lib/reports/position.schema";
 
 const TODAY = new Date(2026, 9, 20, 12); // 20 Oct 2026, noon
@@ -58,7 +58,7 @@ function payment(
   loanId: string,
   amountCents: number,
   paidAt: Date,
-  notes: string | null = null
+  tipo: PaymentKind = "cuota"
 ): Payment {
   return {
     id: `p-${loanId}-${paidAt.getTime()}-${amountCents}`,
@@ -66,7 +66,8 @@ function payment(
     amountCents,
     paidAt,
     method: "cash",
-    notes,
+    notes: null,
+    tipo,
     createdAt: paidAt
   };
 }

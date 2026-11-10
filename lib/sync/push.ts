@@ -17,6 +17,8 @@ import { PULLED_TABLES, isPulledEntity } from "./syncedTables";
 import { getSheetId } from "./config";
 import { ensureClientesLayout } from "./clientesLayout";
 import { ensurePenaltyHeader } from "./prestamosLayout";
+import { ensurePagosLayout } from "./pagosLayout";
+import { isPaymentKind, legacyPaymentKind } from "../payments/paymentNotes";
 import { createQueueCedulaResend } from "./queueCedulaResend";
 import { formatCedula } from "../utils/cedula";
 import { logger } from "../logger";
@@ -35,7 +37,7 @@ export const LAST_PUSHED_AT_KEY = "lastPushedAt";
 export const ENTITY_RANGES: Record<string, string> = {
   customer: "Clientes!A:G",
   loan: "Préstamos!A:Q",
-  payment: "Pagos!A:G",
+  payment: "Pagos!A:H",
   visit: "Visitas!A:H",
   cashClose: "Cierres!A:E"
 };
@@ -80,16 +82,22 @@ function loanRowValues(payload: Record<string, unknown>): (string | number | nul
   ];
 }
 
-// Column order mirrors the `payments` table in lib/db/schema.ts.
+// Column order mirrors the `payments` table in lib/db/schema.ts, with Tipo
+// appended in H. A payload queued before `tipo` existed carries its kind in
+// `notes` ("mora"/"penalidad"): it's written to H, and F is left blank.
 function paymentRowValues(payload: Record<string, unknown>): (string | number | null)[] {
+  const notes = (payload.notes as string | null | undefined) ?? null;
+  const legacy = isPaymentKind(payload.tipo) ? null : legacyPaymentKind(notes);
+  const tipo = isPaymentKind(payload.tipo) ? payload.tipo : (legacy ?? "cuota");
   return [
     payload.id as string,
     payload.loanId as string,
     payload.amountCents as number,
     payload.paidAt as string,
     (payload.method as string) ?? "",
-    (payload.notes as string) ?? "",
-    payload.createdAt as string
+    legacy ? "" : (notes ?? ""),
+    payload.createdAt as string,
+    tipo
   ];
 }
 
@@ -187,6 +195,9 @@ export async function pushPendingMutations(db: Database): Promise<PushResult> {
   // Customer rows are only written once the Sheet's Clientes tab is known to
   // be in the Cédula layout; until then they stay queued, untouched.
   const customersReady = await ensureClientesLayout(db, sheetId);
+  // Payment rows wait for the Pagos tab's Tipo column the same way; until
+  // then they stay queued (an older layout has no H for their kind).
+  const paymentsReady = await ensurePagosLayout(db, sheetId);
   // Labels the appended Penalidad column on older Sheets; rows don't wait on it.
   await ensurePenaltyHeader(db, sheetId);
 
@@ -218,6 +229,7 @@ export async function pushPendingMutations(db: Database): Promise<PushResult> {
       continue;
     }
     if (mutation.entity === "customer" && !customersReady) continue;
+    if (mutation.entity === "payment" && !paymentsReady) continue;
 
     try {
       if (mutation.operation === "delete") {

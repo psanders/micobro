@@ -5,9 +5,16 @@ import { eq } from "drizzle-orm";
 import { z } from "zod/v4";
 import { withErrorHandlingAndValidation } from "../utils/withErrorHandlingAndValidation";
 import { createCreatePayment } from "./createPayment";
-import { paymentMethods } from "./payment.schema";
+import { paymentMethods, type PaymentKind } from "./payment.schema";
+import { penaltyCountLabel } from "./tradicionalPlusPayOptions";
 import { customers, loans, payments } from "../db/schema";
-import { MORA_NOTE, PENALTY_NOTE, loanEndDate } from "../loans/loanViews";
+import {
+  buildReceiptNumberIndex,
+  canonicalReceiptNumbers,
+  cobroReceiptLines,
+  cuotaNumbersByPaymentId,
+  loanEndDate
+} from "../loans/loanViews";
 import { effectiveLoanType } from "../loans/loan.schema";
 import { openCreditReceiptBreakdown } from "../loans/openCredit";
 import { tradicionalPlusReceipt, tradicionalPlusState } from "../loans/tradicionalPlus";
@@ -29,33 +36,53 @@ const collectPaymentSchema = z.object({
   method: z.enum(paymentMethods),
   moraCents: z.number().int().nonnegative(),
   lines: z.array(z.object({ label: z.string(), amountCents: z.number().int() })),
-  penaltyCount: z.number().int().positive().optional()
+  penaltyCount: z.number().int().positive().optional(),
+  withCuota: z.boolean().optional()
 });
 
 /**
- * Tradicional Plus takes only the next cuota (with no penalties owed) or the
- * penalties "Cobrar penalidad" offers — never a partial or custom amount.
- * Re-checked here against the stored payments, not the screen's numbers.
+ * Tradicional Plus takes exactly what its options offer (see
+ * `tradicionalPlusPayOptions.ts`): 1..N owed penalties, all N plus the next
+ * cuota, or the cuota alone once nothing is owed and it's due — never a
+ * partial or custom amount. Re-checked here against the stored payments, not
+ * the screen's numbers.
  */
 function assertTradicionalPlusCobro(loan: Loan, loanPayments: Payment[], input: CollectInput) {
   const state = tradicionalPlusState(loan, loanPayments, new Date());
+  const owed = state.owedPenalties;
   if (input.moraCents > 0) throw new Error("Este préstamo no cobra mora.");
-  if (input.penaltyCount !== undefined) {
-    if (!state.canCollectPenalty) throw new Error("La cuota de este préstamo aún no vence.");
-    if (
-      input.penaltyCount !== state.penaltyCountToCollect ||
-      input.amountCents !== input.penaltyCount * state.penaltyCents
-    ) {
+  if (state.paidOff) throw new Error("Este préstamo ya está saldado.");
+
+  if (input.withCuota) {
+    if (owed === 0) throw new Error("Este préstamo solo acepta la cuota completa o la penalidad.");
+    if (input.penaltyCount !== owed) {
+      throw new Error(
+        `Para cobrar la cuota debe incluir ${owed === 1 ? "la penalidad" : `las ${owed} penalidades`}.`
+      );
+    }
+    if (input.amountCents !== owed * state.penaltyCents + state.nextCuotaCents) {
       throw new Error("El monto no coincide con la penalidad de este préstamo.");
     }
     return;
   }
-  if (!state.canCollectCuota) {
-    throw new Error(
-      state.paidOff
-        ? "Este préstamo ya está saldado."
-        : `Primero debe pagar ${state.owedPenalties} ${state.owedPenalties === 1 ? "penalidad" : "penalidades"}.`
-    );
+
+  if (input.penaltyCount !== undefined) {
+    if (!state.canCollectPenalty) throw new Error("La cuota de este préstamo aún no vence.");
+    if (owed >= 2 && input.penaltyCount > owed) {
+      throw new Error(`Debe cobrar entre 1 y ${owed} penalidades.`);
+    }
+    if (owed < 2 && input.penaltyCount !== 1) {
+      throw new Error("Solo se puede cobrar 1 penalidad.");
+    }
+    if (input.amountCents !== input.penaltyCount * state.penaltyCents) {
+      throw new Error("El monto no coincide con la penalidad de este préstamo.");
+    }
+    return;
+  }
+
+  if (owed > 0) throw new Error(`Primero debe pagar ${penaltyCountLabel(owed)}.`);
+  if (!state.isDue && state.nextDueDate) {
+    throw new Error(`La cuota vence el ${formatShortDate(state.nextDueDate)}.`);
   }
   if (input.amountCents !== state.nextCuotaCents) {
     throw new Error("Este préstamo solo acepta la cuota completa o la penalidad.");
@@ -63,11 +90,12 @@ function assertTradicionalPlusCobro(loan: Loan, loanPayments: Payment[], input: 
 }
 
 /**
- * Records a cobro as up to two payment rows — the mora portion (flagged
- * `notes: "mora"` so it never counts toward principal) and the cuota
- * portion — through the existing `createPayment` factory so both rows are
- * enqueued for Sheets sync. Returns the receipt the confirmation screen
- * renders.
+ * Records a cobro as payment rows through the existing `createPayment`
+ * factory, so each is enqueued for Sheets sync: for a term loan, the mora
+ * portion (`tipo: "mora"`, never principal) and the cuota portion; for
+ * Tradicional Plus, one `penalidad` row per penalty and, with `withCuota`,
+ * the next cuota after them. Every row shares one `paidAt`. Returns the
+ * receipt the confirmation screen renders.
  */
 export function createCollectPayment({ db }: CollectPaymentDeps) {
   const createPayment = createCreatePayment({ db });
@@ -80,57 +108,54 @@ export function createCollectPayment({ db }: CollectPaymentDeps) {
       : [];
     const customer = customerRows[0] as Customer | undefined;
 
-    const existing = await db.select().from(payments);
-    const receiptNumber = `R-${String(existing.length + 1).padStart(5, "0")}`;
-    const loanPayments = loan ? (existing as Payment[]).filter((p) => p.loanId === loan.id) : [];
+    const existing = (await db.select().from(payments)) as Payment[];
+    const loanPayments = loan ? existing.filter((p) => p.loanId === loan.id) : [];
 
     const isPlus = loan ? effectiveLoanType(loan) === "term_plus" : false;
     if (loan && isPlus) assertTradicionalPlusCobro(loan, loanPayments, input);
-    else if (input.penaltyCount !== undefined) {
+    else if (input.penaltyCount !== undefined || input.withCuota) {
       throw new Error("Solo un préstamo Tradicional Plus cobra penalidad.");
     }
 
     const paidAt = new Date();
-    const moraCents = Math.min(input.moraCents, input.amountCents);
-    const installmentCents = input.amountCents - moraCents;
-
-    let paymentId = "";
     const created: Payment[] = [];
-    // One row per penalty, so "times moved" stays a row count even if the
-    // lender later edits the penalty amount (see lib/loans/tradicionalPlus.ts).
-    const penaltyCount = input.penaltyCount ?? 0;
-    for (let i = 0; i < penaltyCount; i++) {
-      const row = await createPayment({
-        loanId: input.loanId,
-        amount: fromCents(input.amountCents / penaltyCount),
-        paidAt,
-        method: input.method,
-        notes: PENALTY_NOTE
-      });
-      paymentId = row.id;
-      created.push(row);
+    const write = async (amountCents: number, tipo: PaymentKind) => {
+      created.push(
+        await createPayment({
+          loanId: input.loanId,
+          amount: fromCents(amountCents),
+          paidAt,
+          method: input.method,
+          tipo
+        })
+      );
+    };
+
+    if (loan && isPlus) {
+      const state = tradicionalPlusState(loan, loanPayments, paidAt);
+      // One row per penalty, so "times moved" stays a row count even if the
+      // lender later edits the penalty amount (see lib/loans/tradicionalPlus.ts).
+      for (let i = 0; i < (input.penaltyCount ?? 0); i++) {
+        await write(state.penaltyCents, "penalidad");
+      }
+      if (input.penaltyCount === undefined || input.withCuota) {
+        await write(state.nextCuotaCents, "cuota");
+      }
+    } else {
+      const moraCents = Math.min(input.moraCents, input.amountCents);
+      const installmentCents = input.amountCents - moraCents;
+      if (moraCents > 0) await write(moraCents, "mora");
+      if (installmentCents > 0) await write(installmentCents, "cuota");
     }
-    if (penaltyCount === 0 && moraCents > 0) {
-      const row = await createPayment({
-        loanId: input.loanId,
-        amount: fromCents(moraCents),
-        paidAt,
-        method: input.method,
-        notes: MORA_NOTE
-      });
-      paymentId = row.id;
-      created.push(row);
-    }
-    if (penaltyCount === 0 && installmentCents > 0) {
-      const row = await createPayment({
-        loanId: input.loanId,
-        amount: fromCents(installmentCents),
-        paidAt,
-        method: input.method
-      });
-      paymentId = row.id;
-      created.push(row);
-    }
+    const paymentId = created[created.length - 1]?.id ?? "";
+
+    // The same numbering a reprint uses, so the live number always equals it.
+    const allPayments = [...existing, ...created];
+    const receiptNumber =
+      canonicalReceiptNumbers(
+        loan ? [...loanPayments, ...created] : created,
+        buildReceiptNumberIndex(allPayments)
+      ).get(paymentId) ?? "";
 
     // Crédito abierto: how the money was applied (interés / intereses
     // sumados / capital) and the balance it left come from the engine, not
@@ -145,10 +170,20 @@ export function createCollectPayment({ db }: CollectPaymentDeps) {
             formatShortDate
           )
         : null;
-    // Tradicional Plus: the penalty line names the date the cuota moved to.
+    // Tradicional Plus: the penalty line names the date the cuota moved to,
+    // and the lines are the ones a reprint rebuilds.
     const plus =
       loan && isPlus
         ? tradicionalPlusReceipt(loan, [...loanPayments, ...created], created, formatShortDate)
+        : null;
+    const plusLines =
+      loan && plus
+        ? cobroReceiptLines(
+            loan,
+            created,
+            cuotaNumbersByPaymentId(loan, [...loanPayments, ...created]),
+            plus.penaltyLine
+          )
         : null;
 
     return {
@@ -158,7 +193,7 @@ export function createCollectPayment({ db }: CollectPaymentDeps) {
       totalCents: input.amountCents,
       method: input.method,
       customerName: customer?.name ?? "Cliente",
-      lines: breakdown?.lines ?? (plus?.penaltyLine ? [plus.penaltyLine] : input.lines),
+      lines: breakdown?.lines ?? plusLines ?? input.lines,
       // `null`, not paidAt: a substituted date would print "Inicio: <hoy>" on
       // a receipt the customer keeps for months, asserting the loan started
       // the day of the cobro. The renderers drop the row instead — see the

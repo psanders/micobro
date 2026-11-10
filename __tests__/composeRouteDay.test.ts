@@ -61,6 +61,7 @@ function payment(overrides: Partial<Payment>): Payment {
     paidAt: TODAY,
     method: "cash",
     notes: null,
+    tipo: "cuota",
     createdAt: TODAY,
     ...overrides
   };
@@ -289,7 +290,7 @@ describe("composeRouteDay", () => {
     });
     const penalty = payment({
       amountCents: 30000,
-      notes: "penalidad",
+      tipo: "penalidad",
       paidAt: daysBeforeToday(1),
       createdAt: daysBeforeToday(1)
     });

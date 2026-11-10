@@ -25,11 +25,14 @@ the schedule and the atraso numbers.
   its due date plus the grace period with nothing paid becomes one owed
   penalty. Owed penalties keep adding up, one per cycle, and the loan is
   **en atraso** wherever atraso is shown.
-- **Penalties first.** While penalties are owed, the lender can only collect
-  penalties. Each one paid moves the schedule one cycle. A cuota can only be
-  collected once no penalties are owed.
-- **No partial payments.** A Tradicional Plus cobro is either the cuota or
-  whole penalties. "Otro monto", "Solo mora" and partial abonos aren't offered.
+- **Penalties before the cuota, in part or with it.** While penalties are owed,
+  the lender can collect some or all of them, or all of them plus the next
+  cuota in one cobro ("Penalidades + cuota"). Each penalty paid moves the
+  schedule one cycle. A cuota alone can only be collected once no penalties
+  are owed and it is due.
+- **No partial amounts.** A Tradicional Plus cobro is whole penalties, the
+  cuota, or both. "Otro monto", "Solo mora" and partial abonos aren't offered.
+- **One receipt number per cobro with penalties**, the same live and reprinted.
 - Loan detail, Plan de pagos, receipts, payment history and the Sheet show the
   loan type, the penalty amount, the moved due dates, and penalty payments as
   their own kind of payment.
@@ -49,18 +52,27 @@ the schedule and the atraso numbers.
   with a required Penalidad amount, Período de gracia, frequency fixed to
   Quincenal, and no mora settings.
 - `collect-payment`: Tipo de cobro options for a Tradicional Plus loan
-  ("Cobrar cuota" / "Cobrar penalidad", penalties first, no partial or custom
-  amounts) and the receipt lines for a penalty.
-- `loan-detail`: the header, balance card, "Total a pagar hoy" and Plan de
-  pagos for a Tradicional Plus loan (penalty amount, times moved, owed
-  penalties, shifted due dates).
+  ("Penalidades + cuota", "Cobrar penalidad" for 1..N, "Cobrar cuota" once
+  due, no custom amounts), the receipt lines and one receipt number per cobro
+  with penalties.
+- `pull-two-way-sync`: a payment's kind moves from Notas to its own Tipo
+  column (H) for every loan type, existing Sheets and phones migrate once, and
+  pull never changes an existing payment's kind.
+- `google-connect`: new Sheets are provisioned with Tipo.
+- `owner-position`: Mi cartera counts a Tradicional Plus loan's owed penalties
+  as en atraso and assumes they're paid (moving the plan) in the month outlook.
+- `loan-detail`: the header, balance card, "Total a pagar hoy" (including
+  "Nada pendiente hoy" before the cuota is due) and Plan de pagos for a
+  Tradicional Plus loan (penalty amount, times moved, owed penalties, shifted
+  due dates).
 
 ## Impact
 
 - **Data**: `loans` gains a nullable `penalty_cents` column (drizzle migration
-  via `npm run db:generate`). `loanTypes` gains `"term_plus"`. Penalty payments
-  are ordinary `payments` rows flagged `notes = "penalidad"`, the same way mora
-  rows use `"mora"`. No payments schema change.
+  via `npm run db:generate`). `loanTypes` gains `"term_plus"`. `payments` gains
+  a `tipo` column (cuota | mora | penalidad), backfilled from the legacy Notas
+  flags by a custom migration; penalty payments are `tipo = "penalidad"` rows
+  and Notas becomes free text for every loan type.
 - **Code**: `lib/loans/` (schema, new `tradicionalPlus.ts` engine, `loanViews`,
   `mora` is skipped for this type), `lib/payments/collectPayment.ts` and
   `getCollectContext.ts`, every `MORA_NOTE` filter that must also exclude
@@ -69,6 +81,9 @@ the schedule and the atraso numbers.
 - **Sync**: the Préstamos tab gains a "Penalidad (centavos)" column appended at
   the end (no column shift), and the "Tipo" column can hold `term_plus`.
   Older app builds reject `term_plus` on pull, so every device that shares the
-  Sheet needs the update.
+  Sheet needs the update. The Pagos tab gains a "Tipo" column (H), filled once
+  per Sheet from Notas and protected; an older build reads A:G and would take
+  mora/penalty rows as cuotas, so the phone that migrates tells the lender to
+  update the others.
 - **Design**: new Pencil frames (Nuevo Préstamo with Tradicional Plus, Registrar
   cobro with penalties, loan detail) must be approved before the UI is built.

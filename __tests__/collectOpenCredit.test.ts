@@ -150,6 +150,7 @@ describe("collecting an open-credit payment", () => {
       paidAt: new Date(TODAY.getTime() - WEEK_MS + 24 * 60 * 60 * 1000),
       method: "cash",
       notes: null,
+      tipo: "cuota",
       createdAt: TODAY
     };
 

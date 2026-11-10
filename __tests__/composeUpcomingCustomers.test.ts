@@ -63,6 +63,7 @@ function payment(overrides: Partial<Payment>): Payment {
     paidAt: TODAY,
     method: "cash",
     notes: null,
+    tipo: "cuota",
     createdAt: TODAY,
     ...overrides
   };

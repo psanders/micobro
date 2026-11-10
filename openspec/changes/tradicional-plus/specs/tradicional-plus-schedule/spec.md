@@ -71,17 +71,24 @@ SHALL NOT accrue mora.
   nothing paid
 - **THEN** two penalties (RD$600) are owed
 
-### Requirement: Owed penalties are paid before any cuota
+### Requirement: Owed penalties can be paid in part
 
-While a Tradicional Plus loan owes penalties, it SHALL accept only penalty
-payments; a cuota SHALL NOT be accepted until no penalties are owed. Each
-penalty paid SHALL cover the oldest owed cycle and move the schedule one cycle,
-as for any penalty.
+While a Tradicional Plus loan owes N penalties, a cobro SHALL accept from 1 to
+N of them, each covering the oldest owed cycle and moving the schedule one
+cycle. A cuota SHALL be accepted only together with every owed penalty in the
+same cobro, or once no penalties are owed.
 
 #### Scenario: Cuota blocked while penalties are owed
 
 - **WHEN** a loan owes two penalties
-- **THEN** a cuota cannot be collected until both penalties are paid
+- **THEN** a cuota alone cannot be collected, but the two penalties and the
+  cuota together can
+
+#### Scenario: Paying some of the owed penalties
+
+- **WHEN** a loan owes two penalties and one is paid
+- **THEN** one penalty is still owed, the schedule has moved one cycle, and the
+  loan is still en atraso
 
 #### Scenario: Paying owed penalties brings the loan al día
 
@@ -89,10 +96,22 @@ as for any penalty.
 - **THEN** no penalties are owed, the schedule has moved two cycles, and the
   next cuota is the same amount as before
 
-### Requirement: Partial payments are not accepted
+### Requirement: A cuota is collectable only on or after its due date
 
-A Tradicional Plus loan SHALL accept only whole cuotas and whole penalties.
-Any other amount SHALL be rejected.
+A Tradicional Plus cuota SHALL be collectable on its own only when no
+penalties are owed and its due date (after every move so far) is today or
+past. Before that date nothing SHALL be due on the loan, except within a
+"Penalidades + cuota" cobro.
+
+#### Scenario: After a penalty, the moved cuota isn't due
+
+- **WHEN** a penalty paid on 1 March moved cuota 1 to 16 March
+- **THEN** on 2 March cuota 1 can't be collected on its own and nothing is due
+
+### Requirement: Only exact amounts are accepted
+
+A Tradicional Plus loan SHALL accept only whole cuotas and whole penalties, in
+the combinations above. Any other amount SHALL be rejected.
 
 #### Scenario: Partial amount rejected
 

@@ -136,6 +136,25 @@ export function createFakeGoogleServer(): FakeGoogleServer {
         if (valueRanges.some((v) => v.values === null)) return notFound("Tab");
         return json({ valueRanges });
       }
+      if (rest.endsWith("/values:batchUpdate") && method === "POST") {
+        const sheet = entries.get(rest.slice(0, -"/values:batchUpdate".length));
+        if (!sheet) return notFound("Spreadsheet");
+        for (const item of (body.data ?? []) as { range: string; values: unknown[][] }[]) {
+          const { tab, startRow, startCol } = parseA1(item.range);
+          const rows = sheet.tabs.get(tab);
+          if (!rows) return notFound(`Tab ${tab}`);
+          const from = (startRow ?? 1) - 1;
+          const col = startCol ?? 0;
+          item.values.forEach((row, offset) => {
+            const target = (rows[from + offset] ??= []);
+            row.forEach((cell, c) => {
+              while (target.length < col + c) target.push("");
+              target[col + c] = cell === null ? "" : String(cell);
+            });
+          });
+        }
+        return json({});
+      }
       const batch = rest.endsWith(":batchUpdate");
       const valuesAt = rest.indexOf("/values/");
       const spreadsheetId = batch

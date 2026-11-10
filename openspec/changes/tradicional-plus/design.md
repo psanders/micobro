@@ -46,22 +46,35 @@ Alternative: storing a "shift count" on the loan. Rejected: it would be a
 second source of truth that payments, edits, deletes and Sheet pulls can all
 put out of step. Counting penalty payment rows can't drift.
 
-### 2. Penalty payments are `notes = "penalidad"` rows, one per penalty
+### 2. A payment's kind is its own `tipo` column; penalties are one row each
 
-A new `PENALTY_NOTE = "penalidad"`, kept with `MORA_NOTE` in a dependency-free
-`lib/payments/paymentNotes.ts` (re-exported from `loanViews` as before) so
-`loanViews`, `mora` and `tradicionalPlus` can share it without importing each
-other. Collecting N owed
-penalties writes N rows of exactly `penaltyCents` each, all with the same
+`payments.tipo` ("cuota" | "mora" | "penalidad", default "cuota", no CHECK
+constraint) holds every payment's kind, for every loan type. `notes` is free
+text and is never read for the kind: it lived in the Sheet's editable Notas
+cell, where an edit silently turned a mora or a penalty into principal
+(tasks.md 8.1). `lib/payments/paymentNotes.ts` keeps the readers
+(`isPrincipalPayment`, `isPenaltyPayment`, `isMoraPayment`) and the one place
+the old flags survive, `legacyPaymentKind(notes)` (exact, case-sensitive),
+which the custom migration, restore, push of old queued payloads and the Pagos
+layout migration all apply the same way.
+
+Collecting N penalties writes N rows of exactly `penaltyCents`, all with one
 `paidAt`, so "number of penalties paid" is a row count and stays right even if
-the lender later edits the penalty amount. `principalPaidCents` and every other
-`MORA_NOTE` filter that means "not principal" (receipt numbering, history,
-receipt line ordering, customer activity) must exclude `PENALTY_NOTE` too. A
-shared `isPrincipalPayment(p)` helper replaces the "not mora" checks that mean
-"counts toward principal", so a future kind can't be missed in one place.
+the lender later edits the penalty amount. "Penalidades + cuota" adds the cuota
+row after them in the same cobro; within one `paidAt`, penalties sort before
+the cuota, so the result never depends on storage order.
 
-Alternative: one row of N × penalty. Rejected: it breaks the count when the
-penalty amount changes.
+The Pagos tab carries the kind in a new column H "Tipo", appended so A–G don't
+move (`lib/sync/pagosLayout.ts`, modeled on `clientesLayout.ts`): decided from
+the Sheet's H1, data filled before H1 is written, H protected warning-only, and
+payment push/pull gated until confirmed. Pull never changes an existing
+payment's kind (except one adoption on a phone that first meets a Sheet another
+phone migrated), so the protection is a courtesy and the pull rules are what
+protect balances.
+
+Alternatives: one row of N × penalty (breaks the count when the penalty amount
+changes); protecting Notas instead of moving the kind (a protected cell is still
+editable after a warning, and Notas is where lenders write notes).
 
 ### 3. A cycle engine in `lib/loans/tradicionalPlus.ts`
 

@@ -79,6 +79,7 @@ const payment = (
   paidAt: T1,
   method: "cash",
   notes: null,
+  tipo: "cuota",
   pushedAt: T1,
   createdAt: T1,
   ...o
