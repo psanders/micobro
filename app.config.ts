@@ -47,6 +47,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   // from it — this stays in sync automatically rather than needing its own bump.
   version: pkg.version,
   orientation: "portrait",
+  // Writes es.lproj/InfoPlist.strings. The App Store's "Languages" field is
+  // read from the binary's .lproj folders; without one it shows "EN". Expo
+  // skips an empty locale file, so this one carries the permission strings.
+  locales: { es: "./locales/ios-es.json" },
   // Matches components/BrandLogo.tsx's mark: white Sora Bold "m" on
   // colors.brandDeep (#0B4F4A), same recipe Mikro uses for its icon.
   icon: "./assets/icon.png",
@@ -62,6 +66,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     bundleIdentifier: "com.micobro.app",
     supportsTablet: false,
     infoPlist: {
+      // All UI is Spanish; without these Expo's default development region
+      // is "en" and the App Store lists the app as English.
+      CFBundleDevelopmentRegion: "es",
+      CFBundleLocalizations: ["es"],
       // Skips the export-compliance questionnaire on every TestFlight
       // upload — micobro only ever uses HTTPS, which is exempt.
       ITSAppUsesNonExemptEncryption: false,
