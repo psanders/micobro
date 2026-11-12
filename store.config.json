@@ -1,54 +1,56 @@
 {
   "configVersion": 0,
   "apple": {
-    "version": "0.17.0",
+    "version": "0.21.1",
     "copyright": "2026 Mikro, S.R.L.",
     "release": {
       "automaticRelease": true
     },
     "info": {
       "es-ES": {
-        "title": "Micobro",
-        "subtitle": "Clientes, préstamos y cobros",
-        "description": "Micobro es la libreta de cobros del prestamista dominicano, ahora en tu celular. Registra tus clientes, tus préstamos y cada pago, y sabe en todo momento quién te debe, cuánto y desde cuándo — aunque no haya señal.\n\nLO QUE PUEDES HACER\n• Tu día de cobros de un vistazo: la meta de hoy, lo cobrado y quién falta.\n• Mi ruta: tus visitas del día ordenadas por atraso.\n• Préstamos a plazo fijo (diario, semanal, quincenal o mensual) y crédito abierto con interés por ciclo.\n• Cuotas, mora y saldo calculados solos, siempre en pesos enteros.\n• Cobra en segundos y entrega el recibo por WhatsApp o impreso en una impresora térmica de 58 mm.\n• Anota visitas y promesas de pago.\n• Cuadre de caja: lo que cobraste contra lo que tienes en la mano.\n• Mi cartera: cuánto tienes prestado, cuánto te falta por cobrar, tu margen de beneficio y lo que está en atraso.\n\nTUS DATOS SON TUYOS\n• Todo vive en tu teléfono y funciona sin internet.\n• La app se protege con tu PIN.\n• Respaldo opcional en una hoja de cálculo de tu propio Google Drive.\n• Micobro no tiene servidores que reciban tus datos, no muestra publicidad y no te rastrea.\n• Puedes borrar todo desde Mi cuenta → Eliminar mis datos.\n\nMicobro es una herramienta para llevar las cuentas de tu negocio: no presta dinero ni intermedia préstamos.\n\nPolítica de privacidad: https://micobro.app/privacidad/",
+        "title": "Micobro: Préstamos y Cobros",
+        "subtitle": "Para prestamistas y cobradores",
+        "description": "Micobro es la libreta de cobros del prestamista dominicano, ahora en tu celular. Registra tus clientes, tus préstamos y cada pago, y sabe en todo momento quién te debe, cuánto y desde cuándo — aunque no haya señal.\n\nMicobro es una herramienta para llevar las cuentas de tu negocio: no presta dinero ni intermedia préstamos.\n\nLO QUE PUEDES HACER\n• Tu día de cobros de un vistazo: la meta de hoy, lo cobrado y quién falta.\n• Mi ruta: tus visitas del día ordenadas por atraso.\n• Préstamos a plazo fijo (diario, semanal, quincenal o mensual) y crédito abierto con interés por ciclo.\n• Tradicional Plus: préstamo quincenal con penalidad fija. Si el cliente no puede pagar la cuota, paga la penalidad y la cuota se corre una quincena.\n• Cuotas, mora y saldo calculados solos, siempre en pesos enteros.\n• Cobra en segundos y entrega el recibo por WhatsApp o impreso en una impresora térmica de 58 mm.\n• Anota visitas y promesas de pago.\n• Cuadre de caja: lo que cobraste contra lo que tienes en la mano.\n• Mi cartera: cuánto tienes prestado, cuánto te falta por cobrar, tu margen de beneficio y lo que está en atraso.\n\nTUS DATOS SON TUYOS\n• Todo vive en tu teléfono y funciona sin internet.\n• La app se protege con tu PIN.\n• Respaldo opcional en una hoja de cálculo de tu propio Google Drive.\n• Micobro no tiene servidores que reciban tus datos, no muestra publicidad y no te rastrea.\n• Puedes borrar todo desde Mi cuenta → Eliminar mis datos.\n\nPolítica de privacidad: https://micobro.app/privacidad/",
         "keywords": [
           "prestamista",
-          "préstamos",
-          "cobros",
+          "cobrador",
           "cobranza",
           "cuotas",
           "mora",
           "recibos",
           "cartera",
-          "clientes",
           "ruta",
+          "cuadre",
           "caja",
-          "libreta"
+          "libreta",
+          "credito",
+          "deudas"
         ],
-        "promoText": "Lleva tus préstamos al día, aunque no haya señal. Nuevo: Mi cartera, con lo prestado, lo por cobrar y lo atrasado de un vistazo.",
+        "promoText": "Lleva tus préstamos al día, aunque no haya señal. Nuevo: Tradicional Plus, el préstamo quincenal con penalidad fija cuando el cliente no puede pagar la cuota.",
         "marketingUrl": "https://micobro.app",
         "supportUrl": "https://docs.micobro.app",
         "privacyPolicyUrl": "https://micobro.app/privacidad/"
       },
       "es-MX": {
-        "title": "Micobro",
-        "subtitle": "Clientes, préstamos y cobros",
-        "description": "Micobro es la libreta de cobros del prestamista dominicano, ahora en tu celular. Registra tus clientes, tus préstamos y cada pago, y sabe en todo momento quién te debe, cuánto y desde cuándo — aunque no haya señal.\n\nLO QUE PUEDES HACER\n• Tu día de cobros de un vistazo: la meta de hoy, lo cobrado y quién falta.\n• Mi ruta: tus visitas del día ordenadas por atraso.\n• Préstamos a plazo fijo (diario, semanal, quincenal o mensual) y crédito abierto con interés por ciclo.\n• Cuotas, mora y saldo calculados solos, siempre en pesos enteros.\n• Cobra en segundos y entrega el recibo por WhatsApp o impreso en una impresora térmica de 58 mm.\n• Anota visitas y promesas de pago.\n• Cuadre de caja: lo que cobraste contra lo que tienes en la mano.\n• Mi cartera: cuánto tienes prestado, cuánto te falta por cobrar, tu margen de beneficio y lo que está en atraso.\n\nTUS DATOS SON TUYOS\n• Todo vive en tu teléfono y funciona sin internet.\n• La app se protege con tu PIN.\n• Respaldo opcional en una hoja de cálculo de tu propio Google Drive.\n• Micobro no tiene servidores que reciban tus datos, no muestra publicidad y no te rastrea.\n• Puedes borrar todo desde Mi cuenta → Eliminar mis datos.\n\nMicobro es una herramienta para llevar las cuentas de tu negocio: no presta dinero ni intermedia préstamos.\n\nPolítica de privacidad: https://micobro.app/privacidad/",
+        "title": "Micobro: Préstamos y Cobros",
+        "subtitle": "Para prestamistas y cobradores",
+        "description": "Micobro es la libreta de cobros del prestamista dominicano, ahora en tu celular. Registra tus clientes, tus préstamos y cada pago, y sabe en todo momento quién te debe, cuánto y desde cuándo — aunque no haya señal.\n\nMicobro es una herramienta para llevar las cuentas de tu negocio: no presta dinero ni intermedia préstamos.\n\nLO QUE PUEDES HACER\n• Tu día de cobros de un vistazo: la meta de hoy, lo cobrado y quién falta.\n• Mi ruta: tus visitas del día ordenadas por atraso.\n• Préstamos a plazo fijo (diario, semanal, quincenal o mensual) y crédito abierto con interés por ciclo.\n• Tradicional Plus: préstamo quincenal con penalidad fija. Si el cliente no puede pagar la cuota, paga la penalidad y la cuota se corre una quincena.\n• Cuotas, mora y saldo calculados solos, siempre en pesos enteros.\n• Cobra en segundos y entrega el recibo por WhatsApp o impreso en una impresora térmica de 58 mm.\n• Anota visitas y promesas de pago.\n• Cuadre de caja: lo que cobraste contra lo que tienes en la mano.\n• Mi cartera: cuánto tienes prestado, cuánto te falta por cobrar, tu margen de beneficio y lo que está en atraso.\n\nTUS DATOS SON TUYOS\n• Todo vive en tu teléfono y funciona sin internet.\n• La app se protege con tu PIN.\n• Respaldo opcional en una hoja de cálculo de tu propio Google Drive.\n• Micobro no tiene servidores que reciban tus datos, no muestra publicidad y no te rastrea.\n• Puedes borrar todo desde Mi cuenta → Eliminar mis datos.\n\nPolítica de privacidad: https://micobro.app/privacidad/",
         "keywords": [
           "prestamista",
-          "préstamos",
-          "cobros",
+          "cobrador",
           "cobranza",
           "cuotas",
           "mora",
           "recibos",
           "cartera",
-          "clientes",
           "ruta",
+          "cuadre",
           "caja",
-          "libreta"
+          "libreta",
+          "credito",
+          "deudas"
         ],
-        "promoText": "Lleva tus préstamos al día, aunque no haya señal. Nuevo: Mi cartera, con lo prestado, lo por cobrar y lo atrasado de un vistazo.",
+        "promoText": "Lleva tus préstamos al día, aunque no haya señal. Nuevo: Tradicional Plus, el préstamo quincenal con penalidad fija cuando el cliente no puede pagar la cuota.",
         "marketingUrl": "https://micobro.app",
         "supportUrl": "https://docs.micobro.app",
         "privacyPolicyUrl": "https://micobro.app/privacidad/"
@@ -90,7 +92,7 @@
       "email": "equipo@mikro.do",
       "phone": "+17853178070",
       "demoRequired": false,
-      "notes": "Micobro is a bookkeeping / CRM tool for independent lenders in the Dominican Republic. It is NOT a lending product: it does not originate, broker, fund or service loans, and it never moves money (guideline 3.2.1). Lenders use it to record their own customers, loans and payments.\n\nThere is no account or login. The app is protected by a local 4-digit PIN:\n\n1. Open the app, create any 4-digit PIN (e.g. 1234) and confirm it.\n2. On \"Conectar con Google\" tap \"Ahora no, tal vez después\". Google is optional.\n3. The app is fully functional offline: Buscar → + to add a customer, then + on the customer to create a loan, then Cobrar to record a payment.\n\nGoogle Sign-In is NOT a way to sign in to Micobro. It is an optional backup that writes the lender's own data to a spreadsheet in their own Google Drive (drive.file scope only). The app works completely without it, so Sign in with Apple (4.8) does not apply, and it is never required (5.1.1(v)).\n\nData stays on the device; there is no developer server, no ads and no tracking. Bluetooth is used only for 58 mm thermal receipt printers; microphone and screen recording only for the optional in-app feedback recorder, after explicit consent. Users can erase everything in Mi cuenta → Eliminar mis datos (PIN required).\n\nPrivacy policy: https://micobro.app/privacidad/\nContact: equipo@mikro.do"
+      "notes": "Micobro is a bookkeeping / CRM tool for independent lenders in the Dominican Republic. It is NOT a lending product: it does not originate, broker, fund or service loans, and it never moves money. Guideline 3.2.2(ix) (personal-loan apps: APR disclosure, 36% APR cap, 60-day minimum repayment) does not apply because the app offers no loans to anyone, and it provides no regulated financial service under 5.1.1(ix). Lenders use it to record their own customers, loans and payments.\n\nThere is no account or login. The app is protected by a local 4-digit PIN:\n\n1. Open the app, create any 4-digit PIN (e.g. 1234) and confirm it.\n2. On \"Conectar con Google\" tap \"Ahora no, tal vez después\". Google is optional.\n3. The app is fully functional offline: Buscar → + to add a customer, then + on the customer to create a loan, then Cobrar to record a payment.\n\nGoogle Sign-In is NOT a way to sign in to Micobro. It is an optional backup that writes the lender's own data to a spreadsheet in their own Google Drive (drive.file scope only). The app works completely without it, so Sign in with Apple (4.8) does not apply, and it is never required (5.1.1(v)).\n\nData stays on the device; there is no developer server, no ads and no tracking. Bluetooth is used only for 58 mm thermal receipt printers; microphone and screen recording only for the optional in-app feedback recorder, after explicit consent. Users can erase everything in Mi cuenta → Eliminar mis datos (PIN required).\n\nPrivacy policy: https://micobro.app/privacidad/\nContact: equipo@mikro.do"
     }
   }
 }
