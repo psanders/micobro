@@ -49,7 +49,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   orientation: "portrait",
   // Writes es.lproj/InfoPlist.strings. The App Store's "Languages" field is
   // read from the binary's .lproj folders; without one it shows "EN". Expo
-  // skips an empty locale file, so this one carries the permission strings.
+  // skips an empty locale file, so this one carries the permission strings,
+  // under "ios" so Android gets no keys (its lint fails on ExtraTranslation).
   locales: { es: "./locales/ios-es.json" },
   // Matches components/BrandLogo.tsx's mark: white Sora Bold "m" on
   // colors.brandDeep (#0B4F4A), same recipe Mikro uses for its icon.
