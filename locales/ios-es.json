@@ -1,6 +1,8 @@
 {
-  "CFBundleDisplayName": "Micobro",
-  "NSBluetoothAlwaysUsageDescription": "Micobro necesita Bluetooth para conectarse a la impresora térmica.",
-  "NSBluetoothPeripheralUsageDescription": "Micobro necesita Bluetooth para conectarse a la impresora térmica.",
-  "NSMicrophoneUsageDescription": "Micobro necesita el micrófono para grabar feedback dentro de la app."
+  "ios": {
+    "CFBundleDisplayName": "Micobro",
+    "NSBluetoothAlwaysUsageDescription": "Micobro necesita Bluetooth para conectarse a la impresora térmica.",
+    "NSBluetoothPeripheralUsageDescription": "Micobro necesita Bluetooth para conectarse a la impresora térmica.",
+    "NSMicrophoneUsageDescription": "Micobro necesita el micrófono para grabar feedback dentro de la app."
+  }
 }
