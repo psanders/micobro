@@ -1,3 +1,5 @@
+## [0.21.1](https://github.com/psanders/micobro/compare/v0.21.0...v0.21.1) (2026-11-12)
+
 ## [0.21.0](https://github.com/psanders/micobro/compare/v0.20.1...v0.21.0) (2026-11-12)
 
 ## [0.20.1](https://github.com/psanders/micobro/compare/v0.20.0...v0.20.1) (2026-10-27)
