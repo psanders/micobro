@@ -52,7 +52,7 @@ describe("collectPayment", () => {
 
     const paymentRows = inserted.filter((row) => "loanId" in row && "amountCents" in row);
     expect(paymentRows).toHaveLength(2);
-    expect(paymentRows[0]).toMatchObject({ amountCents: 75000, notes: "mora", method: "cash" });
+    expect(paymentRows[0]).toMatchObject({ amountCents: 75000, tipo: "mora", method: "cash" });
     expect(paymentRows[1]).toMatchObject({ amountCents: 240000, notes: null });
 
     expect(receipt.receiptNumber).toBe("R-00001");

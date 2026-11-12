@@ -79,7 +79,8 @@ export function createGetCollectContext({ db }: GetCollectContextDeps) {
         moraDays: 0,
         remainingInstallments: 0,
         remainingBalanceCents: state.balanceCents,
-        openCredit
+        openCredit,
+        tradicionalPlus: null
       };
     }
 
@@ -114,7 +115,10 @@ export function createGetCollectContext({ db }: GetCollectContextDeps) {
       moraDays,
       remainingInstallments: view.installmentsTotal - view.installmentsPaid,
       remainingBalanceCents: view.balanceCents,
-      openCredit: null
+      openCredit: null,
+      // Tradicional Plus: the screen offers only "Cobrar cuota" / "Cobrar
+      // penalidad" from this (see resolveTradicionalPlusPayOptions).
+      tradicionalPlus: view.tradicionalPlus
     };
   };
 

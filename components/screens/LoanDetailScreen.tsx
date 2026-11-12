@@ -39,6 +39,10 @@ import type { OpenCreditCycle } from "../../lib/loans/openCredit";
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 function dueLineLabel(line: DueTodayLine): string {
+  if (line.kind === "penalty") {
+    const count = line.penaltyCount ?? 1;
+    return count === 1 ? "1 penalidad pendiente" : `${count} penalidades pendientes`;
+  }
   if (line.kind === "mora") {
     const days = line.moraDays ?? 0;
     return `Mora acumulada (${days} día${days === 1 ? "" : "s"})`;
@@ -363,11 +367,23 @@ export function LoanDetailScreen({ loanId }: { loanId: string }) {
               <>
                 <View style={styles.chips}>
                   <MetaChip>{frequencyLabels[loan.frequency]}</MetaChip>
-                  {termDays > 0 ? <MetaChip>{`${termDays} días`}</MetaChip> : null}
+                  {loan.tradicionalPlus ? (
+                    <>
+                      <MetaChip>Tradicional Plus</MetaChip>
+                      <MetaChip>{`Penalidad ${formatCurrency(loan.tradicionalPlus.penaltyCents)}`}</MetaChip>
+                    </>
+                  ) : termDays > 0 ? (
+                    <MetaChip>{`${termDays} días`}</MetaChip>
+                  ) : null}
                   {loan.endDate ? (
                     <MetaChip>{`Vence ${formatShortDate(loan.endDate)}`}</MetaChip>
                   ) : null}
                 </View>
+                {loan.tradicionalPlus && loan.tradicionalPlus.timesMoved > 0 ? (
+                  <Text style={styles.movedNote} testID="loan-times-moved">
+                    {`Corrida ${loan.tradicionalPlus.timesMoved} ${loan.tradicionalPlus.timesMoved === 1 ? "vez" : "veces"} por penalidad`}
+                  </Text>
+                ) : null}
 
                 <View style={styles.summary}>
                   <Text style={styles.summaryLabel}>BALANCE PENDIENTE</Text>
@@ -425,13 +441,37 @@ export function LoanDetailScreen({ loanId }: { loanId: string }) {
                     </View>
                     <View style={styles.divider} />
                     <View style={styles.dueLines}>
+                      {loan.tradicionalPlus && loan.dueTodayLines.length === 0 ? (
+                        // Tradicional Plus before the cuota's date: nothing is
+                        // owed today; the next cuota is informational only.
+                        <>
+                          <View style={styles.dueLine} testID="due-nothing-today">
+                            <View style={styles.dueLineLeft}>
+                              <View style={styles.dueDot} />
+                              <Text style={styles.dueLineText}>Nada pendiente hoy</Text>
+                            </View>
+                          </View>
+                          {loan.tradicionalPlus.nextDueDate ? (
+                            <View style={[styles.dueLine, styles.dueNextLine]}>
+                              <Text style={styles.dueNextText}>
+                                {`Próxima cuota: ${formatShortDate(loan.tradicionalPlus.nextDueDate)}`}
+                              </Text>
+                              <Text style={styles.dueNextAmount}>
+                                {formatCurrency(loan.tradicionalPlus.nextCuotaCents)}
+                              </Text>
+                            </View>
+                          ) : null}
+                        </>
+                      ) : null}
                       {loan.dueTodayLines.map((line, index) => (
                         <View key={index} style={styles.dueLine}>
                           <View style={styles.dueLineLeft}>
                             <View
                               style={[
                                 styles.dueDot,
-                                line.kind === "mora" && { backgroundColor: colors.orangeDeep }
+                                (line.kind === "mora" || line.kind === "penalty") && {
+                                  backgroundColor: colors.orangeDeep
+                                }
                               ]}
                             />
                             <Text style={styles.dueLineText}>{dueLineLabel(line)}</Text>
@@ -567,7 +607,8 @@ const styles = StyleSheet.create({
     color: colors.muted,
     lineHeight: 15
   },
-  chips: { flexDirection: "row", gap: 6 },
+  chips: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
+  movedNote: { fontSize: 12, fontFamily: fonts.medium, color: colors.amber, marginTop: -4 },
   summary: { backgroundColor: colors.brandDeep, borderRadius: 18, padding: 20, gap: 14 },
   summaryLabel: {
     fontSize: 11,
@@ -628,6 +669,9 @@ const styles = StyleSheet.create({
   dueLineLeft: { flexDirection: "row", alignItems: "center", gap: 8 },
   dueDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: colors.brandDeep },
   dueLineText: { fontSize: 13, fontFamily: fonts.medium, color: colors.ink },
+  dueNextLine: { paddingLeft: 14 },
+  dueNextText: { fontSize: 12, fontFamily: fonts.medium, color: colors.slate },
+  dueNextAmount: { fontSize: 12, fontFamily: fonts.semiBold, color: colors.slate },
   dueLineAmount: { fontSize: 13, fontFamily: fonts.bold, color: colors.ink },
   planHead: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   planLink: { fontSize: 11, fontFamily: fonts.bold, color: colors.brandDeep },

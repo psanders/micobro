@@ -78,6 +78,27 @@
       "when": 1793123365660,
       "tag": "0010_wise_ironclad",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1793133781851,
+      "tag": "0011_flippant_marvel_boy",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "6",
+      "when": 1793733488852,
+      "tag": "0012_cool_silvermane",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "6",
+      "when": 1793733489366,
+      "tag": "0013_backfill_payment_tipo",
+      "breakpoints": true
     }
   ]
 }

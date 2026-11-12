@@ -54,6 +54,7 @@ function loanRow(overrides: Partial<Loan>): Loan {
     moraRateBps: null,
     skipSundays: null,
     loanType: null,
+    penaltyCents: null,
     createdAt: daysAgo(31),
     updatedAt: daysAgo(31),
     ...overrides
@@ -68,6 +69,7 @@ function paymentRow(overrides: Partial<Payment>): Payment {
     paidAt: daysAgo(24),
     method: "cash",
     notes: null,
+    tipo: "cuota",
     createdAt: daysAgo(24),
     ...overrides
   };
@@ -84,6 +86,7 @@ const openCreditLoanRow = loanRow({
   frequency: "weekly",
   startDate: daysAgo(8),
   loanType: "open_credit",
+  penaltyCents: null,
   createdAt: daysAgo(8),
   updatedAt: daysAgo(8)
 });
@@ -119,6 +122,46 @@ function makeDbStub(rows: {
 }
 
 describe("createGetCustomerDetail", () => {
+  describe("Tradicional Plus standing", () => {
+    const plus = (startDaysAgo: number) =>
+      loanRow({
+        frequency: "biweekly",
+        startDate: daysAgo(startDaysAgo),
+        termCount: 4,
+        graceDays: 3,
+        moraEnabled: false,
+        loanType: "term_plus",
+        penaltyCents: 30000
+      });
+
+    it("reads En atraso, not Al día, while a cycle is past due", async () => {
+      // Arrange — first quincena due 5 days ago, nothing paid: an owed penalty, no mora
+      const db = makeDbStub({ customers: [baseCustomerRow], loans: [plus(20)] });
+
+      // Act
+      const result = await createGetCustomerDetail({ db })({ id: "customer-1" });
+
+      // Assert
+      expect(result?.standing).toBe("atraso");
+    });
+
+    it("reads Al día once the cycle is covered by a penalty", async () => {
+      // Arrange
+      const penalty = paymentRow({ amountCents: 30000, tipo: "penalidad", paidAt: daysAgo(1) });
+      const db = makeDbStub({
+        customers: [baseCustomerRow],
+        loans: [plus(20)],
+        paymentsPerLoan: [[penalty]]
+      });
+
+      // Act
+      const result = await createGetCustomerDetail({ db })({ id: "customer-1" });
+
+      // Assert
+      expect(result?.standing).toBe("al_dia");
+    });
+  });
+
   describe("archived loans (loan-edit-archive)", () => {
     it("lists an archived loan under archivedLoans, not activeLoans", async () => {
       // Arrange
@@ -297,7 +340,7 @@ describe("createGetCustomerDetail", () => {
         loanId: "loan-term-1",
         amountCents: 75000,
         paidAt: daysAgo(10),
-        notes: "mora"
+        tipo: "mora"
       });
       const ocPayment = paymentRow({
         id: "oc-1",

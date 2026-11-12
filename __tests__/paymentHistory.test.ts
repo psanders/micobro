@@ -7,7 +7,7 @@
  */
 import { buildPaymentHistoryView } from "../lib/loans/loanViews";
 import type { Loan } from "../lib/loans/loan.schema";
-import type { Payment } from "../lib/payments/payment.schema";
+import type { Payment, PaymentKind } from "../lib/payments/payment.schema";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const today = new Date("2026-07-14T12:00:00");
@@ -28,6 +28,7 @@ const loan: Loan = {
   moraRateBps: null,
   skipSundays: null,
   loanType: null,
+  penaltyCents: null,
   createdAt: daysAgo(28),
   updatedAt: daysAgo(28)
 };
@@ -36,14 +37,15 @@ const payment = (
   id: string,
   amountCents: number,
   paidAt: Date,
-  notes: string | null = null
+  tipo: PaymentKind = "cuota"
 ): Payment => ({
   id,
   loanId: "loan-1",
   amountCents,
   paidAt,
   method: "cash",
-  notes,
+  notes: null,
+  tipo,
   createdAt: paidAt
 });
 

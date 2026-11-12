@@ -22,8 +22,7 @@ export {
   addFrequencyInterval,
   addNonSundayDays,
   defaultFirstPaymentDate,
-  monthlyAnchorAtRisk,
-  MORA_NOTE
+  monthlyAnchorAtRisk
 } from "./loanViews";
 export {
   computeAccruedMora,
@@ -39,6 +38,8 @@ export {
 } from "./mora";
 export type { MoraPolicy, AccruedMora } from "./mora";
 export { openCreditState } from "./openCredit";
+export { penaltiesPaid, tradicionalPlusDueDates, tradicionalPlusState } from "./tradicionalPlus";
+export type { TradicionalPlusState } from "./tradicionalPlus";
 export type { OpenCreditState, OpenCreditCycle, OpenCreditCycleStatus } from "./openCredit";
 export {
   createLoanSchema,

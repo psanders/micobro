@@ -84,7 +84,7 @@ describe("createGetLoanDetailView", () => {
   it("returns zero mora once every overdue cuota is paid", async () => {
     // Arrange — clears every cuota due so far (cuotas 1–3, RD$330 total)
     const db = makeDbStub([
-      { id: "p1", loanId: "loan-1", amountCents: 33000, paidAt: daysAgo(25) }
+      { id: "p1", loanId: "loan-1", amountCents: 33000, paidAt: daysAgo(25), tipo: "cuota" }
     ]);
     const getLoanDetailView = createGetLoanDetailView({ db });
 
@@ -128,7 +128,7 @@ describe("createGetLoanDetailView", () => {
     it("reflects a paid interest+capital cycle in the balance", async () => {
       // Arrange — RD$500 interest + RD$2,000 capital paid within cycle 1.
       const db = makeDbStub(
-        [{ id: "p1", loanId: "loan-2", amountCents: 250000, paidAt: daysAgo(4) }],
+        [{ id: "p1", loanId: "loan-2", amountCents: 250000, paidAt: daysAgo(4), tipo: "cuota" }],
         openCreditLoanRow
       );
       const getLoanDetailView = createGetLoanDetailView({ db });

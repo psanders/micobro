@@ -11,7 +11,7 @@
  */
 import { composePosition } from "../lib/reports/composePosition";
 import type { Loan } from "../lib/loans/loan.schema";
-import type { Payment } from "../lib/payments/payment.schema";
+import type { Payment, PaymentKind } from "../lib/payments/payment.schema";
 import type { OwnerPosition } from "../lib/reports/position.schema";
 
 const TODAY = new Date(2026, 9, 20, 12); // 20 Oct 2026, noon
@@ -37,6 +37,7 @@ function loan(overrides: Partial<Loan> = {}): Loan {
     moraRateBps: null,
     skipSundays: null,
     loanType: null,
+    penaltyCents: null,
     createdAt: TODAY,
     updatedAt: TODAY,
     ...overrides
@@ -57,7 +58,7 @@ function payment(
   loanId: string,
   amountCents: number,
   paidAt: Date,
-  notes: string | null = null
+  tipo: PaymentKind = "cuota"
 ): Payment {
   return {
     id: `p-${loanId}-${paidAt.getTime()}-${amountCents}`,
@@ -65,7 +66,8 @@ function payment(
     amountCents,
     paidAt,
     method: "cash",
-    notes,
+    notes: null,
+    tipo,
     createdAt: paidAt
   };
 }
@@ -532,5 +534,28 @@ describe("composePosition", () => {
         progress: 0
       });
     });
+  });
+
+  it("counts a Tradicional Plus loan as término fijo, late on a missed cycle, without penalties in to-collect", () => {
+    // Arrange — quincenal RD$10,000 at 20% (4 × RD$3,000), first cycle due 5 Oct
+    const plus = loan({
+      id: "plus",
+      frequency: "biweekly",
+      startDate: new Date(2026, 8, 20),
+      loanType: "term_plus",
+      moraEnabled: false,
+      penaltyCents: 30000
+    });
+    const penalty = payment("plus", 30000, new Date(2026, 9, 5, 10), "penalidad");
+
+    // Act
+    const late = composePosition({ loans: [plus], payments: [], today: TODAY });
+    const moved = composePosition({ loans: [plus], payments: [penalty], today: TODAY });
+
+    // Assert — unpaid: late; after a penalty: al día, nothing collected toward the balance
+    expect(late.byType.term.loanCount).toBe(1);
+    expect(late.overdue.loanCount).toBe(1);
+    expect(moved.overdue.loanCount).toBe(0);
+    expect(moved.receivableCents).toBe(1200000);
   });
 });

@@ -33,6 +33,7 @@ function baseLoan(overrides: Partial<Loan> = {}): Loan {
     moraRateBps: null,
     skipSundays: null,
     loanType: "open_credit",
+    penaltyCents: null,
     createdAt: TODAY,
     updatedAt: TODAY,
     ...overrides
@@ -57,6 +58,7 @@ function payment(amountCents: number, paidAt: Date, overrides: Partial<Payment> 
     paidAt,
     method: "cash",
     notes: null,
+    tipo: "cuota",
     createdAt: paidAt,
     ...overrides
   };

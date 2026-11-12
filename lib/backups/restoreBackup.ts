@@ -11,6 +11,8 @@
  * push sends the row as it is locally (see push.ts) — so the next sync
  * writes it back to the Sheet instead of deleting it again. Pending
  * mutations from before the restore are dropped with the data they described.
+ * A backup older than the payments' `tipo` column gets its kinds from the
+ * legacy Notas flags, so a mora or penalty never comes back as principal.
  */
 import { withErrorHandlingAndValidation } from "../utils/withErrorHandlingAndValidation";
 import { quote } from "./backupDriver";
@@ -77,6 +79,14 @@ export function createRestoreBackup({
           const shared = columns(driver, "main", table).filter((c) => fromBackup.has(c));
           const list = shared.map((c) => `"${c}"`).join(", ");
           driver.run(`INSERT INTO main.${table} (${list}) SELECT ${list} FROM ${ALIAS}.${table}`);
+          if (table === "payments" && !fromBackup.has("tipo")) {
+            // A backup from before `tipo`: its kind is still the legacy Notas
+            // flag — the same mapping as migration 0013 (paymentNotes.ts
+            // `legacyPaymentKind`), before the rows are re-pushed below.
+            driver.run(
+              "UPDATE main.payments SET tipo = notes, notes = NULL WHERE notes IN ('mora','penalidad')"
+            );
+          }
           driver.run(
             "INSERT INTO main.pending_mutations " +
               "(id, entity, entity_id, operation, payload, status, retry_count, created_at) " +

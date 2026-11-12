@@ -13,16 +13,28 @@ interface OptionRowProps {
   valueColor?: string;
   selected: boolean;
   onPress?: () => void;
+  /** Shown but not selectable (e.g. a Tradicional Plus cuota while penalties are owed). */
+  disabled?: boolean;
 }
 
-export function OptionRow({ label, value, valueColor, selected, onPress }: OptionRowProps) {
+export function OptionRow({
+  label,
+  value,
+  valueColor,
+  selected,
+  onPress,
+  disabled = false
+}: OptionRowProps) {
   return (
     <Pressable
-      onPress={onPress}
+      onPress={disabled ? undefined : onPress}
+      disabled={disabled}
+      accessibilityState={{ disabled, selected }}
       style={({ pressed }) => [
         styles.row,
         selected && styles.rowSelected,
-        pressed ? { opacity: 0.8 } : null
+        disabled && styles.rowDisabled,
+        pressed && !disabled ? { opacity: 0.8 } : null
       ]}
     >
       <View style={[styles.radio, selected && styles.radioSelected]} />
@@ -45,6 +57,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.hairline
   },
+  rowDisabled: { opacity: 0.45 },
   rowSelected: {
     backgroundColor: colors.mist,
     borderColor: colors.brandDeep

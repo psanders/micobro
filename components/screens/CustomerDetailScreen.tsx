@@ -101,17 +101,24 @@ export function CustomerDetailScreen({ customerId }: { customerId: string }) {
           <View style={styles.profile}>
             <Avatar avatarKey={customer.avatarKey} name={customer.name} size={72} />
             <Text style={styles.name}>{customer.name}</Text>
-            <View style={[styles.standing, customer.standing === "mora" && styles.standingMora]}>
+            <View style={[styles.standing, customer.standing !== "al_dia" && styles.standingMora]}>
               <View
-                style={[styles.standingDot, customer.standing === "mora" && styles.standingDotMora]}
+                style={[
+                  styles.standingDot,
+                  customer.standing !== "al_dia" && styles.standingDotMora
+                ]}
               />
               <Text
                 style={[
                   styles.standingText,
-                  customer.standing === "mora" && styles.standingTextMora
+                  customer.standing !== "al_dia" && styles.standingTextMora
                 ]}
               >
-                {customer.standing === "mora" ? "En mora" : "Al día"}
+                {customer.standing === "mora"
+                  ? "En mora"
+                  : customer.standing === "atraso"
+                    ? "En atraso"
+                    : "Al día"}
                 {customer.sinceYear ? ` · Cliente desde ${customer.sinceYear}` : ""}
               </Text>
             </View>

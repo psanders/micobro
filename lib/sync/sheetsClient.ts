@@ -377,3 +377,77 @@ export async function writeHeaderRow(
     throw new Error(`Sheets header write failed (${response.status}): ${body}`);
   }
 }
+
+/**
+ * Writes several ranges in one values:batchUpdate (RAW, so "mora" stays
+ * text). `data` is written in order, so a caller can put a marker cell last.
+ */
+export async function writeCells(
+  spreadsheetId: string,
+  data: { range: string; values: string[][] }[]
+): Promise<void> {
+  if (data.length === 0) return;
+  const response = await authorizedFetch(`${SHEETS_API_BASE}/${spreadsheetId}/values:batchUpdate`, {
+    method: "POST",
+    body: JSON.stringify({ valueInputOption: "RAW", data })
+  });
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`Sheets values batchUpdate failed (${response.status}): ${body}`);
+  }
+}
+
+/**
+ * Additive and idempotent: gives column `columnIndex` (0-based) of the tab
+ * titled `title` a warning-only protection marked `description`, unless a
+ * range with that description is already there. Never changes or removes
+ * any existing protection.
+ */
+export async function ensureColumnProtection(
+  spreadsheetId: string,
+  title: string,
+  columnIndex: number,
+  description: string
+): Promise<void> {
+  const fields = "sheets(properties(sheetId,title),protectedRanges(description))";
+  const metaUrl = `${SHEETS_API_BASE}/${spreadsheetId}?fields=${encodeURIComponent(fields)}`;
+  const metaResponse = await authorizedFetch(metaUrl, { method: "GET" });
+  if (!metaResponse.ok) {
+    const body = await metaResponse.text();
+    throw new Error(`Sheets read metadata failed (${metaResponse.status}): ${body}`);
+  }
+  const meta = await metaResponse.json();
+  const tab = (
+    (meta.sheets ?? []) as {
+      properties: { sheetId: number; title: string };
+      protectedRanges?: { description?: string }[];
+    }[]
+  ).find((s) => s.properties.title === title);
+  if (!tab) throw new Error(`Sheets tab not found: ${title}`);
+  if ((tab.protectedRanges ?? []).some((p) => p.description === description)) return;
+
+  const response = await authorizedFetch(`${SHEETS_API_BASE}/${spreadsheetId}:batchUpdate`, {
+    method: "POST",
+    body: JSON.stringify({
+      requests: [
+        {
+          addProtectedRange: {
+            protectedRange: {
+              range: {
+                sheetId: tab.properties.sheetId,
+                startColumnIndex: columnIndex,
+                endColumnIndex: columnIndex + 1
+              },
+              description,
+              warningOnly: true
+            }
+          }
+        }
+      ]
+    })
+  });
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`Sheets protect column failed (${response.status}): ${body}`);
+  }
+}

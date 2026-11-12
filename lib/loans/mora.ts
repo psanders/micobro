@@ -9,9 +9,10 @@
  * `lib/payments/paymentSplit.ts`. Formula and defaults (10%/30 días, no
  * grace, cap at 1 cuota, no floor) match mikro's `defaultLoansConfig`.
  */
-import { MORA_NOTE, installmentDueDate, principalPaidCents } from "./loanViews";
+import { installmentDueDate, principalPaidCents } from "./loanViews";
+import { isMoraPayment } from "../payments/paymentNotes";
 import { cuotaCents as computeCuotaCents, totalRepayCents } from "./loanMath";
-import { DEFAULT_GRACE_DAYS } from "./loan.schema";
+import { DEFAULT_GRACE_DAYS, effectiveLoanType } from "./loan.schema";
 import { roundToPeso } from "../utils/money";
 import type { Loan } from "./loan.schema";
 import type { Payment } from "../payments/payment.schema";
@@ -161,7 +162,7 @@ export function daysLateExcludingSundays(dueDate: Date, today: Date, skipSundays
 
 /**
  * Accrued mora for a loan, net of any mora already collected (payments
- * flagged `MORA_NOTE`) on or after the oldest overdue due date — mirrors
+ * with `tipo: "mora"`) on or after the oldest overdue due date — mirrors
  * mikro's collected-LATE_FEE netting in `computeAccruedMora`.
  */
 export function computeLoanMora(
@@ -170,6 +171,9 @@ export function computeLoanMora(
   today: Date = new Date(),
   policy: MoraPolicy = DEFAULT_MORA_POLICY
 ): AccruedMora {
+  // Tradicional Plus never accrues mora — an unpaid cycle becomes an owed
+  // penalty instead (see lib/loans/tradicionalPlus.ts).
+  if (effectiveLoanType(loan) === "term_plus") return { moraCents: 0, moraDays: 0 };
   const overdue = oldestOverdueInstallment(loan, payments, today);
   if (!overdue) return { moraCents: 0, moraDays: 0 };
 
@@ -185,7 +189,7 @@ export function computeLoanMora(
   if (gross.moraCents === 0) return gross;
 
   const collectedCents = payments
-    .filter((p) => p.notes === MORA_NOTE && p.paidAt.getTime() >= overdue.dueDate.getTime())
+    .filter((p) => isMoraPayment(p) && p.paidAt.getTime() >= overdue.dueDate.getTime())
     .reduce((sum, p) => sum + p.amountCents, 0);
 
   return { moraCents: Math.max(0, gross.moraCents - collectedCents), moraDays: gross.moraDays };

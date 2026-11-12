@@ -12,3 +12,8 @@ export type { PaymentSplitInput, PaymentSplitResult } from "./paymentSplit";
 export { createPaymentSchema, paymentMethods } from "./payment.schema";
 export type { CreatePaymentInput, Payment, PaymentMethod } from "./payment.schema";
 export type { ListPaymentsByLoanInput } from "./listPaymentsByLoan";
+export { resolveTradicionalPlusPayOptions } from "./tradicionalPlusPayOptions";
+export type {
+  TradicionalPlusPayOption,
+  TradicionalPlusPayOptionsView
+} from "./tradicionalPlusPayOptions";

@@ -15,6 +15,8 @@
 import { normalizeCedula } from "../utils/cedula";
 import { loanFrequencies, loanStatuses, loanTypes } from "../loans/loan.schema";
 import { paymentMethods } from "../payments/payment.schema";
+import { isPaymentKind } from "../payments/paymentNotes";
+import type { PaymentKind } from "../payments/payment.schema";
 import { visitOutcomes } from "../visits/visit.schema";
 import type { customers, loans, payments, visits } from "../db/schema";
 import type { PulledEntity } from "./syncedTables";
@@ -27,7 +29,13 @@ export type SheetCustomer = WithOptionalTimestamps<
   Omit<typeof customers.$inferSelect, "pushedAt" | "avatarKey">
 >;
 export type SheetLoan = WithOptionalTimestamps<Omit<typeof loans.$inferSelect, "pushedAt">>;
-export type SheetPayment = WithOptionalTimestamps<Omit<typeof payments.$inferSelect, "pushedAt">>;
+/**
+ * `tipo` is the Tipo cell (H) as read: a valid kind, or null when empty. The
+ * planner settles a null against Notas' legacy flag (see pullPlan.ts).
+ */
+export type SheetPayment = WithOptionalTimestamps<
+  Omit<typeof payments.$inferSelect, "pushedAt" | "tipo">
+> & { tipo: PaymentKind | null };
 export type SheetVisit = WithOptionalTimestamps<Omit<typeof visits.$inferSelect, "pushedAt">>;
 
 export interface SheetRecords {
@@ -105,7 +113,7 @@ function customerFromRow(row: string[]): SheetCustomer {
   };
 }
 
-// Préstamos!A:P — same order as loanRowValues in push.ts.
+// Préstamos!A:Q — same order as loanRowValues in push.ts.
 function loanFromRow(row: string[]): SheetLoan {
   const loanType = cell(row, 13);
   return {
@@ -124,13 +132,18 @@ function loanFromRow(row: string[]): SheetLoan {
     skipSundays: bool(cell(row, 12), "Salta domingos"),
     loanType: loanType ? oneOf(loanType, loanTypes, "el tipo") : null,
     createdAt: date(cell(row, 14), "Creado"),
-    updatedAt: date(cell(row, 15), "Actualizado")
+    updatedAt: date(cell(row, 15), "Actualizado"),
+    penaltyCents: integer(cell(row, 16), "La penalidad")
   };
 }
 
-// Pagos!A:G — same order as paymentRowValues in push.ts.
+// Pagos!A:H — same order as paymentRowValues in push.ts.
 function paymentFromRow(row: string[]): SheetPayment {
   const method = cell(row, 4);
+  const tipo = cell(row, 7);
+  if (tipo && !isPaymentKind(tipo)) {
+    throw new RowError("El tipo debe ser cuota, mora o penalidad.");
+  }
   return {
     id: cell(row, 0),
     loanId: required(cell(row, 1), "el préstamo"),
@@ -138,7 +151,8 @@ function paymentFromRow(row: string[]): SheetPayment {
     paidAt: requiredDate(cell(row, 3), "la fecha de pago"),
     method: method ? oneOf(method, paymentMethods, "el método") : null,
     notes: optional(cell(row, 5)),
-    createdAt: date(cell(row, 6), "Creado")
+    createdAt: date(cell(row, 6), "Creado"),
+    tipo: tipo ? (tipo as PaymentKind) : null
   };
 }
 

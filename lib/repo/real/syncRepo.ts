@@ -5,6 +5,7 @@ import { eq, and, or, lt, gte } from "drizzle-orm";
 import { pendingMutations, syncMeta } from "../../db/schema";
 import { isSignedInToGoogle, signInWithGoogle, signOutOfGoogle } from "../../sync/googleAuth";
 import { getSheetId } from "../../sync/config";
+import { clearPagosTipoNotice, isPagosTipoNoticePending } from "../../sync/pagosLayout";
 import { provisionSheet } from "../../sync/provisionSheet";
 import { pushPendingMutations, LAST_PUSHED_AT_KEY, MAX_RETRIES } from "../../sync/push";
 import {
@@ -128,7 +129,8 @@ export function createRealSyncRepo({
       pendingCount: pending.length,
       stuckCount: stuck.length,
       heldDeletions: parseJson(await metaValue(HELD_DELETIONS_KEY), null),
-      syncProblems: parseJson(await metaValue(SYNC_PROBLEMS_KEY), [])
+      syncProblems: parseJson(await metaValue(SYNC_PROBLEMS_KEY), []),
+      tipoNoticePending: await isPagosTipoNoticePending(db)
     };
   }
 
@@ -151,6 +153,7 @@ export function createRealSyncRepo({
     syncNow: () => fullSync("auto"),
     resolveHeldDeletions: (choice) => fullSync(choice),
     listBackups: () => listBackups({}),
-    restoreBackup: (name, pin) => restoreBackup({ name, pin })
+    restoreBackup: (name, pin) => restoreBackup({ name, pin }),
+    acknowledgeTipoNotice: () => clearPagosTipoNotice(db)
   };
 }

@@ -62,6 +62,7 @@ describe("open-credit receipt from collectPayment", () => {
       moraRateBps: null,
       skipSundays: null,
       loanType: "open_credit",
+      penaltyCents: null,
       createdAt: start,
       updatedAt: start
     };
@@ -135,6 +136,7 @@ describe("collecting an open-credit payment", () => {
       moraRateBps: null,
       skipSundays: null,
       loanType: "open_credit",
+      penaltyCents: null,
       createdAt: TODAY,
       updatedAt: TODAY
     };
@@ -148,6 +150,7 @@ describe("collecting an open-credit payment", () => {
       paidAt: new Date(TODAY.getTime() - WEEK_MS + 24 * 60 * 60 * 1000),
       method: "cash",
       notes: null,
+      tipo: "cuota",
       createdAt: TODAY
     };
 

@@ -39,8 +39,13 @@ import {
   cycleIndexForPayment,
   loanCode,
   loanEndDate,
-  MORA_NOTE
+  buildReceiptNumberIndex,
+  canonicalReceiptNumbers,
+  cobroReceiptLines,
+  cuotaNumbersByPaymentId
 } from "../../loans/loanViews";
+import { tradicionalPlusReceipt, tradicionalPlusState } from "../../loans/tradicionalPlus";
+import { isMoraPayment, isPenaltyPayment } from "../../payments/paymentNotes";
 import { cuotaCents, totalRepayCents } from "../../loans/loanMath";
 import { formatCurrency } from "../../utils/money";
 import { formatShortDate } from "../../utils/dates";
@@ -239,6 +244,7 @@ export function createMockRepos(): Repos {
       paidAt: params.paidAt ?? now,
       method: params.method ?? null,
       notes: params.notes ?? null,
+      tipo: params.tipo ?? "cuota",
       createdAt: now
     };
     payments.push(payment);
@@ -334,13 +340,16 @@ export function createMockRepos(): Repos {
 
           let cuotaNumber = 0;
           for (const payment of loanPayments) {
-            const isMora = payment.notes === MORA_NOTE;
-            if (!isMora) cuotaNumber += 1;
+            const isMora = isMoraPayment(payment);
+            const isPenalty = isPenaltyPayment(payment);
+            if (!isMora && !isPenalty) cuotaNumber += 1;
             activity.push({
               id: payment.id,
               description: isMora
                 ? `Pago de mora · ${formatCurrency(payment.amountCents)}`
-                : `Pago cuota ${cuotaNumber} · ${formatCurrency(payment.amountCents)}`,
+                : isPenalty
+                  ? `Pago de penalidad · ${formatCurrency(payment.amountCents)}`
+                  : `Pago cuota ${cuotaNumber} · ${formatCurrency(payment.amountCents)}`,
               at: payment.paidAt
             });
           }
@@ -362,7 +371,17 @@ export function createMockRepos(): Repos {
           address: customer.address,
           cedula: meta?.cedula ?? customer.cedula,
           sinceYear: customer.createdAt.getFullYear(),
-          standing: customerInMora(id) ? "mora" : "al_dia",
+          standing: customerInMora(id)
+            ? "mora"
+            : activeLoans.length > 0 &&
+                customerLoans.some(
+                  (l) =>
+                    l.status === "active" &&
+                    viewOf(l).tradicionalPlus !== null &&
+                    viewOf(l).schedule.some((item) => item.status === "overdue")
+                )
+              ? "atraso"
+              : "al_dia",
           activeLoans,
           archivedLoans: customerLoans
             .filter((l) => l.status === ARCHIVED_LOAN_STATUS)
@@ -435,7 +454,8 @@ export function createMockRepos(): Repos {
             moraDays: 0,
             remainingInstallments: 0,
             remainingBalanceCents: view.balanceCents,
-            openCredit: view.openCredit
+            openCredit: view.openCredit,
+            tradicionalPlus: null
           };
         }
 
@@ -451,60 +471,88 @@ export function createMockRepos(): Repos {
           cuotaCents: Math.min(cuota, view.balanceCents),
           currentInstallmentNumber: Math.min(view.installmentsPaid + 1, view.installmentsTotal),
           installmentsTotal: view.installmentsTotal,
-          moraCents: state.moraCents,
-          moraDays: state.moraDays,
+          // Tradicional Plus never charges mora (the view already zeroes it).
+          moraCents: view.tradicionalPlus ? 0 : state.moraCents,
+          moraDays: view.tradicionalPlus ? 0 : state.moraDays,
           remainingInstallments: view.installmentsTotal - view.installmentsPaid,
           remainingBalanceCents: view.balanceCents,
-          openCredit: null
+          openCredit: null,
+          tradicionalPlus: view.tradicionalPlus
         };
       },
       collect: async (input) => {
         const loan = loans.find((l) => l.id === input.loanId);
         const customer = loan ? customers.find((c) => c.id === loan.customerId) : undefined;
         const paidAt = new Date();
-        const receiptNumber = `R-${String(payments.length + 1).padStart(5, "0")}`;
+        const isPlus = loan ? effectiveLoanType(loan) === "term_plus" : false;
+        const plusState =
+          loan && isPlus
+            ? tradicionalPlusState(
+                loan,
+                payments.filter((p) => p.loanId === loan.id),
+                paidAt
+              )
+            : null;
 
-        const moraCents = Math.min(input.moraCents, input.amountCents);
-        const installmentCents = input.amountCents - moraCents;
-
-        let paymentId = "";
-        if (moraCents > 0) {
+        const created: Payment[] = [];
+        const write = (amountCents: number, tipo: Payment["tipo"]) => {
           const row: Payment = {
             id: Crypto.randomUUID(),
             loanId: input.loanId,
-            amountCents: moraCents,
-            paidAt,
-            method: input.method,
-            notes: MORA_NOTE,
-            createdAt: paidAt
-          };
-          payments.push(row);
-          paymentId = row.id;
-          const state = moraOf(input.loanId);
-          const remaining = Math.max(0, state.moraCents - moraCents);
-          mora.set(input.loanId, {
-            moraCents: remaining,
-            moraDays: remaining > 0 ? state.moraDays : 0
-          });
-        }
-        if (installmentCents > 0) {
-          const row: Payment = {
-            id: Crypto.randomUUID(),
-            loanId: input.loanId,
-            amountCents: installmentCents,
+            amountCents,
             paidAt,
             method: input.method,
             notes: null,
+            tipo,
             createdAt: paidAt
           };
           payments.push(row);
-          paymentId = row.id;
+          created.push(row);
+        };
+        if (plusState) {
+          // Same rows as lib/payments/collectPayment.ts: one per penalty, then the cuota.
+          for (let i = 0; i < (input.penaltyCount ?? 0); i++) {
+            write(plusState.penaltyCents, "penalidad");
+          }
+          if (input.penaltyCount === undefined || input.withCuota) {
+            write(plusState.nextCuotaCents, "cuota");
+          }
+        } else {
+          const moraCents = Math.min(input.moraCents, input.amountCents);
+          const installmentCents = input.amountCents - moraCents;
+          if (moraCents > 0) {
+            write(moraCents, "mora");
+            const state = moraOf(input.loanId);
+            const remaining = Math.max(0, state.moraCents - moraCents);
+            mora.set(input.loanId, {
+              moraCents: remaining,
+              moraDays: remaining > 0 ? state.moraDays : 0
+            });
+          }
+          if (installmentCents > 0) write(installmentCents, "cuota");
         }
+        const paymentId = created[created.length - 1]?.id ?? "";
+        const loanRows = payments.filter((p) => p.loanId === input.loanId);
+        const receiptNumber =
+          canonicalReceiptNumbers(loanRows, buildReceiptNumberIndex(payments)).get(paymentId) ?? "";
 
         // Same engine-derived breakdown as lib/payments/collectPayment.ts.
         const openCredit =
           loan && effectiveLoanType(loan) === "open_credit"
             ? openCreditReceiptBreakdown(loan, payments, paymentId, formatShortDate)
+            : null;
+        const plus =
+          loan && effectiveLoanType(loan) === "term_plus"
+            ? tradicionalPlusReceipt(loan, loanRows, created, formatShortDate)
+            : null;
+        const plusLines =
+          loan && plus
+            ? cobroReceiptLines(
+                loan,
+                created,
+                cuotaNumbersByPaymentId(loan, loanRows),
+                plus.penaltyLine
+              )
             : null;
 
         return {
@@ -514,10 +562,15 @@ export function createMockRepos(): Repos {
           totalCents: input.amountCents,
           method: input.method,
           customerName: customer?.name ?? "Cliente",
-          lines: openCredit?.lines ?? input.lines,
+          lines: openCredit?.lines ?? plusLines ?? input.lines,
           // `null`, not paidAt — see the note in lib/payments/collectPayment.ts.
           loanStartDate: loan?.startDate ?? null,
-          loanEndDate: loan ? loanEndDate(loan) : null,
+          loanEndDate: loan
+            ? loanEndDate(
+                loan,
+                payments.filter((p) => p.loanId === loan.id)
+              )
+            : null,
           isOpenCredit: openCredit !== null,
           balanceAfter: openCredit?.balanceAfter ?? []
         };

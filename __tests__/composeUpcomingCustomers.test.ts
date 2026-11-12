@@ -48,6 +48,7 @@ function loan(overrides: Partial<Loan>): Loan {
     moraRateBps: null,
     skipSundays: null,
     loanType: null,
+    penaltyCents: null,
     createdAt: daysBeforeToday(10),
     updatedAt: daysBeforeToday(10),
     ...overrides
@@ -62,6 +63,7 @@ function payment(overrides: Partial<Payment>): Payment {
     paidAt: TODAY,
     method: "cash",
     notes: null,
+    tipo: "cuota",
     createdAt: TODAY,
     ...overrides
   };
@@ -198,6 +200,7 @@ describe("composeUpcomingCustomers", () => {
       termCount: 0,
       frequency: "weekly",
       loanType: "open_credit",
+      penaltyCents: null,
       startDate: daysBeforeToday(3)
     });
 

@@ -23970,6 +23970,3094 @@
               ]
             }
           ]
+        },
+        {
+          "type": "frame",
+          "id": "YwFTp",
+          "name": "sec-Tradicional Plus · penalidades",
+          "layout": "vertical",
+          "gap": 32,
+          "children": [
+            {
+              "type": "text",
+              "id": "XzNb1",
+              "name": "secTitle",
+              "fill": "#ffffffff",
+              "content": "Tradicional Plus · penalidades parciales y cuota al vencer",
+              "fontFamily": "$ui:font-family",
+              "fontSize": 48,
+              "fontWeight": "700"
+            },
+            {
+              "type": "frame",
+              "id": "sTXTU",
+              "name": "row",
+              "gap": 40,
+              "padding": [
+                40,
+                0,
+                0,
+                0
+              ],
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "x9NEu",
+                  "name": "07p-a Cobrar Tradicional Plus — Penalidades + cuota",
+                  "clip": true,
+                  "width": 390,
+                  "height": 844,
+                  "fill": "#F4F8FF",
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "id": "Y2SGK",
+                      "type": "ref",
+                      "ref": "ui:g8L0O",
+                      "width": "fill_container"
+                    },
+                    {
+                      "id": "H7Stsc",
+                      "type": "ref",
+                      "ref": "ui:AFMnH",
+                      "width": "fill_container",
+                      "descendants": {
+                        "ui:Ct4uZ": {
+                          "icon": "x"
+                        },
+                        "ui:XlCal": {
+                          "content": "Registrar cobro",
+                          "fontSize": 18,
+                          "fontWeight": "700"
+                        },
+                        "ui:OJ3eJ": {
+                          "enabled": false
+                        },
+                        "ui:zF54G": {
+                          "enabled": false
+                        }
+                      }
+                    },
+                    {
+                      "type": "frame",
+                      "id": "eKWm8",
+                      "name": "s7body",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "layout": "vertical",
+                      "gap": 18,
+                      "padding": [
+                        8,
+                        20
+                      ],
+                      "children": [
+                        {
+                          "id": "DBqdZ",
+                          "type": "ref",
+                          "ref": "ui:YPQud",
+                          "width": "fill_container",
+                          "descendants": {
+                            "ui:fh0eC": {
+                              "width": 40,
+                              "height": 40,
+                              "cornerRadius": 20,
+                              "fill": {
+                                "type": "image",
+                                "enabled": true,
+                                "url": "assets/avatars/female1.png",
+                                "mode": "cover"
+                              }
+                            },
+                            "ui:fh0eC/ui:dYzed": {
+                              "content": "JN",
+                              "fill": "$ui:brand.orange.deep",
+                              "enabled": false
+                            },
+                            "ui:J6eeV": {
+                              "content": "Ana Pérez"
+                            },
+                            "ui:LxVf9": {
+                              "enabled": false
+                            },
+                            "ui:t7tfX": {
+                              "content": "Colmado Ana · Préstamo #L-0042"
+                            },
+                            "ui:dYHlG": {
+                              "enabled": false
+                            }
+                          }
+                        },
+                        {
+                          "type": "frame",
+                          "id": "NDrTq",
+                          "name": "s7amt",
+                          "width": "fill_container",
+                          "fill": "$ui:brand.white",
+                          "cornerRadius": 18,
+                          "layout": "vertical",
+                          "gap": 8,
+                          "padding": [
+                            24,
+                            20
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "id": "m8GxA",
+                              "type": "ref",
+                              "ref": "ui:MiuZj",
+                              "content": "MONTO A COBRAR",
+                              "fontFamily": "$ui:font-family"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "x6Fzs",
+                              "name": "s7amtR",
+                              "gap": 6,
+                              "alignItems": "end",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "kupSc",
+                                  "name": "s7amtCur",
+                                  "fill": "$ui:brand.blue.primary",
+                                  "content": "RD$",
+                                  "fontFamily": "$ui:font-family",
+                                  "fontSize": 22,
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "UQ9ni",
+                                  "name": "s7amtN",
+                                  "fill": "$ui:brand.blue.deep",
+                                  "content": "1,900",
+                                  "lineHeight": 1,
+                                  "fontFamily": "$ui:font-family",
+                                  "fontSize": 54,
+                                  "fontWeight": "700",
+                                  "letterSpacing": -2
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "rwS0G",
+                              "name": "s7amtH",
+                              "fill": "$ui:brand.orange.deep",
+                              "content": "Penalidades + cuota seleccionado",
+                              "fontFamily": "$ui:font-family",
+                              "fontSize": 12,
+                              "fontWeight": "600"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "E7QQB1",
+                          "name": "s7opts",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 8,
+                          "children": [
+                            {
+                              "id": "R89o0k",
+                              "type": "ref",
+                              "ref": "ui:MiuZj",
+                              "content": "TIPO DE COBRO",
+                              "fontFamily": "$ui:font-family"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "bjsxr",
+                              "name": "opt combo wrap",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "id": "l4xjDO",
+                                  "type": "ref",
+                                  "ref": "ui:G2w5DB",
+                                  "name": "opt combo",
+                                  "width": "fill_container",
+                                  "stroke": "$ui:brand.blue.deep",
+                                  "fill": "$ui:brand.mist",
+                                  "strokeWidth": 1,
+                                  "strokeAlignment": "inner",
+                                  "descendants": {
+                                    "ui:v90CVu": {
+                                      "fill": "$ui:brand.blue.deep",
+                                      "stroke": "$ui:brand.mist",
+                                      "strokeWidth": 4,
+                                      "strokeAlignment": "inner"
+                                    },
+                                    "ui:wir9I": {
+                                      "content": "Penalidades + cuota",
+                                      "fontWeight": "600"
+                                    },
+                                    "ui:PrOFl": {
+                                      "content": "RD$1,900",
+                                      "enabled": true
+                                    }
+                                  }
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "BddRQ",
+                              "name": "opt penalidad wrap",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "id": "ojlbN",
+                                  "type": "ref",
+                                  "ref": "ui:G2w5DB",
+                                  "name": "opt penalidad",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "ui:wir9I": {
+                                      "content": "Cobrar penalidad"
+                                    },
+                                    "ui:PrOFl": {
+                                      "content": "RD$600",
+                                      "enabled": true,
+                                      "fill": "$ui:brand.ink"
+                                    }
+                                  }
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "D8Jk2",
+                              "name": "opt cuota wrap",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "id": "hyesN",
+                                  "type": "ref",
+                                  "ref": "ui:G2w5DB",
+                                  "name": "opt cuota",
+                                  "width": "fill_container",
+                                  "opacity": 0.45,
+                                  "descendants": {
+                                    "ui:wir9I": {
+                                      "content": "Cobrar cuota"
+                                    },
+                                    "ui:PrOFl": {
+                                      "content": "RD$1,300",
+                                      "enabled": true,
+                                      "fill": "$ui:brand.ink"
+                                    }
+                                  }
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "cSn0J",
+                                  "name": "opt cuota note pad",
+                                  "padding": [
+                                    0,
+                                    0,
+                                    0,
+                                    4
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "cut9e",
+                                      "name": "opt cuota note",
+                                      "fill": "#D97706",
+                                      "content": "Primero debe pagar 2 penalidades",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 12,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "X0rfr3",
+                          "name": "s7brk",
+                          "width": "fill_container",
+                          "fill": "$ui:brand.white",
+                          "cornerRadius": 14,
+                          "layout": "vertical",
+                          "gap": 10,
+                          "padding": 14,
+                          "children": [
+                            {
+                              "id": "F6jC1",
+                              "type": "ref",
+                              "ref": "ui:MiuZj",
+                              "content": "CÓMO SE APLICA",
+                              "fontFamily": "$ui:font-family"
+                            },
+                            {
+                              "id": "QwDYZ",
+                              "type": "ref",
+                              "ref": "ui:F6nZP",
+                              "name": "kv penalidades",
+                              "width": "fill_container",
+                              "descendants": {
+                                "ui:B917x1": {
+                                  "content": "Penalidades (2) · no abonan"
+                                },
+                                "ui:q368B": {
+                                  "content": "RD$600"
+                                }
+                              }
+                            },
+                            {
+                              "id": "fA8fw",
+                              "type": "ref",
+                              "ref": "ui:F6nZP",
+                              "name": "kv plan",
+                              "width": "fill_container",
+                              "descendants": {
+                                "ui:B917x1": {
+                                  "content": "El plan se corre 2 quincenas"
+                                },
+                                "ui:q368B": {
+                                  "content": "-"
+                                }
+                              }
+                            },
+                            {
+                              "id": "wenVK",
+                              "type": "ref",
+                              "ref": "ui:F6nZP",
+                              "name": "kv cuota",
+                              "width": "fill_container",
+                              "descendants": {
+                                "ui:B917x1": {
+                                  "content": "Cuota 1/10"
+                                },
+                                "ui:q368B": {
+                                  "content": "RD$1,300"
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "pvcsF",
+                          "name": "s7method",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 8,
+                          "children": [
+                            {
+                              "id": "xyf5J",
+                              "type": "ref",
+                              "ref": "ui:MiuZj",
+                              "content": "MÉTODO DE PAGO",
+                              "fontFamily": "$ui:font-family"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "kg2Ib",
+                              "name": "s7mthR",
+                              "width": "fill_container",
+                              "gap": 8,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "UgBGP",
+                                  "name": "s7m1",
+                                  "width": "fill_container",
+                                  "fill": "$ui:brand.blue.deep",
+                                  "cornerRadius": 12,
+                                  "gap": 8,
+                                  "padding": 12,
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "WJsCo",
+                                      "name": "s7m1i",
+                                      "width": 18,
+                                      "height": 18,
+                                      "icon": "banknote",
+                                      "library": "lucide",
+                                      "fill": "$ui:brand.white"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "reNFj",
+                                      "name": "s7m1t",
+                                      "fill": "$ui:brand.white",
+                                      "content": "Efectivo",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 13,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "pp3Ug",
+                                  "name": "s7m2",
+                                  "width": "fill_container",
+                                  "fill": "$ui:brand.white",
+                                  "cornerRadius": 12,
+                                  "stroke": "#D3DFF4",
+                                  "strokeWidth": 1,
+                                  "strokeAlignment": "inner",
+                                  "gap": 8,
+                                  "padding": 12,
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "q6Q9l",
+                                      "name": "s7m2i",
+                                      "width": 18,
+                                      "height": 18,
+                                      "icon": "arrow-right-left",
+                                      "library": "lucide",
+                                      "fill": "$ui:brand.blue.deep"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "k7r6jj",
+                                      "name": "s7m2t",
+                                      "fill": "$ui:brand.blue.deep",
+                                      "content": "Transferencia",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 13,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "id": "y25AL",
+                      "type": "ref",
+                      "ref": "ui:CeOUI",
+                      "width": "fill_container",
+                      "cornerRadius": 0,
+                      "descendants": {
+                        "ui:hLf7V": {
+                          "content": "Confirmar y cobrar"
+                        },
+                        "ui:U86FH": {
+                          "width": 20,
+                          "height": 20,
+                          "icon": "check"
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "oZwPx",
+                  "name": "07p-b Cobrar Tradicional Plus — Cobrar penalidad (1 de 2)",
+                  "clip": true,
+                  "width": 390,
+                  "height": 960,
+                  "fill": "#F4F8FF",
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "id": "vVAmk",
+                      "type": "ref",
+                      "ref": "ui:g8L0O",
+                      "width": "fill_container"
+                    },
+                    {
+                      "id": "yN1nK",
+                      "type": "ref",
+                      "ref": "ui:AFMnH",
+                      "width": "fill_container",
+                      "descendants": {
+                        "ui:Ct4uZ": {
+                          "icon": "x"
+                        },
+                        "ui:XlCal": {
+                          "content": "Registrar cobro",
+                          "fontSize": 18,
+                          "fontWeight": "700"
+                        },
+                        "ui:OJ3eJ": {
+                          "enabled": false
+                        },
+                        "ui:zF54G": {
+                          "enabled": false
+                        }
+                      }
+                    },
+                    {
+                      "type": "frame",
+                      "id": "sn4kW",
+                      "name": "s7body",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "layout": "vertical",
+                      "gap": 18,
+                      "padding": [
+                        8,
+                        20
+                      ],
+                      "children": [
+                        {
+                          "id": "ADQqR",
+                          "type": "ref",
+                          "ref": "ui:YPQud",
+                          "width": "fill_container",
+                          "descendants": {
+                            "ui:fh0eC": {
+                              "width": 40,
+                              "height": 40,
+                              "cornerRadius": 20,
+                              "fill": {
+                                "type": "image",
+                                "enabled": true,
+                                "url": "assets/avatars/female1.png",
+                                "mode": "cover"
+                              }
+                            },
+                            "ui:fh0eC/ui:dYzed": {
+                              "content": "JN",
+                              "fill": "$ui:brand.orange.deep",
+                              "enabled": false
+                            },
+                            "ui:J6eeV": {
+                              "content": "Ana Pérez"
+                            },
+                            "ui:LxVf9": {
+                              "enabled": false
+                            },
+                            "ui:t7tfX": {
+                              "content": "Colmado Ana · Préstamo #L-0042"
+                            },
+                            "ui:dYHlG": {
+                              "enabled": false
+                            }
+                          }
+                        },
+                        {
+                          "type": "frame",
+                          "id": "tMV2o",
+                          "name": "s7amt",
+                          "width": "fill_container",
+                          "fill": "$ui:brand.white",
+                          "cornerRadius": 18,
+                          "layout": "vertical",
+                          "gap": 8,
+                          "padding": [
+                            24,
+                            20
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "id": "ZxQ2p",
+                              "type": "ref",
+                              "ref": "ui:MiuZj",
+                              "content": "MONTO A COBRAR",
+                              "fontFamily": "$ui:font-family"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "bluZd",
+                              "name": "s7amtR",
+                              "gap": 6,
+                              "alignItems": "end",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "WXfoA",
+                                  "name": "s7amtCur",
+                                  "fill": "$ui:brand.blue.primary",
+                                  "content": "RD$",
+                                  "fontFamily": "$ui:font-family",
+                                  "fontSize": 22,
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "wTd9d",
+                                  "name": "s7amtN",
+                                  "fill": "$ui:brand.blue.deep",
+                                  "content": "300",
+                                  "lineHeight": 1,
+                                  "fontFamily": "$ui:font-family",
+                                  "fontSize": 54,
+                                  "fontWeight": "700",
+                                  "letterSpacing": -2
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "MPEY5",
+                              "name": "s7amtH",
+                              "fill": "$ui:brand.orange.deep",
+                              "content": "Cobrar penalidad seleccionado",
+                              "fontFamily": "$ui:font-family",
+                              "fontSize": 12,
+                              "fontWeight": "600"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "TtNdg",
+                          "name": "s7opts",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 8,
+                          "children": [
+                            {
+                              "id": "JNkDo",
+                              "type": "ref",
+                              "ref": "ui:MiuZj",
+                              "content": "TIPO DE COBRO",
+                              "fontFamily": "$ui:font-family"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "wwJUQ",
+                              "name": "opt combo wrap",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "id": "K7W93n",
+                                  "type": "ref",
+                                  "ref": "ui:G2w5DB",
+                                  "name": "opt combo",
+                                  "width": "fill_container",
+                                  "stroke": "#D3DFF4",
+                                  "fill": "$ui:brand.white",
+                                  "strokeWidth": 1,
+                                  "strokeAlignment": "inner",
+                                  "descendants": {
+                                    "ui:v90CVu": {
+                                      "fill": "$ui:brand.white",
+                                      "stroke": "#7888A8",
+                                      "strokeWidth": 1,
+                                      "strokeAlignment": "inner"
+                                    },
+                                    "ui:wir9I": {
+                                      "content": "Penalidades + cuota",
+                                      "fontWeight": "500"
+                                    },
+                                    "ui:PrOFl": {
+                                      "content": "RD$1,900",
+                                      "enabled": true,
+                                      "fill": "$ui:brand.ink"
+                                    }
+                                  }
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "kDbNr",
+                              "name": "opt penalidad wrap",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "id": "t8zNo5",
+                                  "type": "ref",
+                                  "ref": "ui:G2w5DB",
+                                  "name": "opt penalidad",
+                                  "width": "fill_container",
+                                  "stroke": "$ui:brand.blue.deep",
+                                  "fill": "$ui:brand.mist",
+                                  "strokeWidth": 1,
+                                  "strokeAlignment": "inner",
+                                  "descendants": {
+                                    "ui:v90CVu": {
+                                      "fill": "$ui:brand.blue.deep",
+                                      "stroke": "$ui:brand.mist",
+                                      "strokeWidth": 4,
+                                      "strokeAlignment": "inner"
+                                    },
+                                    "ui:wir9I": {
+                                      "content": "Cobrar penalidad",
+                                      "fontWeight": "600"
+                                    },
+                                    "ui:PrOFl": {
+                                      "content": "RD$300",
+                                      "enabled": true,
+                                      "fill": "$ui:brand.blue.primary"
+                                    }
+                                  }
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "h8kEvN",
+                                  "name": "penalty stepper",
+                                  "width": "fill_container",
+                                  "fill": "$ui:brand.white",
+                                  "cornerRadius": 12,
+                                  "stroke": "#D3DFF4",
+                                  "strokeWidth": 1,
+                                  "strokeAlignment": "inner",
+                                  "layout": "vertical",
+                                  "gap": 8,
+                                  "padding": [
+                                    12,
+                                    14
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "hDtH1",
+                                      "name": "stepper label",
+                                      "fill": "#7888A8",
+                                      "content": "Penalidades a cobrar",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 12,
+                                      "fontWeight": "600"
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "ofEir",
+                                      "name": "stepper row",
+                                      "width": "fill_container",
+                                      "justifyContent": "space_between",
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "P4uPo",
+                                          "name": "btn quitar (disabled)",
+                                          "opacity": 0.45,
+                                          "width": 44,
+                                          "height": 44,
+                                          "fill": "#EEF3F9",
+                                          "cornerRadius": 22,
+                                          "stroke": "#E5EAF1",
+                                          "strokeWidth": 1,
+                                          "strokeAlignment": "inner",
+                                          "justifyContent": "center",
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "l1Faw",
+                                              "name": "btn quitar (disabled) icon",
+                                              "width": 20,
+                                              "height": 20,
+                                              "icon": "minus",
+                                              "library": "lucide",
+                                              "fill": "#7888A8"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "wanI7",
+                                          "name": "stepper value",
+                                          "gap": 4,
+                                          "alignItems": "end",
+                                          "children": [
+                                            {
+                                              "type": "text",
+                                              "id": "ppNFG",
+                                              "name": "k",
+                                              "fill": "$ui:brand.ink",
+                                              "content": "1",
+                                              "fontFamily": "$ui:font-family",
+                                              "fontSize": 22,
+                                              "fontWeight": "700"
+                                            },
+                                            {
+                                              "type": "text",
+                                              "id": "faYg5",
+                                              "name": "de N",
+                                              "fill": "#7888A8",
+                                              "content": "de 2",
+                                              "fontFamily": "$ui:font-family",
+                                              "fontSize": 14,
+                                              "fontWeight": "600"
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "type": "frame",
+                                          "id": "R0HhFi",
+                                          "name": "btn agregar",
+                                          "width": 44,
+                                          "height": 44,
+                                          "fill": "$ui:brand.mist",
+                                          "cornerRadius": 22,
+                                          "stroke": "$ui:brand.blue.deep",
+                                          "strokeWidth": 1,
+                                          "strokeAlignment": "inner",
+                                          "justifyContent": "center",
+                                          "alignItems": "center",
+                                          "children": [
+                                            {
+                                              "type": "icon",
+                                              "id": "erM7o",
+                                              "name": "btn agregar icon",
+                                              "width": 20,
+                                              "height": 20,
+                                              "icon": "plus",
+                                              "library": "lucide",
+                                              "fill": "$ui:brand.blue.deep"
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "t25BsF",
+                              "name": "opt cuota wrap",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "id": "mn9Xm",
+                                  "type": "ref",
+                                  "ref": "ui:G2w5DB",
+                                  "name": "opt cuota",
+                                  "width": "fill_container",
+                                  "opacity": 0.45,
+                                  "descendants": {
+                                    "ui:wir9I": {
+                                      "content": "Cobrar cuota"
+                                    },
+                                    "ui:PrOFl": {
+                                      "content": "RD$1,300",
+                                      "enabled": true,
+                                      "fill": "$ui:brand.ink"
+                                    }
+                                  }
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "RFCon",
+                                  "name": "opt cuota note pad",
+                                  "padding": [
+                                    0,
+                                    0,
+                                    0,
+                                    4
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "mGDJe",
+                                      "name": "opt cuota note",
+                                      "fill": "#D97706",
+                                      "content": "Primero debe pagar 2 penalidades",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 12,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "YUPja",
+                          "name": "s7brk",
+                          "width": "fill_container",
+                          "fill": "$ui:brand.white",
+                          "cornerRadius": 14,
+                          "layout": "vertical",
+                          "gap": 10,
+                          "padding": 14,
+                          "children": [
+                            {
+                              "id": "H74AQy",
+                              "type": "ref",
+                              "ref": "ui:MiuZj",
+                              "content": "CÓMO SE APLICA",
+                              "fontFamily": "$ui:font-family"
+                            },
+                            {
+                              "id": "xUUMN",
+                              "type": "ref",
+                              "ref": "ui:F6nZP",
+                              "name": "kv penalidades",
+                              "width": "fill_container",
+                              "descendants": {
+                                "ui:B917x1": {
+                                  "content": "Penalidad · no abona"
+                                },
+                                "ui:q368B": {
+                                  "content": "RD$300"
+                                }
+                              }
+                            },
+                            {
+                              "id": "c9MuhR",
+                              "type": "ref",
+                              "ref": "ui:F6nZP",
+                              "name": "kv plan",
+                              "width": "fill_container",
+                              "descendants": {
+                                "ui:B917x1": {
+                                  "content": "El plan se corre una quincena"
+                                },
+                                "ui:q368B": {
+                                  "content": "-"
+                                }
+                              }
+                            },
+                            {
+                              "id": "CQAq5",
+                              "type": "ref",
+                              "ref": "ui:F6nZP",
+                              "name": "kv cuota",
+                              "width": "fill_container",
+                              "descendants": {
+                                "ui:B917x1": {
+                                  "content": "Queda 1 penalidad pendiente"
+                                },
+                                "ui:q368B": {
+                                  "content": "-"
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "r78StY",
+                          "name": "s7method",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 8,
+                          "children": [
+                            {
+                              "id": "lRRfj",
+                              "type": "ref",
+                              "ref": "ui:MiuZj",
+                              "content": "MÉTODO DE PAGO",
+                              "fontFamily": "$ui:font-family"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "fUy59",
+                              "name": "s7mthR",
+                              "width": "fill_container",
+                              "gap": 8,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "dIwIY",
+                                  "name": "s7m1",
+                                  "width": "fill_container",
+                                  "fill": "$ui:brand.blue.deep",
+                                  "cornerRadius": 12,
+                                  "gap": 8,
+                                  "padding": 12,
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "EeIKq",
+                                      "name": "s7m1i",
+                                      "width": 18,
+                                      "height": 18,
+                                      "icon": "banknote",
+                                      "library": "lucide",
+                                      "fill": "$ui:brand.white"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "kUsLm",
+                                      "name": "s7m1t",
+                                      "fill": "$ui:brand.white",
+                                      "content": "Efectivo",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 13,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "WQnZ4",
+                                  "name": "s7m2",
+                                  "width": "fill_container",
+                                  "fill": "$ui:brand.white",
+                                  "cornerRadius": 12,
+                                  "stroke": "#D3DFF4",
+                                  "strokeWidth": 1,
+                                  "strokeAlignment": "inner",
+                                  "gap": 8,
+                                  "padding": 12,
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "CNZ5G",
+                                      "name": "s7m2i",
+                                      "width": 18,
+                                      "height": 18,
+                                      "icon": "arrow-right-left",
+                                      "library": "lucide",
+                                      "fill": "$ui:brand.blue.deep"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "ZL94s",
+                                      "name": "s7m2t",
+                                      "fill": "$ui:brand.blue.deep",
+                                      "content": "Transferencia",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 13,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "id": "B7obB",
+                      "type": "ref",
+                      "ref": "ui:CeOUI",
+                      "width": "fill_container",
+                      "cornerRadius": 0,
+                      "descendants": {
+                        "ui:hLf7V": {
+                          "content": "Confirmar y cobrar"
+                        },
+                        "ui:U86FH": {
+                          "width": 20,
+                          "height": 20,
+                          "icon": "check"
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "YfCVD",
+                  "name": "07p-c Cobrar Tradicional Plus — Nada que cobrar hoy",
+                  "clip": true,
+                  "width": 390,
+                  "height": 844,
+                  "fill": "#F4F8FF",
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "id": "YkyDf",
+                      "type": "ref",
+                      "ref": "ui:g8L0O",
+                      "width": "fill_container"
+                    },
+                    {
+                      "id": "o7RgCn",
+                      "type": "ref",
+                      "ref": "ui:AFMnH",
+                      "width": "fill_container",
+                      "descendants": {
+                        "ui:Ct4uZ": {
+                          "icon": "x"
+                        },
+                        "ui:XlCal": {
+                          "content": "Registrar cobro",
+                          "fontSize": 18,
+                          "fontWeight": "700"
+                        },
+                        "ui:OJ3eJ": {
+                          "enabled": false
+                        },
+                        "ui:zF54G": {
+                          "enabled": false
+                        }
+                      }
+                    },
+                    {
+                      "type": "frame",
+                      "id": "gbjtx",
+                      "name": "s7body",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "layout": "vertical",
+                      "gap": 18,
+                      "padding": [
+                        8,
+                        20
+                      ],
+                      "children": [
+                        {
+                          "id": "G0yvT",
+                          "type": "ref",
+                          "ref": "ui:YPQud",
+                          "width": "fill_container",
+                          "descendants": {
+                            "ui:fh0eC": {
+                              "width": 40,
+                              "height": 40,
+                              "cornerRadius": 20,
+                              "fill": {
+                                "type": "image",
+                                "enabled": true,
+                                "url": "assets/avatars/female1.png",
+                                "mode": "cover"
+                              }
+                            },
+                            "ui:fh0eC/ui:dYzed": {
+                              "content": "JN",
+                              "fill": "$ui:brand.orange.deep",
+                              "enabled": false
+                            },
+                            "ui:J6eeV": {
+                              "content": "Ana Pérez"
+                            },
+                            "ui:LxVf9": {
+                              "enabled": false
+                            },
+                            "ui:t7tfX": {
+                              "content": "Colmado Ana · Préstamo #L-0042"
+                            },
+                            "ui:dYHlG": {
+                              "enabled": false
+                            }
+                          }
+                        },
+                        {
+                          "type": "frame",
+                          "id": "GTJPZ",
+                          "name": "s7amt",
+                          "width": "fill_container",
+                          "fill": "$ui:brand.white",
+                          "cornerRadius": 18,
+                          "layout": "vertical",
+                          "gap": 8,
+                          "padding": [
+                            24,
+                            20
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "id": "mepmS",
+                              "type": "ref",
+                              "ref": "ui:MiuZj",
+                              "content": "MONTO A COBRAR",
+                              "fontFamily": "$ui:font-family"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "d0g99",
+                              "name": "s7amtR",
+                              "gap": 6,
+                              "alignItems": "end",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "tZbBf",
+                                  "name": "s7amtCur",
+                                  "fill": "$ui:brand.blue.primary",
+                                  "content": "RD$",
+                                  "fontFamily": "$ui:font-family",
+                                  "fontSize": 22,
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "cdpOa",
+                                  "name": "s7amtN",
+                                  "fill": "$ui:brand.blue.deep",
+                                  "content": "0",
+                                  "lineHeight": 1,
+                                  "fontFamily": "$ui:font-family",
+                                  "fontSize": 54,
+                                  "fontWeight": "700",
+                                  "letterSpacing": -2
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "Z81DU",
+                              "name": "s7amtH",
+                              "fill": "$ui:brand.orange.deep",
+                              "content": "Nada que cobrar hoy",
+                              "fontFamily": "$ui:font-family",
+                              "fontSize": 12,
+                              "fontWeight": "600"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "QBprG",
+                          "name": "s7opts",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 8,
+                          "children": [
+                            {
+                              "id": "e52kr",
+                              "type": "ref",
+                              "ref": "ui:MiuZj",
+                              "content": "TIPO DE COBRO",
+                              "fontFamily": "$ui:font-family"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "teqzT",
+                              "name": "opt cuota wrap",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "id": "t07iZ",
+                                  "type": "ref",
+                                  "ref": "ui:G2w5DB",
+                                  "name": "opt cuota",
+                                  "width": "fill_container",
+                                  "opacity": 0.45,
+                                  "descendants": {
+                                    "ui:wir9I": {
+                                      "content": "Cobrar cuota"
+                                    },
+                                    "ui:PrOFl": {
+                                      "content": "RD$1,300",
+                                      "enabled": true,
+                                      "fill": "$ui:brand.ink"
+                                    }
+                                  }
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "GlUMq",
+                                  "name": "opt cuota note pad",
+                                  "padding": [
+                                    0,
+                                    0,
+                                    0,
+                                    4
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "HO2KB",
+                                      "name": "opt cuota note",
+                                      "fill": "#D97706",
+                                      "content": "Vence el 15/04",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 12,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "aAfhK",
+                              "name": "opt penalidad wrap",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 4,
+                              "children": [
+                                {
+                                  "id": "rjnqC",
+                                  "type": "ref",
+                                  "ref": "ui:G2w5DB",
+                                  "name": "opt penalidad",
+                                  "width": "fill_container",
+                                  "opacity": 0.45,
+                                  "descendants": {
+                                    "ui:wir9I": {
+                                      "content": "Cobrar penalidad"
+                                    },
+                                    "ui:PrOFl": {
+                                      "content": "RD$300",
+                                      "enabled": true,
+                                      "fill": "$ui:brand.ink"
+                                    }
+                                  }
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "nvV2e",
+                                  "name": "opt penalidad note pad",
+                                  "padding": [
+                                    0,
+                                    0,
+                                    0,
+                                    4
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "ps3Wt",
+                                      "name": "opt penalidad note",
+                                      "fill": "#D97706",
+                                      "content": "La cuota aún no vence",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 12,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "kESva",
+                          "name": "s7brk",
+                          "width": "fill_container",
+                          "fill": "$ui:brand.white",
+                          "cornerRadius": 14,
+                          "layout": "vertical",
+                          "gap": 10,
+                          "padding": 14,
+                          "children": [
+                            {
+                              "id": "R0nPo",
+                              "type": "ref",
+                              "ref": "ui:MiuZj",
+                              "content": "CÓMO SE APLICA",
+                              "fontFamily": "$ui:font-family"
+                            },
+                            {
+                              "id": "m3ywPJ",
+                              "type": "ref",
+                              "ref": "ui:F6nZP",
+                              "name": "kv plan",
+                              "width": "fill_container",
+                              "descendants": {
+                                "ui:B917x1": {
+                                  "content": "Próxima cuota 2/10 · vence 15/04"
+                                },
+                                "ui:q368B": {
+                                  "content": "-"
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "ieQrC",
+                          "name": "s7method",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 8,
+                          "children": [
+                            {
+                              "id": "l0kbMv",
+                              "type": "ref",
+                              "ref": "ui:MiuZj",
+                              "content": "MÉTODO DE PAGO",
+                              "fontFamily": "$ui:font-family"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "K3gWy",
+                              "name": "s7mthR",
+                              "width": "fill_container",
+                              "gap": 8,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "Y2tORB",
+                                  "name": "s7m1",
+                                  "width": "fill_container",
+                                  "fill": "$ui:brand.blue.deep",
+                                  "cornerRadius": 12,
+                                  "gap": 8,
+                                  "padding": 12,
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "M9w9f",
+                                      "name": "s7m1i",
+                                      "width": 18,
+                                      "height": 18,
+                                      "icon": "banknote",
+                                      "library": "lucide",
+                                      "fill": "$ui:brand.white"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "ziSMG",
+                                      "name": "s7m1t",
+                                      "fill": "$ui:brand.white",
+                                      "content": "Efectivo",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 13,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "A9506T",
+                                  "name": "s7m2",
+                                  "width": "fill_container",
+                                  "fill": "$ui:brand.white",
+                                  "cornerRadius": 12,
+                                  "stroke": "#D3DFF4",
+                                  "strokeWidth": 1,
+                                  "strokeAlignment": "inner",
+                                  "gap": 8,
+                                  "padding": 12,
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "N6zf2H",
+                                      "name": "s7m2i",
+                                      "width": 18,
+                                      "height": 18,
+                                      "icon": "arrow-right-left",
+                                      "library": "lucide",
+                                      "fill": "$ui:brand.blue.deep"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "dpWQa",
+                                      "name": "s7m2t",
+                                      "fill": "$ui:brand.blue.deep",
+                                      "content": "Transferencia",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 13,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "id": "g0WWC",
+                      "type": "ref",
+                      "ref": "ui:CeOUI",
+                      "width": "fill_container",
+                      "cornerRadius": 0,
+                      "opacity": 0.45,
+                      "descendants": {
+                        "ui:hLf7V": {
+                          "content": "Confirmar y cobrar"
+                        },
+                        "ui:U86FH": {
+                          "width": 20,
+                          "height": 20,
+                          "icon": "check"
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "BE8Tr",
+                  "name": "06p Préstamo Detalle Tradicional Plus — Nada pendiente hoy",
+                  "clip": true,
+                  "width": 390,
+                  "height": 844,
+                  "fill": "#F4F8FF",
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "id": "PZdrt",
+                      "type": "ref",
+                      "ref": "ui:g8L0O",
+                      "width": "fill_container"
+                    },
+                    {
+                      "id": "jn9eC",
+                      "type": "ref",
+                      "ref": "ui:AFMnH",
+                      "width": "fill_container",
+                      "descendants": {
+                        "ui:XlCal": {
+                          "content": "Préstamo #L-0042",
+                          "fontSize": 16,
+                          "fontWeight": "700"
+                        },
+                        "ui:OJ3eJ": {
+                          "content": "Ana Pérez · Colmado Ana"
+                        },
+                        "ui:zF54G": {
+                          "icon": "ellipsis-vertical"
+                        }
+                      }
+                    },
+                    {
+                      "type": "frame",
+                      "id": "hYqWj",
+                      "name": "s6body",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "layout": "vertical",
+                      "gap": 14,
+                      "padding": [
+                        4,
+                        20
+                      ],
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "mGcLV",
+                          "name": "s6metaWrap",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 6,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "Syq7X",
+                              "name": "s6meta",
+                              "width": "fill_container",
+                              "gap": 6,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "RoqNQ",
+                                  "fill": "#E8F7F2",
+                                  "cornerRadius": 9999,
+                                  "gap": 6,
+                                  "padding": [
+                                    6,
+                                    10
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "ojmVM",
+                                      "fill": "#0B4F4A",
+                                      "content": "Quincenal",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 11,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "uJG5T",
+                                  "fill": "#E8F7F2",
+                                  "cornerRadius": 9999,
+                                  "gap": 6,
+                                  "padding": [
+                                    6,
+                                    10
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "IuoLO",
+                                      "fill": "#0B4F4A",
+                                      "content": "Tradicional Plus",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 11,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "YoAC4",
+                                  "fill": "#E8F7F2",
+                                  "cornerRadius": 9999,
+                                  "gap": 6,
+                                  "padding": [
+                                    6,
+                                    10
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "v4opA",
+                                      "fill": "#0B4F4A",
+                                      "content": "Penalidad RD$300",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 11,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "XhQsz",
+                              "name": "s6meta row2",
+                              "gap": 6,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "wNz6C",
+                                  "fill": "#E8F7F2",
+                                  "cornerRadius": 9999,
+                                  "gap": 6,
+                                  "padding": [
+                                    6,
+                                    10
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "RJFct",
+                                      "fill": "#0B4F4A",
+                                      "content": "Vence 13 ago",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 11,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "p53yI",
+                          "name": "movedNote",
+                          "fill": "#D97706",
+                          "content": "Corrida 2 veces por penalidad",
+                          "fontFamily": "$ui:font-family",
+                          "fontSize": 12,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Z5GNaV",
+                          "name": "s6sum",
+                          "width": "fill_container",
+                          "fill": "$ui:brand.blue.deep",
+                          "cornerRadius": 18,
+                          "layout": "vertical",
+                          "gap": 14,
+                          "padding": 20,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "MV6Fm",
+                              "name": "s6sL",
+                              "fill": "#9FE6D2",
+                              "content": "BALANCE PENDIENTE",
+                              "fontFamily": "$ui:font-family",
+                              "fontSize": 11,
+                              "fontWeight": "600",
+                              "letterSpacing": 1.5
+                            },
+                            {
+                              "type": "text",
+                              "id": "rfyfj",
+                              "name": "s6sN",
+                              "fill": "$ui:brand.white",
+                              "content": "RD$11,700",
+                              "fontFamily": "$ui:font-family",
+                              "fontSize": 36,
+                              "fontWeight": "700",
+                              "letterSpacing": -1
+                            },
+                            {
+                              "id": "DyFQv",
+                              "type": "ref",
+                              "ref": "ui:dykca",
+                              "width": "fill_container",
+                              "height": 6,
+                              "fill": "#0E7C6B",
+                              "descendants": {
+                                "ui:l4BYiu": {
+                                  "width": 108,
+                                  "height": 6,
+                                  "fill": "$ui:brand.white"
+                                }
+                              }
+                            },
+                            {
+                              "type": "frame",
+                              "id": "Wzkk2",
+                              "name": "s6sGrid",
+                              "width": "fill_container",
+                              "justifyContent": "space_between",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "FkyDG",
+                                  "name": "s6sg1",
+                                  "layout": "vertical",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "H2PRIu",
+                                      "name": "s6sg1l",
+                                      "fill": "#9FE6D2",
+                                      "content": "Pagado",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 11,
+                                      "fontWeight": "500"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "YMeht",
+                                      "name": "s6sg1n",
+                                      "fill": "$ui:brand.white",
+                                      "content": "RD$1,300",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "LXqF6",
+                                  "name": "s6sg2",
+                                  "layout": "vertical",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "Twzx9",
+                                      "name": "s6sg2l",
+                                      "fill": "#9FE6D2",
+                                      "content": "Cuota",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 11,
+                                      "fontWeight": "500"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "VwW8B",
+                                      "name": "s6sg2n",
+                                      "fill": "$ui:brand.white",
+                                      "content": "1 / 10",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "BJxPD",
+                                  "name": "s6sg3",
+                                  "layout": "vertical",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "VTuQp",
+                                      "name": "s6sg3l",
+                                      "fill": "#9FE6D2",
+                                      "content": "Próxima",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 11,
+                                      "fontWeight": "500"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "DHkPC",
+                                      "name": "s6sg3n",
+                                      "fill": "$ui:brand.white",
+                                      "content": "15 abr",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "c6srQ",
+                          "name": "s6tot",
+                          "width": "fill_container",
+                          "fill": "#FFFFFF",
+                          "cornerRadius": 18,
+                          "layout": "vertical",
+                          "gap": 12,
+                          "padding": 16,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "TQP8q",
+                              "width": "fill_container",
+                              "justifyContent": "space_between",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "CVjWm",
+                                  "layout": "vertical",
+                                  "gap": 2,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "VBKRC",
+                                      "fill": "#7888A8",
+                                      "content": "TOTAL A PAGAR HOY",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 10,
+                                      "fontWeight": "700",
+                                      "letterSpacing": 1.4
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "BmBb0",
+                                      "fill": "#7888A8",
+                                      "content": "Lo que el cliente debe entregar ahora",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 11,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "kpTSu",
+                                  "gap": 4,
+                                  "alignItems": "end",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "MCWc0",
+                                      "fill": "#0B4F4A",
+                                      "content": "RD$",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "600"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "UPTiS",
+                                      "fill": "#0B4F4A",
+                                      "content": "0",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 26,
+                                      "fontWeight": "700",
+                                      "letterSpacing": -0.5
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "rectangle",
+                              "id": "J9nYli",
+                              "fill": "#E2EAF7",
+                              "width": "fill_container",
+                              "height": 1
+                            },
+                            {
+                              "type": "frame",
+                              "id": "zA3sy",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 6,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "KWaUQ",
+                                  "name": "dueLine none",
+                                  "width": "fill_container",
+                                  "gap": 8,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "o3QgT6",
+                                      "name": "dot",
+                                      "width": 6,
+                                      "height": 6,
+                                      "fill": "#0B4F4A",
+                                      "cornerRadius": 3
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "sgQmN",
+                                      "name": "none",
+                                      "fill": "#142A26",
+                                      "content": "Nada pendiente hoy",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 13,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "f1Yaj",
+                                  "name": "nextInfo",
+                                  "width": "fill_container",
+                                  "padding": [
+                                    0,
+                                    0,
+                                    0,
+                                    14
+                                  ],
+                                  "justifyContent": "space_between",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "y2AZ8g",
+                                      "name": "nextLbl",
+                                      "fill": "#7888A8",
+                                      "content": "Próxima cuota: 15/04",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 12,
+                                      "fontWeight": "500"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "w0m8p",
+                                      "name": "nextAmt",
+                                      "fill": "#7888A8",
+                                      "content": "RD$1,300",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 12,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "BOIrq",
+                          "name": "s6planHead",
+                          "width": "fill_container",
+                          "justifyContent": "space_between",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "id": "zEfAM",
+                              "type": "ref",
+                              "ref": "ui:MiuZj",
+                              "content": "PLAN DE PAGOS",
+                              "fontFamily": "$ui:font-family"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "nq12r",
+                              "gap": 4,
+                              "padding": 2,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "r6KQqo",
+                                  "fill": "#0B4F4A",
+                                  "content": "Ver historial",
+                                  "fontFamily": "$ui:font-family",
+                                  "fontSize": 11,
+                                  "fontWeight": "700"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "nPlyF",
+                                  "fill": "#0B4F4A",
+                                  "content": "›",
+                                  "fontFamily": "$ui:font-family",
+                                  "fontSize": 14,
+                                  "fontWeight": "700"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "iPlTU",
+                          "name": "s6sched",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 6,
+                          "children": [
+                            {
+                              "id": "MyxpC",
+                              "type": "ref",
+                              "ref": "ui:NTnM9",
+                              "name": "Cuota 1",
+                              "width": "fill_container",
+                              "descendants": {
+                                "ui:ZQn7X": {
+                                  "fill": "$ui:brand.blue.primary"
+                                },
+                                "ui:fNgt1": {
+                                  "icon": "check"
+                                },
+                                "ui:vTemP": {
+                                  "content": "Cuota 1"
+                                },
+                                "ui:uOdrE": {
+                                  "content": "1 mar"
+                                },
+                                "ui:QL15F": {
+                                  "content": "RD$1,300"
+                                }
+                              }
+                            },
+                            {
+                              "id": "FjQBm",
+                              "type": "ref",
+                              "ref": "ui:NTnM9",
+                              "name": "Cuota 2",
+                              "width": "fill_container",
+                              "descendants": {
+                                "ui:ZQn7X": {
+                                  "fill": "$ui:brand.mist"
+                                },
+                                "ui:fNgt1": {
+                                  "enabled": false
+                                },
+                                "ui:vTemP": {
+                                  "content": "Cuota 2",
+                                  "fill": "#7888A8"
+                                },
+                                "ui:uOdrE": {
+                                  "content": "15 abr",
+                                  "fill": "#7888A8"
+                                },
+                                "ui:QL15F": {
+                                  "content": "RD$1,300",
+                                  "fill": "#7888A8"
+                                }
+                              }
+                            },
+                            {
+                              "id": "pEUBL",
+                              "type": "ref",
+                              "ref": "ui:NTnM9",
+                              "name": "Cuota 3",
+                              "width": "fill_container",
+                              "descendants": {
+                                "ui:ZQn7X": {
+                                  "fill": "$ui:brand.mist"
+                                },
+                                "ui:fNgt1": {
+                                  "enabled": false
+                                },
+                                "ui:vTemP": {
+                                  "content": "Cuota 3",
+                                  "fill": "#7888A8"
+                                },
+                                "ui:uOdrE": {
+                                  "content": "30 abr",
+                                  "fill": "#7888A8"
+                                },
+                                "ui:QL15F": {
+                                  "content": "RD$1,300",
+                                  "fill": "#7888A8"
+                                }
+                              }
+                            },
+                            {
+                              "id": "mbwrP",
+                              "type": "ref",
+                              "ref": "ui:NTnM9",
+                              "name": "Cuota 4",
+                              "width": "fill_container",
+                              "descendants": {
+                                "ui:ZQn7X": {
+                                  "fill": "$ui:brand.mist"
+                                },
+                                "ui:fNgt1": {
+                                  "enabled": false
+                                },
+                                "ui:vTemP": {
+                                  "content": "Cuota 4",
+                                  "fill": "#7888A8"
+                                },
+                                "ui:uOdrE": {
+                                  "content": "15 may",
+                                  "fill": "#7888A8"
+                                },
+                                "ui:QL15F": {
+                                  "content": "RD$1,300",
+                                  "fill": "#7888A8"
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "oXlzR",
+                      "name": "s6cta",
+                      "width": "fill_container",
+                      "fill": "$ui:brand.white",
+                      "stroke": "#E2EAF7",
+                      "strokeWidth": {
+                        "top": 1
+                      },
+                      "strokeAlignment": "inner",
+                      "strokeLinejoin": "round",
+                      "gap": 10,
+                      "padding": [
+                        14,
+                        20
+                      ],
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "ppFC8",
+                          "name": "s6ctaA",
+                          "width": "fill_container",
+                          "fill": "$ui:brand.mist",
+                          "cornerRadius": 12,
+                          "gap": 6,
+                          "padding": 14,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "z0cUz4",
+                              "name": "s6ctaAi",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "notebook-pen",
+                              "library": "lucide",
+                              "fill": "$ui:brand.blue.deep"
+                            },
+                            {
+                              "type": "text",
+                              "id": "zxoCr",
+                              "name": "s6ctaAt",
+                              "fill": "$ui:brand.blue.deep",
+                              "content": "Anotar visita",
+                              "fontFamily": "$ui:font-family",
+                              "fontSize": 14,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Gbk4h",
+                          "name": "s6ctaB",
+                          "width": "fill_container",
+                          "fill": "$ui:brand.blue.deep",
+                          "cornerRadius": 12,
+                          "gap": 6,
+                          "padding": 14,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "pT3uK",
+                              "name": "s6ctaBi",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "banknote",
+                              "library": "lucide",
+                              "fill": "$ui:brand.white"
+                            },
+                            {
+                              "type": "text",
+                              "id": "JWSWj",
+                              "name": "s6ctaBt",
+                              "fill": "$ui:brand.white",
+                              "content": "Cobrar",
+                              "fontFamily": "$ui:font-family",
+                              "fontSize": 14,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "aEsvd",
+                  "name": "13 Aviso — Actualiza Micobro en tus otros teléfonos",
+                  "clip": true,
+                  "width": 390,
+                  "height": 844,
+                  "fill": "#F4F8FF",
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "id": "Md18f",
+                      "type": "ref",
+                      "ref": "ui:g8L0O",
+                      "width": "fill_container"
+                    },
+                    {
+                      "id": "ZCrd6",
+                      "type": "ref",
+                      "ref": "ui:AFMnH",
+                      "width": "fill_container",
+                      "descendants": {
+                        "ui:XlCal": {
+                          "content": "Préstamo #L-0042",
+                          "fontSize": 16,
+                          "fontWeight": "700"
+                        },
+                        "ui:OJ3eJ": {
+                          "content": "Ana Pérez · Colmado Ana"
+                        },
+                        "ui:zF54G": {
+                          "icon": "ellipsis-vertical"
+                        }
+                      }
+                    },
+                    {
+                      "type": "frame",
+                      "id": "WP2qV",
+                      "name": "s6body",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "layout": "vertical",
+                      "gap": 14,
+                      "padding": [
+                        4,
+                        20
+                      ],
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "RkMTJ",
+                          "name": "s6metaWrap",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 6,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "wqmLp",
+                              "name": "s6meta",
+                              "width": "fill_container",
+                              "gap": 6,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "ZARSR",
+                                  "fill": "#E8F7F2",
+                                  "cornerRadius": 9999,
+                                  "gap": 6,
+                                  "padding": [
+                                    6,
+                                    10
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "cclEr",
+                                      "fill": "#0B4F4A",
+                                      "content": "Quincenal",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 11,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "RiKir",
+                                  "fill": "#E8F7F2",
+                                  "cornerRadius": 9999,
+                                  "gap": 6,
+                                  "padding": [
+                                    6,
+                                    10
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "UsD7C",
+                                      "fill": "#0B4F4A",
+                                      "content": "Tradicional Plus",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 11,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "YDiIu",
+                                  "fill": "#E8F7F2",
+                                  "cornerRadius": 9999,
+                                  "gap": 6,
+                                  "padding": [
+                                    6,
+                                    10
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "G56ud2",
+                                      "fill": "#0B4F4A",
+                                      "content": "Penalidad RD$300",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 11,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "rkvsr",
+                              "name": "s6meta row2",
+                              "gap": 6,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "XJRKl",
+                                  "fill": "#E8F7F2",
+                                  "cornerRadius": 9999,
+                                  "gap": 6,
+                                  "padding": [
+                                    6,
+                                    10
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "M22K8T",
+                                      "fill": "#0B4F4A",
+                                      "content": "Vence 13 ago",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 11,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "xH6kZ",
+                          "name": "movedNote",
+                          "fill": "#D97706",
+                          "content": "Corrida 2 veces por penalidad",
+                          "fontFamily": "$ui:font-family",
+                          "fontSize": 12,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "uz3A5",
+                          "name": "s6sum",
+                          "width": "fill_container",
+                          "fill": "$ui:brand.blue.deep",
+                          "cornerRadius": 18,
+                          "layout": "vertical",
+                          "gap": 14,
+                          "padding": 20,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "gPzD1",
+                              "name": "s6sL",
+                              "fill": "#9FE6D2",
+                              "content": "BALANCE PENDIENTE",
+                              "fontFamily": "$ui:font-family",
+                              "fontSize": 11,
+                              "fontWeight": "600",
+                              "letterSpacing": 1.5
+                            },
+                            {
+                              "type": "text",
+                              "id": "m2fLd",
+                              "name": "s6sN",
+                              "fill": "$ui:brand.white",
+                              "content": "RD$11,700",
+                              "fontFamily": "$ui:font-family",
+                              "fontSize": 36,
+                              "fontWeight": "700",
+                              "letterSpacing": -1
+                            },
+                            {
+                              "id": "p7icum",
+                              "type": "ref",
+                              "ref": "ui:dykca",
+                              "width": "fill_container",
+                              "height": 6,
+                              "fill": "#0E7C6B",
+                              "descendants": {
+                                "ui:l4BYiu": {
+                                  "width": 108,
+                                  "height": 6,
+                                  "fill": "$ui:brand.white"
+                                }
+                              }
+                            },
+                            {
+                              "type": "frame",
+                              "id": "C3QswI",
+                              "name": "s6sGrid",
+                              "width": "fill_container",
+                              "justifyContent": "space_between",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "K1WgC",
+                                  "name": "s6sg1",
+                                  "layout": "vertical",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "UIr57",
+                                      "name": "s6sg1l",
+                                      "fill": "#9FE6D2",
+                                      "content": "Pagado",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 11,
+                                      "fontWeight": "500"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "pDa4H",
+                                      "name": "s6sg1n",
+                                      "fill": "$ui:brand.white",
+                                      "content": "RD$1,300",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "nZXFX",
+                                  "name": "s6sg2",
+                                  "layout": "vertical",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "A4eN2",
+                                      "name": "s6sg2l",
+                                      "fill": "#9FE6D2",
+                                      "content": "Cuota",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 11,
+                                      "fontWeight": "500"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "x192ns",
+                                      "name": "s6sg2n",
+                                      "fill": "$ui:brand.white",
+                                      "content": "1 / 10",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "gtnQw",
+                                  "name": "s6sg3",
+                                  "layout": "vertical",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "m69yY",
+                                      "name": "s6sg3l",
+                                      "fill": "#9FE6D2",
+                                      "content": "Próxima",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 11,
+                                      "fontWeight": "500"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "J6bL5",
+                                      "name": "s6sg3n",
+                                      "fill": "$ui:brand.white",
+                                      "content": "15 abr",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "fhRXW",
+                          "name": "s6tot",
+                          "width": "fill_container",
+                          "fill": "#FFFFFF",
+                          "cornerRadius": 18,
+                          "layout": "vertical",
+                          "gap": 12,
+                          "padding": 16,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "tZibP",
+                              "width": "fill_container",
+                              "justifyContent": "space_between",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "G9jJl",
+                                  "layout": "vertical",
+                                  "gap": 2,
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "oLMmF",
+                                      "fill": "#7888A8",
+                                      "content": "TOTAL A PAGAR HOY",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 10,
+                                      "fontWeight": "700",
+                                      "letterSpacing": 1.4
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "RcnJC",
+                                      "fill": "#7888A8",
+                                      "content": "Lo que el cliente debe entregar ahora",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 11,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "yTKmh",
+                                  "gap": 4,
+                                  "alignItems": "end",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "ohHSx",
+                                      "fill": "#0B4F4A",
+                                      "content": "RD$",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "600"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "v1IA0x",
+                                      "fill": "#0B4F4A",
+                                      "content": "0",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 26,
+                                      "fontWeight": "700",
+                                      "letterSpacing": -0.5
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "rectangle",
+                              "id": "JTv4v",
+                              "fill": "#E2EAF7",
+                              "width": "fill_container",
+                              "height": 1
+                            },
+                            {
+                              "type": "frame",
+                              "id": "ccvmU",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 6,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "oCAPh",
+                                  "name": "dueLine none",
+                                  "width": "fill_container",
+                                  "gap": 8,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "hLiVW",
+                                      "name": "dot",
+                                      "width": 6,
+                                      "height": 6,
+                                      "fill": "#0B4F4A",
+                                      "cornerRadius": 3
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "q4ssj",
+                                      "name": "none",
+                                      "fill": "#142A26",
+                                      "content": "Nada pendiente hoy",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 13,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "q2CZX",
+                                  "name": "nextInfo",
+                                  "width": "fill_container",
+                                  "padding": [
+                                    0,
+                                    0,
+                                    0,
+                                    14
+                                  ],
+                                  "justifyContent": "space_between",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "bEmZv",
+                                      "name": "nextLbl",
+                                      "fill": "#7888A8",
+                                      "content": "Próxima cuota: 15/04",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 12,
+                                      "fontWeight": "500"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "hRTlm",
+                                      "name": "nextAmt",
+                                      "fill": "#7888A8",
+                                      "content": "RD$1,300",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 12,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "qsIAu",
+                          "name": "s6planHead",
+                          "width": "fill_container",
+                          "justifyContent": "space_between",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "id": "imdYN",
+                              "type": "ref",
+                              "ref": "ui:MiuZj",
+                              "content": "PLAN DE PAGOS",
+                              "fontFamily": "$ui:font-family"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "nCj59",
+                              "gap": 4,
+                              "padding": 2,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "U19lf",
+                                  "fill": "#0B4F4A",
+                                  "content": "Ver historial",
+                                  "fontFamily": "$ui:font-family",
+                                  "fontSize": 11,
+                                  "fontWeight": "700"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "RT7TO",
+                                  "fill": "#0B4F4A",
+                                  "content": "›",
+                                  "fontFamily": "$ui:font-family",
+                                  "fontSize": 14,
+                                  "fontWeight": "700"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "ZnFkt",
+                          "name": "s6sched",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 6,
+                          "children": [
+                            {
+                              "id": "N41FF",
+                              "type": "ref",
+                              "ref": "ui:NTnM9",
+                              "name": "Cuota 1",
+                              "width": "fill_container",
+                              "descendants": {
+                                "ui:ZQn7X": {
+                                  "fill": "$ui:brand.blue.primary"
+                                },
+                                "ui:fNgt1": {
+                                  "icon": "check"
+                                },
+                                "ui:vTemP": {
+                                  "content": "Cuota 1"
+                                },
+                                "ui:uOdrE": {
+                                  "content": "1 mar"
+                                },
+                                "ui:QL15F": {
+                                  "content": "RD$1,300"
+                                }
+                              }
+                            },
+                            {
+                              "id": "VfY7a",
+                              "type": "ref",
+                              "ref": "ui:NTnM9",
+                              "name": "Cuota 2",
+                              "width": "fill_container",
+                              "descendants": {
+                                "ui:ZQn7X": {
+                                  "fill": "$ui:brand.mist"
+                                },
+                                "ui:fNgt1": {
+                                  "enabled": false
+                                },
+                                "ui:vTemP": {
+                                  "content": "Cuota 2",
+                                  "fill": "#7888A8"
+                                },
+                                "ui:uOdrE": {
+                                  "content": "15 abr",
+                                  "fill": "#7888A8"
+                                },
+                                "ui:QL15F": {
+                                  "content": "RD$1,300",
+                                  "fill": "#7888A8"
+                                }
+                              }
+                            },
+                            {
+                              "id": "wR8ZR",
+                              "type": "ref",
+                              "ref": "ui:NTnM9",
+                              "name": "Cuota 3",
+                              "width": "fill_container",
+                              "descendants": {
+                                "ui:ZQn7X": {
+                                  "fill": "$ui:brand.mist"
+                                },
+                                "ui:fNgt1": {
+                                  "enabled": false
+                                },
+                                "ui:vTemP": {
+                                  "content": "Cuota 3",
+                                  "fill": "#7888A8"
+                                },
+                                "ui:uOdrE": {
+                                  "content": "30 abr",
+                                  "fill": "#7888A8"
+                                },
+                                "ui:QL15F": {
+                                  "content": "RD$1,300",
+                                  "fill": "#7888A8"
+                                }
+                              }
+                            },
+                            {
+                              "id": "uZkXf",
+                              "type": "ref",
+                              "ref": "ui:NTnM9",
+                              "name": "Cuota 4",
+                              "width": "fill_container",
+                              "descendants": {
+                                "ui:ZQn7X": {
+                                  "fill": "$ui:brand.mist"
+                                },
+                                "ui:fNgt1": {
+                                  "enabled": false
+                                },
+                                "ui:vTemP": {
+                                  "content": "Cuota 4",
+                                  "fill": "#7888A8"
+                                },
+                                "ui:uOdrE": {
+                                  "content": "15 may",
+                                  "fill": "#7888A8"
+                                },
+                                "ui:QL15F": {
+                                  "content": "RD$1,300",
+                                  "fill": "#7888A8"
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "qPmUm",
+                      "name": "s6cta",
+                      "width": "fill_container",
+                      "fill": "$ui:brand.white",
+                      "stroke": "#E2EAF7",
+                      "strokeWidth": {
+                        "top": 1
+                      },
+                      "strokeAlignment": "inner",
+                      "strokeLinejoin": "round",
+                      "gap": 10,
+                      "padding": [
+                        14,
+                        20
+                      ],
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "fUlXZ",
+                          "name": "s6ctaA",
+                          "width": "fill_container",
+                          "fill": "$ui:brand.mist",
+                          "cornerRadius": 12,
+                          "gap": 6,
+                          "padding": 14,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "BFDMA",
+                              "name": "s6ctaAi",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "notebook-pen",
+                              "library": "lucide",
+                              "fill": "$ui:brand.blue.deep"
+                            },
+                            {
+                              "type": "text",
+                              "id": "GguYa",
+                              "name": "s6ctaAt",
+                              "fill": "$ui:brand.blue.deep",
+                              "content": "Anotar visita",
+                              "fontFamily": "$ui:font-family",
+                              "fontSize": 14,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "t45wk7",
+                          "name": "s6ctaB",
+                          "width": "fill_container",
+                          "fill": "$ui:brand.blue.deep",
+                          "cornerRadius": 12,
+                          "gap": 6,
+                          "padding": 14,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "Opxm4",
+                              "name": "s6ctaBi",
+                              "width": 16,
+                              "height": 16,
+                              "icon": "banknote",
+                              "library": "lucide",
+                              "fill": "$ui:brand.white"
+                            },
+                            {
+                              "type": "text",
+                              "id": "xkXwy",
+                              "name": "s6ctaBt",
+                              "fill": "$ui:brand.white",
+                              "content": "Cobrar",
+                              "fontFamily": "$ui:font-family",
+                              "fontSize": 14,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "GNoLf",
+                      "layoutPosition": "absolute",
+                      "x": 0,
+                      "y": 0,
+                      "name": "scrim",
+                      "width": 390,
+                      "height": 844,
+                      "fill": "#0000008C",
+                      "layout": "vertical",
+                      "padding": [
+                        0,
+                        28
+                      ],
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "QiG2T",
+                          "name": "alert",
+                          "width": "fill_container",
+                          "fill": "#FFFFFF",
+                          "cornerRadius": 16,
+                          "effect": {
+                            "type": "shadow",
+                            "shadowType": "outer",
+                            "color": "#00000033",
+                            "offset": {
+                              "x": 0,
+                              "y": 8
+                            },
+                            "blur": 24
+                          },
+                          "layout": "vertical",
+                          "gap": 14,
+                          "padding": [
+                            22,
+                            22,
+                            14,
+                            22
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "iMVqP",
+                              "name": "alert title",
+                              "fill": "#142A26",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Actualiza Micobro en tus otros teléfonos",
+                              "lineHeight": 1.3,
+                              "fontFamily": "$ui:font-family",
+                              "fontSize": 17,
+                              "fontWeight": "700"
+                            },
+                            {
+                              "type": "text",
+                              "id": "B9Ecz",
+                              "name": "alert message",
+                              "fill": "#697A93",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Tu hoja ahora guarda el tipo de cada pago en la columna \"Tipo\". Si otro teléfono usa esta misma hoja, actualízalo a la última versión de Micobro antes de cobrar con él. Hasta entonces puede leer mal las moras y penalidades.",
+                              "lineHeight": 1.45,
+                              "fontFamily": "$ui:font-family",
+                              "fontSize": 14,
+                              "fontWeight": "500"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "sn0xj",
+                              "name": "alert actions",
+                              "width": "fill_container",
+                              "justifyContent": "end",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "F5Ep6",
+                                  "name": "btn Entendido",
+                                  "cornerRadius": 8,
+                                  "padding": [
+                                    12,
+                                    14
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "vpId0",
+                                      "name": "btn label",
+                                      "fill": "#0B4F4A",
+                                      "content": "Entendido",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 15,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ]
     }

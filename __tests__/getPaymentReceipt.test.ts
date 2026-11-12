@@ -37,6 +37,7 @@ const paymentRow = {
   paidAt,
   method: "cash",
   notes: null,
+  tipo: "cuota",
   createdAt: paidAt
 };
 
