@@ -26,6 +26,7 @@
           "credito",
           "deudas"
         ],
+        "releaseNotes": "Nuevo: Tradicional Plus, el préstamo quincenal con penalidad fija. Si el cliente no puede pagar la cuota, paga la penalidad y la cuota se corre una quincena.\n\nAdemás: los cambios que hagas en tu hoja de Google (incluso borrar filas) ahora regresan a la app, la cédula del cliente se guarda en la hoja, y las cifras de Mi cartera ahora cuadran.",
         "promoText": "Lleva tus préstamos al día, aunque no haya señal. Nuevo: Tradicional Plus, el préstamo quincenal con penalidad fija cuando el cliente no puede pagar la cuota.",
         "marketingUrl": "https://micobro.app",
         "supportUrl": "https://docs.micobro.app",
@@ -50,6 +51,7 @@
           "credito",
           "deudas"
         ],
+        "releaseNotes": "Nuevo: Tradicional Plus, el préstamo quincenal con penalidad fija. Si el cliente no puede pagar la cuota, paga la penalidad y la cuota se corre una quincena.\n\nAdemás: los cambios que hagas en tu hoja de Google (incluso borrar filas) ahora regresan a la app, la cédula del cliente se guarda en la hoja, y las cifras de Mi cartera ahora cuadran.",
         "promoText": "Lleva tus préstamos al día, aunque no haya señal. Nuevo: Tradicional Plus, el préstamo quincenal con penalidad fija cuando el cliente no puede pagar la cuota.",
         "marketingUrl": "https://micobro.app",
         "supportUrl": "https://docs.micobro.app",
