@@ -316,6 +316,7 @@ export function createMockRepos(): Repos {
           id: c.id,
           name: c.name,
           avatarKey: metaOf(c.id)?.avatarKey ?? c.avatarKey,
+          photo: mockPhotos.get(c.id) ?? null,
           inMora: customerInMora(c.id),
           loanCount: loans.filter((l) => l.customerId === c.id && l.status === "active").length
         }));
@@ -389,6 +390,7 @@ export function createMockRepos(): Repos {
           id: customer.id,
           name: customer.name,
           avatarKey: meta?.avatarKey ?? customer.avatarKey,
+          photo: mockPhotos.get(id) ?? null,
           phone: customer.phone,
           address: customer.address,
           cedula: meta?.cedula ?? customer.cedula,
@@ -468,6 +470,7 @@ export function createMockRepos(): Repos {
             customerId: loan.customerId,
             customerName: view.customerName,
             customerAvatarKey: metaOf(loan.customerId)?.avatarKey ?? null,
+            customerPhoto: mockPhotos.get(loan.customerId) ?? null,
             business: view.business,
             cuotaCents: view.openCredit.interestDueCents,
             scheduleCents: [],
@@ -492,6 +495,7 @@ export function createMockRepos(): Repos {
           customerId: loan.customerId,
           customerName: view.customerName,
           customerAvatarKey: metaOf(loan.customerId)?.avatarKey ?? null,
+          customerPhoto: mockPhotos.get(loan.customerId) ?? null,
           business: view.business,
           // Same formula as lib/payments/getCollectContext.ts.
           cuotaCents: view.tradicionalPlus
@@ -621,7 +625,18 @@ export function createMockRepos(): Repos {
       set: setProfile
     },
     route: {
-      getToday: async () => routeDayFixture
+      // The fixture carries no photos; overlay the ones set through customers.
+      getToday: async () => ({
+        ...routeDayFixture,
+        visits: routeDayFixture.visits.map((v) => ({
+          ...v,
+          photo: mockPhotos.get(v.customerId) ?? null
+        })),
+        upcomingCustomers: routeDayFixture.upcomingCustomers.map((u) => ({
+          ...u,
+          photo: mockPhotos.get(u.customerId) ?? null
+        }))
+      })
     },
     reports: {
       getPosition: async () => composePosition({ loans, payments })

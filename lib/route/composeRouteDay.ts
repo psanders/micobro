@@ -186,6 +186,7 @@ export function composeRouteDay({
       business: null,
       address: customer?.address ?? "",
       avatarKey: null,
+      photo: null,
       amountCents,
       hasMora: moraCents > 0,
       status: collectedTodayCents > 0 ? "done" : isOverdue ? "overdue" : "pending",

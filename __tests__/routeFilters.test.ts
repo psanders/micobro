@@ -16,6 +16,7 @@ function visit(overrides: Partial<RouteVisit>): RouteVisit {
     business: null,
     address: "Calle 1",
     avatarKey: null,
+    photo: null,
     amountCents: 11000,
     hasMora: false,
     status: "overdue",
