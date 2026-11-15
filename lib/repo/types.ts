@@ -285,8 +285,16 @@ export interface CollectContext {
   customerName: string;
   customerAvatarKey: string | null;
   business: string | null;
-  /** The current cuota, capped at the remaining balance. */
+  /**
+   * What "Cobrar cuota" charges: for plain Tradicional, what's left of the
+   * current cuota after principal already carried into it; for Tradicional
+   * Plus, the full cuota; capped at the remaining balance.
+   */
   cuotaCents: number;
+  /** Each cuota's amount (the last absorbs rounding); [] for crédito abierto. */
+  scheduleCents: number[];
+  /** Principal paid so far (mora and penalties excluded); 0 for crédito abierto. */
+  principalPaidCents: number;
   currentInstallmentNumber: number;
   /** Total cuotas on the loan's schedule — 0 for crédito abierto (no fixed term). */
   installmentsTotal: number;

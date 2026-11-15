@@ -53,8 +53,8 @@ describe("mock collect flow", () => {
     const view = await repos.loans.getDetailView("loan-3");
     expect(view!.moraCents).toBe(0);
     expect(view!.schedule[3]!.status).toBe("paid");
-    // totalRepayCents (3225600 = 2880000 principal + 345600 flat interest) - paidCents (1078800).
-    expect(view!.balanceCents).toBe(3225600 - 1078800);
+    // totalRepayCents (3225600 = 2880000 principal + 345600 flat interest) - paidCents (4 × 268800).
+    expect(view!.balanceCents).toBe(3225600 - 1075200);
 
     const ctx = await repos.payments.getCollectContext("loan-3");
     expect(ctx!.moraCents).toBe(0);

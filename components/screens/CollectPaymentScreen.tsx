@@ -30,7 +30,7 @@ import {
   resolveTradicionalPlusPayOptions,
   tradicionalPlusBreakdown
 } from "../../lib/payments/tradicionalPlusPayOptions";
-import { cuotaLabel as formatCuotaLabel } from "../../lib/loans/loanViews";
+import { cobroPreviewLines } from "../../lib/loans/cuotaCoverage";
 import {
   formatAmount,
   formatCurrency,
@@ -270,63 +270,16 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
         ctx.installmentsTotal
       );
     }
-    const cuotaLabel = formatCuotaLabel(ctx.currentInstallmentNumber, ctx.installmentsTotal);
-    switch (effectiveOption) {
-      case "mora":
-        return [{ label: "Mora (prioridad)", amountCents: mora }];
-      case "arrears":
-        return [
-          { label: "Mora (prioridad)", amountCents: mora },
-          { label: cuotaLabel, amountCents: cuota }
-        ];
-      case "settle": {
-        const lines: ReceiptLine[] = [];
-        if (mora > 0) lines.push({ label: "Mora (prioridad)", amountCents: mora });
-        lines.push({
-          label: `${ctx.remainingInstallments} cuotas restantes`,
-          amountCents: ctx.remainingBalanceCents
-        });
-        return lines;
-      }
-      case "custom": {
-        if (customAmountCents <= 0 || cuota <= 0) {
-          return [{ label: "Monto personalizado", amountCents: customAmountCents }];
-        }
-        const lines: ReceiptLine[] = [];
-        if (mora > 0) {
-          lines.push({ label: "Mora (prioridad)", amountCents: split.moraPortionCents });
-        }
-        if (split.installmentPortionCents > 0) {
-          // Once the payment covers more than one cuota, this line becomes
-          // the numbered cuota label (e.g. "Cuota 8/24") to pair with the
-          // "Abono a la cuota N+1" line below; otherwise it keeps the
-          // original label for a payment that fits within one cuota.
-          lines.push({
-            label:
-              split.advancePortionCents > 0
-                ? cuotaLabel
-                : mora > 0
-                  ? "Aplica a cuota"
-                  : "Monto personalizado",
-            amountCents: split.installmentPortionCents
-          });
-        }
-        if (split.advancePortionCents > 0) {
-          const nextInstallmentNumber = ctx.currentInstallmentNumber + 1;
-          // No "cuota N+1" exists once the current cuota is the loan's
-          // last installment — fall back to a generic "extra" label.
-          const advanceLabel =
-            ctx.installmentsTotal > 0 && nextInstallmentNumber <= ctx.installmentsTotal
-              ? `Abono a la cuota ${nextInstallmentNumber}/${ctx.installmentsTotal}`
-              : "Abono adicional";
-          lines.push({ label: advanceLabel, amountCents: split.advancePortionCents });
-        }
-        return lines;
-      }
-      default:
-        return [{ label: cuotaLabel, amountCents: cuota }];
-    }
-  }, [ctx, effectiveOption, cuota, mora, customAmountCents, split, plus, penaltyCountSelected]);
+    // Tradicional: every option previews the lines the receipt will carry,
+    // from the same cuota mapping the reprint uses (issue #204).
+    return cobroPreviewLines({
+      schedule: ctx.scheduleCents,
+      principalPaidCents: ctx.principalPaidCents,
+      amountCents: amount,
+      moraCents: split.moraPortionCents,
+      termCount: ctx.installmentsTotal
+    });
+  }, [ctx, effectiveOption, amount, split, plus, penaltyCountSelected]);
 
   const hint =
     effectiveOption === null

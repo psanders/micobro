@@ -41,9 +41,13 @@ import {
   loanEndDate,
   buildReceiptNumberIndex,
   canonicalReceiptNumbers,
-  cobroReceiptLines,
-  cuotaNumbersByPaymentId
+  cobroReceiptLines
 } from "../../loans/loanViews";
+import {
+  coverageByPaymentId,
+  currentCuotaRemainingCents,
+  scheduleCents
+} from "../../loans/cuotaCoverage";
 import { tradicionalPlusReceipt, tradicionalPlusState } from "../../loans/tradicionalPlus";
 import { isMoraPayment, isPenaltyPayment } from "../../payments/paymentNotes";
 import { cuotaCents, totalRepayCents } from "../../loans/loanMath";
@@ -448,6 +452,8 @@ export function createMockRepos(): Repos {
             customerAvatarKey: metaOf(loan.customerId)?.avatarKey ?? null,
             business: view.business,
             cuotaCents: view.openCredit.interestDueCents,
+            scheduleCents: [],
+            principalPaidCents: 0,
             currentInstallmentNumber: 0,
             installmentsTotal: 0,
             moraCents: 0,
@@ -461,6 +467,7 @@ export function createMockRepos(): Repos {
 
         const state = moraOf(loanId);
         const cuota = cuotaCents(loan.principalCents, loan.interestRateBps, loan.termCount);
+        const schedule = scheduleCents(loan);
         return {
           loanId: loan.id,
           loanCode: loanCode(loan.id),
@@ -468,7 +475,12 @@ export function createMockRepos(): Repos {
           customerName: view.customerName,
           customerAvatarKey: metaOf(loan.customerId)?.avatarKey ?? null,
           business: view.business,
-          cuotaCents: Math.min(cuota, view.balanceCents),
+          // Same formula as lib/payments/getCollectContext.ts.
+          cuotaCents: view.tradicionalPlus
+            ? Math.min(cuota, view.balanceCents)
+            : currentCuotaRemainingCents(schedule, view.paidCents, view.balanceCents),
+          scheduleCents: schedule,
+          principalPaidCents: view.paidCents,
           currentInstallmentNumber: Math.min(view.installmentsPaid + 1, view.installmentsTotal),
           installmentsTotal: view.installmentsTotal,
           // Tradicional Plus never charges mora (the view already zeroes it).
@@ -545,13 +557,13 @@ export function createMockRepos(): Repos {
           loan && effectiveLoanType(loan) === "term_plus"
             ? tradicionalPlusReceipt(loan, loanRows, created, formatShortDate)
             : null;
-        const plusLines =
-          loan && plus
+        const termLines =
+          loan && !openCredit
             ? cobroReceiptLines(
                 loan,
                 created,
-                cuotaNumbersByPaymentId(loan, loanRows),
-                plus.penaltyLine
+                coverageByPaymentId(loan, loanRows),
+                plus?.penaltyLine ?? null
               )
             : null;
 
@@ -562,7 +574,7 @@ export function createMockRepos(): Repos {
           totalCents: input.amountCents,
           method: input.method,
           customerName: customer?.name ?? "Cliente",
-          lines: openCredit?.lines ?? plusLines ?? input.lines,
+          lines: openCredit?.lines ?? termLines ?? input.lines,
           // `null`, not paidAt — see the note in lib/payments/collectPayment.ts.
           loanStartDate: loan?.startDate ?? null,
           loanEndDate: loan

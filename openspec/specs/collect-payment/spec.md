@@ -49,20 +49,60 @@ Selecting an option SHALL update the readout, hint, and breakdown.
 ### Requirement: Application breakdown
 
 The screen SHALL show a "CÓMO SE APLICA" card listing how the selected
-amount applies using the shared mora-first split: mora is covered first,
-the remainder applies to the cuota (e.g. "Mora (prioridad)" RD$750, then
-"Cuota 4" RD$2,700). A custom amount on a loan without mora shows a
-single "Monto personalizado" line; with mora it shows the split.
+amount applies: mora is covered first ("Mora (prioridad)"), then the
+principal is laid on the loan's schedule after everything already paid and
+split at each cuota's boundary. For a Tradicional loan, every option
+(Cobrar cuota, Cobrar cuota + mora, Saldar préstamo, Otro monto) SHALL
+list:
+
+- one "Cuota N/Total" line for each cuota the payment finishes, with the
+  amount this payment put into it (a cuota an earlier abono started reads
+  "Cuota N/Total" when this payment finishes it);
+- one "Abono a cuota N/Total" line for a cuota it only partly pays,
+  including a payment below one cuota;
+- one "Abono adicional" line for anything past the loan's last cuota;
+- a run of 7 or more finished cuotas in a row as one "Cuotas A-B/Total"
+  line (ASCII hyphen) with their summed amount.
+
+The lines SHALL add up to the amount collected. After principal was carried
+into the current cuota (a round-up or an abono), "Cobrar cuota" SHALL charge
+only what's left of that cuota, so the next cobro lands on its boundary.
+Tradicional Plus keeps its full-cuota options.
 
 #### Scenario: Mora applies first
 
 - **WHEN** "Cobrar cuota + mora" is selected on the mock exemplar loan
-- **THEN** the breakdown lists Mora (prioridad) RD$750 before Cuota 4 RD$2,700
+- **THEN** the breakdown lists Mora (prioridad) RD$750 before Cuota 4/12 RD$2,688
 
 #### Scenario: Custom split with mora
 
 - **WHEN** the user enters RD$1,000 as Otro monto while RD$750 mora is accrued
-- **THEN** the breakdown shows RD$750 to mora and RD$250 applied to the cuota
+- **THEN** the breakdown shows RD$750 to mora and "Abono a cuota N/Total" RD$250
+
+#### Scenario: Several cuotas at once
+
+- **WHEN** cuotas 1–4 of a loan with 30 cuotas of RD$500 are paid and the user enters RD$2,000 as Otro monto
+- **THEN** the breakdown lists Cuota 5/30 through Cuota 8/30, RD$500 each
+
+#### Scenario: Leftover after full cuotas
+
+- **WHEN** the same loan receives RD$2,200
+- **THEN** the breakdown adds "Abono a cuota 9/30" RD$200
+
+#### Scenario: Finishing a cuota an abono started
+
+- **WHEN** RD$200 was already paid toward cuota 5 and the user enters RD$500
+- **THEN** the breakdown lists Cuota 5/30 RD$300 and "Abono a cuota 6/30" RD$200
+
+#### Scenario: Past the last cuota
+
+- **WHEN** cuotas 1–28 are paid and the user enters RD$1,200
+- **THEN** the breakdown lists Cuota 29/30, Cuota 30/30 and "Abono adicional" RD$200
+
+#### Scenario: Saldar collapses a long run
+
+- **WHEN** cuotas 1–4 are paid and the user selects Saldar préstamo
+- **THEN** the breakdown shows one line "Cuotas 5-30/30" with the remaining balance
 
 ### Requirement: Payment method
 
@@ -97,7 +137,9 @@ reflect the new balance.
 After a successful cobro the app SHALL replace the collect screen with
 the brand-deep confirmation (so the system back gesture returns to the
 loan, not the spent form): "¡Pago registrado!", "Cobro confirmado a
-<name>", the total collected, the applied lines, and Método / Recibo
+<name>", the total collected, the applied lines (exactly the lines the
+CÓMO SE APLICA card showed, on screen, in the shared image and on paper),
+and Método / Recibo
 (sequential number) / Hora rows. Imprimir SHALL show an informational
 dialog; WhatsApp SHALL open a `wa.me` share with the receipt summary;
 Listo SHALL return to the loan detail.
