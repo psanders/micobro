@@ -10,15 +10,17 @@
  * holds it. Pulling the Sheet back down into local SQLite is the
  * other half of the loop — see pull.ts, chained after this in syncNow().
  */
-import { eq, and, or, lt } from "drizzle-orm";
-import { cashCloses, pendingMutations, syncMeta } from "../db/schema";
-import { appendRow, updateRow, readRange, deleteRows } from "./sheetsClient";
-import { PULLED_TABLES, isPulledEntity } from "./syncedTables";
+import { eq, and, or, lt, getTableColumns } from "drizzle-orm";
+import { cashCloses, customerPhotos, customers, pendingMutations, syncMeta } from "../db/schema";
+import { appendRow, updateRow, readRange, deleteRows, ensureSheetTab } from "./sheetsClient";
+import { PULLED_TABLES } from "./syncedTables";
+import { TAB_HEADERS } from "./sheetHeaders";
 import { getSheetId } from "./config";
 import { ensureClientesLayout } from "./clientesLayout";
 import { ensurePenaltyHeader } from "./prestamosLayout";
 import { ensurePagosLayout } from "./pagosLayout";
 import { isPaymentKind, legacyPaymentKind } from "../payments/paymentNotes";
+import { CUSTOMER_PHOTO_ENTITY } from "../customers/customerPhotoWrites";
 import { createQueueCedulaResend } from "./queueCedulaResend";
 import { formatCedula } from "../utils/cedula";
 import { logger } from "../logger";
@@ -30,8 +32,8 @@ export const MAX_RETRIES = 5;
 export const LAST_PUSHED_AT_KEY = "lastPushedAt";
 
 // Assumes the lender's Google Sheet has tabs named "Clientes", "Préstamos",
-// "Pagos", and "Visitas" with columns in the order the row-value mappers
-// below emit them.
+// "Pagos", "Visitas", "Cierres" and "Fotos" with columns in the order the
+// row-value mappers below emit them.
 // Exported so provisioning (lib/sync/provisionSheet.ts) creates tabs whose
 // names and column widths match exactly what push writes here.
 export const ENTITY_RANGES: Record<string, string> = {
@@ -39,7 +41,10 @@ export const ENTITY_RANGES: Record<string, string> = {
   loan: "Préstamos!A:Q",
   payment: "Pagos!A:H",
   visit: "Visitas!A:H",
-  cashClose: "Cierres!A:E"
+  cashClose: "Cierres!A:E",
+  // Push-only for now. Sheets connected before photos shipped get the tab
+  // from push itself (see ensureFotosTab below).
+  customerPhoto: "Fotos!A:D"
 };
 
 // Cédula sits right after the name and is written formatted ("001-1234567-8"):
@@ -126,6 +131,18 @@ function cashCloseRowValues(payload: Record<string, unknown>): (string | number 
   ];
 }
 
+// A customer_photos row joined to its customer's name (see currentRowPayload).
+// Foto always starts with "/9j/" (lib/photos/photo.schema.ts), so the
+// USER_ENTERED write can't read it as a formula.
+function customerPhotoRowValues(payload: Record<string, unknown>): (string | number | null)[] {
+  return [
+    payload.id as string,
+    (payload.name as string | null) ?? "",
+    payload.photo as string,
+    payload.updatedAt as string
+  ];
+}
+
 export const ROW_MAPPERS: Record<
   string,
   (payload: Record<string, unknown>) => (string | number | null)[]
@@ -134,7 +151,8 @@ export const ROW_MAPPERS: Record<
   loan: loanRowValues,
   payment: paymentRowValues,
   visit: visitRowValues,
-  cashClose: cashCloseRowValues
+  cashClose: cashCloseRowValues,
+  customerPhoto: customerPhotoRowValues
 };
 
 export interface PushResult {
@@ -163,7 +181,31 @@ export async function findRowNumber(
   return index === -1 ? null : index + 1;
 }
 
-const RESENDABLE_TABLES = { ...PULLED_TABLES, cashClose: cashCloses } as const;
+const RESENDABLE_TABLES = {
+  ...PULLED_TABLES,
+  cashClose: cashCloses,
+  customerPhoto: customerPhotos
+} as const;
+
+// The local tables whose rows record, in `pushedAt`, that the Sheet holds them.
+const STAMPED_TABLES = { ...PULLED_TABLES, customerPhoto: customerPhotos } as const;
+
+/**
+ * Creates the `Fotos` tab on a Sheet connected before photos shipped (a new
+ * Sheet gets it, protected, from provisionSheet). Returns false instead of
+ * throwing, e.g. offline, so photo mutations wait, untouched, for a later
+ * push while every other entity still syncs.
+ */
+async function ensureFotosTab(sheetId: string): Promise<boolean> {
+  try {
+    const range = ENTITY_RANGES[CUSTOMER_PHOTO_ENTITY];
+    await ensureSheetTab(sheetId, range.split("!")[0], TAB_HEADERS[CUSTOMER_PHOTO_ENTITY]);
+    return true;
+  } catch (err) {
+    logger.warn("could not confirm the Fotos tab, holding photo sync", { error: String(err) });
+    return false;
+  }
+}
 
 /**
  * The local row as a mutation payload (dates as ISO strings, like a stored
@@ -176,6 +218,15 @@ async function currentRowPayload(
   id: string
 ): Promise<Record<string, unknown> | null> {
   if (!(entity in RESENDABLE_TABLES)) return null;
+  if (entity === CUSTOMER_PHOTO_ENTITY) {
+    // Nombre in the Fotos tab is the customer's current name.
+    const rows = await db
+      .select({ ...getTableColumns(customerPhotos), name: customers.name })
+      .from(customerPhotos)
+      .innerJoin(customers, eq(customers.id, customerPhotos.id))
+      .where(eq(customerPhotos.id, id));
+    return rows[0] ? JSON.parse(JSON.stringify(rows[0])) : null;
+  }
   const table = RESENDABLE_TABLES[entity as keyof typeof RESENDABLE_TABLES];
   const rows = await db.select().from(table).where(eq(table.id, id));
   return rows[0] ? JSON.parse(JSON.stringify(rows[0])) : null;
@@ -216,6 +267,8 @@ export async function pushPendingMutations(db: Database): Promise<PushResult> {
 
   let pushed = 0;
   let failed = 0;
+  // Checked at most once per push, and only when a photo mutation is queued.
+  let photosReady: boolean | null = null;
 
   for (const mutation of pending) {
     const range = ENTITY_RANGES[mutation.entity];
@@ -230,6 +283,10 @@ export async function pushPendingMutations(db: Database): Promise<PushResult> {
     }
     if (mutation.entity === "customer" && !customersReady) continue;
     if (mutation.entity === "payment" && !paymentsReady) continue;
+    if (mutation.entity === CUSTOMER_PHOTO_ENTITY) {
+      photosReady ??= await ensureFotosTab(sheetId);
+      if (!photosReady) continue;
+    }
 
     try {
       if (mutation.operation === "delete") {
@@ -269,8 +326,8 @@ export async function pushPendingMutations(db: Database): Promise<PushResult> {
         }
       }
 
-      if (isPulledEntity(mutation.entity)) {
-        const table = PULLED_TABLES[mutation.entity];
+      if (mutation.entity in STAMPED_TABLES) {
+        const table = STAMPED_TABLES[mutation.entity as keyof typeof STAMPED_TABLES];
         await db.update(table).set({ pushedAt: new Date() }).where(eq(table.id, mutation.entityId));
       }
 

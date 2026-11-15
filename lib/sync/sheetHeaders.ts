@@ -43,5 +43,8 @@ export const TAB_HEADERS: Record<string, string[]> = {
     "Nota",
     "Creado"
   ],
-  cashClose: ["ID", "Monto (centavos)", "Desde", "Cerrado", "Creado"]
+  cashClose: ["ID", "Monto (centavos)", "Desde", "Cerrado", "Creado"],
+  // One row per customer with a photo; ID is the customer id (as in Clientes).
+  // Foto is the base64 JPEG with no "data:" prefix.
+  customerPhoto: ["ID", "Nombre", "Foto", "Actualizado"]
 };
