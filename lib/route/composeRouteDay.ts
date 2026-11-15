@@ -153,6 +153,7 @@ export function composeRouteDay({
           business: null,
           address: customer?.address ?? "",
           avatarKey: null,
+          photo: null,
           amountCents: collectedTodayCents,
           hasMora: false,
           status: "done",
