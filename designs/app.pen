@@ -19259,11 +19259,11 @@
                               "id": "lNpz1",
                               "type": "ref",
                               "ref": "ui:F6nZP",
-                              "name": "Cobrado",
+                              "name": "Total cobrado",
                               "width": "fill_container",
                               "descendants": {
                                 "ui:B917x1": {
-                                  "content": "Cobrado",
+                                  "content": "Total cobrado",
                                   "fill": "$ui:ds.muted",
                                   "fontSize": 14
                                 },

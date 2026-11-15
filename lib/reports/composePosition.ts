@@ -5,7 +5,7 @@
  * active loans that still owe something, computed with the same loan math
  * the detail screens use (`loanViews.ts` for term loans, `openCredit.ts`
  * for crédito abierto) so the report never disagrees with a loan's own
- * screen. Contract: openspec/changes/cartera-figures-fix/design.md.
+ * screen. Contract: openspec/changes/cartera-cobrado-split (month breakdown) and openspec/specs/owner-position/spec.md.
  *
  * - Each loan's balance is split into capital and interest that add up to
  *   it exactly: a term loan's interest is its flat share of the balance
@@ -25,7 +25,7 @@ import { cuotaCents, lastCuotaCents, totalInterestCents, totalRepayCents } from 
 import { tradicionalPlusDueDates, tradicionalPlusState } from "../loans/tradicionalPlus";
 import { buildLoanDetailView, principalPaidCents } from "../loans/loanViews";
 import { effectiveLoanType } from "../loans/loan.schema";
-import { openCreditState } from "../loans/openCredit";
+import { openCreditPaymentSplit, openCreditState } from "../loans/openCredit";
 import { roundToPeso } from "../utils/money";
 import type { Loan } from "../loans/loan.schema";
 import type { Payment } from "../payments/payment.schema";
@@ -187,7 +187,15 @@ export function composePosition({
       term: { loanCount: 0, outstandingCents: 0 },
       openCredit: { loanCount: 0, outstandingCents: 0 }
     },
-    month: { collectedCents: 0, remainingCents: 0, expectedCents: 0, progress: 0 }
+    month: {
+      collectedCents: 0,
+      capitalCollectedCents: 0,
+      interestCollectedCents: 0,
+      moraCollectedCents: 0,
+      remainingCents: 0,
+      expectedCents: 0,
+      progress: 0
+    }
   };
 
   for (const loan of loans) {
@@ -213,12 +221,12 @@ export function composePosition({
 
   // Every payment this month counts, mora included, whatever its loan's
   // state now (settled, archived, or not in `loans` at all).
-  for (const payment of payments) {
+  const thisMonth = payments.filter((payment) => {
     const paidAt = payment.paidAt.getTime();
-    if (paidAt >= monthStart && paidAt <= monthEnd.getTime()) {
-      position.month.collectedCents += payment.amountCents;
-    }
-  }
+    return paidAt >= monthStart && paidAt <= monthEnd.getTime();
+  });
+  for (const payment of thisMonth) position.month.collectedCents += payment.amountCents;
+  splitCollected(position.month, thisMonth, loans, paymentsByLoan);
 
   position.overdue.percent =
     position.receivableCents > 0
@@ -231,4 +239,55 @@ export function composePosition({
       : 0;
 
   return position;
+}
+
+/**
+ * Splits this month's payments into capital, interest and mora that add up
+ * to `collectedCents`. Mora and penalidad rows are mora; a term cuota takes
+ * its loan's flat interest share (per loan, rounded to the peso); a crédito
+ * abierto cobro is split like its receipt; a cuota whose loan is gone is
+ * capital.
+ */
+function splitCollected(
+  month: OwnerPosition["month"],
+  thisMonth: Payment[],
+  loans: Loan[],
+  paymentsByLoan: Map<string, Payment[]>
+): void {
+  const loanById = new Map(loans.map((loan) => [loan.id, loan]));
+  const termCuotasByLoan = new Map<string, number>();
+  const splitCobros = new Set<string>();
+
+  for (const payment of thisMonth) {
+    if (payment.tipo === "mora" || payment.tipo === "penalidad") {
+      month.moraCollectedCents += payment.amountCents;
+      continue;
+    }
+    const loan = loanById.get(payment.loanId);
+    if (!loan) {
+      month.capitalCollectedCents += payment.amountCents;
+      continue;
+    }
+    if (effectiveLoanType(loan) === "open_credit") {
+      const cobro = `${loan.id}@${payment.paidAt.getTime()}`;
+      if (splitCobros.has(cobro)) continue;
+      splitCobros.add(cobro);
+      const split = openCreditPaymentSplit(loan, paymentsByLoan.get(loan.id) ?? [], payment.id);
+      if (!split) continue;
+      const interest = split.interestCents + split.capitalizedCents;
+      month.interestCollectedCents += interest;
+      month.capitalCollectedCents += split.amountCents - interest;
+      continue;
+    }
+    termCuotasByLoan.set(loan.id, (termCuotasByLoan.get(loan.id) ?? 0) + payment.amountCents);
+  }
+
+  for (const [loanId, cuotasCents] of termCuotasByLoan) {
+    const loan = loanById.get(loanId)!;
+    const repay = totalRepayCents(loan.principalCents, loan.interestRateBps);
+    const interest = totalInterestCents(loan.principalCents, loan.interestRateBps);
+    const interestCents = repay > 0 ? roundToPeso((cuotasCents * interest) / repay) : 0;
+    month.interestCollectedCents += interestCents;
+    month.capitalCollectedCents += cuotasCents - interestCents;
+  }
 }

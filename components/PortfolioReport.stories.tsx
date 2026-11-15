@@ -35,6 +35,9 @@ const portfolio: OwnerPosition = {
   },
   month: {
     collectedCents: 16255100,
+    capitalCollectedCents: 13036400,
+    interestCollectedCents: 2873700,
+    moraCollectedCents: 345000,
     remainingCents: 14062100,
     expectedCents: 30317200,
     progress: 16255100 / 30317200
@@ -71,7 +74,15 @@ export const Empty: StoryObj = {
           term: { loanCount: 0, outstandingCents: 0 },
           openCredit: { loanCount: 0, outstandingCents: 0 }
         },
-        month: { collectedCents: 0, remainingCents: 0, expectedCents: 0, progress: 0 }
+        month: {
+          collectedCents: 0,
+          capitalCollectedCents: 0,
+          interestCollectedCents: 0,
+          moraCollectedCents: 0,
+          remainingCents: 0,
+          expectedCents: 0,
+          progress: 0
+        }
       }}
     />
   )

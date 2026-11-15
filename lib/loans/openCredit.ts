@@ -321,6 +321,46 @@ export function openCreditState(
   };
 }
 
+/** How one crédito abierto cobro was applied; the parts add up to amountCents. */
+export interface OpenCreditPaymentSplit {
+  /** Every payment row of the loan at the same paidAt instant (one cobro). */
+  amountCents: number;
+  /** The cycle's own interest. */
+  interestCents: number;
+  /** Intereses sumados cleared. */
+  capitalizedCents: number;
+  /** Capital lent paid down. */
+  principalCents: number;
+}
+
+/**
+ * How one cobro was applied, by replaying the loan just before and just
+ * after it at the moment it was made. Null when `paymentId` isn't one of
+ * `loan`'s payments.
+ */
+export function openCreditPaymentSplit(
+  loan: Loan,
+  payments: Payment[],
+  paymentId: string
+): OpenCreditPaymentSplit | null {
+  const target = payments.find((p) => p.id === paymentId && p.loanId === loan.id);
+  if (!target) return null;
+  const loanPayments = payments.filter((p) => p.loanId === loan.id);
+  // Payments made at the exact same instant are one cobro.
+  const atOrBefore = loanPayments.filter((p) => p.paidAt.getTime() <= target.paidAt.getTime());
+  const before = loanPayments.filter((p) => p.paidAt.getTime() < target.paidAt.getTime());
+  const amountCents = atOrBefore
+    .filter((p) => p.paidAt.getTime() === target.paidAt.getTime())
+    .reduce((sum, p) => sum + p.amountCents, 0);
+
+  const prior = openCreditState(loan, before, target.paidAt);
+  const after = openCreditState(loan, atOrBefore, target.paidAt);
+  const capitalizedCents = prior.capitalizedInterestCents - after.capitalizedInterestCents;
+  const principalCents = prior.principalBalanceCents - after.principalBalanceCents;
+  const interestCents = Math.max(0, amountCents - capitalizedCents - principalCents);
+  return { amountCents, interestCents, capitalizedCents, principalCents };
+}
+
 /** One crédito abierto payment broken down for its receipt. */
 export interface OpenCreditReceiptBreakdown {
   /** "Interés · ciclo N" / "Intereses sumados" / "Abono a capital" — zero parts omitted. */
@@ -342,21 +382,16 @@ export function openCreditReceiptBreakdown(
   paymentId: string,
   formatDueDate: (date: Date) => string
 ): OpenCreditReceiptBreakdown | null {
-  const target = payments.find((p) => p.id === paymentId && p.loanId === loan.id);
-  if (!target) return null;
-  const loanPayments = payments.filter((p) => p.loanId === loan.id);
-  // Payments made at the exact same instant are one cobro.
-  const atOrBefore = loanPayments.filter((p) => p.paidAt.getTime() <= target.paidAt.getTime());
-  const before = loanPayments.filter((p) => p.paidAt.getTime() < target.paidAt.getTime());
-  const amountCents = atOrBefore
-    .filter((p) => p.paidAt.getTime() === target.paidAt.getTime())
-    .reduce((sum, p) => sum + p.amountCents, 0);
-
-  const prior = openCreditState(loan, before, target.paidAt);
+  const split = openCreditPaymentSplit(loan, payments, paymentId);
+  if (!split) return null;
+  const target = payments.find((p) => p.id === paymentId)!;
+  const atOrBefore = payments.filter(
+    (p) => p.loanId === loan.id && p.paidAt.getTime() <= target.paidAt.getTime()
+  );
   const after = openCreditState(loan, atOrBefore, target.paidAt);
-  const capitalizedPart = prior.capitalizedInterestCents - after.capitalizedInterestCents;
-  const principalPart = prior.principalBalanceCents - after.principalBalanceCents;
-  const interestPart = Math.max(0, amountCents - capitalizedPart - principalPart);
+  const interestPart = split.interestCents;
+  const capitalizedPart = split.capitalizedCents;
+  const principalPart = split.principalCents;
   const cycleIndex = after.cycles[after.cycles.length - 1]?.index ?? 1;
 
   const lines = [
