@@ -29447,6 +29447,2567 @@
               ]
             }
           ]
+        },
+        {
+          "type": "frame",
+          "id": "Y3F1T",
+          "name": "sec-Foto de perfil",
+          "layout": "vertical",
+          "gap": 32,
+          "children": [
+            {
+              "type": "text",
+              "id": "24w0X",
+              "name": "secTitle",
+              "fill": "#ffffffff",
+              "content": "Foto de perfil · clientes y prestamista (#216–#221)",
+              "fontFamily": "$ui:font-family",
+              "fontSize": 48,
+              "fontWeight": "700"
+            },
+            {
+              "type": "frame",
+              "id": "8Q8M7",
+              "name": "row-elegir",
+              "gap": 40,
+              "padding": [
+                40,
+                0,
+                0,
+                0
+              ],
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "Jgm7B",
+                  "name": "05b' Nuevo cliente — Foto del cliente (vacío)",
+                  "clip": true,
+                  "width": 390,
+                  "height": 980,
+                  "fill": "#F4F8FF",
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "ref",
+                      "id": "gDS2z",
+                      "ref": "ui:g8L0O",
+                      "width": "fill_container"
+                    },
+                    {
+                      "type": "ref",
+                      "id": "zhT3F",
+                      "ref": "ui:AFMnH",
+                      "width": "fill_container",
+                      "descendants": {
+                        "ui:XlCal": {
+                          "content": "Nuevo cliente"
+                        },
+                        "ui:OJ3eJ": {
+                          "content": "Datos del cliente"
+                        },
+                        "ui:zF54G": {
+                          "enabled": false
+                        }
+                      }
+                    },
+                    {
+                      "type": "frame",
+                      "id": "LZkon",
+                      "name": "ncBody",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "layout": "vertical",
+                      "gap": 16,
+                      "padding": [
+                        8,
+                        20
+                      ],
+                      "children": [
+                        {
+                          "type": "ref",
+                          "id": "zhWGv",
+                          "ref": "ui:XHaAT",
+                          "width": "fill_container",
+                          "descendants": {
+                            "ui:flbLp": {
+                              "content": "Nombre completo"
+                            },
+                            "ui:lPkAM": {
+                              "icon": "user"
+                            },
+                            "ui:iaYYl": {
+                              "content": "María Rosa Peralta",
+                              "fill": "$ui:brand.ink"
+                            }
+                          }
+                        },
+                        {
+                          "type": "ref",
+                          "id": "TbeIf",
+                          "ref": "ui:XHaAT",
+                          "width": "fill_container",
+                          "descendants": {
+                            "ui:flbLp": {
+                              "content": "Teléfono"
+                            },
+                            "ui:lPkAM": {
+                              "icon": "phone"
+                            },
+                            "ui:iaYYl": {
+                              "content": "809-251-2222",
+                              "fill": "$ui:brand.ink"
+                            }
+                          }
+                        },
+                        {
+                          "type": "ref",
+                          "id": "EyAUk",
+                          "ref": "ui:XHaAT",
+                          "width": "fill_container",
+                          "descendants": {
+                            "ui:flbLp": {
+                              "content": "Dirección (opcional)"
+                            },
+                            "ui:lPkAM": {
+                              "icon": "map-pin"
+                            },
+                            "ui:iaYYl": {
+                              "content": "Calle, número, sector"
+                            }
+                          }
+                        },
+                        {
+                          "type": "ref",
+                          "id": "Jbdrl",
+                          "ref": "ui:XHaAT",
+                          "width": "fill_container",
+                          "descendants": {
+                            "ui:flbLp": {
+                              "content": "Cédula (opcional)"
+                            },
+                            "ui:lPkAM": {
+                              "icon": "id-card"
+                            },
+                            "ui:iaYYl": {
+                              "content": "001-1234567-3",
+                              "fill": "$ui:brand.ink"
+                            }
+                          }
+                        },
+                        {
+                          "type": "frame",
+                          "id": "xmqyw",
+                          "name": "f-foto",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 10,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "DlRQU",
+                              "name": "inLabel",
+                              "fill": "$ui:brand.ink",
+                              "content": "Foto del cliente (opcional)",
+                              "fontFamily": "$ui:font-family",
+                              "fontSize": 13,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "42KVh",
+                              "name": "pickRow",
+                              "width": "fill_container",
+                              "gap": 14,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "KChsr",
+                                  "name": "preview (Sin foto)",
+                                  "width": 72,
+                                  "height": 72,
+                                  "cornerRadius": 36,
+                                  "fill": "$ui:brand.mist",
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "BgMAf",
+                                      "content": "MR",
+                                      "fill": "$ui:brand.blue.deep",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 24,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "xd6El",
+                                  "name": "actions",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 8,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "49BrL",
+                                      "name": "btnTomarFoto",
+                                      "width": "fill_container",
+                                      "fill": "$ui:brand.white",
+                                      "cornerRadius": 12,
+                                      "stroke": {
+                                        "fill": "$ui:brand.blue.primary",
+                                        "thickness": 1.5,
+                                        "align": "inside"
+                                      },
+                                      "gap": 8,
+                                      "padding": [
+                                        11,
+                                        14
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "VPWXc",
+                                          "library": "lucide",
+                                          "icon": "camera",
+                                          "width": 18,
+                                          "height": 18,
+                                          "fill": "$ui:brand.blue.primary"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "UevXL",
+                                          "content": "Tomar foto",
+                                          "fill": "$ui:brand.blue.primary",
+                                          "fontFamily": "$ui:font-family",
+                                          "fontSize": 14,
+                                          "fontWeight": "700"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "bw55I",
+                                      "name": "btnGaleria",
+                                      "width": "fill_container",
+                                      "fill": "$ui:brand.white",
+                                      "cornerRadius": 12,
+                                      "stroke": {
+                                        "fill": "$ui:brand.blue.primary",
+                                        "thickness": 1.5,
+                                        "align": "inside"
+                                      },
+                                      "gap": 8,
+                                      "padding": [
+                                        11,
+                                        14
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "73EVY",
+                                          "library": "lucide",
+                                          "icon": "image",
+                                          "width": 18,
+                                          "height": 18,
+                                          "fill": "$ui:brand.blue.primary"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "FDmcv",
+                                          "content": "Elegir de la galería",
+                                          "fill": "$ui:brand.blue.primary",
+                                          "fontFamily": "$ui:font-family",
+                                          "fontSize": 14,
+                                          "fontWeight": "700"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "U9T5H",
+                              "content": "O elige un avatar",
+                              "fill": "$ui:ds.muted",
+                              "fontFamily": "$ui:font-family",
+                              "fontSize": 12,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "5H1S1",
+                              "name": "avatarGrid",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 6,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "AzGHO",
+                                  "gap": 2,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "0SJ6Z",
+                                      "width": 56,
+                                      "height": 56,
+                                      "justifyContent": "center",
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "pwAIO",
+                                          "width": 42,
+                                          "height": 42,
+                                          "cornerRadius": 21,
+                                          "fill": {
+                                            "type": "image",
+                                            "url": "assets/avatars/male1.png",
+                                            "mode": "cover"
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "eLYZ0",
+                                      "width": 56,
+                                      "height": 56,
+                                      "justifyContent": "center",
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "KT4tB",
+                                          "width": 42,
+                                          "height": 42,
+                                          "cornerRadius": 21,
+                                          "fill": {
+                                            "type": "image",
+                                            "url": "assets/avatars/female2.png",
+                                            "mode": "cover"
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "nGEHH",
+                                      "width": 56,
+                                      "height": 56,
+                                      "justifyContent": "center",
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "hbzyX",
+                                          "width": 42,
+                                          "height": 42,
+                                          "cornerRadius": 21,
+                                          "fill": {
+                                            "type": "image",
+                                            "url": "assets/avatars/female1.png",
+                                            "mode": "cover"
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "Jbu3F",
+                                      "width": 56,
+                                      "height": 56,
+                                      "justifyContent": "center",
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "tGHSv",
+                                          "width": 42,
+                                          "height": 42,
+                                          "cornerRadius": 21,
+                                          "fill": {
+                                            "type": "image",
+                                            "url": "assets/avatars/male2.png",
+                                            "mode": "cover"
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "QkrfO",
+                                      "width": 56,
+                                      "height": 56,
+                                      "justifyContent": "center",
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "uWeHh",
+                                          "width": 42,
+                                          "height": 42,
+                                          "cornerRadius": 21,
+                                          "fill": {
+                                            "type": "image",
+                                            "url": "assets/avatars/male3.png",
+                                            "mode": "cover"
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "ypUHU",
+                                      "width": 56,
+                                      "height": 56,
+                                      "justifyContent": "center",
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "NEtmp",
+                                          "width": 42,
+                                          "height": 42,
+                                          "cornerRadius": 21,
+                                          "fill": {
+                                            "type": "image",
+                                            "url": "assets/avatars/male4.png",
+                                            "mode": "cover"
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "cj4TD",
+                                  "gap": 2,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "ACPQH",
+                                      "width": 56,
+                                      "height": 56,
+                                      "justifyContent": "center",
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "ySNtx",
+                                          "width": 42,
+                                          "height": 42,
+                                          "cornerRadius": 21,
+                                          "fill": {
+                                            "type": "image",
+                                            "url": "assets/avatars/male5.png",
+                                            "mode": "cover"
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "Fbu3Y",
+                                      "width": 56,
+                                      "height": 56,
+                                      "justifyContent": "center",
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "DdNkQ",
+                                          "width": 42,
+                                          "height": 42,
+                                          "cornerRadius": 21,
+                                          "fill": {
+                                            "type": "image",
+                                            "url": "assets/avatars/male6.png",
+                                            "mode": "cover"
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "kRvDv",
+                                      "width": 56,
+                                      "height": 56,
+                                      "justifyContent": "center",
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "teZii",
+                                          "width": 42,
+                                          "height": 42,
+                                          "cornerRadius": 21,
+                                          "fill": {
+                                            "type": "image",
+                                            "url": "assets/avatars/male7.png",
+                                            "mode": "cover"
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "MCAbl",
+                      "name": "ncActionBar",
+                      "width": "fill_container",
+                      "fill": "$ui:brand.white",
+                      "layout": "vertical",
+                      "padding": [
+                        14,
+                        20
+                      ],
+                      "children": [
+                        {
+                          "type": "ref",
+                          "id": "MtUTi",
+                          "ref": "ui:CeOUI",
+                          "width": "fill_container",
+                          "descendants": {
+                            "ui:hLf7V": {
+                              "content": "Guardar cliente"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "0hfz1",
+                  "name": "05b'' Foto del cliente — estados del campo",
+                  "clip": true,
+                  "width": 390,
+                  "height": 980,
+                  "fill": "#F4F8FF",
+                  "layout": "vertical",
+                  "gap": 22,
+                  "padding": [
+                    32,
+                    20
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "csCcv",
+                      "content": "Foto elegida",
+                      "fill": "$ui:ds.muted",
+                      "fontFamily": "$ui:font-family",
+                      "fontSize": 12,
+                      "fontWeight": "700",
+                      "letterSpacing": 0.6
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Db9YQ",
+                      "name": "state-foto",
+                      "width": "fill_container",
+                      "fill": "$ui:brand.white",
+                      "cornerRadius": 16,
+                      "layout": "vertical",
+                      "gap": 10,
+                      "padding": 16,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "oYZ9j",
+                          "fill": "$ui:brand.ink",
+                          "content": "Foto del cliente (opcional)",
+                          "fontFamily": "$ui:font-family",
+                          "fontSize": 13,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "ntdVY",
+                          "width": "fill_container",
+                          "gap": 14,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "NoMIc",
+                              "name": "preview (Foto elegida)",
+                              "width": 72,
+                              "height": 72,
+                              "cornerRadius": 36,
+                              "clip": true,
+                              "fill": {
+                                "type": "gradient",
+                                "gradientType": "linear",
+                                "rotation": 160,
+                                "colors": [
+                                  {
+                                    "color": "#F2D2B0",
+                                    "position": 0
+                                  },
+                                  {
+                                    "color": "#C98A5E",
+                                    "position": 1
+                                  }
+                                ]
+                              },
+                              "justifyContent": "center",
+                              "alignItems": "end",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "lAsNp",
+                                  "library": "lucide",
+                                  "icon": "user-round",
+                                  "width": 76,
+                                  "height": 76,
+                                  "fill": "#7A4B2E"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "QtTZF",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 8,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "FltvI",
+                                  "width": "fill_container",
+                                  "cornerRadius": 12,
+                                  "stroke": {
+                                    "fill": "$ui:brand.blue.primary",
+                                    "thickness": 1.5,
+                                    "align": "inside"
+                                  },
+                                  "gap": 8,
+                                  "padding": [
+                                    11,
+                                    14
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "vCsKs",
+                                      "library": "lucide",
+                                      "icon": "camera",
+                                      "width": 18,
+                                      "height": 18,
+                                      "fill": "$ui:brand.blue.primary"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "AmUcD",
+                                      "content": "Tomar foto",
+                                      "fill": "$ui:brand.blue.primary",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "XL027",
+                                  "width": "fill_container",
+                                  "cornerRadius": 12,
+                                  "stroke": {
+                                    "fill": "$ui:brand.blue.primary",
+                                    "thickness": 1.5,
+                                    "align": "inside"
+                                  },
+                                  "gap": 8,
+                                  "padding": [
+                                    11,
+                                    14
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "H77Va",
+                                      "library": "lucide",
+                                      "icon": "image",
+                                      "width": 18,
+                                      "height": 18,
+                                      "fill": "$ui:brand.blue.primary"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "LHx24",
+                                      "content": "Elegir de la galería",
+                                      "fill": "$ui:brand.blue.primary",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "zhRpW",
+                          "content": "O elige un avatar",
+                          "fill": "$ui:ds.muted",
+                          "fontFamily": "$ui:font-family",
+                          "fontSize": 12,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "ECtdv",
+                          "gap": 2,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "EfY3g",
+                              "width": 56,
+                              "height": 56,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "eQ78j",
+                                  "width": 42,
+                                  "height": 42,
+                                  "cornerRadius": 21,
+                                  "fill": {
+                                    "type": "image",
+                                    "url": "assets/avatars/male1.png",
+                                    "mode": "cover"
+                                  }
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "CRTTF",
+                              "width": 56,
+                              "height": 56,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "FRVf8",
+                                  "width": 42,
+                                  "height": 42,
+                                  "cornerRadius": 21,
+                                  "fill": {
+                                    "type": "image",
+                                    "url": "assets/avatars/female2.png",
+                                    "mode": "cover"
+                                  }
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "rUqIa",
+                              "width": 56,
+                              "height": 56,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "Z1qCo",
+                                  "width": 42,
+                                  "height": 42,
+                                  "cornerRadius": 21,
+                                  "fill": {
+                                    "type": "image",
+                                    "url": "assets/avatars/female1.png",
+                                    "mode": "cover"
+                                  }
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "WAKzZ",
+                              "content": "…",
+                              "fill": "$ui:ds.muted",
+                              "fontFamily": "$ui:font-family",
+                              "fontSize": 18,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "fXqHR",
+                      "content": "Preparando foto…",
+                      "fill": "$ui:ds.muted",
+                      "fontFamily": "$ui:font-family",
+                      "fontSize": 12,
+                      "fontWeight": "700",
+                      "letterSpacing": 0.6
+                    },
+                    {
+                      "type": "frame",
+                      "id": "8XZif",
+                      "name": "state-preparando",
+                      "width": "fill_container",
+                      "fill": "$ui:brand.white",
+                      "cornerRadius": 16,
+                      "layout": "vertical",
+                      "gap": 12,
+                      "padding": 16,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "gLYou",
+                          "width": "fill_container",
+                          "gap": 14,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "GDdrB",
+                              "width": 72,
+                              "height": 72,
+                              "cornerRadius": 36,
+                              "fill": "$ui:brand.mist",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "SzdEW",
+                                  "library": "lucide",
+                                  "icon": "loader-circle",
+                                  "width": 28,
+                                  "height": 28,
+                                  "fill": "$ui:brand.blue.primary"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "ISF8d",
+                              "content": "Preparando foto...",
+                              "fill": "$ui:brand.ink",
+                              "fontFamily": "$ui:font-family",
+                              "fontSize": 14,
+                              "fontWeight": "600"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "ref",
+                          "id": "RJcPr",
+                          "ref": "ui:CeOUI",
+                          "width": "fill_container",
+                          "opacity": 0.4,
+                          "descendants": {
+                            "ui:hLf7V": {
+                              "content": "Guardar cliente"
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "xNfFm",
+                      "content": "Avatar elegido sobre la foto",
+                      "fill": "$ui:ds.muted",
+                      "fontFamily": "$ui:font-family",
+                      "fontSize": 12,
+                      "fontWeight": "700",
+                      "letterSpacing": 0.6
+                    },
+                    {
+                      "type": "frame",
+                      "id": "yib19",
+                      "name": "state-avatar",
+                      "width": "fill_container",
+                      "fill": "$ui:brand.white",
+                      "cornerRadius": 16,
+                      "layout": "vertical",
+                      "gap": 10,
+                      "padding": 16,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "SCZJB",
+                          "width": "fill_container",
+                          "gap": 14,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "gy0zB",
+                              "name": "preview (Avatar elegido)",
+                              "width": 72,
+                              "height": 72,
+                              "cornerRadius": 36,
+                              "fill": {
+                                "type": "image",
+                                "url": "assets/avatars/female1.png",
+                                "mode": "cover"
+                              }
+                            },
+                            {
+                              "type": "frame",
+                              "id": "TgNRp",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 8,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "ixTOw",
+                                  "width": "fill_container",
+                                  "cornerRadius": 12,
+                                  "stroke": {
+                                    "fill": "$ui:brand.blue.primary",
+                                    "thickness": 1.5,
+                                    "align": "inside"
+                                  },
+                                  "gap": 8,
+                                  "padding": [
+                                    11,
+                                    14
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "IrWGI",
+                                      "library": "lucide",
+                                      "icon": "camera",
+                                      "width": 18,
+                                      "height": 18,
+                                      "fill": "$ui:brand.blue.primary"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "iSo57",
+                                      "content": "Tomar foto",
+                                      "fill": "$ui:brand.blue.primary",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "wnlrZ",
+                                  "width": "fill_container",
+                                  "cornerRadius": 12,
+                                  "stroke": {
+                                    "fill": "$ui:brand.blue.primary",
+                                    "thickness": 1.5,
+                                    "align": "inside"
+                                  },
+                                  "gap": 8,
+                                  "padding": [
+                                    11,
+                                    14
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "EaPX3",
+                                      "library": "lucide",
+                                      "icon": "image",
+                                      "width": 18,
+                                      "height": 18,
+                                      "fill": "$ui:brand.blue.primary"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "If52P",
+                                      "content": "Elegir de la galería",
+                                      "fill": "$ui:brand.blue.primary",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "LCUNq",
+                          "content": "O elige un avatar",
+                          "fill": "$ui:ds.muted",
+                          "fontFamily": "$ui:font-family",
+                          "fontSize": 12,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "H6kbC",
+                          "gap": 2,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "HTApA",
+                              "width": 56,
+                              "height": 56,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "oWcsE",
+                                  "width": 42,
+                                  "height": 42,
+                                  "cornerRadius": 21,
+                                  "fill": {
+                                    "type": "image",
+                                    "url": "assets/avatars/male1.png",
+                                    "mode": "cover"
+                                  }
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "1iQzv",
+                              "width": 56,
+                              "height": 56,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "0PmaJ",
+                                  "width": 42,
+                                  "height": 42,
+                                  "cornerRadius": 21,
+                                  "fill": {
+                                    "type": "image",
+                                    "url": "assets/avatars/female2.png",
+                                    "mode": "cover"
+                                  }
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "mT1ul",
+                              "width": 56,
+                              "height": 56,
+                              "cornerRadius": 28,
+                              "stroke": {
+                                "fill": "$ui:brand.blue.primary",
+                                "thickness": 2,
+                                "align": "inside"
+                              },
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "zd0SR",
+                                  "width": 42,
+                                  "height": 42,
+                                  "cornerRadius": 21,
+                                  "fill": {
+                                    "type": "image",
+                                    "url": "assets/avatars/female1.png",
+                                    "mode": "cover"
+                                  }
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "pnfu4",
+                              "content": "…",
+                              "fill": "$ui:ds.muted",
+                              "fontFamily": "$ui:font-family",
+                              "fontSize": 18,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "c42k8",
+                  "name": "05h Diálogos — Foto de perfil",
+                  "clip": true,
+                  "width": 390,
+                  "height": 980,
+                  "fill": "#14254A99",
+                  "layout": "vertical",
+                  "gap": 22,
+                  "padding": [
+                    32,
+                    24
+                  ],
+                  "justifyContent": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "4fQwc",
+                      "name": "dlg-camara",
+                      "width": "fill_container",
+                      "fill": "$ui:brand.white",
+                      "cornerRadius": 18,
+                      "layout": "vertical",
+                      "gap": 8,
+                      "padding": [
+                        20,
+                        20,
+                        14,
+                        20
+                      ],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "lK064",
+                          "content": "Sin acceso a la cámara",
+                          "fill": "$ui:brand.ink",
+                          "fontFamily": "$ui:font-family",
+                          "fontSize": 17,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "RZd4A",
+                          "width": "fill_container",
+                          "textGrowth": "fixed-width",
+                          "content": "Para tomar la foto, permite la cámara en Ajustes. También puedes elegir una foto de la galería.",
+                          "fill": "$ui:ds.muted",
+                          "fontFamily": "$ui:font-family",
+                          "fontSize": 14,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "wTvQw",
+                          "width": "fill_container",
+                          "gap": 24,
+                          "justifyContent": "end",
+                          "padding": [
+                            10,
+                            0,
+                            0,
+                            0
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "jmjht",
+                              "content": "Ahora no",
+                              "fill": "$ui:ds.muted",
+                              "fontFamily": "$ui:font-family",
+                              "fontSize": 15,
+                              "fontWeight": "700"
+                            },
+                            {
+                              "type": "text",
+                              "id": "kj5Sx",
+                              "content": "Abrir Ajustes",
+                              "fill": "$ui:brand.blue.primary",
+                              "fontFamily": "$ui:font-family",
+                              "fontSize": 15,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "TiZSC",
+                      "name": "dlg-foto",
+                      "width": "fill_container",
+                      "fill": "$ui:brand.white",
+                      "cornerRadius": 18,
+                      "layout": "vertical",
+                      "gap": 8,
+                      "padding": [
+                        20,
+                        20,
+                        14,
+                        20
+                      ],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "hd1Rm",
+                          "content": "No se pudo usar esta foto",
+                          "fill": "$ui:brand.ink",
+                          "fontFamily": "$ui:font-family",
+                          "fontSize": 17,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "6sTIN",
+                          "width": "fill_container",
+                          "textGrowth": "fixed-width",
+                          "content": "Prueba con otra foto o tómala de nuevo.",
+                          "fill": "$ui:ds.muted",
+                          "fontFamily": "$ui:font-family",
+                          "fontSize": 14,
+                          "fontWeight": "500"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "xwfAO",
+                          "width": "fill_container",
+                          "justifyContent": "end",
+                          "padding": [
+                            10,
+                            0,
+                            0,
+                            0
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "6hA2T",
+                              "content": "Entendido",
+                              "fill": "$ui:brand.blue.primary",
+                              "fontFamily": "$ui:font-family",
+                              "fontSize": 15,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "Hwbbd",
+                  "name": "10b' Editar perfil — Tu foto",
+                  "clip": true,
+                  "width": 390,
+                  "height": 980,
+                  "fill": "#F4F8FF",
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "ref",
+                      "id": "4EBzN",
+                      "ref": "ui:g8L0O",
+                      "width": "fill_container"
+                    },
+                    {
+                      "type": "ref",
+                      "id": "b9AoZ",
+                      "ref": "ui:AFMnH",
+                      "width": "fill_container",
+                      "descendants": {
+                        "ui:Ct4uZ": {
+                          "icon": "x"
+                        },
+                        "ui:XlCal": {
+                          "content": "Editar perfil"
+                        },
+                        "ui:OJ3eJ": {
+                          "enabled": false
+                        },
+                        "ui:zF54G": {
+                          "enabled": false
+                        }
+                      }
+                    },
+                    {
+                      "type": "frame",
+                      "id": "TdFeo",
+                      "name": "epBody",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "layout": "vertical",
+                      "gap": 16,
+                      "padding": [
+                        8,
+                        20
+                      ],
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "uJXbP",
+                          "name": "f-foto",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 10,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "vLNJ9",
+                              "fill": "$ui:brand.ink",
+                              "content": "Tu foto",
+                              "fontFamily": "$ui:font-family",
+                              "fontSize": 13,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "WUsqV",
+                              "width": "fill_container",
+                              "gap": 14,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "5s30o",
+                                  "name": "preview (Foto elegida)",
+                                  "width": 72,
+                                  "height": 72,
+                                  "cornerRadius": 36,
+                                  "clip": true,
+                                  "fill": {
+                                    "type": "gradient",
+                                    "gradientType": "linear",
+                                    "rotation": 160,
+                                    "colors": [
+                                      {
+                                        "color": "#D9C2A6",
+                                        "position": 0
+                                      },
+                                      {
+                                        "color": "#8C6A4F",
+                                        "position": 1
+                                      }
+                                    ]
+                                  },
+                                  "justifyContent": "center",
+                                  "alignItems": "end",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "Ongay",
+                                      "library": "lucide",
+                                      "icon": "user-round",
+                                      "width": 76,
+                                      "height": 76,
+                                      "fill": "#4A3426"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "2G1xE",
+                                  "width": "fill_container",
+                                  "layout": "vertical",
+                                  "gap": 8,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "ArsWM",
+                                      "width": "fill_container",
+                                      "fill": "$ui:brand.white",
+                                      "cornerRadius": 12,
+                                      "stroke": {
+                                        "fill": "$ui:brand.blue.primary",
+                                        "thickness": 1.5,
+                                        "align": "inside"
+                                      },
+                                      "gap": 8,
+                                      "padding": [
+                                        11,
+                                        14
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "ZqYSS",
+                                          "library": "lucide",
+                                          "icon": "camera",
+                                          "width": 18,
+                                          "height": 18,
+                                          "fill": "$ui:brand.blue.primary"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "mUSl4",
+                                          "content": "Tomar foto",
+                                          "fill": "$ui:brand.blue.primary",
+                                          "fontFamily": "$ui:font-family",
+                                          "fontSize": 14,
+                                          "fontWeight": "700"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "xV5ZO",
+                                      "width": "fill_container",
+                                      "fill": "$ui:brand.white",
+                                      "cornerRadius": 12,
+                                      "stroke": {
+                                        "fill": "$ui:brand.blue.primary",
+                                        "thickness": 1.5,
+                                        "align": "inside"
+                                      },
+                                      "gap": 8,
+                                      "padding": [
+                                        11,
+                                        14
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "9BVNO",
+                                          "library": "lucide",
+                                          "icon": "image",
+                                          "width": 18,
+                                          "height": 18,
+                                          "fill": "$ui:brand.blue.primary"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "a696l",
+                                          "content": "Elegir de la galería",
+                                          "fill": "$ui:brand.blue.primary",
+                                          "fontFamily": "$ui:font-family",
+                                          "fontSize": 14,
+                                          "fontWeight": "700"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "6XSs3",
+                              "content": "O elige un avatar",
+                              "fill": "$ui:ds.muted",
+                              "fontFamily": "$ui:font-family",
+                              "fontSize": 12,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "VA7j4",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 6,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "5thN6",
+                                  "gap": 2,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "LaisT",
+                                      "width": 56,
+                                      "height": 56,
+                                      "justifyContent": "center",
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "GhusU",
+                                          "width": 42,
+                                          "height": 42,
+                                          "cornerRadius": 21,
+                                          "fill": {
+                                            "type": "image",
+                                            "url": "assets/avatars/male1.png",
+                                            "mode": "cover"
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "pNLJ0",
+                                      "width": 56,
+                                      "height": 56,
+                                      "justifyContent": "center",
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "yJoNg",
+                                          "width": 42,
+                                          "height": 42,
+                                          "cornerRadius": 21,
+                                          "fill": {
+                                            "type": "image",
+                                            "url": "assets/avatars/female2.png",
+                                            "mode": "cover"
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "IqOz2",
+                                      "width": 56,
+                                      "height": 56,
+                                      "justifyContent": "center",
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "UB54j",
+                                          "width": 42,
+                                          "height": 42,
+                                          "cornerRadius": 21,
+                                          "fill": {
+                                            "type": "image",
+                                            "url": "assets/avatars/female1.png",
+                                            "mode": "cover"
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "vo20B",
+                                      "width": 56,
+                                      "height": 56,
+                                      "justifyContent": "center",
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "1h16J",
+                                          "width": 42,
+                                          "height": 42,
+                                          "cornerRadius": 21,
+                                          "fill": {
+                                            "type": "image",
+                                            "url": "assets/avatars/male2.png",
+                                            "mode": "cover"
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "uRVgB",
+                                      "width": 56,
+                                      "height": 56,
+                                      "justifyContent": "center",
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "WQVCh",
+                                          "width": 42,
+                                          "height": 42,
+                                          "cornerRadius": 21,
+                                          "fill": {
+                                            "type": "image",
+                                            "url": "assets/avatars/male3.png",
+                                            "mode": "cover"
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "PnyNn",
+                                      "width": 56,
+                                      "height": 56,
+                                      "justifyContent": "center",
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "LS9Ta",
+                                          "width": 42,
+                                          "height": 42,
+                                          "cornerRadius": 21,
+                                          "fill": {
+                                            "type": "image",
+                                            "url": "assets/avatars/male4.png",
+                                            "mode": "cover"
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "eCuXc",
+                                  "gap": 2,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "6tXyb",
+                                      "width": 56,
+                                      "height": 56,
+                                      "justifyContent": "center",
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "QfYMC",
+                                          "width": 42,
+                                          "height": 42,
+                                          "cornerRadius": 21,
+                                          "fill": {
+                                            "type": "image",
+                                            "url": "assets/avatars/male5.png",
+                                            "mode": "cover"
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "TusFY",
+                                      "width": 56,
+                                      "height": 56,
+                                      "justifyContent": "center",
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "cpPe8",
+                                          "width": 42,
+                                          "height": 42,
+                                          "cornerRadius": 21,
+                                          "fill": {
+                                            "type": "image",
+                                            "url": "assets/avatars/male6.png",
+                                            "mode": "cover"
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "5vaK1",
+                                      "width": 56,
+                                      "height": 56,
+                                      "justifyContent": "center",
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "frame",
+                                          "id": "9z9OE",
+                                          "width": 42,
+                                          "height": 42,
+                                          "cornerRadius": 21,
+                                          "fill": {
+                                            "type": "image",
+                                            "url": "assets/avatars/male7.png",
+                                            "mode": "cover"
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "ref",
+                          "id": "g1E1W",
+                          "ref": "ui:XHaAT",
+                          "width": "fill_container",
+                          "descendants": {
+                            "ui:flbLp": {
+                              "content": "Nombre completo"
+                            },
+                            "ui:lPkAM": {
+                              "icon": "user"
+                            },
+                            "ui:iaYYl": {
+                              "content": "Carlos Reyes",
+                              "fill": "$ui:brand.ink"
+                            }
+                          }
+                        },
+                        {
+                          "type": "ref",
+                          "id": "E2WFE",
+                          "ref": "ui:XHaAT",
+                          "width": "fill_container",
+                          "descendants": {
+                            "ui:flbLp": {
+                              "content": "Nombre del negocio (opcional)"
+                            },
+                            "ui:lPkAM": {
+                              "icon": "store"
+                            },
+                            "ui:iaYYl": {
+                              "content": "Préstamos Reyes",
+                              "fill": "$ui:brand.ink"
+                            }
+                          }
+                        },
+                        {
+                          "type": "ref",
+                          "id": "QTiqE",
+                          "ref": "ui:XHaAT",
+                          "width": "fill_container",
+                          "descendants": {
+                            "ui:flbLp": {
+                              "content": "Teléfono (opcional)"
+                            },
+                            "ui:lPkAM": {
+                              "icon": "phone"
+                            },
+                            "ui:iaYYl": {
+                              "content": "809-555-0134",
+                              "fill": "$ui:brand.ink"
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "yACOa",
+                      "width": "fill_container",
+                      "fill": "$ui:brand.white",
+                      "layout": "vertical",
+                      "padding": [
+                        14,
+                        20
+                      ],
+                      "children": [
+                        {
+                          "type": "ref",
+                          "id": "vwTg1",
+                          "ref": "ui:CeOUI",
+                          "width": "fill_container",
+                          "descendants": {
+                            "ui:hLf7V": {
+                              "content": "Guardar cambios"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "xYur8",
+              "name": "row-mostrar",
+              "gap": 40,
+              "padding": [
+                40,
+                0,
+                0,
+                0
+              ],
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "AESJm",
+                  "name": "05' Cliente Detalle — con foto",
+                  "clip": true,
+                  "width": 390,
+                  "height": 844,
+                  "fill": "#F4F8FF",
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "ref",
+                      "id": "0AIYh",
+                      "ref": "ui:g8L0O",
+                      "width": "fill_container"
+                    },
+                    {
+                      "type": "ref",
+                      "id": "oRIwU",
+                      "ref": "ui:AFMnH",
+                      "width": "fill_container",
+                      "descendants": {
+                        "ui:XlCal": {
+                          "content": "Cliente"
+                        },
+                        "ui:OJ3eJ": {
+                          "enabled": false
+                        },
+                        "ui:zF54G": {
+                          "icon": "phone"
+                        }
+                      }
+                    },
+                    {
+                      "type": "frame",
+                      "id": "ddJMl",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "layout": "vertical",
+                      "gap": 16,
+                      "padding": [
+                        8,
+                        20
+                      ],
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "ajnDj",
+                          "width": "fill_container",
+                          "fill": "$ui:brand.white",
+                          "cornerRadius": 18,
+                          "layout": "vertical",
+                          "gap": 14,
+                          "padding": 20,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "0Aj74",
+                              "name": "foto 72",
+                              "width": 72,
+                              "height": 72,
+                              "cornerRadius": 36,
+                              "clip": true,
+                              "fill": {
+                                "type": "gradient",
+                                "gradientType": "linear",
+                                "rotation": 160,
+                                "colors": [
+                                  {
+                                    "color": "#F2D2B0",
+                                    "position": 0
+                                  },
+                                  {
+                                    "color": "#C98A5E",
+                                    "position": 1
+                                  }
+                                ]
+                              },
+                              "justifyContent": "center",
+                              "alignItems": "end",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "F9veJ",
+                                  "library": "lucide",
+                                  "icon": "user-round",
+                                  "width": 76,
+                                  "height": 76,
+                                  "fill": "#7A4B2E"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "IzdOB",
+                              "fill": "$ui:brand.blue.deep",
+                              "content": "María Rosa Peralta",
+                              "fontFamily": "$ui:font-family",
+                              "fontSize": 20,
+                              "fontWeight": "700"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "TaKnx",
+                              "fill": "#E8F7F2",
+                              "cornerRadius": 999,
+                              "gap": 6,
+                              "padding": [
+                                4,
+                                10
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "jh0aS",
+                                  "width": 6,
+                                  "height": 6,
+                                  "fill": "#0E7C6B",
+                                  "cornerRadius": 3
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "5wjzu",
+                                  "fill": "#0B4F4A",
+                                  "content": "Al día · Cliente desde 2024",
+                                  "fontFamily": "$ui:font-family",
+                                  "fontSize": 12,
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "Bo4YW",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 8,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "E1NFM",
+                                  "width": "fill_container",
+                                  "gap": 10,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "dOfzP",
+                                      "library": "lucide",
+                                      "icon": "phone",
+                                      "width": 16,
+                                      "height": 16,
+                                      "fill": "$ui:brand.blue.primary"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "3H8qE",
+                                      "fill": "$ui:brand.ink",
+                                      "content": "809-251-2222",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "nerFP",
+                                  "width": "fill_container",
+                                  "gap": 10,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "CTugQ",
+                                      "library": "lucide",
+                                      "icon": "map-pin",
+                                      "width": 16,
+                                      "height": 16,
+                                      "fill": "$ui:brand.blue.primary"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "M4nA3",
+                                      "fill": "$ui:brand.ink",
+                                      "content": "Calle Duarte 24, Santo Domingo",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "2v1pK",
+                                  "width": "fill_container",
+                                  "gap": 10,
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "uagCV",
+                                      "library": "lucide",
+                                      "icon": "id-card",
+                                      "width": 16,
+                                      "height": 16,
+                                      "fill": "$ui:brand.blue.primary"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "VJZkQ",
+                                      "fill": "$ui:brand.ink",
+                                      "content": "Cédula 001-1234567-3",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "500"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "hH6hR",
+                              "width": "fill_container",
+                              "gap": 10,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "GZOoF",
+                                  "width": "fill_container",
+                                  "fill": "$ui:brand.mist",
+                                  "cornerRadius": 10,
+                                  "gap": 6,
+                                  "padding": 10,
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "zZuOT",
+                                      "library": "lucide",
+                                      "icon": "phone",
+                                      "width": 16,
+                                      "height": 16,
+                                      "fill": "$ui:brand.blue.deep"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "QxnIs",
+                                      "fill": "$ui:brand.blue.deep",
+                                      "content": "Llamar",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 13,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "SFkJp",
+                                  "width": "fill_container",
+                                  "fill": "$ui:brand.mist",
+                                  "cornerRadius": 10,
+                                  "gap": 6,
+                                  "padding": 10,
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "7jyDd",
+                                      "library": "lucide",
+                                      "icon": "message-circle",
+                                      "width": 16,
+                                      "height": 16,
+                                      "fill": "$ui:brand.blue.deep"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "5M271",
+                                      "fill": "$ui:brand.blue.deep",
+                                      "content": "WhatsApp",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 13,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "M2lJM",
+                                  "width": "fill_container",
+                                  "fill": "$ui:brand.mist",
+                                  "cornerRadius": 10,
+                                  "gap": 6,
+                                  "padding": 10,
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "Tcl4C",
+                                      "library": "lucide",
+                                      "icon": "map",
+                                      "width": 16,
+                                      "height": 16,
+                                      "fill": "$ui:brand.blue.deep"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "H1lte",
+                                      "fill": "$ui:brand.blue.deep",
+                                      "content": "Mapa",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 13,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "ref",
+                          "id": "S03Z4",
+                          "ref": "ui:MiuZj",
+                          "content": "PRÉSTAMOS ACTIVOS",
+                          "fontFamily": "$ui:font-family"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "jtlnC",
+                          "width": "fill_container",
+                          "fill": "$ui:brand.white",
+                          "cornerRadius": 14,
+                          "layout": "vertical",
+                          "gap": 6,
+                          "padding": 16,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "LbJs4",
+                              "fill": "$ui:brand.ink",
+                              "content": "Préstamo #L-00234",
+                              "fontFamily": "$ui:font-family",
+                              "fontSize": 15,
+                              "fontWeight": "700"
+                            },
+                            {
+                              "type": "text",
+                              "id": "sWDfQ",
+                              "fill": "$ui:brand.blue.deep",
+                              "content": "RD$28,800 · Pago semanal",
+                              "fontFamily": "$ui:font-family",
+                              "fontSize": 12,
+                              "fontWeight": "600"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "Z0Wtf",
+                  "name": "04' Mi ruta — fila con foto",
+                  "clip": true,
+                  "width": 390,
+                  "height": 844,
+                  "fill": "#F4F8FF",
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "ref",
+                      "id": "LRMmz",
+                      "ref": "ui:g8L0O",
+                      "width": "fill_container"
+                    },
+                    {
+                      "type": "ref",
+                      "id": "ZvpRs",
+                      "ref": "ui:AFMnH",
+                      "width": "fill_container",
+                      "descendants": {
+                        "ui:Ct4uZ": {
+                          "enabled": false
+                        },
+                        "ui:XlCal": {
+                          "content": "Mi ruta"
+                        },
+                        "ui:OJ3eJ": {
+                          "content": "Hoy · 2 cobros"
+                        },
+                        "ui:zF54G": {
+                          "enabled": false
+                        }
+                      }
+                    },
+                    {
+                      "type": "frame",
+                      "id": "n1NGq",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 10,
+                      "padding": [
+                        8,
+                        20
+                      ],
+                      "children": [
+                        {
+                          "type": "ref",
+                          "id": "fjBzD",
+                          "ref": "ui:YPQud",
+                          "width": "fill_container",
+                          "descendants": {
+                            "fh0eC": {
+                              "type": "frame",
+                              "width": 42,
+                              "height": 42,
+                              "cornerRadius": 21,
+                              "clip": true,
+                              "fill": {
+                                "type": "gradient",
+                                "gradientType": "linear",
+                                "rotation": 160,
+                                "colors": [
+                                  {
+                                    "color": "#F2D2B0",
+                                    "position": 0
+                                  },
+                                  {
+                                    "color": "#C98A5E",
+                                    "position": 1
+                                  }
+                                ]
+                              },
+                              "justifyContent": "center",
+                              "alignItems": "end",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "library": "lucide",
+                                  "icon": "user-round",
+                                  "width": 46,
+                                  "height": 46,
+                                  "fill": "#7A4B2E"
+                                }
+                              ]
+                            }
+                          }
+                        },
+                        {
+                          "type": "ref",
+                          "id": "yr9Qb",
+                          "ref": "ui:YPQud",
+                          "width": "fill_container",
+                          "descendants": {
+                            "J6eeV": {
+                              "content": "José Núñez"
+                            },
+                            "LxVf9": {
+                              "content": "En mora · 1 préstamo",
+                              "fill": "$ui:brand.orange.deep"
+                            },
+                            "t7tfX": {
+                              "content": "Hoy · Av. Duarte 112"
+                            },
+                            "fh0eC": {
+                              "fill": {
+                                "type": "image",
+                                "url": "assets/avatars/male3.png",
+                                "mode": "cover"
+                              }
+                            },
+                            "R2VDq": {
+                              "content": "RD$1,800"
+                            }
+                          }
+                        },
+                        {
+                          "type": "ref",
+                          "id": "6wvEw",
+                          "ref": "ui:YPQud",
+                          "width": "fill_container",
+                          "descendants": {
+                            "J6eeV": {
+                              "content": "Rafael Méndez"
+                            },
+                            "LxVf9": {
+                              "content": "Al día · 1 préstamo"
+                            },
+                            "t7tfX": {
+                              "content": "Hoy · Los Mina"
+                            },
+                            "fh0eC": {
+                              "type": "frame",
+                              "width": 42,
+                              "height": 42,
+                              "cornerRadius": 21,
+                              "fill": "$ui:brand.mist",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "content": "RM",
+                                  "fill": "$ui:brand.blue.deep",
+                                  "fontFamily": "$ui:font-family",
+                                  "fontSize": 14,
+                                  "fontWeight": "700"
+                                }
+                              ]
+                            },
+                            "R2VDq": {
+                              "content": "RD$950"
+                            },
+                            "hwMxa": {
+                              "enabled": false
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "kEaeK",
+                  "name": "10' Mi cuenta — con foto",
+                  "clip": true,
+                  "width": 390,
+                  "height": 844,
+                  "fill": "#F4F8FF",
+                  "layout": "vertical",
+                  "gap": 16,
+                  "children": [
+                    {
+                      "type": "ref",
+                      "id": "ZPX9A",
+                      "ref": "ui:g8L0O",
+                      "width": "fill_container"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "xc7pr",
+                      "width": "fill_container",
+                      "padding": [
+                        4,
+                        20
+                      ],
+                      "gap": 10,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "APKou",
+                          "library": "lucide",
+                          "icon": "chevron-left",
+                          "width": 24,
+                          "height": 24,
+                          "fill": "$ui:brand.blue.deep"
+                        },
+                        {
+                          "type": "text",
+                          "id": "yvgSE",
+                          "content": "Mi cuenta",
+                          "fill": "$ui:brand.blue.deep",
+                          "fontFamily": "$ui:font-family",
+                          "fontSize": 26,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "1YgSX",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 16,
+                      "padding": [
+                        0,
+                        20
+                      ],
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "e5Vgm",
+                          "name": "profileCard",
+                          "width": "fill_container",
+                          "fill": "$ui:brand.blue.deep",
+                          "cornerRadius": 18,
+                          "gap": 14,
+                          "padding": 18,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "2V79g",
+                              "name": "foto 60",
+                              "width": 60,
+                              "height": 60,
+                              "cornerRadius": 30,
+                              "clip": true,
+                              "stroke": {
+                                "fill": "#FFFFFF",
+                                "thickness": 2,
+                                "align": "inside"
+                              },
+                              "fill": {
+                                "type": "gradient",
+                                "gradientType": "linear",
+                                "rotation": 160,
+                                "colors": [
+                                  {
+                                    "color": "#D9C2A6",
+                                    "position": 0
+                                  },
+                                  {
+                                    "color": "#8C6A4F",
+                                    "position": 1
+                                  }
+                                ]
+                              },
+                              "justifyContent": "center",
+                              "alignItems": "end",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "1dVGd",
+                                  "library": "lucide",
+                                  "icon": "user-round",
+                                  "width": 64,
+                                  "height": 64,
+                                  "fill": "#4A3426"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "ooHim",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 3,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "ytapo",
+                                  "content": "Carlos Reyes",
+                                  "fill": "#FFFFFF",
+                                  "fontFamily": "$ui:font-family",
+                                  "fontSize": 18,
+                                  "fontWeight": "700"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "EmxSE",
+                                  "content": "Prestamista independiente",
+                                  "fill": "$ui:brand.blue.sky",
+                                  "fontFamily": "$ui:font-family",
+                                  "fontSize": 13,
+                                  "fontWeight": "600"
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "D8Idv",
+                                  "fill": "#FFFFFF26",
+                                  "cornerRadius": 999,
+                                  "padding": [
+                                    3,
+                                    8
+                                  ],
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "mqjAq",
+                                      "content": "Respaldo activo · hace 2h",
+                                      "fill": "#FFFFFF",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 11,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "iSdbM",
+                          "name": "setupCard (sin perfil)",
+                          "width": "fill_container",
+                          "fill": "$ui:brand.white",
+                          "cornerRadius": 14,
+                          "gap": 12,
+                          "padding": 14,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "pIMKC",
+                              "width": 40,
+                              "height": 40,
+                              "cornerRadius": 20,
+                              "fill": "$ui:brand.mist",
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "M4if4",
+                                  "library": "lucide",
+                                  "icon": "plus",
+                                  "width": 18,
+                                  "height": 18,
+                                  "fill": "$ui:brand.blue.primary"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "uJKSl",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 2,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "zvd5Z",
+                                  "content": "Configura tu perfil",
+                                  "fill": "$ui:brand.ink",
+                                  "fontFamily": "$ui:font-family",
+                                  "fontSize": 14,
+                                  "fontWeight": "700"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "gpczb",
+                                  "width": "fill_container",
+                                  "textGrowth": "fixed-width",
+                                  "content": "Agrega tu nombre y foto para personalizar la app.",
+                                  "fill": "$ui:ds.muted",
+                                  "fontFamily": "$ui:font-family",
+                                  "fontSize": 12,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "icon",
+                              "id": "4AaSc",
+                              "library": "lucide",
+                              "icon": "chevron-right",
+                              "width": 18,
+                              "height": 18,
+                              "fill": "$ui:ds.muted"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ]
     }
