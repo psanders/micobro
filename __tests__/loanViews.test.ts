@@ -540,7 +540,12 @@ describe("buildPaymentReceipt", () => {
     expect(receipt!.paymentId).toBe("p2");
     expect(receipt!.customerName).toBe("José Núñez");
     expect(receipt!.totalCents).toBe(270000);
-    expect(receipt!.lines).toEqual([{ label: "Cuota 2/12", amountCents: 270000 }]);
+    // 270000 on a 268800 cuota: the RD$12 extra from p1 finishes into cuota 2,
+    // and this payment's own extra goes to cuota 3 (issue #204).
+    expect(receipt!.lines).toEqual([
+      { label: "Cuota 2/12", amountCents: 267600 },
+      { label: "Abono a cuota 3/12", amountCents: 2400 }
+    ]);
   });
 
   it("combines a mora row and an installment row from the same cobro into one receipt", () => {
@@ -567,7 +572,8 @@ describe("buildPaymentReceipt", () => {
     expect(fromCuota!.totalCents).toBe(285000);
     expect(fromMora!.lines).toEqual([
       { label: "Mora (prioridad)", amountCents: 15000 },
-      { label: "Cuota 4/12", amountCents: 270000 }
+      { label: "Cuota 4/12", amountCents: 265200 },
+      { label: "Abono a cuota 5/12", amountCents: 4800 }
     ]);
     expect(fromCuota!.lines).toEqual(fromMora!.lines);
     // Tapping either sibling row opens the same receipt, same number.

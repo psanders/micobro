@@ -204,6 +204,26 @@ describe("buildReceiptBytes", () => {
     }
   });
 
+  // Issue #204: the multi-cuota labels keep their cuota number on paper,
+  // even with the widest realistic amounts (pad() shortens the label first).
+  it("prints the multi-cuota labels without cutting them", () => {
+    const lines = printedLines({
+      ...sampleReceipt,
+      lines: [
+        { label: "Abono a cuota 120/120", amountCents: 999900 },
+        { label: "Cuota 120/120", amountCents: 15000000 },
+        { label: "Cuotas 100-120/120", amountCents: 150000000 }
+      ],
+      totalCents: 165999900
+    });
+    for (const label of ["Abono a cuota 120/120:", "Cuota 120/120:", "Cuotas 100-120/120:"]) {
+      const printed = lines.find((l) => l.startsWith(label));
+      expect(printed).toBeDefined();
+      expect(printed).not.toContain("...");
+      expect(printed!.length).toBeLessThanOrEqual(32);
+    }
+  });
+
   // Issue #115 — a two-surname Dominican name routinely pushes "Cliente: "
   // past LINE_WIDTH; the printer's own overflow-wrap looks like a misprint.
   it("truncates a customer name that would overflow the Cliente line", () => {

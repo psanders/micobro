@@ -373,43 +373,45 @@ const todayAt = (hour: number, minute: number) => {
 
 export const paymentFixtures: Payment[] = [
   // loan-1 (María Rosa): cuotas 1–3.
-  payment("payment-1", "loan-1", 240000, daysAgo(21)),
-  payment("payment-2", "loan-1", 240000, daysAgo(14)),
-  payment("payment-3", "loan-1", 240000, daysAgo(7), "transfer"),
+  payment("payment-1", "loan-1", 264000, daysAgo(21)),
+  payment("payment-2", "loan-1", 264000, daysAgo(14)),
+  payment("payment-3", "loan-1", 264000, daysAgo(7), "transfer"),
   // loan-2 (María Rosa, paid off).
-  payment("payment-4", "loan-2", 65000, daysAgo(185)),
-  payment("payment-5", "loan-2", 65000, daysAgo(170)),
-  payment("payment-6", "loan-2", 65000, daysAgo(155)),
-  payment("payment-7", "loan-2", 65000, daysAgo(140)),
-  payment("payment-8", "loan-2", 65000, daysAgo(125)),
-  payment("payment-9", "loan-2", 65000, daysAgo(110)),
-  payment("payment-10", "loan-2", 65000, daysAgo(95)),
-  payment("payment-11", "loan-2", 45000, daysAgo(30), "transfer"),
-  // loan-3 (José Núñez): cuotas 1–3. 270000 = the interest-inclusive cuota
+  payment("payment-4", "loan-2", 67500, daysAgo(185)),
+  payment("payment-5", "loan-2", 67500, daysAgo(170)),
+  payment("payment-6", "loan-2", 67500, daysAgo(155)),
+  payment("payment-7", "loan-2", 67500, daysAgo(140)),
+  payment("payment-8", "loan-2", 67500, daysAgo(125)),
+  payment("payment-9", "loan-2", 67500, daysAgo(110)),
+  payment("payment-10", "loan-2", 67500, daysAgo(95)),
+  payment("payment-11", "loan-2", 67500, daysAgo(30), "transfer"),
+  // loan-3 (José Núñez): cuotas 1–3. 268800 = the interest-inclusive cuota
   // for principal 2880000 @ 1200 bps / 12 (see lib/loans/loanMath.ts).
-  payment("payment-12", "loan-3", 270000, daysAgo(24)),
-  payment("payment-13", "loan-3", 270000, daysAgo(17)),
-  payment("payment-14", "loan-3", 270000, daysAgo(10)),
+  // Every principal row here is an exact cuota, so Histórico and the
+  // receipts read "Cuota N" (see lib/loans/cuotaCoverage.ts).
+  payment("payment-12", "loan-3", 268800, daysAgo(24)),
+  payment("payment-13", "loan-3", 268800, daysAgo(17)),
+  payment("payment-14", "loan-3", 268800, daysAgo(10)),
   // loan-4 (Felipe Taveras): cuota 1.
-  payment("payment-15", "loan-4", 360000, daysAgo(13)),
+  payment("payment-15", "loan-4", 396000, daysAgo(13)),
   // loan-5 (Pedro Cabrera): cuotas 1–2 + this morning's cobro.
-  payment("payment-16", "loan-5", 180000, daysAgo(28)),
-  payment("payment-17", "loan-5", 180000, daysAgo(14)),
-  payment("payment-18", "loan-5", 180000, todayAt(9, 14)),
+  payment("payment-16", "loan-5", 196200, daysAgo(28)),
+  payment("payment-17", "loan-5", 196200, daysAgo(14)),
+  payment("payment-18", "loan-5", 196200, todayAt(9, 14)),
   // loan-6 (Luis Pérez): cuotas 1–6.
-  payment("payment-19", "loan-6", 180000, daysAgo(42)),
-  payment("payment-20", "loan-6", 180000, daysAgo(35)),
-  payment("payment-21", "loan-6", 180000, daysAgo(28)),
-  payment("payment-22", "loan-6", 180000, daysAgo(21)),
-  payment("payment-23", "loan-6", 180000, daysAgo(14), "transfer"),
-  payment("payment-24", "loan-6", 180000, daysAgo(7)),
+  payment("payment-19", "loan-6", 199800, daysAgo(42)),
+  payment("payment-20", "loan-6", 199800, daysAgo(35)),
+  payment("payment-21", "loan-6", 199800, daysAgo(28)),
+  payment("payment-22", "loan-6", 199800, daysAgo(21)),
+  payment("payment-23", "loan-6", 199800, daysAgo(14), "transfer"),
+  payment("payment-24", "loan-6", 199800, daysAgo(7)),
   // loan-9 (Ana Figueroa): cuotas 1–2.
-  payment("payment-25", "loan-9", 210000, daysAgo(14)),
-  payment("payment-26", "loan-9", 210000, daysAgo(7)),
+  payment("payment-25", "loan-9", 231000, daysAgo(14)),
+  payment("payment-26", "loan-9", 231000, daysAgo(7)),
   // loan-10 (Ramón Ortiz): cuotas 1–3.
-  payment("payment-27", "loan-10", 195000, daysAgo(21)),
-  payment("payment-28", "loan-10", 195000, daysAgo(14)),
-  payment("payment-29", "loan-10", 195000, daysAgo(7)),
+  payment("payment-27", "loan-10", 214500, daysAgo(21)),
+  payment("payment-28", "loan-10", 214500, daysAgo(14)),
+  payment("payment-29", "loan-10", 214500, daysAgo(7)),
   // loan-11 (Luis Pérez, crédito abierto): two interest-only cycles
   // (RD$500 each, see lib/loans/openCredit.ts) — balance stays RD$10,000,
   // cycle 3 (current) is still pending.

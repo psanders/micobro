@@ -12,10 +12,10 @@ import {
   buildReceiptNumberIndex,
   canonicalReceiptNumbers,
   cobroReceiptLines,
-  cuotaNumbersByPaymentId,
   loanEndDate
 } from "../loans/loanViews";
 import { effectiveLoanType } from "../loans/loan.schema";
+import { coverageByPaymentId } from "../loans/cuotaCoverage";
 import { openCreditReceiptBreakdown } from "../loans/openCredit";
 import { tradicionalPlusReceipt, tradicionalPlusState } from "../loans/tradicionalPlus";
 import { formatShortDate } from "../utils/dates";
@@ -170,19 +170,20 @@ export function createCollectPayment({ db }: CollectPaymentDeps) {
             formatShortDate
           )
         : null;
-    // Tradicional Plus: the penalty line names the date the cuota moved to,
-    // and the lines are the ones a reprint rebuilds.
+    // Tradicional and Tradicional Plus: the lines come from the rows just
+    // written, the same ones a reprint rebuilds (issue #204); Plus's penalty
+    // line names the date the cuota moved to.
     const plus =
       loan && isPlus
         ? tradicionalPlusReceipt(loan, [...loanPayments, ...created], created, formatShortDate)
         : null;
-    const plusLines =
-      loan && plus
+    const termLines =
+      loan && !isOpenCredit
         ? cobroReceiptLines(
             loan,
             created,
-            cuotaNumbersByPaymentId(loan, [...loanPayments, ...created]),
-            plus.penaltyLine
+            coverageByPaymentId(loan, [...loanPayments, ...created]),
+            plus?.penaltyLine ?? null
           )
         : null;
 
@@ -193,7 +194,7 @@ export function createCollectPayment({ db }: CollectPaymentDeps) {
       totalCents: input.amountCents,
       method: input.method,
       customerName: customer?.name ?? "Cliente",
-      lines: breakdown?.lines ?? plusLines ?? input.lines,
+      lines: breakdown?.lines ?? termLines ?? input.lines,
       // `null`, not paidAt: a substituted date would print "Inicio: <hoy>" on
       // a receipt the customer keeps for months, asserting the loan started
       // the day of the cobro. The renderers drop the row instead — see the

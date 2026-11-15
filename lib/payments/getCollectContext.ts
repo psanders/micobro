@@ -6,6 +6,7 @@ import { z } from "zod/v4";
 import { withErrorHandlingAndValidation } from "../utils/withErrorHandlingAndValidation";
 import { customers, loans, payments } from "../db/schema";
 import { buildLoanDetailView, loanCode } from "../loans/loanViews";
+import { currentCuotaRemainingCents, scheduleCents } from "../loans/cuotaCoverage";
 import { cuotaCents } from "../loans/loanMath";
 import { computeLoanMora, loanMoraPolicy } from "../loans/mora";
 import { effectiveLoanType } from "../loans/loan.schema";
@@ -72,6 +73,8 @@ export function createGetCollectContext({ db }: GetCollectContextDeps) {
         business: null,
         // "Solo interés" is the default amount for an open-credit cobro.
         cuotaCents: state.interestDueCents,
+        scheduleCents: [],
+        principalPaidCents: 0,
         // Meaningless for open credit — no fixed installment schedule.
         currentInstallmentNumber: 0,
         installmentsTotal: 0,
@@ -101,6 +104,7 @@ export function createGetCollectContext({ db }: GetCollectContextDeps) {
     });
 
     const cuota = cuotaCents(loan.principalCents, loan.interestRateBps, loan.termCount);
+    const schedule = scheduleCents(loan);
     return {
       loanId: loan.id,
       loanCode: loanCode(loan.id),
@@ -108,7 +112,14 @@ export function createGetCollectContext({ db }: GetCollectContextDeps) {
       customerName: view.customerName,
       customerAvatarKey: null,
       business: null,
-      cuotaCents: Math.min(cuota, view.balanceCents),
+      // Plain Tradicional charges what's left of the current cuota, so a
+      // round-up shows once (issue #204). Tradicional Plus keeps the full
+      // cuota: collectPayment requires exactly `nextCuotaCents` there.
+      cuotaCents: view.tradicionalPlus
+        ? Math.min(cuota, view.balanceCents)
+        : currentCuotaRemainingCents(schedule, view.paidCents, view.balanceCents),
+      scheduleCents: schedule,
+      principalPaidCents: view.paidCents,
       currentInstallmentNumber: Math.min(view.installmentsPaid + 1, view.installmentsTotal),
       installmentsTotal: view.installmentsTotal,
       moraCents,

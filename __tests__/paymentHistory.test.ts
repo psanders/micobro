@@ -51,8 +51,9 @@ const payment = (
 
 // 264000 = the interest-inclusive cuota for principal 2880000 @ 1000 bps / 12
 // (see lib/loans/loanMath.ts); these payments default to a slightly larger
-// 265000 to model a lender who rounds a cobro up in the field — still a
-// full cuota by the `isFullCuota` (>=) check in buildPaymentHistoryView.
+// 265000 to model a lender who rounds a cobro up in the field. Each extra
+// RD$10 lands on the next cuota, so the row reads "Cuota N + abono" (issue
+// #204: exact mapping, no tolerance).
 describe("buildPaymentHistoryView", () => {
   it("totals collections, numbers full cuotas, and lists newest first", () => {
     const payments = [
@@ -69,8 +70,8 @@ describe("buildPaymentHistoryView", () => {
     expect(view.moraPaidCents).toBe(0);
     expect(view.lastPaymentAt).toEqual(daysAgo(7));
     expect(view.entries).toHaveLength(3);
-    expect(view.entries[0]!.label).toBe("Cuota 3");
-    expect(view.entries[2]!.label).toBe("Cuota 1");
+    expect(view.entries[0]!.label).toBe("Cuota 3 + abono");
+    expect(view.entries[2]!.label).toBe("Cuota 1 + abono");
   });
 
   it("labels a partial amount as an abono and a mora row separately", () => {
@@ -86,7 +87,7 @@ describe("buildPaymentHistoryView", () => {
     expect(view.installmentsPaid).toBe(2);
     expect(view.moraPaidCents).toBe(7500);
     const abono = view.entries.find((e) => e.id === "payment-2");
-    expect(abono?.label).toBe("Abono a cuenta");
+    expect(abono?.label).toBe("Abono a cuota 2");
     const mora = view.entries.find((e) => e.id === "payment-4");
     expect(mora?.label).toBe("Pago de mora");
   });
