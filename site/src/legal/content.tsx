@@ -9,7 +9,7 @@
 import type { LegalSection } from "../pages/LegalPage";
 import { ContactEmail as Mail, LegalLink as A } from "./LegalLink";
 
-export const UPDATED = "Última actualización: 21 de octubre de 2026";
+export const UPDATED = "Última actualización: 15 de noviembre de 2026";
 
 export const privacyIntro =
   "Micobro es una app para prestamistas independientes en la República Dominicana. Esta política explica qué datos maneja la app, dónde se guardan y qué control tienes sobre ellos. En corto: tus datos viven en tu teléfono, Micobro no tiene servidores que los reciban y nunca los vendemos ni los compartimos.";
@@ -17,7 +17,7 @@ export const privacyIntro =
 export const privacySections: LegalSection[] = [
   {
     heading: "1. Qué datos maneja la app",
-    body: "Solo lo que tú escribes: tus clientes (nombre, teléfono, dirección y cédula si la anotas), tus préstamos, pagos, visitas y cuadres de caja, y tu perfil (nombre, negocio, teléfono y avatar). Tu PIN se guarda cifrado en el teléfono."
+    body: "Solo lo que tú escribes: tus clientes (nombre, teléfono, dirección y cédula si la anotas), tus préstamos, pagos, visitas y cuadres de caja, y tu perfil (nombre, negocio, teléfono y avatar). Si las agregas, también la foto de tus clientes y la tuya: se guardan en el teléfono y, si conectas Google, en las pestañas «Fotos» y «Extra» de tu hoja. Tu PIN se guarda cifrado en el teléfono."
   },
   {
     heading: "2. Dónde se guardan",
@@ -29,7 +29,7 @@ export const privacySections: LegalSection[] = [
   },
   {
     heading: "4. Permisos del teléfono",
-    body: "Bluetooth: para imprimir recibos en una impresora térmica; no se usa para saber tu ubicación. Micrófono y grabación de pantalla: solo cuando tú inicias «Enviar feedback» y aceptas; la grabación se queda en tu teléfono. WhatsApp: la app solo abre WhatsApp con el mensaje listo; el envío lo haces tú."
+    body: "Bluetooth: para imprimir recibos en una impresora térmica; no se usa para saber tu ubicación. Cámara: solo cuando tocas «Tomar foto» para la foto de un cliente o la tuya. Galería: «Elegir de la galería» abre el selector de fotos del teléfono, sin pedir permiso, y la app solo recibe la foto que escojas. Micrófono y grabación de pantalla: solo cuando tú inicias «Enviar feedback» y aceptas; la grabación se queda en tu teléfono. WhatsApp: la app solo abre WhatsApp con el mensaje listo; el envío lo haces tú."
   },
   {
     heading: "5. Con quién los compartimos",
@@ -75,7 +75,7 @@ export const deletionIntro =
 export const deletionSections: LegalSection[] = [
   {
     heading: "1. En la app",
-    body: "Abre Mi cuenta → Eliminar mis datos, confirma y escribe tu PIN. La app borra tus clientes, préstamos, pagos, visitas, cuadres, tu perfil y tu PIN, y desconecta tu cuenta de Google. Esto no se puede deshacer."
+    body: "Abre Mi cuenta → Eliminar mis datos, confirma y escribe tu PIN. La app borra tus clientes y sus fotos, préstamos, pagos, visitas, cuadres, tu perfil con tu foto y tu PIN, y desconecta tu cuenta de Google. Esto no se puede deshacer."
   },
   {
     heading: "2. Tu respaldo en Google Drive",

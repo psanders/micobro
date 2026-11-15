@@ -87,8 +87,9 @@ own** Google Drive. Declared conservatively as "collected" for that backup.
 | Personal info → **Address**                                              | Yes       | No     | Optional (only with Google backup) | App functionality                     |
 | Personal info → **Other info** (cédula, if the lender records it)        | Yes       | No     | Optional                           | App functionality                     |
 | Financial info → **Other financial info** (loans, payments, cash closes) | Yes       | No     | Optional (only with Google backup) | App functionality                     |
+| Photos and videos → **Photos** (customer and lender profile photos)      | Yes       | No     | Optional                           | App functionality                     |
 
-**Not collected:** location, contacts, photos/videos, audio (the feedback
+**Not collected:** location, contacts, videos, audio (the feedback
 recorder keeps its recording on the device), messages, app activity, web
 browsing, app info and performance, device or other IDs.
 
