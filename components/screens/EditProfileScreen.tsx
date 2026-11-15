@@ -1,16 +1,10 @@
 /**
  * Copyright (C) 2026 by Pedro Sanders. MIT License.
  *
- * Editar perfil — captures the lender's own identity (name, avatar,
- * nombre del negocio, teléfono). Modeled on EditCustomerFormScreen's
- * fields/layout (ScreenHeader, theme tokens) since no corresponding
- * pencil.pen frame exists for this screen yet.
- *
- * The avatar selector is a minimal inline picker over the app's curated
- * `AVATAR_KEYS` (mirrored from components/avatars.ts's private `AVATARS`
- * record — that file isn't touched here to avoid conflicting with the
- * parallel avatar-infrastructure branch). This may later unify with the
- * customer-facing `AvatarPicker` once that lands.
+ * Editar perfil — captures the lender's own identity (photo or avatar,
+ * name, nombre del negocio, teléfono). Modeled on EditCustomerFormScreen's
+ * fields/layout (ScreenHeader, theme tokens). "Tu foto" is the same
+ * PhotoField as the customer forms (app.pen "Foto de perfil").
  */
 import { useEffect, useState } from "react";
 import {
@@ -20,7 +14,6 @@ import {
   Pressable,
   ActivityIndicator,
   ScrollView,
-  Image,
   StyleSheet
 } from "react-native";
 import { useRouter } from "expo-router";
@@ -28,9 +21,9 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useProfileRepo } from "../../lib/repo/RepoProvider";
 import { useAsync } from "../../lib/hooks/useAsync";
 import { ValidationError } from "../../lib/errors/ValidationError";
-import { AVATAR_KEYS, type AvatarKey } from "../../lib/profile/profile.schema";
+import type { AvatarKey } from "../../lib/profile/profile.schema";
 import { formatPhoneInput, normalizePhone } from "../../lib/utils/text";
-import { avatarSource } from "../avatars";
+import { PhotoField, type PhotoValue } from "../PhotoField";
 import { ScreenHeader } from "../ScreenHeader";
 import { colors, fonts, radius } from "../../lib/ui/theme";
 
@@ -49,7 +42,10 @@ export function EditProfileScreen() {
   const profile = useAsync(() => profileRepo.get(), []);
 
   const [name, setName] = useState("");
-  const [avatarKey, setAvatarKey] = useState<AvatarKey | undefined>(undefined);
+  const [photoValue, setPhotoValue] = useState<PhotoValue>({ photo: null, avatarKey: null });
+  // Untouched → `photo` is omitted on save, so the stored photo is kept.
+  const [photoTouched, setPhotoTouched] = useState(false);
+  const [preparingPhoto, setPreparingPhoto] = useState(false);
   const [businessName, setBusinessName] = useState("");
   const [phone, setPhone] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -58,7 +54,11 @@ export function EditProfileScreen() {
   useEffect(() => {
     if (!profile.data) return;
     setName(profile.data.name);
-    setAvatarKey((profile.data.avatarKey as AvatarKey | null) ?? undefined);
+    setPhotoValue({
+      photo: profile.data.photo,
+      avatarKey: (profile.data.avatarKey as AvatarKey | null) ?? null
+    });
+    setPhotoTouched(false);
     setBusinessName(profile.data.businessName ?? "");
     setPhone(profile.data.phone ?? "");
   }, [profile.data]);
@@ -69,7 +69,8 @@ export function EditProfileScreen() {
     try {
       await profileRepo.set({
         name,
-        avatarKey,
+        avatarKey: photoValue.avatarKey ?? undefined,
+        ...(photoTouched ? { photo: photoValue.photo } : {}),
         businessName: businessName || undefined,
         phone: phone || undefined
       });
@@ -92,30 +93,18 @@ export function EditProfileScreen() {
           contentContainerStyle={[styles.content, { paddingBottom: 24 + insets.bottom }]}
           keyboardShouldPersistTaps="handled"
         >
-          <View style={styles.field}>
-            <Text style={styles.label}>Avatar</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.avatarRow}>
-              {AVATAR_KEYS.map((key) => {
-                const selected = avatarKey === key;
-                const source = avatarSource(key);
-                return (
-                  <Pressable
-                    key={key}
-                    onPress={() => setAvatarKey(key)}
-                    style={[styles.avatarOption, selected && styles.avatarOptionSelected]}
-                  >
-                    {source ? (
-                      <Image source={source} style={styles.avatarImage} />
-                    ) : (
-                      <View style={styles.avatarImageWrap}>
-                        <Text style={styles.avatarFallback}>{key.slice(0, 2).toUpperCase()}</Text>
-                      </View>
-                    )}
-                  </Pressable>
-                );
-              })}
-            </ScrollView>
-          </View>
+          <PhotoField
+            label="Tu foto"
+            sheetTitle="Tu foto"
+            name={name}
+            fallbackName="Cobrador"
+            value={photoValue}
+            onChange={(next) => {
+              setPhotoValue(next);
+              setPhotoTouched(true);
+            }}
+            onBusyChange={setPreparingPhoto}
+          />
 
           <View style={styles.field}>
             <Text style={styles.label}>Nombre completo</Text>
@@ -153,7 +142,11 @@ export function EditProfileScreen() {
 
           {error && <Text style={styles.error}>{error}</Text>}
 
-          <Pressable style={styles.submitButton} onPress={handleSubmit} disabled={submitting}>
+          <Pressable
+            style={[styles.submitButton, preparingPhoto && styles.submitButtonDisabled]}
+            onPress={handleSubmit}
+            disabled={submitting || preparingPhoto}
+          >
             <Text style={styles.submitButtonText}>
               {submitting ? "Guardando..." : "Guardar cambios"}
             </Text>
@@ -170,29 +163,6 @@ const styles = StyleSheet.create({
   content: { paddingHorizontal: 20, paddingTop: 8, paddingBottom: 24, gap: 20 },
   field: { gap: 8 },
   label: { fontSize: 13, fontFamily: fonts.semiBold, color: colors.muted },
-  avatarRow: { flexDirection: "row" },
-  avatarOption: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    marginRight: 12,
-    borderWidth: 2,
-    borderColor: "transparent",
-    alignItems: "center",
-    justifyContent: "center"
-  },
-  avatarOptionSelected: { borderColor: colors.brandPrimary },
-  avatarImageWrap: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: colors.mist,
-    alignItems: "center",
-    justifyContent: "center",
-    overflow: "hidden"
-  },
-  avatarImage: { width: 48, height: 48, borderRadius: 24 },
-  avatarFallback: { fontSize: 12, fontFamily: fonts.bold, color: colors.brandDeep },
   input: {
     borderWidth: 1,
     borderColor: colors.hairline,
@@ -211,5 +181,6 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     alignItems: "center"
   },
+  submitButtonDisabled: { opacity: 0.5 },
   submitButtonText: { color: colors.white, fontSize: 15, fontFamily: fonts.semiBold }
 });

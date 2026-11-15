@@ -30,6 +30,8 @@ interface LoanOptionsSheetProps {
   subtitle: string;
   options: LoanOption[];
   onClose: () => void;
+  /** Called once the sheet has finished closing (iOS only, like Modal's). */
+  onDismiss?: () => void;
 }
 
 export function LoanOptionsSheet({
@@ -37,11 +39,18 @@ export function LoanOptionsSheet({
   title,
   subtitle,
   options,
-  onClose
+  onClose,
+  onDismiss
 }: LoanOptionsSheetProps) {
   const insets = useSafeAreaInsets();
   return (
-    <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
+    <Modal
+      visible={visible}
+      animationType="slide"
+      transparent
+      onRequestClose={onClose}
+      onDismiss={onDismiss}
+    >
       <Pressable style={styles.backdrop} onPress={onClose} accessibilityLabel="Cerrar" />
       <View style={[styles.sheet, { paddingBottom: 30 + insets.bottom }]}>
         <View style={styles.grabber} />

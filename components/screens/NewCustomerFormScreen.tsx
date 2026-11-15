@@ -9,8 +9,7 @@ import { useCustomerRepo } from "../../lib/repo/RepoProvider";
 import { ValidationError } from "../../lib/errors/ValidationError";
 import { formatCedulaInput, normalizeCedula } from "../../lib/utils/cedula";
 import { formatPhoneInput, normalizePhone } from "../../lib/utils/text";
-import { AvatarPicker } from "../AvatarPicker";
-import type { AvatarKey } from "../avatars";
+import { PhotoField, type PhotoValue } from "../PhotoField";
 import { colors, fonts, radius } from "../../lib/ui/theme";
 
 /** Real-time hint under a field being formatted as the user types. */
@@ -29,7 +28,8 @@ export function NewCustomerFormScreen() {
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
   const [cedula, setCedula] = useState("");
-  const [avatarKey, setAvatarKey] = useState<AvatarKey | null>(null);
+  const [photoValue, setPhotoValue] = useState<PhotoValue>({ photo: null, avatarKey: null });
+  const [preparingPhoto, setPreparingPhoto] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -42,7 +42,8 @@ export function NewCustomerFormScreen() {
         phone,
         address: address || undefined,
         cedula: cedula || undefined,
-        avatarKey: avatarKey ?? undefined
+        avatarKey: photoValue.avatarKey ?? undefined,
+        photo: photoValue.photo ?? undefined
       });
       router.back();
     } catch (err) {
@@ -101,14 +102,22 @@ export function NewCustomerFormScreen() {
         <Text style={styles.hint}>{formatHint(normalizeCedula(cedula), 11, "001-1234567-3")}</Text>
       </View>
 
-      <View style={styles.field}>
-        <Text style={styles.label}>Avatar (opcional)</Text>
-        <AvatarPicker name={name || "Cliente"} value={avatarKey} onChange={setAvatarKey} />
-      </View>
+      <PhotoField
+        label="Foto del cliente (opcional)"
+        sheetTitle="Foto del cliente"
+        name={name}
+        value={photoValue}
+        onChange={setPhotoValue}
+        onBusyChange={setPreparingPhoto}
+      />
 
       {error && <Text style={styles.error}>{error}</Text>}
 
-      <Pressable style={styles.submitButton} onPress={handleSubmit} disabled={submitting}>
+      <Pressable
+        style={[styles.submitButton, preparingPhoto && styles.submitButtonDisabled]}
+        onPress={handleSubmit}
+        disabled={submitting || preparingPhoto}
+      >
         <Text style={styles.submitButtonText}>
           {submitting ? "Guardando..." : "Guardar cliente"}
         </Text>
@@ -139,5 +148,6 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     alignItems: "center"
   },
+  submitButtonDisabled: { opacity: 0.5 },
   submitButtonText: { color: colors.white, fontSize: 15, fontFamily: fonts.semiBold }
 });

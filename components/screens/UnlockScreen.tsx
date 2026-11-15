@@ -6,7 +6,7 @@
  * falls back to the logo + generic prompt when it doesn't (real client
  * today — no profile capture exists yet).
  */
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { View, Text, Image, Pressable, Alert, StyleSheet } from "react-native";
 import { PinScreen } from "../PinScreen";
 import { BrandLogo } from "../BrandLogo";
@@ -60,7 +60,16 @@ export function UnlockScreen({ onUnlocked }: UnlockScreenProps) {
   }
 
   const name = profile.data?.name ?? null;
-  const avatar = avatarSource(profile.data?.avatarKey);
+  // The lender's photo first, then the cartoon, then nothing (no initials).
+  const photo = profile.data?.photo ?? null;
+  const [photoFailed, setPhotoFailed] = useState(false);
+  const photoSource = useMemo(
+    () => (photo ? { uri: `data:image/jpeg;base64,${photo}` } : null),
+    [photo]
+  );
+  const cartoon = avatarSource(profile.data?.avatarKey);
+  const showPhoto = photoSource !== null && !photoFailed;
+  const avatar = showPhoto ? photoSource : cartoon;
   const subtitle = error ? "PIN incorrecto. Intenta de nuevo." : "Ingresa tu PIN para continuar";
 
   return (
@@ -68,7 +77,13 @@ export function UnlockScreen({ onUnlocked }: UnlockScreenProps) {
       header={
         <View style={styles.header}>
           <BrandLogo />
-          {avatar && <Image source={avatar} style={styles.avatar} />}
+          {avatar && (
+            <Image
+              source={avatar}
+              style={styles.avatar}
+              onError={showPhoto ? () => setPhotoFailed(true) : undefined}
+            />
+          )}
           <View style={styles.greeting}>
             {name && <Text style={styles.greetTitle}>Hola, {name}.</Text>}
             <Text style={[styles.subtitle, error && styles.subtitleError]}>{subtitle}</Text>

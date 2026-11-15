@@ -369,7 +369,12 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
         <>
           <ScrollView contentContainerStyle={styles.content}>
             <View style={styles.clientRow}>
-              <Avatar avatarKey={ctx.customerAvatarKey} name={ctx.customerName} size={40} />
+              <Avatar
+                photo={ctx.customerPhoto}
+                avatarKey={ctx.customerAvatarKey}
+                name={ctx.customerName}
+                size={40}
+              />
               <View style={styles.clientText}>
                 <Text style={styles.clientName}>{ctx.customerName}</Text>
                 <Text style={styles.clientMeta}>
@@ -740,7 +745,12 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
         <>
           <ScrollView contentContainerStyle={styles.content}>
             <View style={styles.clientRow}>
-              <Avatar avatarKey={ctx.customerAvatarKey} name={ctx.customerName} size={40} />
+              <Avatar
+                photo={ctx.customerPhoto}
+                avatarKey={ctx.customerAvatarKey}
+                name={ctx.customerName}
+                size={40}
+              />
               <View style={styles.clientText}>
                 <Text style={styles.clientName}>{ctx.customerName}</Text>
                 <Text style={styles.clientMeta}>

@@ -107,7 +107,12 @@ export function ProfileScreen() {
       <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 24 + insets.bottom }]}>
         {profile.data ? (
           <View style={styles.profileCard}>
-            <Avatar avatarKey={profile.data.avatarKey} name={name} size={60} />
+            <Avatar
+              photo={profile.data.photo}
+              avatarKey={profile.data.avatarKey}
+              name={name}
+              size={60}
+            />
             <View style={styles.profileText}>
               <Text style={styles.name}>{name}</Text>
               <Text style={styles.role}>Prestamista independiente</Text>
@@ -131,7 +136,7 @@ export function ProfileScreen() {
             </View>
             <View style={styles.profileText}>
               <Text style={styles.name}>Configura tu perfil</Text>
-              <Text style={styles.role}>Agrega tu nombre y avatar para personalizar la app.</Text>
+              <Text style={styles.role}>Agrega tu nombre y foto para personalizar la app.</Text>
             </View>
             <Icon name="chevron-right" size={20} color={colors.white} />
           </Pressable>

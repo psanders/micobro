@@ -11,6 +11,8 @@ import { Avatar } from "./Avatar";
 import { colors, fonts } from "../lib/ui/theme";
 
 interface ClientRowProps {
+  /** The customer's photo (base64 JPEG); shown before the cartoon. */
+  photo?: string | null;
   avatarKey?: string | null;
   name: string;
   business?: string | null;
@@ -28,6 +30,7 @@ interface ClientRowProps {
 }
 
 export function ClientRow({
+  photo,
   avatarKey,
   name,
   business,
@@ -55,7 +58,7 @@ export function ClientRow({
         pressed && onPress ? { opacity: 0.7 } : null
       ]}
     >
-      <Avatar avatarKey={avatarKey} name={name} size={compact ? 36 : 42} />
+      <Avatar photo={photo} avatarKey={avatarKey} name={name} size={compact ? 36 : 42} />
       <View style={styles.mid}>
         <Text style={styles.name}>{name}</Text>
         {business ? <Text style={styles.business}>{business}</Text> : null}

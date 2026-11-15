@@ -164,6 +164,7 @@ export function RouteScreen() {
             return (
               <ClientRow
                 key={visit.id}
+                photo={visit.photo}
                 avatarKey={visit.avatarKey}
                 name={visit.name}
                 business={visit.business}
