@@ -568,4 +568,146 @@ describe("composeRouteDay", () => {
       expect(day.visits[0]).toMatchObject({ status: "done", daysPastEnd: 3 });
     });
   });
+
+  // Issue: Mi ruta's "Hechas" left out payments collected today on loans
+  // that weren't due today — common for crédito abierto (early interest,
+  // capital mid-cycle), occasional for an early term cuota.
+  describe("payments today on loans not due today", () => {
+    function openCreditLoan(overrides: Partial<Loan> = {}): Loan {
+      return loan({
+        id: "loan-oc",
+        principalCents: 1000000,
+        interestRateBps: 500,
+        termCount: 0,
+        frequency: "weekly",
+        loanType: "open_credit",
+        startDate: daysBeforeToday(5),
+        ...overrides
+      });
+    }
+
+    it("lists early crédito abierto interest as a done visit", () => {
+      const day = composeRouteDay({
+        customers: [customer({})],
+        loans: [openCreditLoan()],
+        payments: [payment({ id: "p-oc", loanId: "loan-oc", amountCents: 50000 })],
+        today: TODAY
+      });
+
+      expect(day.visits).toHaveLength(1);
+      expect(day.visits[0]).toMatchObject({
+        id: "route-loan-oc",
+        status: "done",
+        amountCents: 50000,
+        paidAt: TODAY,
+        hasMora: false
+      });
+      expect(day.visits[0]).not.toHaveProperty("installmentLabel");
+      expect(day.visits[0]).not.toHaveProperty("overdueDays");
+      expect(day.goalCents).toBe(50000);
+      expect(day.collectedCents).toBe(50000);
+      expect(day.clientCount).toBe(1);
+      expect(day.pendingCount).toBe(0);
+    });
+
+    it("lists a mid-cycle capital payment as a done visit for what was collected", () => {
+      const day = composeRouteDay({
+        customers: [customer({})],
+        loans: [openCreditLoan({ startDate: daysBeforeToday(3) })],
+        payments: [payment({ id: "p-cap", loanId: "loan-oc", amountCents: 200000 })],
+        today: TODAY
+      });
+
+      expect(day.visits).toHaveLength(1);
+      expect(day.visits[0]).toMatchObject({ status: "done", amountCents: 200000 });
+    });
+
+    it("lists a term cuota paid a day early as a done visit", () => {
+      const day = composeRouteDay({
+        customers: [customer({})],
+        loans: [loan({ startDate: daysBeforeToday(6) })],
+        payments: [payment({ amountCents: 11000 })],
+        today: TODAY
+      });
+
+      expect(day.visits).toHaveLength(1);
+      expect(day.visits[0]).toMatchObject({ status: "done", amountCents: 11000 });
+      expect(day.pendingCount).toBe(0);
+    });
+
+    it("sorts the not-due visit after the due ones", () => {
+      const day = composeRouteDay({
+        customers: [customer({}), customer({ id: "customer-2", name: "Otro" })],
+        loans: [
+          openCreditLoan({ customerId: "customer-2" }),
+          loan({ startDate: daysBeforeToday(7) })
+        ],
+        payments: [payment({ id: "p-oc", loanId: "loan-oc", amountCents: 50000 })],
+        today: TODAY
+      });
+
+      expect(day.visits.map((v) => v.id)).toEqual(["route-loan-1", "route-loan-oc"]);
+      expect(day.visits.map((v) => v.status)).toEqual(["pending", "done"]);
+    });
+
+    it("lists a crédito abierto settled in full today, mid-cycle", () => {
+      const day = composeRouteDay({
+        customers: [customer({})],
+        loans: [openCreditLoan({ startDate: daysBeforeToday(3) })],
+        payments: [payment({ id: "p-settle", loanId: "loan-oc", amountCents: 1050000 })],
+        today: TODAY
+      });
+
+      expect(day.visits).toHaveLength(1);
+      expect(day.visits[0]).toMatchObject({ status: "done", amountCents: 1050000 });
+      expect(day.collectedCents).toBe(1050000);
+    });
+
+    it("lists a term loan prepaid in full today", () => {
+      const day = composeRouteDay({
+        customers: [customer({})],
+        loans: [loan({ startDate: daysBeforeToday(6) })],
+        payments: [payment({ amountCents: 44000 })],
+        today: TODAY
+      });
+
+      expect(day.visits).toHaveLength(1);
+      expect(day.visits[0]).toMatchObject({ status: "done", amountCents: 44000 });
+      expect(day.collectedCents).toBe(44000);
+    });
+
+    it("counts one client when the same customer has a due loan and a not-due paid one", () => {
+      const day = composeRouteDay({
+        customers: [customer({})],
+        loans: [openCreditLoan(), loan({ startDate: daysBeforeToday(7) })],
+        payments: [payment({ id: "p-oc", loanId: "loan-oc", amountCents: 50000 })],
+        today: TODAY
+      });
+
+      expect(day.visits).toHaveLength(2);
+      expect(day.clientCount).toBe(1);
+    });
+
+    it("leaves out a not-due loan with no payment today", () => {
+      const day = composeRouteDay({
+        customers: [customer({})],
+        loans: [openCreditLoan()],
+        payments: [],
+        today: TODAY
+      });
+
+      expect(day.visits).toEqual([]);
+    });
+
+    it("leaves out an archived loan even with a payment today", () => {
+      const day = composeRouteDay({
+        customers: [customer({})],
+        loans: [openCreditLoan({ status: "cancelled" })],
+        payments: [payment({ id: "p-oc", loanId: "loan-oc", amountCents: 50000 })],
+        today: TODAY
+      });
+
+      expect(day.visits).toEqual([]);
+    });
+  });
 });
