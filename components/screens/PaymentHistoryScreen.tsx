@@ -41,7 +41,7 @@ export function PaymentHistoryScreen({ loanId }: { loanId: string }) {
       {history.loading || !view ? (
         <ActivityIndicator color={colors.brandDeep} style={styles.loading} />
       ) : (
-        <ScrollView contentContainerStyle={styles.content}>
+        <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 24 + insets.bottom }]}>
           <View style={styles.summary}>
             <Text style={styles.summaryLabel}>TOTAL COBRADO</Text>
             <View style={styles.summaryAmountRow}>

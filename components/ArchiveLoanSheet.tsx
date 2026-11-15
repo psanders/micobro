@@ -9,6 +9,7 @@
  * the plain confirmation.
  */
 import { Modal, View, Text, Pressable, ActivityIndicator, StyleSheet } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Icon } from "./Icon";
 import { formatCurrency } from "../lib/utils/money";
 import { colors, fonts, radius } from "../lib/ui/theme";
@@ -48,10 +49,11 @@ export function ArchiveLoanSheet({
   onArchiveAndCreate,
   onClose
 }: ArchiveLoanSheetProps) {
+  const insets = useSafeAreaInsets();
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
       <Pressable style={styles.backdrop} onPress={busy ? undefined : onClose} />
-      <View style={styles.sheet}>
+      <View style={[styles.sheet, { paddingBottom: 30 + insets.bottom }]}>
         <View style={styles.grabber} />
         <View style={styles.icon}>
           <Icon name="archive" size={22} color={colors.amber} />

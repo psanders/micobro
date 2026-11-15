@@ -12,6 +12,7 @@
  */
 import { useState } from "react";
 import { View, Text, Pressable, Modal, ScrollView, StyleSheet } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Icon } from "./Icon";
 import { OptionRow } from "./OptionRow";
 import { colors } from "../lib/ui/theme";
@@ -29,6 +30,7 @@ interface SelectFieldProps<T> {
 }
 
 export function SelectField<T>({ label, value, options, onChange }: SelectFieldProps<T>) {
+  const insets = useSafeAreaInsets();
   const [open, setOpen] = useState(false);
   const selectedOption = options.find((option) => option.value === value);
 
@@ -54,7 +56,11 @@ export function SelectField<T>({ label, value, options, onChange }: SelectFieldP
          * needs to itself be a VoiceOver-focusable unit — they only exist
          * to stop the backdrop's close-on-tap from bubbling up. */}
         <Pressable style={styles.backdrop} onPress={() => setOpen(false)} accessible={false}>
-          <Pressable style={styles.sheet} onPress={() => {}} accessible={false}>
+          <Pressable
+            style={[styles.sheet, { paddingBottom: 32 + insets.bottom }]}
+            onPress={() => {}}
+            accessible={false}
+          >
             <Text style={styles.sheetTitle}>{label}</Text>
             <ScrollView contentContainerStyle={styles.optionsList}>
               {options.map((option) => (

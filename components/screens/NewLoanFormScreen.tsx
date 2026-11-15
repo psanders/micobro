@@ -325,7 +325,7 @@ export function NewLoanFormScreen({
       <ScreenHeader title={title} subtitle={headerSubtitle} onBack={() => router.back()} />
       <ScrollView
         style={styles.scroll}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[styles.content, { paddingBottom: 16 + insets.bottom }]}
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
       >

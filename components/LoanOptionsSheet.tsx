@@ -8,6 +8,7 @@
  */
 import type { ComponentProps } from "react";
 import { Modal, View, Text, Pressable, StyleSheet } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { Icon } from "./Icon";
 import { colors, fonts, radius } from "../lib/ui/theme";
@@ -38,10 +39,11 @@ export function LoanOptionsSheet({
   options,
   onClose
 }: LoanOptionsSheetProps) {
+  const insets = useSafeAreaInsets();
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
       <Pressable style={styles.backdrop} onPress={onClose} accessibilityLabel="Cerrar" />
-      <View style={styles.sheet}>
+      <View style={[styles.sheet, { paddingBottom: 30 + insets.bottom }]}>
         <View style={styles.grabber} />
         <View style={styles.head}>
           <Text style={styles.title}>{title}</Text>

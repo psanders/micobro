@@ -22,6 +22,7 @@ import {
   Alert,
   StyleSheet
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useSyncRepo } from "../../lib/repo/RepoProvider";
 import { useSyncContext } from "../../lib/sync/SyncProvider";
@@ -39,6 +40,7 @@ const STATUS_COPY: Record<SyncStatusLabel, string> = {
 };
 
 export function SyncSettingsScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const syncRepo = useSyncRepo();
   const { status, isOnline, isSyncing, sync, resolveHeldDeletions, refreshStatus } =
@@ -81,7 +83,10 @@ export function SyncSettingsScreen() {
   }
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+    <ScrollView
+      style={styles.screen}
+      contentContainerStyle={[styles.content, { paddingBottom: 16 + insets.bottom }]}
+    >
       {status.heldDeletions && (
         <HeldDeletionsCard
           counts={status.heldDeletions}
