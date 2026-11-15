@@ -6,10 +6,16 @@ import { ValidationError } from "../lib/errors/ValidationError";
 import type { Database } from "../lib/db/client";
 
 function makeDbStub() {
+  // No stored profile yet: an omitted photo reads back as none.
+  const where = jest.fn().mockResolvedValue([]);
+  const from = jest.fn().mockReturnValue({ where });
+  const select = jest.fn().mockReturnValue({ from });
+
   const onConflictDoUpdate = jest.fn().mockResolvedValue(undefined);
   const values = jest.fn().mockReturnValue({ onConflictDoUpdate });
   const insert = jest.fn().mockReturnValue({ values });
-  return { insert, values, onConflictDoUpdate } as unknown as Database & Record<string, jest.Mock>;
+  return { select, insert, values, onConflictDoUpdate } as unknown as Database &
+    Record<string, jest.Mock>;
 }
 
 describe("createSetProfile", () => {

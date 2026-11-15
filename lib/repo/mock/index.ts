@@ -70,6 +70,19 @@ import { createMockSyncRepo } from "./syncRepo.mock";
 import type { CashClose } from "../../cashClose/cashClose.schema";
 import type { CustomerActivityItem, LoanDetailView, OpenCreditView, Repos } from "../types";
 
+/**
+ * Customer photos for the mock repos (customer id → base64 JPEG), kept at
+ * module level so the mock views can read them.
+ */
+export const mockPhotos = new Map<string, string>();
+
+/** Mirrors lib/customers/customerPhotoWrites.ts: undefined keeps, null removes. */
+function setMockPhoto(customerId: string, photo: string | null | undefined): void {
+  if (photo === undefined) return;
+  if (photo === null) mockPhotos.delete(customerId);
+  else mockPhotos.set(customerId, photo);
+}
+
 export function createMockRepos(): Repos {
   const customers: Customer[] = customerFixtures.map((c) => ({ ...c }));
   const loans: Loan[] = loanFixtures.map((l) => ({ ...l }));
@@ -90,7 +103,8 @@ export function createMockRepos(): Repos {
     name: "Carlos",
     avatarKey: "male4",
     businessName: null,
-    phone: null
+    phone: null,
+    photo: null
   };
 
   const metaOf = (customerId: string) => customerMetaFixtures[customerId] ?? null;
@@ -165,6 +179,7 @@ export function createMockRepos(): Repos {
       updatedAt: now
     };
     customers.push(customer);
+    setMockPhoto(customer.id, params.photo ?? undefined);
     return customer;
   }, createCustomerSchema);
 
@@ -181,6 +196,7 @@ export function createMockRepos(): Repos {
       updatedAt: new Date()
     };
     customers[idx] = updated;
+    setMockPhoto(updated.id, params.photo);
     return updated;
   }, updateCustomerSchema);
 
@@ -276,7 +292,8 @@ export function createMockRepos(): Repos {
       name: params.name,
       avatarKey: params.avatarKey ?? null,
       businessName: params.businessName ?? null,
-      phone: params.phone ?? null
+      phone: params.phone ?? null,
+      photo: params.photo === undefined ? (profileState?.photo ?? null) : params.photo
     };
     return profileState;
   }, setProfileSchema);
@@ -287,6 +304,7 @@ export function createMockRepos(): Repos {
       get: async (id) => customers.find((c) => c.id === id) ?? null,
       create: createCustomer,
       update: (id, input) => updateCustomer({ id, ...input }),
+      getPhoto: async (id) => mockPhotos.get(id) ?? null,
       search: async (query) => {
         const needle = normalizeText(query.trim());
         const matches = needle
@@ -619,6 +637,7 @@ export function createMockRepos(): Repos {
         if (!(await verifyPin(pin))) return false;
         for (const list of [customers, loans, payments, visitLog, cashCloses]) list.splice(0);
         mora.clear();
+        mockPhotos.clear();
         profileState = null;
         await AsyncStorage.clear();
         await clearPin();

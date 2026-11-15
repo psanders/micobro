@@ -37,6 +37,7 @@ describe("real profile repo", () => {
       avatarKey: "female2",
       businessName: "Financiera Julia",
       phone: "8095551234",
+      photo: null,
       createdAt: new Date("2026-01-01T00:00:00Z"),
       updatedAt: new Date("2026-01-01T00:00:00Z")
     };
@@ -48,7 +49,8 @@ describe("real profile repo", () => {
       name: "Julia Reyes",
       avatarKey: "female2",
       businessName: "Financiera Julia",
-      phone: "8095551234"
+      phone: "8095551234",
+      photo: null
     });
   });
 

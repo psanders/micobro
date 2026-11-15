@@ -15,6 +15,8 @@ export interface BackupDriver {
   /** Directory holding the database and its backups, as a plain path. */
   directory: string;
   run(statement: string): void;
+  /** Runs on expo-sqlite's native worker, so a long statement doesn't block the JS thread. */
+  runAsync(statement: string): Promise<void>;
   all<T>(statement: string): T[];
   deleteFile(name: string): void;
 }
@@ -40,6 +42,7 @@ export function createSqliteBackupDriver(db: Database): BackupDriver {
       return dir();
     },
     run: (statement) => sql.run(statement),
+    runAsync: (statement) => db.$client.execAsync(statement),
     all: <T>(statement: string) => sql.all<T>(statement),
     deleteFile: (name) => deleteDatabaseSync(name, dir())
   };

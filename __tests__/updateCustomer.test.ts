@@ -8,7 +8,9 @@ jest.mock("expo-crypto", () => {
 
 import { createUpdateCustomer } from "../lib/customers/updateCustomer";
 import { ValidationError } from "../lib/errors/ValidationError";
-import type { Database } from "../lib/db/client";
+import { customers } from "../lib/db/schema";
+import { createTestDb } from "./helpers/testDb";
+import type { TestDb } from "./helpers/testDb";
 
 const existingCustomer = {
   id: "customer-1",
@@ -21,28 +23,29 @@ const existingCustomer = {
   updatedAt: new Date("2026-01-01T00:00:00Z")
 };
 
-function makeDbStub(rows: unknown[] = [existingCustomer]) {
-  const where = jest.fn().mockResolvedValue(rows);
-  const from = jest.fn().mockReturnValue({ where });
-  const select = jest.fn().mockReturnValue({ from });
+async function makeDb(seed = true) {
+  const t = createTestDb();
+  if (seed) await t.db.insert(customers).values(existingCustomer);
+  return { t, updateCustomer: createUpdateCustomer({ db: t.db, sql: t.sql }) };
+}
 
-  const updateWhere = jest.fn().mockResolvedValue(undefined);
-  const set = jest.fn().mockReturnValue({ where: updateWhere });
-  const update = jest.fn().mockReturnValue({ set });
+function mutationCount(t: TestDb): number {
+  return t.raw.prepare("SELECT id FROM pending_mutations").all().length;
+}
 
-  const values = jest.fn().mockResolvedValue(undefined);
-  const insert = jest.fn().mockReturnValue({ values });
-
-  return { select, from, where, update, set, updateWhere, insert, values } as unknown as Database &
-    Record<string, jest.Mock>;
+/** The seeded customer is untouched and nothing was queued. */
+function expectNothingWritten(t: TestDb) {
+  expect(t.raw.prepare("SELECT name, phone FROM customers").all()).toEqual([
+    { name: existingCustomer.name, phone: existingCustomer.phone }
+  ]);
+  expect(mutationCount(t)).toBe(0);
 }
 
 describe("createUpdateCustomer", () => {
   describe("with valid input", () => {
     it("updates the customer and enqueues a pending sync mutation", async () => {
       // Arrange
-      const db = makeDbStub();
-      const updateCustomer = createUpdateCustomer({ db: db as unknown as Database });
+      const { t, updateCustomer } = await makeDb();
 
       // Act
       const result = await updateCustomer({
@@ -56,15 +59,18 @@ describe("createUpdateCustomer", () => {
       expect(result.name).toBe("Juana Pérez Reyes");
       expect(result.phone).toBe("8097654321");
       expect(result.address).toBe("Calle Duarte 20");
-      expect(result.createdAt).toBe(existingCustomer.createdAt);
-      expect((db as unknown as Record<string, jest.Mock>).update).toHaveBeenCalledTimes(1);
-      expect((db as unknown as Record<string, jest.Mock>).insert).toHaveBeenCalledTimes(1);
+      expect(result.createdAt).toEqual(existingCustomer.createdAt);
+      expect(t.raw.prepare("SELECT name, phone FROM customers").all()).toEqual([
+        { name: "Juana Pérez Reyes", phone: "8097654321" }
+      ]);
+      expect(
+        t.raw.prepare("SELECT entity, entity_id, operation FROM pending_mutations").all()
+      ).toEqual([{ entity: "customer", entity_id: "customer-1", operation: "update" }]);
     });
 
     it("clears the address when omitted", async () => {
       // Arrange
-      const db = makeDbStub();
-      const updateCustomer = createUpdateCustomer({ db: db as unknown as Database });
+      const { updateCustomer } = await makeDb();
 
       // Act
       const result = await updateCustomer({
@@ -81,36 +87,34 @@ describe("createUpdateCustomer", () => {
   describe("with invalid input", () => {
     it("throws ValidationError and never touches the database", async () => {
       // Arrange
-      const db = makeDbStub();
-      const updateCustomer = createUpdateCustomer({ db: db as unknown as Database });
+      const { t, updateCustomer } = await makeDb();
 
       // Act + Assert
       await expect(
         updateCustomer({ id: "customer-1", name: "", phone: "8091234567" })
       ).rejects.toBeInstanceOf(ValidationError);
-      expect((db as unknown as Record<string, jest.Mock>).select).not.toHaveBeenCalled();
+      expectNothingWritten(t);
     });
   });
 
   describe("with an unknown customer", () => {
     it("throws instead of writing a phantom row", async () => {
       // Arrange
-      const db = makeDbStub([]);
-      const updateCustomer = createUpdateCustomer({ db: db as unknown as Database });
+      const { t, updateCustomer } = await makeDb(false);
 
       // Act + Assert
       await expect(
         updateCustomer({ id: "missing", name: "Juana Pérez", phone: "8091234567" })
       ).rejects.toThrow("Customer not found");
-      expect((db as unknown as Record<string, jest.Mock>).update).not.toHaveBeenCalled();
+      expect(t.raw.prepare("SELECT id FROM customers").all()).toEqual([]);
+      expect(mutationCount(t)).toBe(0);
     });
   });
 
   describe("phone", () => {
     it("stores a valid 10-digit phone (dashed input) normalized to digits only", async () => {
       // Arrange
-      const db = makeDbStub();
-      const updateCustomer = createUpdateCustomer({ db: db as unknown as Database });
+      const { updateCustomer } = await makeDb();
 
       // Act
       const result = await updateCustomer({
@@ -125,22 +129,20 @@ describe("createUpdateCustomer", () => {
 
     it("rejects a phone that isn't 10 digits", async () => {
       // Arrange
-      const db = makeDbStub();
-      const updateCustomer = createUpdateCustomer({ db: db as unknown as Database });
+      const { t, updateCustomer } = await makeDb();
 
       // Act + Assert
       await expect(
         updateCustomer({ id: "customer-1", name: "Juana Pérez", phone: "12345" })
       ).rejects.toBeInstanceOf(ValidationError);
-      expect((db as unknown as Record<string, jest.Mock>).update).not.toHaveBeenCalled();
+      expectNothingWritten(t);
     });
   });
 
   describe("cédula", () => {
     it("stores a valid 11-digit cédula (dashed input) normalized to digits only", async () => {
       // Arrange
-      const db = makeDbStub();
-      const updateCustomer = createUpdateCustomer({ db: db as unknown as Database });
+      const { updateCustomer } = await makeDb();
 
       // Act
       const result = await updateCustomer({
@@ -156,8 +158,7 @@ describe("createUpdateCustomer", () => {
 
     it("clears the cédula when omitted", async () => {
       // Arrange
-      const db = makeDbStub();
-      const updateCustomer = createUpdateCustomer({ db: db as unknown as Database });
+      const { updateCustomer } = await makeDb();
 
       // Act
       const result = await updateCustomer({
@@ -172,8 +173,7 @@ describe("createUpdateCustomer", () => {
 
     it("rejects a cédula that isn't 11 digits", async () => {
       // Arrange
-      const db = makeDbStub();
-      const updateCustomer = createUpdateCustomer({ db: db as unknown as Database });
+      const { t, updateCustomer } = await makeDb();
 
       // Act + Assert
       await expect(
@@ -184,15 +184,14 @@ describe("createUpdateCustomer", () => {
           cedula: "12345"
         })
       ).rejects.toBeInstanceOf(ValidationError);
-      expect((db as unknown as Record<string, jest.Mock>).update).not.toHaveBeenCalled();
+      expectNothingWritten(t);
     });
   });
 
   describe("avatarKey", () => {
     it("accepts a key from the curated set", async () => {
       // Arrange
-      const db = makeDbStub();
-      const updateCustomer = createUpdateCustomer({ db: db as unknown as Database });
+      const { updateCustomer } = await makeDb();
 
       // Act
       const result = await updateCustomer({
@@ -208,8 +207,7 @@ describe("createUpdateCustomer", () => {
 
     it("rejects a key outside the curated set", async () => {
       // Arrange
-      const db = makeDbStub();
-      const updateCustomer = createUpdateCustomer({ db: db as unknown as Database });
+      const { t, updateCustomer } = await makeDb();
 
       // Act + Assert
       await expect(
@@ -220,7 +218,7 @@ describe("createUpdateCustomer", () => {
           avatarKey: "robot9"
         })
       ).rejects.toBeInstanceOf(ValidationError);
-      expect((db as unknown as Record<string, jest.Mock>).update).not.toHaveBeenCalled();
+      expectNothingWritten(t);
     });
   });
 });

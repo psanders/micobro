@@ -6,21 +6,24 @@ import { eq } from "drizzle-orm";
 import { withErrorHandlingAndValidation } from "../utils/withErrorHandlingAndValidation";
 import { updateCustomerSchema, type UpdateCustomerInput, type Customer } from "./customer.schema";
 import { customers, pendingMutations } from "../db/schema";
+import { execOn, writeCustomerPhoto } from "./customerPhotoWrites";
 import { logger } from "../logger";
 import type { Database } from "../db/client";
+import type { SqlExecutor } from "../db/sqlExecutor";
 
 export interface UpdateCustomerDeps {
   db: Database;
+  /** Runs the customer, its photo and their mutations in one transaction. */
+  sql: SqlExecutor;
 }
 
 /**
  * Updates a customer locally and enqueues a pending_mutations row with
- * operation "update" for the sync engine to pick up once it supports
- * updating an existing Sheet row (today's push loop only appends, so it
- * skips "update" mutations rather than appending a duplicate — see
- * lib/sync/push.ts).
+ * operation "update" for push to rewrite its Sheet row. `photo` undefined
+ * keeps the stored photo, a string replaces it, null removes it — in the
+ * same transaction as the customer row.
  */
-export function createUpdateCustomer({ db }: UpdateCustomerDeps) {
+export function createUpdateCustomer({ db, sql }: UpdateCustomerDeps) {
   const fn = async (params: UpdateCustomerInput): Promise<Customer> => {
     logger.verbose("updating customer", { id: params.id });
 
@@ -41,16 +44,22 @@ export function createUpdateCustomer({ db }: UpdateCustomerDeps) {
       updatedAt: now
     };
 
-    await db.update(customers).set(customer).where(eq(customers.id, params.id));
-    await db.insert(pendingMutations).values({
-      id: Crypto.randomUUID(),
-      entity: "customer",
-      entityId: customer.id,
-      operation: "update",
-      payload: JSON.stringify(customer),
-      status: "pending",
-      retryCount: 0,
-      createdAt: now
+    const exec = execOn(sql);
+    sql.transaction(() => {
+      exec(db.update(customers).set(customer).where(eq(customers.id, params.id)));
+      exec(
+        db.insert(pendingMutations).values({
+          id: Crypto.randomUUID(),
+          entity: "customer",
+          entityId: customer.id,
+          operation: "update",
+          payload: JSON.stringify(customer),
+          status: "pending",
+          retryCount: 0,
+          createdAt: now
+        })
+      );
+      writeCustomerPhoto(db, sql, customer.id, params.photo, now);
     });
 
     logger.verbose("customer updated", { id: customer.id });

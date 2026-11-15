@@ -5,6 +5,7 @@ import { z } from "zod/v4";
 import { AVATAR_KEYS } from "./avatarKeys";
 import { normalizeCedula } from "../utils/cedula";
 import { normalizePhone } from "../utils/text";
+import { photoSchema } from "../photos/photo.schema";
 
 /**
  * Dominican cédula: 11 digits, commonly typed with dashes
@@ -34,6 +35,12 @@ const phoneSchema = z
 
 const avatarKeySchema = z.enum(AVATAR_KEYS).optional();
 
+/**
+ * The customer's photo, stored in `customer_photos`, not on the customer.
+ * undefined = keep (create: none), a string = save or replace, null = remove.
+ */
+const customerPhotoSchema = photoSchema.nullable().optional();
+
 export const createCustomerSchema = z.object({
   name: z
     .string()
@@ -42,7 +49,8 @@ export const createCustomerSchema = z.object({
   phone: phoneSchema,
   address: z.string().optional(),
   cedula: cedulaSchema,
-  avatarKey: avatarKeySchema
+  avatarKey: avatarKeySchema,
+  photo: customerPhotoSchema
 });
 
 export type CreateCustomerInput = z.infer<typeof createCustomerSchema>;
@@ -56,7 +64,8 @@ export const updateCustomerSchema = z.object({
   phone: phoneSchema,
   address: z.string().optional(),
   cedula: cedulaSchema,
-  avatarKey: avatarKeySchema
+  avatarKey: avatarKeySchema,
+  photo: customerPhotoSchema
 });
 
 export type UpdateCustomerInput = z.infer<typeof updateCustomerSchema>;
