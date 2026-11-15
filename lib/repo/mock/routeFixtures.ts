@@ -31,7 +31,8 @@ export const routeVisitFixtures: RouteVisit[] = [
     amountCents: 420000,
     hasMora: true,
     status: "overdue",
-    overdueDays: 6
+    overdueDays: 6,
+    daysPastEnd: 6
   },
   {
     id: "visit-2",

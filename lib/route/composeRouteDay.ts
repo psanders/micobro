@@ -33,7 +33,7 @@
  * `pendingCount`; it exists purely so the Hoy screen has something to show
  * instead of an empty state when `visits` is empty. Mi Ruta ignores it.
  */
-import { buildLoanDetailView } from "../loans/loanViews";
+import { buildLoanDetailView, loanEndDate } from "../loans/loanViews";
 import { computeLoanMora, loanMoraPolicy } from "../loans/mora";
 import { effectiveLoanType } from "../loans/loan.schema";
 import { openCreditState } from "../loans/openCredit";
@@ -138,6 +138,16 @@ export function composeRouteDay({
       ? Math.round((startOfToday.getTime() - dueDate.getTime()) / DAY_MS)
       : undefined;
 
+    // Past the loan's end date — the receipt's "Vencimiento" — counted from
+    // the start of that day, since loan dates keep the disbursement's time
+    // of day. Open credit has no end date and is never past it.
+    const endDate = loanEndDate(loan, paymentsBeforeToday);
+    const startOfEnd = endDate ? startOfDay(endDate) : null;
+    const daysPastEnd =
+      startOfEnd && startOfEnd < startOfToday
+        ? Math.round((startOfToday.getTime() - startOfEnd.getTime()) / DAY_MS)
+        : undefined;
+
     const collectedTodayCents = paymentsToday.reduce((sum, p) => sum + p.amountCents, 0);
 
     const visit: RouteVisit = {
@@ -151,6 +161,7 @@ export function composeRouteDay({
       hasMora: moraCents > 0,
       status: collectedTodayCents > 0 ? "done" : isOverdue ? "overdue" : "pending",
       ...(isOverdue ? { overdueDays } : {}),
+      ...(daysPastEnd !== undefined ? { daysPastEnd } : {}),
       ...(collectedTodayCents > 0
         ? { paidAt: paymentsToday.reduce((a, b) => (a.paidAt > b.paidAt ? a : b)).paidAt }
         : {}),

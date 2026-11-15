@@ -15,11 +15,13 @@ import { formatCurrency } from "../../lib/utils/money";
 import { ClientRow } from "../ClientRow";
 import { FilterChip } from "../FilterChip";
 import { colors, fonts } from "../../lib/ui/theme";
+import {
+  isExpiredVisit,
+  matchesRouteFilter,
+  pastEndLabel,
+  type RouteFilter
+} from "../../lib/route/routeFilters";
 import type { RouteVisit } from "../../lib/repo/types";
-
-type Filter = "all" | "pending" | "overdue" | "expired" | "done";
-
-const EXPIRED_AFTER_DAYS = 5;
 
 function formatDayLabel(date: Date): string {
   const label = date.toLocaleDateString("es-DO", {
@@ -28,25 +30,6 @@ function formatDayLabel(date: Date): string {
     month: "long"
   });
   return label.charAt(0).toUpperCase() + label.slice(1);
-}
-
-function isExpired(visit: RouteVisit): boolean {
-  return visit.status === "overdue" && (visit.overdueDays ?? 0) > EXPIRED_AFTER_DAYS;
-}
-
-function matchesFilter(visit: RouteVisit, filter: Filter): boolean {
-  switch (filter) {
-    case "all":
-      return true;
-    case "pending":
-      return visit.status === "pending" || visit.status === "promise";
-    case "overdue":
-      return visit.status === "overdue" && !isExpired(visit);
-    case "expired":
-      return isExpired(visit);
-    case "done":
-      return visit.status === "done";
-  }
 }
 
 function visitPresentation(visit: RouteVisit): {
@@ -60,8 +43,8 @@ function visitPresentation(visit: RouteVisit): {
   switch (visit.status) {
     case "overdue":
       return {
-        meta: isExpired(visit)
-          ? `Venció hace ${visit.overdueDays} días`
+        meta: isExpiredVisit(visit)
+          ? pastEndLabel(visit.daysPastEnd!)
           : `${visit.overdueDays} día${visit.overdueDays === 1 ? "" : "s"} atraso · ${visit.address}`,
         metaColor: "#A8521F",
         metaBold: true,
@@ -69,7 +52,7 @@ function visitPresentation(visit: RouteVisit): {
         // Only when mora actually accrued — a Tradicional Plus loan (or one with
         // mora off) is late without any mora on top.
         subLabel: visit.hasMora ? "+ mora" : undefined,
-        variant: isExpired(visit) ? "overdue" : "default"
+        variant: isExpiredVisit(visit) ? "overdue" : "default"
       };
     case "done":
       return {
@@ -97,17 +80,17 @@ export function RouteScreen() {
   const insets = useSafeAreaInsets();
   const routeRepo = useRouteRepo();
   const route = useAsync(() => routeRepo.getToday(), []);
-  const [filter, setFilter] = useState<Filter>("all");
+  const [filter, setFilter] = useState<RouteFilter>("all");
 
   const visits = route.data?.visits ?? [];
   const counts = {
     all: visits.length,
-    pending: visits.filter((v) => matchesFilter(v, "pending")).length,
-    overdue: visits.filter((v) => matchesFilter(v, "overdue")).length,
-    expired: visits.filter((v) => matchesFilter(v, "expired")).length,
-    done: visits.filter((v) => matchesFilter(v, "done")).length
+    pending: visits.filter((v) => matchesRouteFilter(v, "pending")).length,
+    overdue: visits.filter((v) => matchesRouteFilter(v, "overdue")).length,
+    expired: visits.filter((v) => matchesRouteFilter(v, "expired")).length,
+    done: visits.filter((v) => matchesRouteFilter(v, "done")).length
   };
-  const filtered = visits.filter((v) => matchesFilter(v, filter));
+  const filtered = visits.filter((v) => matchesRouteFilter(v, filter));
 
   return (
     <View style={[styles.screen, { paddingTop: insets.top }]}>
