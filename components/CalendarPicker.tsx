@@ -11,6 +11,7 @@
  */
 import { useState } from "react";
 import { Modal, View, Text, Pressable, StyleSheet } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Icon } from "./Icon";
 import { colors, fonts, radius } from "../lib/ui/theme";
 
@@ -60,6 +61,7 @@ export function CalendarPicker({
   onSelect,
   onClose
 }: CalendarPickerProps) {
+  const insets = useSafeAreaInsets();
   const [view, setView] = useState({ year: value.getFullYear(), month: value.getMonth() });
 
   const min = minDate ? atMidnight(minDate) : null;
@@ -87,7 +89,7 @@ export function CalendarPicker({
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
       <Pressable style={styles.backdrop} onPress={onClose} />
-      <View style={styles.sheet}>
+      <View style={[styles.sheet, { paddingBottom: 28 + insets.bottom }]}>
         <View style={styles.header}>
           <Text style={styles.title}>{title}</Text>
           <Pressable

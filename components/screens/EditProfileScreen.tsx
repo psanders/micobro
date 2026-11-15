@@ -88,7 +88,10 @@ export function EditProfileScreen() {
       {profile.loading ? (
         <ActivityIndicator color={colors.brandDeep} style={styles.loading} />
       ) : (
-        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        <ScrollView
+          contentContainerStyle={[styles.content, { paddingBottom: 24 + insets.bottom }]}
+          keyboardShouldPersistTaps="handled"
+        >
           <View style={styles.field}>
             <Text style={styles.label}>Avatar</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.avatarRow}>

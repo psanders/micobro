@@ -104,7 +104,7 @@ export function ProfileScreen() {
     <View style={[styles.screen, { paddingTop: insets.top }]}>
       <ScreenHeader title="Mi cuenta" onBack={() => router.back()} />
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 24 + insets.bottom }]}>
         {profile.data ? (
           <View style={styles.profileCard}>
             <Avatar avatarKey={profile.data.avatarKey} name={name} size={60} />

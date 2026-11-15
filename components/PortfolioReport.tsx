@@ -8,6 +8,7 @@
  * render it without a repo.
  */
 import { View, Text, ScrollView, StyleSheet } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { formatCurrency } from "../lib/utils/money";
 import { SectionLabel } from "./SectionLabel";
 import { KvRow } from "./KvRow";
@@ -20,8 +21,9 @@ function plural(count: number, one: string, many: string): string {
 }
 
 export function PortfolioReport({ position }: { position: OwnerPosition }) {
+  const insets = useSafeAreaInsets();
   return (
-    <ScrollView contentContainerStyle={styles.content}>
+    <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 32 + insets.bottom }]}>
       <View style={styles.section}>
         <SectionLabel>Prestado activo</SectionLabel>
         <Text style={[styles.bigAmount, { color: colors.brandDeep }]}>

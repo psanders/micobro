@@ -8,6 +8,7 @@
  */
 import { useCallback } from "react";
 import { ScrollView, Text, ActivityIndicator, Alert, StyleSheet } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useFocusEffect, useRouter } from "expo-router";
 import { BackupList } from "../BackupList";
 import { backupTitle } from "../syncReviewCopy";
@@ -17,6 +18,7 @@ import { colors, fonts } from "../../lib/ui/theme";
 import type { Backup } from "../../lib/backups";
 
 export function BackupsScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const syncRepo = useSyncRepo();
   const backups = useAsync(() => syncRepo.listBackups(), []);
@@ -46,7 +48,10 @@ export function BackupsScreen() {
   }
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+    <ScrollView
+      style={styles.screen}
+      contentContainerStyle={[styles.content, { paddingBottom: 16 + insets.bottom }]}
+    >
       <Text style={styles.intro}>
         Antes de cada sincronización se guarda una copia de tus datos en este teléfono. Se guardan
         las últimas 5.

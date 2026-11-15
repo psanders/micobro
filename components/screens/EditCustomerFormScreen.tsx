@@ -96,7 +96,7 @@ export function EditCustomerFormScreen({ customerId }: { customerId: string }) {
         <ActivityIndicator color={colors.brandDeep} style={styles.loading} />
       ) : (
         <ScrollView
-          contentContainerStyle={styles.content}
+          contentContainerStyle={[styles.content, { paddingBottom: insets.bottom }]}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
         >

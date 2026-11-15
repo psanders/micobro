@@ -3,6 +3,7 @@
  */
 import { useState } from "react";
 import { View, Text, TextInput, Pressable, ScrollView, StyleSheet } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useCustomerRepo } from "../../lib/repo/RepoProvider";
 import { ValidationError } from "../../lib/errors/ValidationError";
@@ -20,6 +21,7 @@ function formatHint(digits: string, maxDigits: number, format: string): string {
 }
 
 export function NewCustomerFormScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const customerRepo = useCustomerRepo();
 
@@ -53,7 +55,7 @@ export function NewCustomerFormScreen() {
   return (
     <ScrollView
       style={styles.screen}
-      contentContainerStyle={styles.content}
+      contentContainerStyle={[styles.content, { paddingBottom: 16 + insets.bottom }]}
       keyboardShouldPersistTaps="handled"
       keyboardDismissMode="on-drag"
     >

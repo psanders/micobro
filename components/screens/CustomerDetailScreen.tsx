@@ -97,7 +97,7 @@ export function CustomerDetailScreen({ customerId }: { customerId: string }) {
       {detail.loading || !customer ? (
         <ActivityIndicator color={colors.brandDeep} style={styles.loading} />
       ) : (
-        <ScrollView contentContainerStyle={styles.content}>
+        <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 32 + insets.bottom }]}>
           <View style={styles.profile}>
             <Avatar avatarKey={customer.avatarKey} name={customer.name} size={72} />
             <Text style={styles.name}>{customer.name}</Text>
