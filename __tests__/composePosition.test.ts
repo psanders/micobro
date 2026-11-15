@@ -10,6 +10,7 @@
  * arithmetic is in the comments); none is derived from the implementation.
  */
 import { composePosition } from "../lib/reports/composePosition";
+import { openCreditReceiptBreakdown } from "../lib/loans/openCredit";
 import type { Loan } from "../lib/loans/loan.schema";
 import type { Payment, PaymentKind } from "../lib/payments/payment.schema";
 import type { OwnerPosition } from "../lib/reports/position.schema";
@@ -492,6 +493,148 @@ describe("composePosition", () => {
     });
   });
 
+  describe("cobrado desglosado", () => {
+    function expectCollectedAddsUp(month: OwnerPosition["month"]) {
+      expect(
+        month.capitalCollectedCents + month.interestCollectedCents + month.moraCollectedCents
+      ).toBe(month.collectedCents);
+    }
+
+    it("splits a term cuota by the loan's flat interest share (spec scenario)", () => {
+      // RD$10,000 at 20%: repay 1,200,000, interest 200,000 → 300,000 × 200,000 / 1,200,000 = 50,000
+      const { month } = composePosition({
+        today: TODAY,
+        loans: [loan({ id: "a" })],
+        payments: [payment("a", 300000, day(10, 5))]
+      });
+
+      expect(month.capitalCollectedCents).toBe(250000);
+      expect(month.interestCollectedCents).toBe(50000);
+      expect(month.moraCollectedCents).toBe(0);
+      expectCollectedAddsUp(month);
+    });
+
+    it("puts mora and penalidad payments in mora, never in capital or interest", () => {
+      const { month } = composePosition({
+        today: TODAY,
+        loans: [
+          loan({ id: "a" }),
+          loan({ id: "plus", loanType: "term_plus", penaltyCents: 50000 })
+        ],
+        payments: [
+          payment("a", 20000, day(10, 5), "mora"),
+          payment("plus", 50000, day(10, 6), "penalidad")
+        ]
+      });
+
+      expect(month.moraCollectedCents).toBe(70000);
+      expect(month.capitalCollectedCents).toBe(0);
+      expect(month.interestCollectedCents).toBe(0);
+    });
+
+    it("splits a crédito abierto payment interest first (spec scenario)", () => {
+      // 10% of 1,000,000 = 100,000 cycle interest; the other 50,000 pays capital
+      const { month } = composePosition({
+        today: TODAY,
+        loans: [openCredit({ id: "oc", interestRateBps: 1000, startDate: day(10, 1) })],
+        payments: [payment("oc", 150000, day(10, 5))]
+      });
+
+      expect(month.interestCollectedCents).toBe(100000);
+      expect(month.capitalCollectedCents).toBe(50000);
+    });
+
+    it("counts the intereses sumados a crédito abierto payment clears as interest", () => {
+      // cycle 1 (20 Aug–20 Sep) unpaid → 100,000 capitalized, balance 1,100,000;
+      // cycle 2 interest 110,000. 260,000 = 110,000 + 100,000 sumados + 50,000 capital.
+      const { month } = composePosition({
+        today: TODAY,
+        loans: [openCredit({ id: "oc", interestRateBps: 1000, startDate: day(8, 20) })],
+        payments: [payment("oc", 260000, day(10, 5))]
+      });
+
+      expect(month.interestCollectedCents).toBe(210000);
+      expect(month.capitalCollectedCents).toBe(50000);
+    });
+
+    it("credits a cycle's interest to the month it was paid when the cycle straddles the 1st", () => {
+      // cycle 25 Sep–25 Oct: its 100,000 interest was paid on 28 Sep, so 5 Oct is all capital
+      const { month } = composePosition({
+        today: TODAY,
+        loans: [openCredit({ id: "oc", interestRateBps: 1000, startDate: day(9, 25) })],
+        payments: [payment("oc", 100000, day(9, 28)), payment("oc", 150000, day(10, 5))]
+      });
+
+      expect(month.interestCollectedCents).toBe(0);
+      expect(month.capitalCollectedCents).toBe(150000);
+    });
+
+    it("splits a crédito abierto cobro saved as two rows once, as its receipt does", () => {
+      const oc = openCredit({ id: "oc", interestRateBps: 1000, startDate: day(10, 1) });
+      const at = day(10, 5);
+      const rows = [payment("oc", 100000, at), payment("oc", 50000, at)];
+      const { month } = composePosition({ today: TODAY, loans: [oc], payments: rows });
+      const receipt = openCreditReceiptBreakdown(oc, rows, rows[0]!.id, () => "");
+      const receiptCapital =
+        receipt!.lines.find((line) => line.label === "Abono a capital")?.amountCents ?? 0;
+
+      expect(month.collectedCents).toBe(150000);
+      expect(month.capitalCollectedCents).toBe(receiptCapital);
+      expect(month.interestCollectedCents).toBe(150000 - receiptCapital);
+      expect(month.interestCollectedCents).toBe(100000);
+    });
+
+    it("splits the cuota that settled a loan by its rate, not as all capital", () => {
+      const { month } = composePosition({
+        today: TODAY,
+        loans: [loan({ id: "done", status: "paid" })],
+        payments: [payment("done", 900000, day(9, 1)), payment("done", 300000, day(10, 5))]
+      });
+
+      expect(month.capitalCollectedCents).toBe(250000);
+      expect(month.interestCollectedCents).toBe(50000);
+    });
+
+    it("counts a cuota whose loan is not in the list as capital", () => {
+      const { month } = composePosition({
+        today: TODAY,
+        loans: [],
+        payments: [payment("gone", 250000, day(10, 4))]
+      });
+
+      expect(month.capitalCollectedCents).toBe(250000);
+      expect(month.interestCollectedCents).toBe(0);
+    });
+
+    it("adds up to cobrado over a mix of loans, awkward amounts and mora", () => {
+      const { month } = composePosition({
+        today: TODAY,
+        loans: [
+          loan({ id: "a", principalCents: 1234500, interestRateBps: 1750, termCount: 7 }),
+          loan({ id: "b", principalCents: 5000000, termCount: 12 }),
+          openCredit({
+            id: "oc",
+            principalCents: 777700,
+            interestRateBps: 1250,
+            startDate: day(8, 3)
+          })
+        ],
+        payments: [
+          payment("a", 123400, day(10, 2)),
+          payment("a", 98700, day(10, 9)),
+          payment("b", 500000, day(10, 3)),
+          payment("b", 15000, day(10, 3), "mora"),
+          payment("oc", 33300, day(10, 4)),
+          payment("oc", 250000, day(10, 12)),
+          payment("gone", 4100, day(10, 15))
+        ]
+      });
+
+      expect(month.collectedCents).toBe(1024500);
+      expectCollectedAddsUp(month);
+    });
+  });
+
   describe("left out", () => {
     it("leaves archived and fully paid loans out of capital, interest, por cobrar, atraso and byType", () => {
       const position = composePosition({
@@ -529,6 +672,9 @@ describe("composePosition", () => {
       expect(position.overdue).toEqual({ cents: 0, loanCount: 0, percent: 0 });
       expect(position.month).toEqual({
         collectedCents: 0,
+        capitalCollectedCents: 0,
+        interestCollectedCents: 0,
+        moraCollectedCents: 0,
         remainingCents: 0,
         expectedCents: 0,
         progress: 0

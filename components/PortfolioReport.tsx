@@ -48,7 +48,21 @@ export function PortfolioReport({ position }: { position: OwnerPosition }) {
 
       <View style={styles.section}>
         <SectionLabel>Este mes</SectionLabel>
-        <KvRow label="Cobrado" value={formatCurrency(position.month.collectedCents)} />
+        <KvRow label="Total cobrado" value={formatCurrency(position.month.collectedCents)} />
+        <View style={styles.breakdown}>
+          <KvRow
+            label="Capital cobrado"
+            value={formatCurrency(position.month.capitalCollectedCents)}
+          />
+          <KvRow
+            label="Interés cobrado"
+            value={formatCurrency(position.month.interestCollectedCents)}
+          />
+          <KvRow
+            label="Mora y penalidades"
+            value={formatCurrency(position.month.moraCollectedCents)}
+          />
+        </View>
         <KvRow label="Falta por cobrar" value={formatCurrency(position.month.remainingCents)} />
         <ProgressBar progress={position.month.progress} />
         <Text style={styles.note}>
@@ -83,6 +97,12 @@ export function PortfolioReport({ position }: { position: OwnerPosition }) {
 const styles = StyleSheet.create({
   content: { paddingHorizontal: 20, paddingTop: 8, paddingBottom: 32, gap: 28 },
   section: { gap: 8 },
+  breakdown: {
+    gap: 6,
+    paddingLeft: 12,
+    borderLeftWidth: 1,
+    borderLeftColor: colors.muted
+  },
   bigAmount: { fontSize: 36, fontFamily: fonts.bold, letterSpacing: -1 },
   detail: { fontSize: 13, fontFamily: fonts.medium, color: colors.muted },
   note: { fontSize: 12, fontFamily: fonts.medium, color: colors.muted }

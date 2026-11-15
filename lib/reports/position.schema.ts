@@ -1,7 +1,7 @@
 /**
  * Copyright (C) 2026 by Pedro Sanders. MIT License.
  *
- * Contract: openspec/changes/cartera-figures-fix/design.md.
+ * Contract: openspec/changes/cartera-cobrado-split (month breakdown) and openspec/specs/owner-position/spec.md.
  */
 export interface PositionByType {
   loanCount: number;
@@ -35,6 +35,12 @@ export interface OwnerPosition {
   month: {
     /** Every payment made this month, whatever its loan's state now. */
     collectedCents: number;
+    /** Of collectedCents: capital repaid by cuota payments. */
+    capitalCollectedCents: number;
+    /** Of collectedCents: interest carried by cuota payments (crédito abierto: cycle interest + intereses sumados). */
+    interestCollectedCents: number;
+    /** Of collectedCents: payments with tipo "mora" or "penalidad". */
+    moraCollectedCents: number;
     /** Still due by month end, net of what is already paid. */
     remainingCents: number;
     /** Best case: collected + remaining. */
