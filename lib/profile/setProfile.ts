@@ -1,9 +1,12 @@
 /**
  * Copyright (C) 2026 by Pedro Sanders. MIT License.
  */
+import * as Crypto from "expo-crypto";
 import { eq } from "drizzle-orm";
 import { withErrorHandlingAndValidation } from "../utils/withErrorHandlingAndValidation";
-import { profile as profileTable } from "../db/schema";
+import { pendingMutations, profile as profileTable } from "../db/schema";
+import { PROFILE_ENTITY, changedProfileFields } from "../sync/extraFields";
+import { logger } from "../logger";
 import { PROFILE_ID, setProfileSchema, type SetProfileInput, type Profile } from "./profile.schema";
 import type { Database } from "../db/client";
 
@@ -16,21 +19,18 @@ export interface SetProfileDeps {
  * fixed `PROFILE_ID` singleton id) — there is one lender per install, so
  * "Editar perfil" always writes the same row rather than creating a new
  * one each time. An omitted `photo` keeps the stored one; null removes it.
- * Not enqueued to `pending_mutations`: the profile is local device
- * identity, not a business record synced to the lender's Google Sheet.
+ *
+ * Queues a `profile` mutation naming the Campos that changed against the
+ * stored row (`{"campos": ["Nombre", "Foto"]}`), so push writes only those
+ * rows of the Sheet's `Extra` tab (see lib/sync/extraTab.ts). A save that
+ * changes nothing queues nothing.
  */
 export function createSetProfile({ db }: SetProfileDeps) {
   const fn = async (params: SetProfileInput): Promise<Profile> => {
     const now = new Date();
-    const photo =
-      params.photo !== undefined
-        ? params.photo
-        : ((
-            await db
-              .select({ photo: profileTable.photo })
-              .from(profileTable)
-              .where(eq(profileTable.id, PROFILE_ID))
-          )[0]?.photo ?? null);
+    const stored =
+      (await db.select().from(profileTable).where(eq(profileTable.id, PROFILE_ID)))[0] ?? null;
+    const photo = params.photo !== undefined ? params.photo : (stored?.photo ?? null);
     const row = {
       id: PROFILE_ID,
       name: params.name,
@@ -40,6 +40,13 @@ export function createSetProfile({ db }: SetProfileDeps) {
       photo,
       createdAt: now,
       updatedAt: now
+    };
+    const saved: Profile = {
+      name: row.name,
+      avatarKey: row.avatarKey,
+      businessName: row.businessName,
+      phone: row.phone,
+      photo: row.photo
     };
 
     await db
@@ -58,13 +65,33 @@ export function createSetProfile({ db }: SetProfileDeps) {
         }
       });
 
-    return {
-      name: row.name,
-      avatarKey: row.avatarKey,
-      businessName: row.businessName,
-      phone: row.phone,
-      photo: row.photo
-    };
+    const campos = changedProfileFields(
+      stored
+        ? {
+            name: stored.name,
+            avatarKey: stored.avatarKey,
+            businessName: stored.businessName,
+            phone: stored.phone,
+            photo: stored.photo ?? null
+          }
+        : null,
+      saved
+    );
+    if (campos.length > 0) {
+      await db.insert(pendingMutations).values({
+        id: Crypto.randomUUID(),
+        entity: PROFILE_ENTITY,
+        entityId: PROFILE_ID,
+        operation: "update",
+        payload: JSON.stringify({ campos }),
+        status: "pending",
+        retryCount: 0,
+        createdAt: now
+      });
+      logger.verbose("queued profile update", { campos });
+    }
+
+    return saved;
   };
 
   return withErrorHandlingAndValidation(fn, setProfileSchema);

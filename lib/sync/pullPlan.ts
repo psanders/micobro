@@ -60,7 +60,8 @@ export interface PlanInput {
 }
 
 export interface TabProblem {
-  entity: PulledEntity;
+  /** "profile": the Extra tab (extraTab.ts), which isn't planned here. */
+  entity: PulledEntity | "profile";
   /** 1-based row number in the Sheet. */
   sheetRow: number;
   reason: string;

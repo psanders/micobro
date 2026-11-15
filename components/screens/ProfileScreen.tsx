@@ -11,7 +11,6 @@ import { View, Text, Pressable, ScrollView, Alert, Linking, StyleSheet } from "r
 import { useCallback } from "react";
 import { useRouter, useFocusEffect } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import Constants from "expo-constants";
 import { Icon } from "../Icon";
 import { useProfileRepo, useRouteRepo, useSyncRepo } from "../../lib/repo/RepoProvider";
 import { useAsync } from "../../lib/hooks/useAsync";
@@ -24,8 +23,9 @@ import { SectionLabel } from "../SectionLabel";
 import { StatCard } from "../StatCard";
 import { ListTile } from "../ListTile";
 import { colors, fonts } from "../../lib/ui/theme";
+import { getAppVersion } from "../../lib/app/appVersion";
 
-const APP_VERSION = Constants.expoConfig?.version ?? "0.0.0";
+const APP_VERSION = getAppVersion();
 
 /**
  * Prefills the GitHub issue form's "version" field (soporte.yml) via its

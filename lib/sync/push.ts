@@ -22,6 +22,9 @@ import { ensurePagosLayout } from "./pagosLayout";
 import { isPaymentKind, legacyPaymentKind } from "../payments/paymentNotes";
 import { CUSTOMER_PHOTO_ENTITY } from "../customers/customerPhotoWrites";
 import { createQueueCedulaResend } from "./queueCedulaResend";
+import { EXTRA_RANGE, PROFILE_ENTITY } from "./extraFields";
+import { pushExtra } from "./extraTab";
+import { getAppVersion as defaultGetAppVersion } from "../app/appVersion";
 import { formatCedula } from "../utils/cedula";
 import { logger } from "../logger";
 import type { Database } from "../db/client";
@@ -33,7 +36,8 @@ export const LAST_PUSHED_AT_KEY = "lastPushedAt";
 
 // Assumes the lender's Google Sheet has tabs named "Clientes", "Préstamos",
 // "Pagos", "Visitas", "Cierres" and "Fotos" with columns in the order the
-// row-value mappers below emit them.
+// row-value mappers below emit them, and a key/value "Extra" tab that
+// extraTab.ts reads and writes by Campo instead.
 // Exported so provisioning (lib/sync/provisionSheet.ts) creates tabs whose
 // names and column widths match exactly what push writes here.
 export const ENTITY_RANGES: Record<string, string> = {
@@ -44,7 +48,10 @@ export const ENTITY_RANGES: Record<string, string> = {
   cashClose: "Cierres!A:E",
   // Push-only for now. Sheets connected before photos shipped get the tab
   // from push itself (see ensureFotosTab below).
-  customerPhoto: "Fotos!A:D"
+  customerPhoto: "Fotos!A:D",
+  // The lender's profile, one Campo per row; never written through the
+  // row mappers below (see pushExtra in extraTab.ts).
+  profile: EXTRA_RANGE
 };
 
 // Cédula sits right after the name and is written formatted ("001-1234567-8"):
@@ -232,7 +239,15 @@ async function currentRowPayload(
   return rows[0] ? JSON.parse(JSON.stringify(rows[0])) : null;
 }
 
-export async function pushPendingMutations(db: Database): Promise<PushResult> {
+export interface PushOptions {
+  /** The installed app's version, written to Extra's Versión de la app. */
+  getAppVersion?: () => string;
+}
+
+export async function pushPendingMutations(
+  db: Database,
+  { getAppVersion = defaultGetAppVersion }: PushOptions = {}
+): Promise<PushResult> {
   const sheetId = await getSheetId();
   if (!sheetId) {
     logger.warn("no sheet configured, skipping push");
@@ -265,14 +280,15 @@ export async function pushPendingMutations(db: Database): Promise<PushResult> {
       )
     );
 
-  let pushed = 0;
-  let failed = 0;
   // Checked at most once per push, and only when a photo mutation is queued.
   let photosReady: boolean | null = null;
 
+  let pushed = 0;
+  let failed = 0;
+
   for (const mutation of pending) {
     const range = ENTITY_RANGES[mutation.entity];
-    if (!range) continue;
+    if (!range || mutation.entity === PROFILE_ENTITY) continue;
 
     if (
       mutation.operation !== "create" &&
@@ -341,6 +357,16 @@ export async function pushPendingMutations(db: Database): Promise<PushResult> {
       failed += 1;
     }
   }
+
+  // The profile is written to Extra by Campo, all queued changes at once.
+  const extra = await pushExtra(
+    db,
+    sheetId,
+    pending.filter((mutation) => mutation.entity === PROFILE_ENTITY),
+    getAppVersion
+  );
+  pushed += extra.pushed;
+  failed += extra.failed;
 
   await db
     .insert(syncMeta)

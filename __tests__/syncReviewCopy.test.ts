@@ -39,6 +39,12 @@ describe("sync review copy", () => {
     ).toBe("Pagos · fila 3: el ID se repite (también en la fila 2)");
   });
 
+  it("names the Extra tab for a profile problem", () => {
+    expect(problemLine({ entity: "profile", sheetRow: 5, reason: "El avatar no es válido" })).toBe(
+      "Extra · fila 5: El avatar no es válido"
+    );
+  });
+
   it("describes a backup by date and contents", () => {
     // Arrange
     const backup = {

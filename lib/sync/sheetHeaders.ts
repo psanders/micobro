@@ -46,5 +46,8 @@ export const TAB_HEADERS: Record<string, string[]> = {
   cashClose: ["ID", "Monto (centavos)", "Desde", "Cerrado", "Creado"],
   // One row per customer with a photo; ID is the customer id (as in Clientes).
   // Foto is the base64 JPEG with no "data:" prefix.
-  customerPhoto: ["ID", "Nombre", "Foto", "Actualizado"]
+  customerPhoto: ["ID", "Nombre", "Foto", "Actualizado"],
+  // Key/value: one row per fact about the lender, keyed by Campo (column A,
+  // labels in extraFields.ts) — see extraTab.ts.
+  profile: ["Campo", "Valor"]
 };

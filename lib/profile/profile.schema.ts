@@ -53,7 +53,7 @@ export const setProfileSchema = z.object({
     .string()
     .min(1, "El nombre es obligatorio")
     .transform((v) => v.trim()),
-  avatarKey: z.enum(AVATAR_KEYS).optional(),
+  avatarKey: z.enum(AVATAR_KEYS, "El avatar no es válido").optional(),
   businessName: z.string().optional(),
   phone: optionalPhoneSchema,
   // undefined = keep the stored photo, null = remove it.

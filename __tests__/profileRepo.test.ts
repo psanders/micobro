@@ -7,6 +7,7 @@
  * a row once "Editar perfil" has run.
  */
 import { createRealProfileRepo } from "../lib/repo/real/profileRepo";
+import { pendingMutations, profile as profileTable } from "../lib/db/schema";
 import type { Database } from "../lib/db/client";
 
 function makeDbStub(rows: unknown[] = []) {
@@ -54,14 +55,17 @@ describe("real profile repo", () => {
     });
   });
 
-  it("set() writes an upsert to the profile table", async () => {
+  it("set() writes an upsert to the profile table and queues it for the Sheet", async () => {
     const db = makeDbStub([]);
     const repo = createRealProfileRepo({ db: db as unknown as Database });
 
     const profile = await repo.set({ name: "Julia Reyes", avatarKey: "female2" });
 
     expect(profile.name).toBe("Julia Reyes");
-    expect((db as unknown as Record<string, jest.Mock>).insert).toHaveBeenCalledTimes(1);
+    expect((db as unknown as Record<string, jest.Mock>).insert).toHaveBeenCalledWith(profileTable);
+    expect((db as unknown as Record<string, jest.Mock>).insert).toHaveBeenCalledWith(
+      pendingMutations
+    );
     expect((db as unknown as Record<string, jest.Mock>).onConflictDoUpdate).toHaveBeenCalledTimes(
       1
     );

@@ -7,6 +7,7 @@
  */
 import { createGetProfile } from "../../profile/getProfile";
 import { createSetProfile } from "../../profile/setProfile";
+import { notifyMutationQueued } from "../../sync/syncEvents";
 import type { Database } from "../../db/client";
 import type { ProfileRepo } from "../types";
 
@@ -16,6 +17,11 @@ export function createRealProfileRepo({ db }: { db: Database }): ProfileRepo {
 
   return {
     get: () => getProfile({}),
-    set: (input) => setProfile(input)
+    async set(input) {
+      const saved = await setProfile(input);
+      // A save queues the changed Campos for the Sheet's Extra tab.
+      notifyMutationQueued();
+      return saved;
+    }
   };
 }

@@ -883,7 +883,8 @@ describe("pushPendingMutations — pushedAt and delete mutations", () => {
     const where = jest
       .fn()
       .mockResolvedValueOnce([mutation({ operation: "update", payload: "" })])
-      .mockResolvedValueOnce([row]);
+      .mockResolvedValueOnce([row])
+      .mockResolvedValue([]);
     (db as unknown as { select: jest.Mock }).select.mockReturnValue({
       from: () => ({ where })
     });
@@ -906,7 +907,8 @@ describe("pushPendingMutations — pushedAt and delete mutations", () => {
     const where = jest
       .fn()
       .mockResolvedValueOnce([mutation({ operation: "update", payload: "" })])
-      .mockResolvedValueOnce([]);
+      .mockResolvedValueOnce([])
+      .mockResolvedValue([]);
     (db as unknown as { select: jest.Mock }).select.mockReturnValue({
       from: () => ({ where })
     });
