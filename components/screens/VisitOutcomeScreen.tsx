@@ -119,6 +119,7 @@ export function VisitOutcomeScreen({ loanId }: { loanId: string }) {
         <>
           <ScrollView contentContainerStyle={styles.content}>
             <ClientRow
+              photo={ctx.customerPhoto}
               avatarKey={ctx.customerAvatarKey}
               name={ctx.customerName}
               meta={`Cuota ${ctx.currentInstallmentNumber} · ${formatShortDate(new Date())} · ${formatTime(new Date())}`}

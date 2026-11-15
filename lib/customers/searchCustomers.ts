@@ -3,7 +3,8 @@
  *
  * Powers the Buscar screen: case-insensitive name/phone substring match
  * (empty query returns everyone) with an active-loan count per customer.
- * `avatarKey` comes off the customers row. `inMora` stays false on the
+ * `avatarKey` comes off the customers row; `photo` is read afterwards for
+ * the matching customers only (see readCustomerPhotos). `inMora` stays false on the
  * real client until overdue tracking exists — the mora domain hasn't been
  * modeled in the local DB yet.
  */
@@ -11,6 +12,7 @@ import { z } from "zod/v4";
 import { eq } from "drizzle-orm";
 import { withErrorHandlingAndValidation } from "../utils/withErrorHandlingAndValidation";
 import { normalizeText } from "../utils/text";
+import { readCustomerPhotos } from "./readCustomerPhotos";
 import { customers, loans } from "../db/schema";
 import type { Database } from "../db/client";
 
@@ -22,6 +24,7 @@ export interface CustomerSearchRow {
   id: string;
   name: string;
   avatarKey: string | null;
+  photo: string | null;
   inMora: boolean;
   loanCount: number;
 }
@@ -43,6 +46,11 @@ export function createSearchCustomers({ db }: SearchCustomersDeps) {
         )
       : allCustomers;
 
+    const photos = await readCustomerPhotos(
+      db,
+      matches.map((c) => c.id)
+    );
+
     const rows: CustomerSearchRow[] = [];
     for (const customer of matches) {
       const customerLoans = await db.select().from(loans).where(eq(loans.customerId, customer.id));
@@ -51,6 +59,7 @@ export function createSearchCustomers({ db }: SearchCustomersDeps) {
         id: customer.id,
         name: customer.name,
         avatarKey: customer.avatarKey,
+        photo: photos.get(customer.id) ?? null,
         inMora: false,
         loanCount: activeCount
       });

@@ -9,18 +9,21 @@ import type { DeletionCounts, TabProblem } from "../lib/sync/pullPlan";
 import type { PulledEntity } from "../lib/sync/syncedTables";
 import type { Backup } from "../lib/backups";
 
-export const TAB_NAMES: Record<PulledEntity, string> = {
+export const TAB_NAMES: Record<PulledEntity | "profile", string> = {
   customer: "Clientes",
   loan: "Préstamos",
   payment: "Pagos",
-  visit: "Visitas"
+  visit: "Visitas",
+  customerPhoto: "Fotos",
+  profile: "Extra"
 };
 
 const NOUNS: Record<PulledEntity, [string, string]> = {
   customer: ["cliente", "clientes"],
   loan: ["préstamo", "préstamos"],
   payment: ["pago", "pagos"],
-  visit: ["visita", "visitas"]
+  visit: ["visita", "visitas"],
+  customerPhoto: ["foto", "fotos"]
 };
 
 export function countLabel(entity: PulledEntity, n: number): string {

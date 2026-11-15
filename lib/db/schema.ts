@@ -23,6 +23,24 @@ export const customers = sqliteTable("customers", {
   updatedAt: integer("updated_at", { mode: "timestamp" }).notNull()
 });
 
+/**
+ * A customer's photo, at most one per customer. Kept out of `customers` so
+ * lists and the customer's Sheet row stay light. The key is named `id` (it
+ * equals `customers.id`) so the generic sync code can address it like the
+ * other synced tables. Deleting the customer deletes its photo.
+ */
+export const customerPhotos = sqliteTable("customer_photos", {
+  id: text("id")
+    .primaryKey()
+    .references(() => customers.id, { onDelete: "cascade" }),
+  // Base64 JPEG with no "data:" prefix — see lib/photos/photo.schema.ts.
+  photo: text("photo").notNull(),
+  // Same meaning as customers.pushedAt.
+  pushedAt: integer("pushed_at", { mode: "timestamp" }),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).notNull()
+});
+
 export const pendingMutations = sqliteTable("pending_mutations", {
   id: text("id").primaryKey(),
   entity: text("entity").notNull(),
@@ -50,6 +68,8 @@ export const profile = sqliteTable("profile", {
   avatarKey: text("avatar_key"),
   businessName: text("business_name"),
   phone: text("phone"),
+  // The lender's photo, same format as customer_photos.photo.
+  photo: text("photo"),
   createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
   updatedAt: integer("updated_at", { mode: "timestamp" }).notNull()
 });

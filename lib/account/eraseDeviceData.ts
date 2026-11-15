@@ -11,6 +11,7 @@ import { z } from "zod/v4";
 import { withErrorHandlingAndValidation } from "../utils/withErrorHandlingAndValidation";
 import {
   cashCloses,
+  customerPhotos,
   customers,
   loans,
   payments,
@@ -43,6 +44,7 @@ const TABLES = [
   payments,
   visits,
   loans,
+  customerPhotos,
   customers,
   cashCloses,
   pendingMutations,

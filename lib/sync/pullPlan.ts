@@ -14,18 +14,26 @@
  */
 import { TAB_HEADERS } from "./sheetHeaders";
 import { legacyPaymentKind } from "../payments/paymentNotes";
+import { photoSchema } from "../photos/photo.schema";
 import { isBlankRow, parseSheetRow } from "./sheetRows";
 import { PULLED_ENTITIES } from "./syncedTables";
 import type { SheetRecords } from "./sheetRows";
 import type { PulledEntity } from "./syncedTables";
-import type { customers, loans, payments, visits } from "../db/schema";
+import type { customerPhotos, customers, loans, payments, visits } from "../db/schema";
 
 export interface LocalRecords {
   customer: typeof customers.$inferSelect;
   loan: typeof loans.$inferSelect;
   payment: typeof payments.$inferSelect;
   visit: typeof visits.$inferSelect;
+  /** Never the photo itself: the planner only needs to know which exist and when. */
+  customerPhoto: { id: string; pushedAt: Date | null; updatedAt: Date };
 }
+
+/** What a pull writes: whole rows, so a photo row carries its photo. */
+export type WriteRecords = Omit<LocalRecords, "customerPhoto"> & {
+  customerPhoto: typeof customerPhotos.$inferSelect;
+};
 
 export type ByEntity<T> = { [E in PulledEntity]: T };
 
@@ -43,10 +51,17 @@ export interface PlanInput {
    * Otherwise a pull never changes an existing payment's `tipo`.
    */
   adoptPaymentTipo?: boolean;
+  /**
+   * Ids of the Fotos rows whose Foto cell was fetched this sync (their
+   * column A checked). Only these are inserted or updated; every other
+   * Fotos row only counts as present. See photoPull.ts.
+   */
+  fetchedPhotos?: Set<string>;
 }
 
 export interface TabProblem {
-  entity: PulledEntity;
+  /** "profile": the Extra tab (extraTab.ts), which isn't planned here. */
+  entity: PulledEntity | "profile";
   /** 1-based row number in the Sheet. */
   sheetRow: number;
   reason: string;
@@ -71,13 +86,13 @@ export interface PlannedDeletion extends EntityRef {
  * push must write its Tipo and blank its Notas — pull itself writes no cells.
  */
 export type PlannedInsert = {
-  [E in PulledEntity]: { entity: E; record: LocalRecords[E]; resend?: boolean };
+  [E in PulledEntity]: { entity: E; record: WriteRecords[E]; resend?: boolean };
 }[PulledEntity];
 export type PlannedUpdate = {
-  [E in PulledEntity]: { entity: E; id: string; changes: Partial<LocalRecords[E]> };
+  [E in PulledEntity]: { entity: E; id: string; changes: Partial<WriteRecords[E]> };
 }[PulledEntity];
 export type PlannedNewRow = {
-  [E in PulledEntity]: { entity: E; sheetRow: number; record: LocalRecords[E]; resend?: boolean };
+  [E in PulledEntity]: { entity: E; sheetRow: number; record: WriteRecords[E]; resend?: boolean };
 }[PulledEntity];
 
 export interface PullPlan {
@@ -205,12 +220,20 @@ function toLocalRecord<E extends PulledEntity>(
   sheet: SheetRecords[E],
   id: string,
   now: Date
-): LocalRecords[E] {
+): WriteRecords[E] {
   const record: Record<string, unknown> = { ...sheet, id, pushedAt: now };
-  if (record.createdAt === null) record.createdAt = now;
+  if (record.createdAt === null || entity === "customerPhoto") record.createdAt = now;
   if ("updatedAt" in record && record.updatedAt === null) record.updatedAt = now;
   if (entity === "customer") record.avatarKey = null;
-  return record as unknown as LocalRecords[E];
+  return record as unknown as WriteRecords[E];
+}
+
+/** A fetched Foto that isn't a valid photo, as a row problem; null when it is. */
+function photoProblem(photo: string | null): string | null {
+  const result = photoSchema.safeParse(photo ?? "");
+  if (result.success) return null;
+  const message = result.error.issues[0]?.message ?? "La foto no es válida";
+  return message.charAt(0).toLowerCase() + message.slice(1);
 }
 
 /** Parent → child links, from local rows and the Sheet's rows together. */
@@ -251,13 +274,14 @@ type ParentCheck = (record: SheetRecords[PulledEntity]) => string | null;
 
 export function buildPullPlan(input: PlanInput): PullPlan {
   const { tabs, local, guarded, now, newId } = input;
+  const fetchedPhotos = input.fetchedPhotos ?? new Set<string>();
   const plan: PullPlan = {
     inserts: [],
     updates: [],
     newRows: [],
     deletions: [],
     restores: [],
-    seen: { customer: [], loan: [], payment: [], visit: [] },
+    seen: { customer: [], loan: [], payment: [], visit: [], customerPhoto: [] },
     problems: [],
     brokenTabs: [],
     guardedSkipped: 0
@@ -292,6 +316,8 @@ export function buildPullPlan(input: PlanInput): PullPlan {
       links.add({ entity: "customer", id: record.customerId as string }, child);
       if (record.loanId) links.add({ entity: "loan", id: record.loanId as string }, child);
     }
+    // A photo's id is its customer's id.
+    if (entity === "customerPhoto") links.add({ entity: "customer", id: record.id }, child);
   };
   for (const entity of PULLED_ENTITIES) {
     for (const row of local[entity])
@@ -321,6 +347,11 @@ export function buildPullPlan(input: PlanInput): PullPlan {
       if (visit.loanId && !exists("loan", visit.loanId))
         return `el préstamo ${visit.loanId} no existe`;
       return null;
+    },
+    customerPhoto: (r) => {
+      const photo = r as SheetRecords["customerPhoto"];
+      if (!exists("customer", photo.id)) return `el cliente ${photo.id} no existe`;
+      return fetchedPhotos.has(photo.id) ? photoProblem(photo.photo) : null;
     }
   };
 
@@ -351,6 +382,13 @@ export function buildPullPlan(input: PlanInput): PullPlan {
       if (id && guarded.has(guardKey(entity, id))) {
         plan.guardedSkipped += 1;
         if (localById[entity].has(id)) plan.seen[entity].push(id);
+        continue;
+      }
+      if (entity === "customerPhoto") {
+        planPhoto(plan, record as SheetRecords["customerPhoto"], localById.customerPhoto, {
+          fetched: fetchedPhotos.has(id),
+          now
+        });
         continue;
       }
       const current = id ? localById[entity].get(id) : undefined;
@@ -435,6 +473,34 @@ export function buildPullPlan(input: PlanInput): PullPlan {
   return plan;
 }
 
+/**
+ * One Fotos row, never through `newRows` (its id is required). A row whose
+ * Foto wasn't fetched this sync changes nothing: it only counts as present.
+ */
+function planPhoto(
+  plan: PullPlan,
+  record: SheetRecords["customerPhoto"],
+  local: Map<string, LocalRecords[PulledEntity]>,
+  { fetched, now }: { fetched: boolean; now: Date }
+): void {
+  const { id } = record;
+  const exists = local.has(id);
+  if (exists) plan.seen.customerPhoto.push(id);
+  if (!fetched || record.photo === null) return;
+  if (exists) {
+    plan.updates.push({
+      entity: "customerPhoto",
+      id,
+      changes: { photo: record.photo, updatedAt: record.updatedAt ?? now }
+    });
+  } else {
+    plan.inserts.push({
+      entity: "customerPhoto",
+      record: toLocalRecord("customerPhoto", record, id, now)
+    });
+  }
+}
+
 export const BULK_DELETE_MAX_ROWS = 10;
 export const BULK_DELETE_MAX_SHARE = 0.2;
 
@@ -443,16 +509,31 @@ export interface DeletionCounts {
   byEntity: ByEntity<number>;
 }
 
+/**
+ * Local rows a plan deletes, by table. A photo that goes with its deleted
+ * customer isn't counted: deleting one customer out of a few with photos
+ * would otherwise hold the whole sync.
+ */
 export function countDeletions(deletions: PlannedDeletion[]): DeletionCounts {
-  const byEntity: ByEntity<number> = { customer: 0, loan: 0, payment: 0, visit: 0 };
-  for (const d of deletions) if (d.local) byEntity[d.entity] += 1;
+  const byEntity: ByEntity<number> = {
+    customer: 0,
+    loan: 0,
+    payment: 0,
+    visit: 0,
+    customerPhoto: 0
+  };
+  for (const d of deletions) {
+    if (!d.local) continue;
+    if (d.entity === "customerPhoto" && d.root.entity !== "customerPhoto") continue;
+    byEntity[d.entity] += 1;
+  }
   return { total: Object.values(byEntity).reduce((a, b) => a + b, 0), byEntity };
 }
 
 /**
  * True when the plan deletes more than the owner should see happen silently:
  * over 10 local rows in all, or over 20% of any table's local rows
- * (cascaded rows counted).
+ * (cascaded rows counted, except photos — see countDeletions).
  */
 export function needsDeletionConfirmation(
   deletions: PlannedDeletion[],

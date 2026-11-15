@@ -3,6 +3,7 @@
  */
 import { z } from "zod/v4";
 import { normalizePhone } from "../utils/text";
+import { photoSchema } from "../photos/photo.schema";
 
 /**
  * The fixed row id for the single profile row this install ever has —
@@ -52,9 +53,11 @@ export const setProfileSchema = z.object({
     .string()
     .min(1, "El nombre es obligatorio")
     .transform((v) => v.trim()),
-  avatarKey: z.enum(AVATAR_KEYS).optional(),
+  avatarKey: z.enum(AVATAR_KEYS, "El avatar no es válido").optional(),
   businessName: z.string().optional(),
-  phone: optionalPhoneSchema
+  phone: optionalPhoneSchema,
+  // undefined = keep the stored photo, null = remove it.
+  photo: photoSchema.nullable().optional()
 });
 
 export type SetProfileInput = z.infer<typeof setProfileSchema>;
@@ -63,11 +66,13 @@ export type SetProfileInput = z.infer<typeof setProfileSchema>;
  * The lender's own display identity, used for greeting personalization
  * (e.g. "Hola, Carlos." on the unlock screen) and the Perfil (Yo) screen.
  * `avatarKey` is a semantic key mapped to a bundled asset at the
- * component layer — the repo/domain layers stay UI-free.
+ * component layer — the repo/domain layers stay UI-free. `photo` is the
+ * lender's own photo (base64 JPEG, see lib/photos/photo.schema.ts).
  */
 export interface Profile {
   name: string;
   avatarKey: string | null;
   businessName: string | null;
   phone: string | null;
+  photo: string | null;
 }

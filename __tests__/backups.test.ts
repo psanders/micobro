@@ -14,15 +14,19 @@ import {
   deleteAllBackups
 } from "../lib/backups";
 import { BACKUPS_KEY } from "../lib/backups/backupIndex";
+import { createCreateCustomer } from "../lib/customers/createCustomer";
+import { createTestDb } from "./helpers/testDb";
 import type { BackupDriver } from "../lib/backups";
 
 /** An in-memory driver: a sync_meta map, fixed counts, and every SQL statement logged. */
 function fakeDriver(options: { tablesInBackup?: string[] } = {}) {
   const meta = new Map<string, string>();
   const statements: string[] = [];
+  const asyncStatements: string[] = [];
   const deleted: string[] = [];
   const tablesInBackup = options.tablesInBackup ?? [
     "customers",
+    "customer_photos",
     "loans",
     "payments",
     "visits",
@@ -36,6 +40,10 @@ function fakeDriver(options: { tablesInBackup?: string[] } = {}) {
         /^INSERT INTO sync_meta \(key, value\) VALUES \('(.+?)', '(.*)'\) ON CONFLICT/
       );
       if (upsert) meta.set(upsert[1]!, upsert[2]!.replace(/''/g, "'"));
+    },
+    async runAsync(statement) {
+      statements.push(statement);
+      asyncStatements.push(statement);
     },
     all<T>(statement: string): T[] {
       statements.push(statement);
@@ -57,7 +65,7 @@ function fakeDriver(options: { tablesInBackup?: string[] } = {}) {
       deleted.push(name);
     }
   };
-  return { driver, statements, deleted, meta };
+  return { driver, statements, asyncStatements, deleted, meta };
 }
 
 const at = (n: number) => () => new Date(Date.UTC(2026, 9, n));
@@ -69,13 +77,15 @@ async function backupOn(driver: BackupDriver, day: number) {
 describe("createBackup", () => {
   it("writes a full copy next to the database and records it with its counts", async () => {
     // Arrange
-    const { driver, statements } = fakeDriver();
+    const { driver, statements, asyncStatements } = fakeDriver();
 
     // Act
     const backup = await backupOn(driver, 1);
 
     // Assert
     expect(statements[0]).toBe(`VACUUM INTO '/data/SQLite/${backup.name}'`);
+    // Off the JS thread: the copy goes through runAsync, never run.
+    expect(asyncStatements).toEqual([`VACUUM INTO '/data/SQLite/${backup.name}'`]);
     expect(backup).toMatchObject({ customers: 7, loans: 7, payments: 7 });
     expect(await createListBackups({ driver })({})).toEqual([backup]);
   });
@@ -133,13 +143,14 @@ describe("restoreBackup", () => {
     expect(result).toBe("restored");
     const writes = statements.filter((s) => !s.startsWith("SELECT") && !s.startsWith("PRAGMA"));
     expect(writes[0]).toBe(`ATTACH DATABASE '/data/SQLite/${name}' AS backup`);
-    expect(writes.slice(1, 8)).toEqual([
+    expect(writes.slice(1, 9)).toEqual([
       "BEGIN",
       "DELETE FROM main.pending_mutations",
       "DELETE FROM main.cash_closes",
       "DELETE FROM main.visits",
       "DELETE FROM main.payments",
       "DELETE FROM main.loans",
+      "DELETE FROM main.customer_photos",
       "DELETE FROM main.customers"
     ]);
     // An older backup's columns: only the shared ones are copied.
@@ -149,6 +160,7 @@ describe("restoreBackup", () => {
     const queued = writes.filter((s) => s.startsWith("INSERT INTO main.pending_mutations"));
     expect(queued.map((s) => s.match(/'(\w+)', id, 'update', ''/)?.[1])).toEqual([
       "customer",
+      "customerPhoto",
       "loan",
       "payment",
       "visit",
@@ -222,5 +234,68 @@ describe("deleteAllBackups", () => {
     // Assert
     expect(deleted.sort()).toEqual([a.name, b.name].sort());
     expect(await createListBackups({ driver })({})).toEqual([]);
+  });
+});
+
+describe("customer photos in a backup (real database)", () => {
+  const PHOTO = `/9j/${"A".repeat(100)}`;
+
+  async function phoneWithPhoto() {
+    const t = createTestDb();
+    const customer = await createCreateCustomer({ db: t.db, sql: t.sql })({
+      name: "Juana Pérez",
+      phone: "8091234567",
+      photo: PHOTO
+    });
+    const backup = await createCreateBackup({ driver: t.backupDriver })({});
+    // A Sheet delete took the customer (and, by cascade, its photo).
+    t.raw.prepare("DELETE FROM customers WHERE id = ?").run(customer.id);
+    return { t, customer, backup };
+  }
+
+  const restore = (t: ReturnType<typeof createTestDb>, name: string) =>
+    createRestoreBackup({ driver: t.backupDriver, verifyPin: jest.fn().mockResolvedValue(true) })({
+      name,
+      pin: "1234"
+    });
+
+  it("brings the photos back and re-queues each one", async () => {
+    // Arrange
+    const { t, customer, backup } = await phoneWithPhoto();
+    expect(t.raw.prepare("SELECT id FROM customer_photos").all()).toEqual([]);
+
+    // Act
+    const result = await restore(t, backup.name);
+
+    // Assert
+    expect(result).toBe("restored");
+    expect(t.raw.prepare("SELECT id, photo FROM customer_photos").all()).toEqual([
+      { id: customer.id, photo: PHOTO }
+    ]);
+    expect(
+      t.raw
+        .prepare(
+          "SELECT entity_id, operation, payload FROM pending_mutations WHERE entity = 'customerPhoto'"
+        )
+        .all()
+    ).toEqual([{ entity_id: customer.id, operation: "update", payload: "" }]);
+  });
+
+  it("restores a backup made before customer photos existed", async () => {
+    // Arrange
+    const { t, customer, backup } = await phoneWithPhoto();
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { DatabaseSync } = require("node:sqlite");
+    const file = new DatabaseSync(`${t.backupDriver.directory}/${backup.name}`);
+    file.exec("DROP TABLE customer_photos");
+    file.close();
+
+    // Act
+    const result = await restore(t, backup.name);
+
+    // Assert
+    expect(result).toBe("restored");
+    expect(t.raw.prepare("SELECT id FROM customers").all()).toEqual([{ id: customer.id }]);
+    expect(t.raw.prepare("SELECT id FROM customer_photos").all()).toEqual([]);
   });
 });

@@ -21,6 +21,7 @@ import {
   createSqliteBackupDriver
 } from "../../backups";
 import { verifyPin } from "../../security/pin";
+import { getAppVersion as defaultGetAppVersion } from "../../app/appVersion";
 import { BackupFailedError } from "../../sync/syncErrors";
 import { createExpoSqlExecutor } from "../../db/sqlExecutor";
 import type { DeletionMode } from "../../sync/pull";
@@ -43,13 +44,17 @@ export interface RealSyncRepoDeps {
   /** Synchronous SQL for applying pulls; defaults to the app's expo-sqlite connection. */
   sql?: SqlExecutor;
   backupDriver?: BackupDriver;
+  /** The installed app's version, for the Sheet's Extra tab; defaults to app.config's. */
+  getAppVersion?: () => string;
 }
 
 export function createRealSyncRepo({
   db,
   sql = createExpoSqlExecutor(db),
-  backupDriver = createSqliteBackupDriver(db)
+  backupDriver = createSqliteBackupDriver(db),
+  getAppVersion = defaultGetAppVersion
 }: RealSyncRepoDeps): SyncRepo {
+  const push = () => pushPendingMutations(db, { getAppVersion });
   const createBackup = createCreateBackup({ driver: backupDriver });
   const listBackups = createListBackups({ driver: backupDriver });
   const restoreBackup = createRestoreBackup({ driver: backupDriver, verifyPin });
@@ -73,16 +78,16 @@ export function createRealSyncRepo({
         throw new BackupFailedError(err);
       }
     }
-    const push = await pushPendingMutations(db);
+    const first = await push();
     const pull = await pullEntities(db, { deletions, sql });
     if (pull.queued > 0) {
-      const again = await pushPendingMutations(db);
+      const again = await push();
       return {
-        push: { pushed: push.pushed + again.pushed, failed: again.failed },
+        push: { pushed: first.pushed + again.pushed, failed: again.failed },
         pull
       };
     }
-    return { push, pull };
+    return { push: first, pull };
   }
 
   async function getStatus(): Promise<SyncStatus> {
@@ -149,7 +154,7 @@ export function createRealSyncRepo({
     async disconnect() {
       await signOutOfGoogle();
     },
-    pushNow: () => pushPendingMutations(db),
+    pushNow: push,
     syncNow: () => fullSync("auto"),
     resolveHeldDeletions: (choice) => fullSync(choice),
     listBackups: () => listBackups({}),

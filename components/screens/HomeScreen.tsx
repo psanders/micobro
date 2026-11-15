@@ -233,6 +233,7 @@ export function HomeScreen() {
                 return (
                   <ClientRow
                     key={visit.id}
+                    photo={visit.photo}
                     avatarKey={visit.avatarKey}
                     name={visit.name}
                     meta={meta.text}
@@ -261,6 +262,7 @@ export function HomeScreen() {
               {upcomingCustomers.map((customer) => (
                 <ClientRow
                   key={customer.customerId}
+                  photo={customer.photo}
                   avatarKey={customer.avatarKey}
                   name={customer.name}
                   meta={upcomingCustomerMeta(customer)}

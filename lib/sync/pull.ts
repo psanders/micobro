@@ -3,15 +3,20 @@
  *
  * Pulls the lender's Google Sheet back down into local SQLite: the other
  * half of the sync loop, run after push in syncNow(). `Clientes`, `Préstamos`,
- * `Pagos` and `Visitas` are pulled — edits, new rows and deletions; `Cierres`
- * stays upload-only (see openspec/changes/full-two-way-sync).
+ * `Pagos`, `Visitas` and `Fotos` are pulled — edits, new rows and deletions;
+ * `Cierres` stays upload-only (see openspec/changes/full-two-way-sync).
  *
- * The four tabs are read in one request, planned (pullPlan.ts) and applied in
- * one transaction (applyPullPlan.ts). Rows the owner added without an id get
- * one written to the Sheet first, and are only inserted once it's there, so a
- * failed write can never import the same row twice. Anything the pull needs
- * the Sheet to do — remove cascaded rows, take back kept rows — is queued in
- * pending_mutations for the push that follows.
+ * The original four tabs are read in one request, and the newer `Fotos`
+ * (without its photos, which are fetched only when new or changed — see
+ * photoPull.ts) and `Extra` (the lender's profile — see extraTab.ts) in a
+ * second one, so a Sheet still missing a newer tab never slows the main
+ * read. The rows are planned
+ * (pullPlan.ts) and applied in one transaction (applyPullPlan.ts). Rows the
+ * owner added without an id get one written to the Sheet first, and are
+ * only inserted once it's there, so a failed write can never import the same
+ * row twice. Anything the pull needs the Sheet to do — remove cascaded rows,
+ * take back kept rows — is queued in pending_mutations for the push that
+ * follows.
  */
 import * as Crypto from "expo-crypto";
 import { eq, or } from "drizzle-orm";
@@ -26,6 +31,15 @@ import { applyPullPlanTo, createSqlPullStore } from "./applyPullPlan";
 import { createExpoSqlExecutor } from "../db/sqlExecutor";
 import type { SqlExecutor } from "../db/sqlExecutor";
 import { PULLED_ENTITIES, PULLED_TABLES } from "./syncedTables";
+import {
+  FOTOS_INDEX_RANGES,
+  fetchPhotoRows,
+  mergeFotosColumns,
+  photoRowsToFetch,
+  withFetchedPhotos
+} from "./photoPull";
+import { EXTRA_RANGE } from "./extraFields";
+import { pullExtra } from "./extraTab";
 import { logger } from "../logger";
 import type { Database } from "../db/client";
 import { EMPTY_PULL_RESULT } from "./pullResult";
@@ -63,7 +77,15 @@ async function readLocal(db: Database): Promise<{ [E in keyof LocalRecords]: Loc
     customer: await db.select().from(PULLED_TABLES.customer),
     loan: await db.select().from(PULLED_TABLES.loan),
     payment: await db.select().from(PULLED_TABLES.payment),
-    visit: await db.select().from(PULLED_TABLES.visit)
+    visit: await db.select().from(PULLED_TABLES.visit),
+    // Never the photo itself: only fetched rows need it, and they bring it.
+    customerPhoto: await db
+      .select({
+        id: PULLED_TABLES.customerPhoto.id,
+        pushedAt: PULLED_TABLES.customerPhoto.pushedAt,
+        updatedAt: PULLED_TABLES.customerPhoto.updatedAt
+      })
+      .from(PULLED_TABLES.customerPhoto)
   };
 }
 
@@ -101,10 +123,10 @@ function isMissingRange(err: unknown): boolean {
 }
 
 /**
- * All tabs in one batch read. A batch fails whole when any one tab is
- * missing (e.g. renamed by the owner), so fall back to reading tab by tab:
- * a missing tab is unreadable this sync (null), never a reason to stop the
- * others. Network errors still fail the pull.
+ * The original four tabs in one batch read. A batch fails whole when any one
+ * tab is missing (e.g. renamed by the owner), so fall back to reading tab by
+ * tab: a missing tab is unreadable this sync (null), never a reason to stop
+ * the others. Network errors still fail the pull.
  */
 async function readTabs(sheetId: string, ranges: string[]): Promise<(string[][] | null)[]> {
   try {
@@ -123,6 +145,48 @@ async function readTabs(sheetId: string, ranges: string[]): Promise<(string[][] 
     }
   }
   return tabs;
+}
+
+/**
+ * The tabs newer than the original four, each a group of ranges, in one
+ * batch read of their own: most Sheets connected before a newer tab shipped
+ * don't have it yet, and in the main batch that would make every tab fall
+ * back to its own read. When this batch fails on a missing tab, each group
+ * is read on its own, in order; once every other group read fine, the last
+ * one is the missing tab and isn't read again. So a missing newer tab costs
+ * at most one more request. A missing group is null.
+ */
+async function readNewerTabs(
+  sheetId: string,
+  groups: string[][]
+): Promise<(string[][][] | null)[]> {
+  try {
+    const values = await readRanges(sheetId, groups.flat());
+    let at = 0;
+    return groups.map((group) => {
+      const slice = values.slice(at, at + group.length);
+      at += group.length;
+      return slice;
+    });
+  } catch (err) {
+    if (!isMissingRange(err)) throw err;
+  }
+  const read: (string[][][] | null)[] = [];
+  for (const [i, group] of groups.entries()) {
+    if (i === groups.length - 1 && !read.includes(null)) {
+      logger.warn("sheet tab missing, skipping it this sync", { range: group[0] });
+      read.push(null);
+      break;
+    }
+    try {
+      read.push(await readRanges(sheetId, group));
+    } catch (err) {
+      if (!isMissingRange(err)) throw err;
+      logger.warn("sheet tab missing, skipping it this sync", { range: group[0] });
+      read.push(null);
+    }
+  }
+  return read;
 }
 
 export async function pullEntities(
@@ -147,24 +211,43 @@ export async function pullEntities(
   const paymentsReady = await isPagosLayoutReady(db);
   const adoptRows = await db.select().from(syncMeta).where(eq(syncMeta.key, PAGOS_ADOPT_TIPO_KEY));
   const adoptPaymentTipo = paymentsReady && adoptRows.length > 0;
-  const ranges = PULLED_ENTITIES.map((entity) => ENTITY_RANGES[entity]);
-  const values = await readTabs(sheetId, ranges);
+  // The original four tabs whole, as one batch.
+  const wholeTabs = PULLED_ENTITIES.filter((entity) => entity !== "customerPhoto");
+  const values = await readTabs(
+    sheetId,
+    wholeTabs.map((entity) => ENTITY_RANGES[entity])
+  );
   const tabs = {} as ByEntity<string[][] | null>;
-  PULLED_ENTITIES.forEach((entity, i) => {
+  wholeTabs.forEach((entity, i) => {
     const held =
       (entity === "customer" && !customersReady) || (entity === "payment" && !paymentsReady);
     tabs[entity] = held ? null : (values[i] ?? null);
   });
+  // The newer tabs as a second batch: Extra first, as it's the likelier to
+  // exist (every phone with a profile writes it), then Fotos' ID/Nombre and
+  // Actualizado columns only.
+  const [extraValues, fotosValues] = await readNewerTabs(sheetId, [
+    [EXTRA_RANGE],
+    [...FOTOS_INDEX_RANGES]
+  ]);
+  const fotosIndex = mergeFotosColumns(fotosValues?.[0] ?? null, fotosValues?.[1] ?? null);
 
   const local = await readLocal(db);
+  const guarded = await readGuarded(db);
+  const fetched = fotosIndex
+    ? await fetchPhotoRows(sheetId, photoRowsToFetch(fotosIndex, local.customerPhoto, guarded))
+    : new Map();
+  tabs.customerPhoto = fotosIndex ? withFetchedPhotos(fotosIndex, fetched) : null;
+
   const now = new Date();
   const plan = buildPullPlan({
     tabs,
     local,
-    guarded: await readGuarded(db),
+    guarded,
     now,
     newId: () => Crypto.randomUUID(),
-    adoptPaymentTipo
+    adoptPaymentTipo,
+    fetchedPhotos: new Set(fetched.keys())
   });
 
   const localCounts = {} as ByEntity<number>;
@@ -186,6 +269,9 @@ export async function pullEntities(
     });
   });
 
+  const extra = await pullExtra(db, extraValues?.[0] ?? null, now);
+  const problems = [...plan.problems, ...extra.problems];
+
   // The one-time adoption is spent once a readable Pagos tab was applied.
   if (adoptPaymentTipo && tabs.payment && !plan.brokenTabs.includes("payment")) {
     await setMeta(db, PAGOS_ADOPT_TIPO_KEY, null);
@@ -193,16 +279,17 @@ export async function pullEntities(
 
   const held = hold ? countDeletions(plan.deletions) : null;
   await setMeta(db, HELD_DELETIONS_KEY, held ? JSON.stringify(held) : null);
-  await setMeta(db, SYNC_PROBLEMS_KEY, plan.problems.length ? JSON.stringify(plan.problems) : null);
+  await setMeta(db, SYNC_PROBLEMS_KEY, problems.length ? JSON.stringify(problems) : null);
   await setMeta(db, LAST_PULLED_AT_KEY, String(Date.now()));
 
   const result: PullResult = {
-    pulled: applied.inserted + applied.updated,
+    pulled: applied.inserted + applied.updated + extra.pulled,
     skipped: plan.guardedSkipped + applied.changedDuringSync,
-    malformed: plan.problems.length,
+    malformed: problems.length,
     deleted: applied.deleted,
-    queued: applied.queued,
-    problems: plan.problems,
+    // Extra's released or resent profile mutations go out in the same sync.
+    queued: applied.queued + extra.queued,
+    problems,
     held
   };
   logger.info("pull complete", {

@@ -53,7 +53,8 @@ Overrides:
 Breaking here means it breaks a lender's existing phone or Sheet:
 
 - SQLite schema: every install upgrades in place via `lib/db/migrations/`, so a migration must carry existing data forward.
-- The Google Sheet: tab names (`Clientes`, `Préstamos`, `Pagos`, `Visitas`) and column order (`lib/sync/clientesLayout.ts`, `push.ts`, `pull.ts`). Lenders' existing Sheets and hand edits depend on them.
+- The Google Sheet: tab names (`Clientes`, `Préstamos`, `Pagos`, `Visitas`, `Fotos`) and column order (`lib/sync/clientesLayout.ts`, `push.ts`, `pull.ts`). Lenders' existing Sheets and hand edits depend on them.
+- The Sheet's `Extra` tab (the lender's profile, `lib/sync/extraFields.ts`): its name, its `Campo | Valor` header and the exact Campo labels (`Nombre`, `Negocio`, `Teléfono`, `Avatar`, `Foto`, `Versión de la app`, `Actualizado`). Rows are found by Campo, so a new fact is a new row, never a new column.
 - App identity: bundle id/package `com.micobro.app` and URL schemes `micobro` / `com.micobro.app` (the Google OAuth redirect depends on them).
 - Build-time env vars: `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID`, `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID`, `EXPO_PUBLIC_GOOGLE_OAUTH_CLIENT_ID`, `EXPO_PUBLIC_USE_FAKE_GOOGLE`, `EXPO_PUBLIC_USE_MOCK_REPOS`.
 - `.github/ISSUE_TEMPLATE/soporte.yml`: shipped app versions open `issues/new?template=soporte.yml&version=…` (`components/screens/ProfileScreen.tsx`). Its filename and the `version` field id must not change.

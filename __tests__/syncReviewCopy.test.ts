@@ -22,7 +22,10 @@ describe("sync review copy", () => {
 
   it("lists only the tables with deletions, parents first", () => {
     expect(
-      deletionLines({ total: 6, byEntity: { customer: 1, loan: 1, payment: 4, visit: 0 } })
+      deletionLines({
+        total: 6,
+        byEntity: { customer: 1, loan: 1, payment: 4, visit: 0, customerPhoto: 0 }
+      })
     ).toEqual(["1 cliente", "1 préstamo", "4 pagos"]);
   });
 
@@ -34,6 +37,12 @@ describe("sync review copy", () => {
         reason: "el ID se repite (también en la fila 2)"
       })
     ).toBe("Pagos · fila 3: el ID se repite (también en la fila 2)");
+  });
+
+  it("names the Extra tab for a profile problem", () => {
+    expect(problemLine({ entity: "profile", sheetRow: 5, reason: "El avatar no es válido" })).toBe(
+      "Extra · fila 5: El avatar no es válido"
+    );
   });
 
   it("describes a backup by date and contents", () => {

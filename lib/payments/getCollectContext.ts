@@ -11,6 +11,7 @@ import { cuotaCents } from "../loans/loanMath";
 import { computeLoanMora, loanMoraPolicy } from "../loans/mora";
 import { effectiveLoanType } from "../loans/loan.schema";
 import { openCreditState, openCreditGraceDays } from "../loans/openCredit";
+import { readCustomerPhotos } from "../customers/readCustomerPhotos";
 import type { Customer } from "../customers/customer.schema";
 import type { Loan } from "../loans/loan.schema";
 import type { Payment } from "./payment.schema";
@@ -47,6 +48,9 @@ export function createGetCollectContext({ db }: GetCollectContextDeps) {
       .where(eq(payments.loanId, loanId))) as Payment[];
 
     const customerName = customer?.name ?? "Cliente";
+    const customerPhoto = customer
+      ? ((await readCustomerPhotos(db, [customer.id])).get(customer.id) ?? null)
+      : null;
 
     if (effectiveLoanType(loan) === "open_credit") {
       const state = openCreditState(loan, loanPayments, new Date());
@@ -70,6 +74,7 @@ export function createGetCollectContext({ db }: GetCollectContextDeps) {
         customerId: loan.customerId,
         customerName,
         customerAvatarKey: null,
+        customerPhoto,
         business: null,
         // "Solo interés" is the default amount for an open-credit cobro.
         cuotaCents: state.interestDueCents,
@@ -111,6 +116,7 @@ export function createGetCollectContext({ db }: GetCollectContextDeps) {
       customerId: loan.customerId,
       customerName: view.customerName,
       customerAvatarKey: null,
+      customerPhoto,
       business: null,
       // Plain Tradicional charges what's left of the current cuota, so a
       // round-up shows once (issue #204). Tradicional Plus keeps the full

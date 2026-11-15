@@ -99,7 +99,12 @@ export function CustomerDetailScreen({ customerId }: { customerId: string }) {
       ) : (
         <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 32 + insets.bottom }]}>
           <View style={styles.profile}>
-            <Avatar avatarKey={customer.avatarKey} name={customer.name} size={72} />
+            <Avatar
+              photo={customer.photo}
+              avatarKey={customer.avatarKey}
+              name={customer.name}
+              size={72}
+            />
             <Text style={styles.name}>{customer.name}</Text>
             <View style={[styles.standing, customer.standing !== "al_dia" && styles.standingMora]}>
               <View

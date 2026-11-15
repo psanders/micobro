@@ -5,6 +5,7 @@ import { z } from "zod/v4";
 import { withErrorHandlingAndValidation } from "../utils/withErrorHandlingAndValidation";
 import { customers, loans, payments } from "../db/schema";
 import { composeRouteDay } from "./composeRouteDay";
+import { readCustomerPhotos } from "../customers/readCustomerPhotos";
 import type { Customer } from "../customers/customer.schema";
 import type { Loan } from "../loans/loan.schema";
 import type { Payment } from "../payments/payment.schema";
@@ -20,7 +21,9 @@ const getRouteDaySchema = z.object({});
 /**
  * Today's collection route over the real tables. Reads every customer,
  * loan, and payment and hands them to the pure `composeRouteDay` builder —
- * see that file for the inclusion/ordering rules.
+ * see that file for the inclusion/ordering rules. Photos are read after
+ * composing, for the customers of the returned visits and upcoming
+ * customers only.
  */
 export function createGetRouteDay({ db }: GetRouteDayDeps) {
   const fn = async (): Promise<RouteDay> => {
@@ -28,7 +31,26 @@ export function createGetRouteDay({ db }: GetRouteDayDeps) {
     const allLoans = (await db.select().from(loans)) as Loan[];
     const allPayments = (await db.select().from(payments)) as Payment[];
 
-    return composeRouteDay({ customers: allCustomers, loans: allLoans, payments: allPayments });
+    const day = composeRouteDay({
+      customers: allCustomers,
+      loans: allLoans,
+      payments: allPayments
+    });
+
+    const photos = await readCustomerPhotos(db, [
+      ...day.visits.map((v) => v.customerId),
+      ...day.upcomingCustomers.map((u) => u.customerId)
+    ]);
+    const photoOf = (customerId: string) => photos.get(customerId) ?? null;
+
+    return {
+      ...day,
+      visits: day.visits.map((v) => ({ ...v, photo: photoOf(v.customerId) })),
+      upcomingCustomers: day.upcomingCustomers.map((u) => ({
+        ...u,
+        photo: photoOf(u.customerId)
+      }))
+    };
   };
 
   return withErrorHandlingAndValidation(fn, getRouteDaySchema);

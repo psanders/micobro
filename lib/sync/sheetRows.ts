@@ -37,12 +37,23 @@ export type SheetPayment = WithOptionalTimestamps<
   Omit<typeof payments.$inferSelect, "pushedAt" | "tipo">
 > & { tipo: PaymentKind | null };
 export type SheetVisit = WithOptionalTimestamps<Omit<typeof visits.$inferSelect, "pushedAt">>;
+/**
+ * A `Fotos` row. `photo` is the Foto cell as fetched, or null when it wasn't
+ * fetched this sync (see photoPull.ts); the planner checks it against
+ * photoSchema. Nombre is never read back.
+ */
+export interface SheetPhoto {
+  id: string;
+  photo: string | null;
+  updatedAt: Date | null;
+}
 
 export interface SheetRecords {
   customer: SheetCustomer;
   loan: SheetLoan;
   payment: SheetPayment;
   visit: SheetVisit;
+  customerPhoto: SheetPhoto;
 }
 
 export type ParsedRow<T> = { ok: true; record: T } | { ok: false; reason: string };
@@ -170,11 +181,22 @@ function visitFromRow(row: string[]): SheetVisit {
   };
 }
 
+// Fotos!A:D — ID, Nombre, Foto, Actualizado. The ID (the customer's) is
+// required: unlike other tabs, an empty one can't mean "new row".
+function photoFromRow(row: string[]): SheetPhoto {
+  return {
+    id: required(cell(row, 0), "el ID"),
+    photo: optional(cell(row, 2)),
+    updatedAt: date(cell(row, 3), "Actualizado")
+  };
+}
+
 const PARSERS: { [E in PulledEntity]: (row: string[]) => SheetRecords[E] } = {
   customer: customerFromRow,
   loan: loanFromRow,
   payment: paymentFromRow,
-  visit: visitFromRow
+  visit: visitFromRow,
+  customerPhoto: photoFromRow
 };
 
 export function parseSheetRow<E extends PulledEntity>(

@@ -10,6 +10,7 @@ import { createEraseDeviceData } from "../lib/account/eraseDeviceData";
 import { ValidationError } from "../lib/errors/ValidationError";
 import {
   cashCloses,
+  customerPhotos,
   customers,
   loans,
   payments,
@@ -18,6 +19,8 @@ import {
   syncMeta,
   visits
 } from "../lib/db/schema";
+import { createCreateCustomer } from "../lib/customers/createCustomer";
+import { createTestDb } from "./helpers/testDb";
 import type { Database } from "../lib/db/client";
 
 function makeDeps(pinIsValid = true) {
@@ -57,6 +60,7 @@ describe("createEraseDeviceData", () => {
       payments,
       visits,
       loans,
+      customerPhotos,
       customers,
       cashCloses,
       pendingMutations,
@@ -88,7 +92,7 @@ describe("createEraseDeviceData", () => {
     const erased = await createEraseDeviceData(deps)({ pin: "1111" });
 
     expect(erased).toBe(true);
-    expect(deleted).toHaveLength(8);
+    expect(deleted).toHaveLength(9);
     expect(deps.storage.clear).toHaveBeenCalled();
     expect(deps.clearPin).toHaveBeenCalled();
   });
@@ -103,4 +107,23 @@ describe("createEraseDeviceData", () => {
       expect(deleted).toEqual([]);
     }
   );
+
+  it("empties customer_photos on a real database", async () => {
+    // Arrange
+    const t = createTestDb();
+    await createCreateCustomer({ db: t.db, sql: t.sql })({
+      name: "Juana Pérez",
+      phone: "8091234567",
+      photo: `/9j/${"A".repeat(100)}`
+    });
+    const { deps } = makeDeps();
+
+    // Act
+    const erased = await createEraseDeviceData({ ...deps, db: t.db })({ pin: "1111" });
+
+    // Assert
+    expect(erased).toBe(true);
+    expect(t.raw.prepare("SELECT id FROM customer_photos").all()).toEqual([]);
+    expect(t.raw.prepare("SELECT id FROM customers").all()).toEqual([]);
+  });
 });

@@ -28,7 +28,9 @@ export function createCreateBackup({ driver, now = () => new Date() }: CreateBac
   const fn = async (): Promise<Backup> => {
     const createdAt = now();
     const name = `micobro-backup-${createdAt.getTime()}.db`;
-    driver.run(`VACUUM INTO ${quote(`${driver.directory}/${name}`)}`);
+    // Async: the copy can take a while, and it runs at the start of every
+    // full sync, including the silent one on app open.
+    await driver.runAsync(`VACUUM INTO ${quote(`${driver.directory}/${name}`)}`);
 
     const backup: Backup = {
       name,

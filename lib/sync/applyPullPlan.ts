@@ -19,8 +19,8 @@ import type { Database } from "../db/client";
 import type { SqlExecutor } from "../db/sqlExecutor";
 import type {
   EntityRef,
-  LocalRecords,
   PlannedDeletion,
+  WriteRecords,
   PlannedInsert,
   PlannedNewRow,
   PullPlan
@@ -30,7 +30,7 @@ import type { PulledEntity } from "./syncedTables";
 export interface PullStore {
   /** `guardKey` of every row with a pending or failed mutation, read now. */
   guardedKeys(): Set<string>;
-  insert(entity: PulledEntity, record: LocalRecords[PulledEntity]): void;
+  insert(entity: PulledEntity, record: WriteRecords[PulledEntity]): void;
   update(entity: PulledEntity, id: string, changes: Record<string, unknown>): void;
   delete(entity: PulledEntity, id: string): void;
   stamp(entity: PulledEntity, ids: string[], at: Date): void;
@@ -59,7 +59,7 @@ export interface ApplyResult {
 }
 
 // Children before parents, so foreign keys hold at every step.
-const DELETE_ORDER: PulledEntity[] = ["visit", "payment", "loan", "customer"];
+const DELETE_ORDER: PulledEntity[] = ["customerPhoto", "visit", "payment", "loan", "customer"];
 
 function rootKey(d: PlannedDeletion): string {
   return guardKey(d.root.entity, d.root.id);

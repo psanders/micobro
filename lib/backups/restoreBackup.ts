@@ -32,6 +32,9 @@ export interface RestoreBackupDeps {
 // push.ts's ENTITY_RANGES keys.
 const RESTORED_TABLES = [
   { table: "customers", entity: "customer" },
+  // Right after customers: deleting customers cascades to their photos, so
+  // without this entry a restore would wipe every photo.
+  { table: "customer_photos", entity: "customerPhoto" },
   { table: "loans", entity: "loan" },
   { table: "payments", entity: "payment" },
   { table: "visits", entity: "visit" },

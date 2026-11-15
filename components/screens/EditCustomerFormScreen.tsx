@@ -24,7 +24,7 @@ import { ValidationError } from "../../lib/errors/ValidationError";
 import { formatCedula, formatCedulaInput, normalizeCedula } from "../../lib/utils/cedula";
 import { formatPhoneInput, normalizePhone } from "../../lib/utils/text";
 import { ScreenHeader } from "../ScreenHeader";
-import { AvatarPicker } from "../AvatarPicker";
+import { PhotoField, type PhotoValue } from "../PhotoField";
 import type { AvatarKey } from "../avatars";
 import { colors, fonts, radius } from "../../lib/ui/theme";
 
@@ -40,14 +40,23 @@ export function EditCustomerFormScreen({ customerId }: { customerId: string }) {
   const insets = useSafeAreaInsets();
   const customerRepo = useCustomerRepo();
 
-  const detail = useAsync(() => customerRepo.getDetail(customerId), [customerId]);
+  const detail = useAsync(async () => {
+    const [view, photo] = await Promise.all([
+      customerRepo.getDetail(customerId),
+      customerRepo.getPhoto(customerId)
+    ]);
+    return view ? { ...view, photo } : null;
+  }, [customerId]);
   const customer = detail.data;
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
   const [cedula, setCedula] = useState("");
-  const [avatarKey, setAvatarKey] = useState<AvatarKey | null>(null);
+  const [photoValue, setPhotoValue] = useState<PhotoValue>({ photo: null, avatarKey: null });
+  // Untouched → `photo` is omitted on save, so the stored photo is kept.
+  const [photoTouched, setPhotoTouched] = useState(false);
+  const [preparingPhoto, setPreparingPhoto] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -57,7 +66,11 @@ export function EditCustomerFormScreen({ customerId }: { customerId: string }) {
     setPhone(formatPhoneInput(customer.phone));
     setAddress(customer.address ?? "");
     setCedula(formatCedula(customer.cedula));
-    setAvatarKey((customer.avatarKey as AvatarKey | null) ?? null);
+    setPhotoValue({
+      photo: customer.photo,
+      avatarKey: (customer.avatarKey as AvatarKey | null) ?? null
+    });
+    setPhotoTouched(false);
   }, [customer]);
 
   async function handleSubmit() {
@@ -69,7 +82,8 @@ export function EditCustomerFormScreen({ customerId }: { customerId: string }) {
         phone,
         address: address || undefined,
         cedula: cedula || undefined,
-        avatarKey: avatarKey ?? undefined
+        avatarKey: photoValue.avatarKey ?? undefined,
+        ...(photoTouched ? { photo: photoValue.photo } : {})
       });
       router.back();
     } catch (err) {
@@ -138,14 +152,25 @@ export function EditCustomerFormScreen({ customerId }: { customerId: string }) {
             </Text>
           </View>
 
-          <View style={styles.field}>
-            <Text style={styles.label}>Avatar (opcional)</Text>
-            <AvatarPicker name={name || "Cliente"} value={avatarKey} onChange={setAvatarKey} />
-          </View>
+          <PhotoField
+            label="Foto del cliente (opcional)"
+            sheetTitle="Foto del cliente"
+            name={name}
+            value={photoValue}
+            onChange={(next) => {
+              setPhotoValue(next);
+              setPhotoTouched(true);
+            }}
+            onBusyChange={setPreparingPhoto}
+          />
 
           {error && <Text style={styles.error}>{error}</Text>}
 
-          <Pressable style={styles.submitButton} onPress={handleSubmit} disabled={submitting}>
+          <Pressable
+            style={[styles.submitButton, preparingPhoto && styles.submitButtonDisabled]}
+            onPress={handleSubmit}
+            disabled={submitting || preparingPhoto}
+          >
             <Text style={styles.submitButtonText}>
               {submitting ? "Guardando..." : "Guardar cambios"}
             </Text>
@@ -187,5 +212,6 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     alignItems: "center"
   },
+  submitButtonDisabled: { opacity: 0.5 },
   submitButtonText: { color: colors.white, fontSize: 15, fontFamily: fonts.semiBold }
 });

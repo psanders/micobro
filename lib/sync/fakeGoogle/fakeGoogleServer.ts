@@ -28,6 +28,8 @@ export interface FakeGoogleServer {
   fetch(url: string, init?: RequestInit): Promise<Response>;
   /** Rows currently stored in a spreadsheet tab (header row included). */
   rows(spreadsheetId: string, tab: string): string[][];
+  /** Deletes a tab, as the owner would in the Sheets UI. */
+  removeTab(spreadsheetId: string, tab: string): void;
   files(): { id: string; name: string; mimeType: string }[];
 }
 
@@ -274,6 +276,10 @@ export function createFakeGoogleServer(): FakeGoogleServer {
   return {
     fetch: handle,
     rows: (spreadsheetId, tab) => entries.get(spreadsheetId)?.tabs.get(tab) ?? [],
+    removeTab: (spreadsheetId, tab) => {
+      entries.get(spreadsheetId)?.tabs.delete(tab);
+      entries.get(spreadsheetId)?.tabIds.delete(tab);
+    },
     files: () => [...entries.values()].map(({ id, name, mimeType }) => ({ id, name, mimeType }))
   };
 }

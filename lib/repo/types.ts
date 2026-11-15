@@ -27,6 +27,8 @@ export interface CustomerSearchResult {
   id: string;
   name: string;
   avatarKey: string | null;
+  /** Base64 JPEG (no `data:` prefix), or null when the customer has none. */
+  photo: string | null;
   inMora: boolean;
   loanCount: number;
 }
@@ -101,6 +103,8 @@ export interface CustomerDetailView {
   id: string;
   name: string;
   avatarKey: string | null;
+  /** Base64 JPEG (no `data:` prefix), or null when the customer has none. */
+  photo: string | null;
   phone: string;
   address: string | null;
   cedula: string | null;
@@ -114,8 +118,12 @@ export interface CustomerDetailView {
 export interface CustomerRepo {
   list(): Promise<Customer[]>;
   get(id: string): Promise<Customer | null>;
+  /** `input.photo`, when given, is saved with the customer. */
   create(input: CreateCustomerInput): Promise<Customer>;
+  /** `input.photo`: undefined keeps the photo, a string replaces it, null removes it. */
   update(id: string, input: CreateCustomerInput): Promise<Customer>;
+  /** The customer's photo (base64 JPEG), or null when it has none. */
+  getPhoto(id: string): Promise<string | null>;
   /** Name/phone substring match, case-insensitive. Empty query = all customers. */
   search(query: string): Promise<CustomerSearchResult[]>;
   getDetail(id: string): Promise<CustomerDetailView | null>;
@@ -284,6 +292,8 @@ export interface CollectContext {
   customerId: string;
   customerName: string;
   customerAvatarKey: string | null;
+  /** Base64 JPEG (no `data:` prefix), or null when the customer has none. */
+  customerPhoto: string | null;
   business: string | null;
   /**
    * What "Cobrar cuota" charges: for plain Tradicional, what's left of the
@@ -439,6 +449,8 @@ export interface RouteVisit {
   business: string | null;
   address: string;
   avatarKey: string | null;
+  /** Base64 JPEG (no `data:` prefix), or null when the customer has none. */
+  photo: string | null;
   amountCents: number;
   hasMora: boolean;
   status: RouteVisitStatus;
@@ -466,6 +478,8 @@ export interface UpcomingCustomer {
   customerId: string;
   name: string;
   avatarKey: string | null;
+  /** Base64 JPEG (no `data:` prefix), or null when the customer has none. */
+  photo: string | null;
   address: string;
   business: string | null;
   nextDueDate: Date;

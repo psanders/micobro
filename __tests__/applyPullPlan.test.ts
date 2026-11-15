@@ -22,7 +22,7 @@ function emptyPlan(overrides: Partial<PullPlan> = {}): PullPlan {
     newRows: [],
     deletions: [],
     restores: [],
-    seen: { customer: [], loan: [], payment: [], visit: [] },
+    seen: { customer: [], loan: [], payment: [], visit: [], customerPhoto: [] },
     problems: [],
     brokenTabs: [],
     guardedSkipped: 0,
@@ -188,7 +188,7 @@ describe("applyPullPlanTo", () => {
     // Arrange
     const { store, log } = fakeStore();
     const plan = emptyPlan({
-      seen: { customer: ["c2"], loan: ["l1", "l2"], payment: [], visit: [] },
+      seen: { customer: ["c2"], loan: ["l1", "l2"], payment: [], visit: [], customerPhoto: [] },
       deletions: [del("loan", "l1", ["loan", "l1"])]
     });
 

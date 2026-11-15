@@ -11,7 +11,6 @@ import { View, Text, Pressable, ScrollView, Alert, Linking, StyleSheet } from "r
 import { useCallback } from "react";
 import { useRouter, useFocusEffect } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import Constants from "expo-constants";
 import { Icon } from "../Icon";
 import { useProfileRepo, useRouteRepo, useSyncRepo } from "../../lib/repo/RepoProvider";
 import { useAsync } from "../../lib/hooks/useAsync";
@@ -24,8 +23,9 @@ import { SectionLabel } from "../SectionLabel";
 import { StatCard } from "../StatCard";
 import { ListTile } from "../ListTile";
 import { colors, fonts } from "../../lib/ui/theme";
+import { getAppVersion } from "../../lib/app/appVersion";
 
-const APP_VERSION = Constants.expoConfig?.version ?? "0.0.0";
+const APP_VERSION = getAppVersion();
 
 /**
  * Prefills the GitHub issue form's "version" field (soporte.yml) via its
@@ -107,7 +107,12 @@ export function ProfileScreen() {
       <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 24 + insets.bottom }]}>
         {profile.data ? (
           <View style={styles.profileCard}>
-            <Avatar avatarKey={profile.data.avatarKey} name={name} size={60} />
+            <Avatar
+              photo={profile.data.photo}
+              avatarKey={profile.data.avatarKey}
+              name={name}
+              size={60}
+            />
             <View style={styles.profileText}>
               <Text style={styles.name}>{name}</Text>
               <Text style={styles.role}>Prestamista independiente</Text>
@@ -131,7 +136,7 @@ export function ProfileScreen() {
             </View>
             <View style={styles.profileText}>
               <Text style={styles.name}>Configura tu perfil</Text>
-              <Text style={styles.role}>Agrega tu nombre y avatar para personalizar la app.</Text>
+              <Text style={styles.role}>Agrega tu nombre y foto para personalizar la app.</Text>
             </View>
             <Icon name="chevron-right" size={20} color={colors.white} />
           </Pressable>

@@ -80,6 +80,7 @@ export function createTestDb(): TestDb {
   const backupDriver: BackupDriver = {
     directory: backupDir,
     run: (statement) => sql.run(statement),
+    runAsync: async (statement) => sql.run(statement),
     all: (statement) => sql.all(statement),
     deleteFile: (name) => fs.rmSync(path.join(backupDir, name), { force: true })
   };

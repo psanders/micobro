@@ -91,6 +91,7 @@ export function composeUpcomingCustomers({
       customerId: loan.customerId,
       name: customer?.name ?? "Cliente",
       avatarKey: customer?.avatarKey ?? null,
+      photo: null,
       address: customer?.address ?? "",
       business: null,
       nextDueDate,

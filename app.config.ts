@@ -13,6 +13,18 @@ const BRAND_DEEP = "#0B4F4A";
 const MICROPHONE_PERMISSION_TEXT =
   "Micobro necesita el micrófono para grabar feedback dentro de la app.";
 
+// expo-image-picker's iOS strings, repeated in locales/ios-es.json. Only the
+// camera is ever requested: the gallery uses the system photo picker, which
+// needs no permission. `microphonePermission` must stay MICROPHONE_PERMISSION_TEXT:
+// `false` would delete NSMicrophoneUsageDescription (the feedback recorder
+// needs it) and omitting it lets the plugin's English default win.
+const imagePickerPluginProps = {
+  cameraPermission: "Micobro necesita la cámara para tomar la foto de tus clientes y la tuya.",
+  photosPermission:
+    "Micobro necesita acceso a tus fotos para elegir la foto de tus clientes y la tuya.",
+  microphonePermission: MICROPHONE_PERMISSION_TEXT
+};
+
 // Props for react-native-nitro-screen-recorder's plugin. Android uses the
 // global (MediaProjection) recording API via `startGlobalRecording`/
 // `stopGlobalRecording`. On iOS, `patches/react-native-nitro-screen-recorder+0.7.0.patch`
@@ -118,6 +130,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     "expo-sqlite",
     ["react-native-nitro-screen-recorder", screenRecorderPluginProps],
     ["react-native-ble-plx", { isBackgroundEnabled: false, neverForLocation: true }],
+    ["expo-image-picker", imagePickerPluginProps],
     // @react-native-google-signin/google-signin's iOS pod (GoogleSignIn SDK)
     // is linked via autolinking on every iOS build regardless of whether the
     // plugin below is registered — its Swift dependency chain (AppCheckCore →

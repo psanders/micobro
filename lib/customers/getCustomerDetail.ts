@@ -17,6 +17,7 @@ import { effectiveLoanType, ARCHIVED_LOAN_STATUS } from "../loans/loan.schema";
 import { openCreditState } from "../loans/openCredit";
 import { formatCurrency } from "../utils/money";
 import { visitDescription } from "../visits/visitDescription";
+import { readCustomerPhotos } from "./readCustomerPhotos";
 import type { Customer } from "./customer.schema";
 import type { Loan } from "../loans/loan.schema";
 import type { Payment } from "../payments/payment.schema";
@@ -149,10 +150,13 @@ export function createGetCustomerDetail({ db }: GetCustomerDetailDeps) {
 
     activity.sort((a, b) => b.at.getTime() - a.at.getTime());
 
+    const photos = await readCustomerPhotos(db, [customer.id]);
+
     return {
       id: customer.id,
       name: customer.name,
       avatarKey: customer.avatarKey,
+      photo: photos.get(customer.id) ?? null,
       phone: customer.phone,
       address: customer.address,
       cedula: customer.cedula,

@@ -30,7 +30,10 @@ const noop = () => {};
 export const HeldDeletions: StoryObj = {
   render: () => (
     <HeldDeletionsCard
-      counts={{ total: 12, byEntity: { customer: 4, loan: 4, payment: 3, visit: 1 } }}
+      counts={{
+        total: 12,
+        byEntity: { customer: 4, loan: 4, payment: 3, visit: 1, customerPhoto: 0 }
+      }}
       onApply={noop}
       onRestore={noop}
     />
@@ -40,7 +43,10 @@ export const HeldDeletions: StoryObj = {
 export const HeldDeletionsBusy: StoryObj = {
   render: () => (
     <HeldDeletionsCard
-      counts={{ total: 12, byEntity: { customer: 4, loan: 4, payment: 4, visit: 0 } }}
+      counts={{
+        total: 12,
+        byEntity: { customer: 4, loan: 4, payment: 4, visit: 0, customerPhoto: 0 }
+      }}
       busy
       onApply={noop}
       onRestore={noop}

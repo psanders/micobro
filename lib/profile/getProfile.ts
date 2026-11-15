@@ -31,7 +31,8 @@ export function createGetProfile({ db }: GetProfileDeps) {
       name: row.name,
       avatarKey: row.avatarKey,
       businessName: row.businessName,
-      phone: row.phone
+      phone: row.phone,
+      photo: row.photo ?? null
     };
   };
 

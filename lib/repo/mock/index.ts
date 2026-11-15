@@ -70,6 +70,19 @@ import { createMockSyncRepo } from "./syncRepo.mock";
 import type { CashClose } from "../../cashClose/cashClose.schema";
 import type { CustomerActivityItem, LoanDetailView, OpenCreditView, Repos } from "../types";
 
+/**
+ * Customer photos for the mock repos (customer id → base64 JPEG), kept at
+ * module level so the mock views can read them.
+ */
+export const mockPhotos = new Map<string, string>();
+
+/** Mirrors lib/customers/customerPhotoWrites.ts: undefined keeps, null removes. */
+function setMockPhoto(customerId: string, photo: string | null | undefined): void {
+  if (photo === undefined) return;
+  if (photo === null) mockPhotos.delete(customerId);
+  else mockPhotos.set(customerId, photo);
+}
+
 export function createMockRepos(): Repos {
   const customers: Customer[] = customerFixtures.map((c) => ({ ...c }));
   const loans: Loan[] = loanFixtures.map((l) => ({ ...l }));
@@ -90,7 +103,8 @@ export function createMockRepos(): Repos {
     name: "Carlos",
     avatarKey: "male4",
     businessName: null,
-    phone: null
+    phone: null,
+    photo: null
   };
 
   const metaOf = (customerId: string) => customerMetaFixtures[customerId] ?? null;
@@ -165,6 +179,7 @@ export function createMockRepos(): Repos {
       updatedAt: now
     };
     customers.push(customer);
+    setMockPhoto(customer.id, params.photo ?? undefined);
     return customer;
   }, createCustomerSchema);
 
@@ -181,6 +196,7 @@ export function createMockRepos(): Repos {
       updatedAt: new Date()
     };
     customers[idx] = updated;
+    setMockPhoto(updated.id, params.photo);
     return updated;
   }, updateCustomerSchema);
 
@@ -276,7 +292,8 @@ export function createMockRepos(): Repos {
       name: params.name,
       avatarKey: params.avatarKey ?? null,
       businessName: params.businessName ?? null,
-      phone: params.phone ?? null
+      phone: params.phone ?? null,
+      photo: params.photo === undefined ? (profileState?.photo ?? null) : params.photo
     };
     return profileState;
   }, setProfileSchema);
@@ -287,6 +304,7 @@ export function createMockRepos(): Repos {
       get: async (id) => customers.find((c) => c.id === id) ?? null,
       create: createCustomer,
       update: (id, input) => updateCustomer({ id, ...input }),
+      getPhoto: async (id) => mockPhotos.get(id) ?? null,
       search: async (query) => {
         const needle = normalizeText(query.trim());
         const matches = needle
@@ -298,6 +316,7 @@ export function createMockRepos(): Repos {
           id: c.id,
           name: c.name,
           avatarKey: metaOf(c.id)?.avatarKey ?? c.avatarKey,
+          photo: mockPhotos.get(c.id) ?? null,
           inMora: customerInMora(c.id),
           loanCount: loans.filter((l) => l.customerId === c.id && l.status === "active").length
         }));
@@ -371,6 +390,7 @@ export function createMockRepos(): Repos {
           id: customer.id,
           name: customer.name,
           avatarKey: meta?.avatarKey ?? customer.avatarKey,
+          photo: mockPhotos.get(id) ?? null,
           phone: customer.phone,
           address: customer.address,
           cedula: meta?.cedula ?? customer.cedula,
@@ -450,6 +470,7 @@ export function createMockRepos(): Repos {
             customerId: loan.customerId,
             customerName: view.customerName,
             customerAvatarKey: metaOf(loan.customerId)?.avatarKey ?? null,
+            customerPhoto: mockPhotos.get(loan.customerId) ?? null,
             business: view.business,
             cuotaCents: view.openCredit.interestDueCents,
             scheduleCents: [],
@@ -474,6 +495,7 @@ export function createMockRepos(): Repos {
           customerId: loan.customerId,
           customerName: view.customerName,
           customerAvatarKey: metaOf(loan.customerId)?.avatarKey ?? null,
+          customerPhoto: mockPhotos.get(loan.customerId) ?? null,
           business: view.business,
           // Same formula as lib/payments/getCollectContext.ts.
           cuotaCents: view.tradicionalPlus
@@ -603,7 +625,18 @@ export function createMockRepos(): Repos {
       set: setProfile
     },
     route: {
-      getToday: async () => routeDayFixture
+      // The fixture carries no photos; overlay the ones set through customers.
+      getToday: async () => ({
+        ...routeDayFixture,
+        visits: routeDayFixture.visits.map((v) => ({
+          ...v,
+          photo: mockPhotos.get(v.customerId) ?? null
+        })),
+        upcomingCustomers: routeDayFixture.upcomingCustomers.map((u) => ({
+          ...u,
+          photo: mockPhotos.get(u.customerId) ?? null
+        }))
+      })
     },
     reports: {
       getPosition: async () => composePosition({ loans, payments })
@@ -619,6 +652,7 @@ export function createMockRepos(): Repos {
         if (!(await verifyPin(pin))) return false;
         for (const list of [customers, loans, payments, visitLog, cashCloses]) list.splice(0);
         mora.clear();
+        mockPhotos.clear();
         profileState = null;
         await AsyncStorage.clear();
         await clearPin();

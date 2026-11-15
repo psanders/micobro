@@ -1,14 +1,18 @@
 /**
  * Copyright (C) 2026 by Pedro Sanders. MIT License.
  *
- * m/avatar from pencil.pen: bundled avatar image by key, or an
- * initials circle when there's no image.
+ * m/avatar from pencil.pen: the photo (base64 JPEG) when there is one,
+ * else the bundled avatar image by key, else an initials circle. A photo
+ * that fails to load falls back the same way.
  */
+import { useEffect, useMemo, useState } from "react";
 import { View, Text, Image, StyleSheet, Platform } from "react-native";
 import { avatarSource } from "./avatars";
 import { colors, fonts } from "../lib/ui/theme";
 
 interface AvatarProps {
+  /** Base64 JPEG with no `data:` prefix (lib/photos/photo.schema.ts). */
+  photo?: string | null;
   avatarKey?: string | null;
   name: string;
   size?: number;
@@ -23,9 +27,25 @@ function initialsOf(name: string): string {
     .join("");
 }
 
-export function Avatar({ avatarKey, name, size = 42 }: AvatarProps) {
+export function Avatar({ photo, avatarKey, name, size = 42 }: AvatarProps) {
+  const [photoFailed, setPhotoFailed] = useState(false);
+  useEffect(() => setPhotoFailed(false), [photo]);
+  const photoSource = useMemo(
+    () => (photo ? { uri: `data:image/jpeg;base64,${photo}` } : null),
+    [photo]
+  );
   const source = avatarSource(avatarKey);
   const radius = size / 2;
+
+  if (photoSource && !photoFailed) {
+    return (
+      <Image
+        source={photoSource}
+        onError={() => setPhotoFailed(true)}
+        style={{ width: size, height: size, borderRadius: radius }}
+      />
+    );
+  }
 
   if (source) {
     return <Image source={source} style={{ width: size, height: size, borderRadius: radius }} />;

@@ -89,7 +89,7 @@ describe("provisionSheet", () => {
       mimeType: SPREADSHEET_MIME,
       parents: ["folder-1"]
     });
-    expect(ensureSheetTabMock).toHaveBeenCalledTimes(5);
+    expect(ensureSheetTabMock).toHaveBeenCalledTimes(7);
     for (const range of Object.values(ENTITY_RANGES)) {
       expect(ensureSheetTabMock).toHaveBeenCalledWith(
         "sheet-1",
@@ -115,7 +115,7 @@ describe("provisionSheet", () => {
     expect(createDriveFileMock).not.toHaveBeenCalled();
     expect(setSheetIdMock).not.toHaveBeenCalled();
     expect(pushMock).not.toHaveBeenCalled();
-    expect(ensureSheetTabMock).toHaveBeenCalledTimes(5);
+    expect(ensureSheetTabMock).toHaveBeenCalledTimes(7);
     for (const range of Object.values(ENTITY_RANGES)) {
       expect(ensureSheetTabMock).toHaveBeenCalledWith(
         "stored-1",
@@ -138,7 +138,7 @@ describe("provisionSheet", () => {
     // Assert
     expect(id).toBe("sheet-9");
     expect(createDriveFileMock).not.toHaveBeenCalled();
-    expect(ensureSheetTabMock).toHaveBeenCalledTimes(5);
+    expect(ensureSheetTabMock).toHaveBeenCalledTimes(7);
     expect(setSheetIdMock).toHaveBeenCalledWith("sheet-9");
     expect(pushMock).toHaveBeenCalledWith(db);
   });
@@ -215,7 +215,9 @@ describe("provisionSheet", () => {
       "Préstamos",
       "Pagos",
       "Visitas",
-      "Cierres"
+      "Cierres",
+      "Fotos",
+      "Extra"
     ]);
   });
 

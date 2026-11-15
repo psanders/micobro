@@ -106,6 +106,7 @@ export function SearchScreen() {
               {results.map((customer) => (
                 <ClientRow
                   key={customer.id}
+                  photo={customer.photo}
                   avatarKey={customer.avatarKey}
                   name={customer.name}
                   meta={
