@@ -131,7 +131,8 @@ function input(
     customer: world.customers ?? [],
     loan: world.loans ?? [],
     payment: world.payments ?? [],
-    visit: world.visits ?? []
+    visit: world.visits ?? [],
+    customerPhoto: []
   };
   let n = 0;
   return {
@@ -140,6 +141,7 @@ function input(
       loan: tab("loan", local.loan),
       payment: tab("payment", local.payment),
       visit: tab("visit", local.visit),
+      customerPhoto: null,
       ...overrides.sheet
     },
     local,
@@ -163,7 +165,13 @@ describe("buildPullPlan — edits", () => {
     expect(plan.updates).toEqual([]);
     expect(plan.inserts).toEqual([]);
     expect(plan.deletions).toEqual([]);
-    expect(plan.seen).toEqual({ customer: ["c1"], loan: ["l1"], payment: [], visit: [] });
+    expect(plan.seen).toEqual({
+      customer: ["c1"],
+      loan: ["l1"],
+      payment: [],
+      visit: [],
+      customerPhoto: []
+    });
   });
 
   it("applies a Sheet edit to an unguarded row and keeps local-only fields", () => {
@@ -534,7 +542,7 @@ describe("needsDeletionConfirmation", () => {
   });
   const many = (entity: PlannedDeletion["entity"], n: number) =>
     Array.from({ length: n }, (_, i) => deletion(entity, `${entity}${i}`));
-  const big = { customer: 1000, loan: 1000, payment: 1000, visit: 1000 };
+  const big = { customer: 1000, loan: 1000, payment: 1000, visit: 1000, customerPhoto: 1000 };
 
   it("allows up to 10 rows and asks above", () => {
     expect(needsDeletionConfirmation(many("payment", 10), big)).toBe(false);
@@ -554,6 +562,9 @@ describe("needsDeletionConfirmation", () => {
     const counts = countDeletions([...many("loan", 2), ...many("payment", 3), sheetOnly]);
 
     // Assert
-    expect(counts).toEqual({ total: 5, byEntity: { customer: 0, loan: 2, payment: 3, visit: 0 } });
+    expect(counts).toEqual({
+      total: 5,
+      byEntity: { customer: 0, loan: 2, payment: 3, visit: 0, customerPhoto: 0 }
+    });
   });
 });

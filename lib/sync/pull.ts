@@ -3,15 +3,17 @@
  *
  * Pulls the lender's Google Sheet back down into local SQLite: the other
  * half of the sync loop, run after push in syncNow(). `Clientes`, `Préstamos`,
- * `Pagos` and `Visitas` are pulled — edits, new rows and deletions; `Cierres`
- * stays upload-only (see openspec/changes/full-two-way-sync).
+ * `Pagos`, `Visitas` and `Fotos` are pulled — edits, new rows and deletions;
+ * `Cierres` stays upload-only (see openspec/changes/full-two-way-sync).
  *
- * The four tabs are read in one request, planned (pullPlan.ts) and applied in
- * one transaction (applyPullPlan.ts). Rows the owner added without an id get
- * one written to the Sheet first, and are only inserted once it's there, so a
- * failed write can never import the same row twice. Anything the pull needs
- * the Sheet to do — remove cascaded rows, take back kept rows — is queued in
- * pending_mutations for the push that follows.
+ * The tabs are read in one request (`Fotos` without its photos, which are
+ * fetched only when new or changed — see photoPull.ts), planned
+ * (pullPlan.ts) and applied in one transaction (applyPullPlan.ts). Rows the
+ * owner added without an id get one written to the Sheet first, and are
+ * only inserted once it's there, so a failed write can never import the same
+ * row twice. Anything the pull needs the Sheet to do — remove cascaded rows,
+ * take back kept rows — is queued in pending_mutations for the push that
+ * follows.
  */
 import * as Crypto from "expo-crypto";
 import { eq, or } from "drizzle-orm";
@@ -26,6 +28,13 @@ import { applyPullPlanTo, createSqlPullStore } from "./applyPullPlan";
 import { createExpoSqlExecutor } from "../db/sqlExecutor";
 import type { SqlExecutor } from "../db/sqlExecutor";
 import { PULLED_ENTITIES, PULLED_TABLES } from "./syncedTables";
+import {
+  FOTOS_INDEX_RANGES,
+  fetchPhotoRows,
+  mergeFotosColumns,
+  photoRowsToFetch,
+  withFetchedPhotos
+} from "./photoPull";
 import { logger } from "../logger";
 import type { Database } from "../db/client";
 import { EMPTY_PULL_RESULT } from "./pullResult";
@@ -63,7 +72,15 @@ async function readLocal(db: Database): Promise<{ [E in keyof LocalRecords]: Loc
     customer: await db.select().from(PULLED_TABLES.customer),
     loan: await db.select().from(PULLED_TABLES.loan),
     payment: await db.select().from(PULLED_TABLES.payment),
-    visit: await db.select().from(PULLED_TABLES.visit)
+    visit: await db.select().from(PULLED_TABLES.visit),
+    // Never the photo itself: only fetched rows need it, and they bring it.
+    customerPhoto: await db
+      .select({
+        id: PULLED_TABLES.customerPhoto.id,
+        pushedAt: PULLED_TABLES.customerPhoto.pushedAt,
+        updatedAt: PULLED_TABLES.customerPhoto.updatedAt
+      })
+      .from(PULLED_TABLES.customerPhoto)
   };
 }
 
@@ -147,24 +164,37 @@ export async function pullEntities(
   const paymentsReady = await isPagosLayoutReady(db);
   const adoptRows = await db.select().from(syncMeta).where(eq(syncMeta.key, PAGOS_ADOPT_TIPO_KEY));
   const adoptPaymentTipo = paymentsReady && adoptRows.length > 0;
-  const ranges = PULLED_ENTITIES.map((entity) => ENTITY_RANGES[entity]);
+  // Every tab whole, except Fotos: its ID/Nombre and Actualizado columns only.
+  const wholeTabs = PULLED_ENTITIES.filter((entity) => entity !== "customerPhoto");
+  const ranges = [...wholeTabs.map((entity) => ENTITY_RANGES[entity]), ...FOTOS_INDEX_RANGES];
   const values = await readTabs(sheetId, ranges);
   const tabs = {} as ByEntity<string[][] | null>;
-  PULLED_ENTITIES.forEach((entity, i) => {
+  wholeTabs.forEach((entity, i) => {
     const held =
       (entity === "customer" && !customersReady) || (entity === "payment" && !paymentsReady);
     tabs[entity] = held ? null : (values[i] ?? null);
   });
+  const fotosIndex = mergeFotosColumns(
+    values[wholeTabs.length] ?? null,
+    values[wholeTabs.length + 1] ?? null
+  );
 
   const local = await readLocal(db);
+  const guarded = await readGuarded(db);
+  const fetched = fotosIndex
+    ? await fetchPhotoRows(sheetId, photoRowsToFetch(fotosIndex, local.customerPhoto, guarded))
+    : new Map();
+  tabs.customerPhoto = fotosIndex ? withFetchedPhotos(fotosIndex, fetched) : null;
+
   const now = new Date();
   const plan = buildPullPlan({
     tabs,
     local,
-    guarded: await readGuarded(db),
+    guarded,
     now,
     newId: () => Crypto.randomUUID(),
-    adoptPaymentTipo
+    adoptPaymentTipo,
+    fetchedPhotos: new Set(fetched.keys())
   });
 
   const localCounts = {} as ByEntity<number>;

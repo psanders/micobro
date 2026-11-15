@@ -219,7 +219,7 @@ describe("full two-way sync", () => {
     // Assert — nothing deleted yet, the owner is asked
     expect(pull.held).toEqual({
       total: 12,
-      byEntity: { customer: 4, loan: 4, payment: 4, visit: 0 }
+      byEntity: { customer: 4, loan: 4, payment: 4, visit: 0, customerPhoto: 0 }
     });
     expect(await localIds(schema.customers)).toHaveLength(10);
     expect((await repo.getStatus()).heldDeletions?.total).toBe(12);

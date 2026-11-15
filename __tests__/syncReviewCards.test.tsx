@@ -40,7 +40,10 @@ describe("HeldDeletionsCard", () => {
     act(() => {
       tree = create(
         <HeldDeletionsCard
-          counts={{ total: 9, byEntity: { customer: 4, loan: 4, payment: 1, visit: 0 } }}
+          counts={{
+            total: 9,
+            byEntity: { customer: 4, loan: 4, payment: 1, visit: 0, customerPhoto: 0 }
+          }}
           onApply={onApply}
           onRestore={onRestore}
         />
@@ -65,7 +68,10 @@ describe("HeldDeletionsCard", () => {
     act(() => {
       tree = create(
         <HeldDeletionsCard
-          counts={{ total: 1, byEntity: { customer: 1, loan: 0, payment: 0, visit: 0 } }}
+          counts={{
+            total: 1,
+            byEntity: { customer: 1, loan: 0, payment: 0, visit: 0, customerPhoto: 0 }
+          }}
           busy
           onApply={jest.fn()}
           onRestore={jest.fn()}

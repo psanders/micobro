@@ -13,14 +13,16 @@ export const TAB_NAMES: Record<PulledEntity, string> = {
   customer: "Clientes",
   loan: "Préstamos",
   payment: "Pagos",
-  visit: "Visitas"
+  visit: "Visitas",
+  customerPhoto: "Fotos"
 };
 
 const NOUNS: Record<PulledEntity, [string, string]> = {
   customer: ["cliente", "clientes"],
   loan: ["préstamo", "préstamos"],
   payment: ["pago", "pagos"],
-  visit: ["visita", "visitas"]
+  visit: ["visita", "visitas"],
+  customerPhoto: ["foto", "fotos"]
 };
 
 export function countLabel(entity: PulledEntity, n: number): string {

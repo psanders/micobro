@@ -22,7 +22,10 @@ describe("sync review copy", () => {
 
   it("lists only the tables with deletions, parents first", () => {
     expect(
-      deletionLines({ total: 6, byEntity: { customer: 1, loan: 1, payment: 4, visit: 0 } })
+      deletionLines({
+        total: 6,
+        byEntity: { customer: 1, loan: 1, payment: 4, visit: 0, customerPhoto: 0 }
+      })
     ).toEqual(["1 cliente", "1 préstamo", "4 pagos"]);
   });
 
