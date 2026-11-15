@@ -3,8 +3,9 @@
 #
 # Requires a mock-repo build (EXPO_PUBLIC_USE_MOCK_REPOS=true) — see the
 # comment in pin-unlock.yaml. Uses María Rosa Peralta's loan-1
-# (lib/repo/mock/fixtures.ts): 3 "Abono a cuenta" payments (none tied to a
-# numbered cuota), newest first, so `loanCode("loan-1")` -> "L-00001".
+# (lib/repo/mock/fixtures.ts): 3 exact cuotas, listed newest first as
+# "Cuota 3", "Cuota 2", "Cuota 1" (lib/loans/cuotaCoverage.ts), so
+# `loanCode("loan-1")` -> "L-00001".
 appId: ${APP_ID}
 ---
 - launchApp:
@@ -92,7 +93,7 @@ appId: ${APP_ID}
 - extendedWaitUntil:
     visible: "Histórico de pagos"
     timeout: 15000
-- tapOn: ".*Abono a cuenta.*"
+- tapOn: "Cuota 3"
 
 # PaymentReceiptScreen (components/screens/PaymentReceiptScreen.tsx).
 - extendedWaitUntil:

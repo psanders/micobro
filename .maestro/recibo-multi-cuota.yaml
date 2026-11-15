@@ -1,0 +1,139 @@
+# Covers issue #204: a payment of several cuotas names every cuota it paid,
+# on the "Cómo se aplica" preview, the receipt at collection, the Histórico
+# de pagos row and the reprinted receipt — and the four agree.
+#
+# Requires a mock-repo build (EXPO_PUBLIC_USE_MOCK_REPOS=true) — see the
+# comment in pin-unlock.yaml. Uses María Rosa Peralta's loan-1
+# (lib/repo/mock/fixtures.ts): 12 weekly cuotas of RD$2,640, cuotas 1–3
+# paid, no mora. Otro monto RD$11,000 covers cuotas 4–7 (4 × RD$2,640 =
+# RD$10,560) and leaves RD$440 on cuota 8.
+appId: ${APP_ID}
+---
+- launchApp:
+    clearState: true
+- runFlow:
+    when:
+      true: ${DEV_URL}
+    commands:
+      - extendedWaitUntil:
+          visible: "Development Build"
+          timeout: 20000
+      - openLink: ${DEV_URL}
+      - tapOn:
+          text: "Open"
+          optional: true
+      - extendedWaitUntil:
+          visible: "Continue"
+          timeout: 45000
+      - runFlow:
+          when:
+            true: ${DEV_MENU_DISMISS}
+          commands:
+            - back
+      - runFlow:
+          when:
+            true: ${DEV_MENU_CONTINUE}
+          commands:
+            - tapOn:
+                text: "Continue"
+                optional: true
+- extendedWaitUntil:
+    visible: "Crea tu PIN"
+    timeout: 30000
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- extendedWaitUntil:
+    visible: "Confirma tu PIN"
+    timeout: 10000
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- extendedWaitUntil:
+    visible: "Ahora no, tal vez después"
+    timeout: 15000
+- tapOn: "Ahora no, tal vez después"
+- extendedWaitUntil:
+    visible: "Hola, Carlos."
+    timeout: 15000
+# Demo video: pass -e RECORD=true to save videos/recibo-multi-cuota.mp4 (recording starts after the PIN preamble).
+- runFlow:
+    when:
+      true: ${RECORD}
+    commands:
+      - startRecording: videos/recibo-multi-cuota
+
+- tapOn:
+    id: "tab-buscar"
+- extendedWaitUntil:
+    visible: "Buscar cliente"
+    timeout: 15000
+- tapOn: "Nombre, teléfono o cédula…"
+- inputText: "Maria"
+- extendedWaitUntil:
+    visible: ".*María Rosa Peralta.*"
+    timeout: 15000
+- tapOn: ".*María Rosa Peralta.*"
+- extendedWaitUntil:
+    visible: "PRÉSTAMOS ACTIVOS"
+    timeout: 15000
+- tapOn: ".*Préstamo #L-00001.*"
+- extendedWaitUntil:
+    visible: "TOTAL A PAGAR HOY"
+    timeout: 15000
+- tapOn: "Cobrar"
+
+# CollectPaymentScreen: Otro monto RD$11,000.
+- extendedWaitUntil:
+    visible: "Registrar cobro"
+    timeout: 15000
+- tapOn: "Otro monto"
+- tapOn:
+    id: "custom-amount-input"
+- inputText: "11000"
+- hideKeyboard
+- scrollUntilVisible:
+    element: "Abono a cuota 8/12"
+    direction: DOWN
+- assertVisible: "Cuota 4/12"
+- assertVisible: "Cuota 7/12"
+- assertVisible: "Abono a cuota 8/12"
+- tapOn: "Confirmar y cobrar"
+
+# PaymentConfirmedScreen: the receipt lists the same lines.
+- extendedWaitUntil:
+    visible: "¡Pago registrado!"
+    timeout: 15000
+- assertVisible: "Cuota 4/12"
+- assertVisible: "Cuota 5/12"
+- assertVisible: "Cuota 6/12"
+- assertVisible: "Cuota 7/12"
+- assertVisible: "Abono a cuota 8/12"
+- tapOn: "Listo"
+
+# Histórico de pagos: one row titled by the range it covered.
+- extendedWaitUntil:
+    visible: "TOTAL A PAGAR HOY"
+    timeout: 15000
+- tapOn: "Ver historial ›"
+- extendedWaitUntil:
+    visible: "Histórico de pagos"
+    timeout: 15000
+- assertVisible: "Cuotas 4–7 + abono"
+- assertVisible: "Cuota 3"
+- tapOn: "Cuotas 4–7 + abono"
+
+# Reprinted receipt: the same lines as at collection.
+- extendedWaitUntil:
+    visible: "Recibo de pago"
+    timeout: 15000
+- assertVisible: "Cuota 4/12"
+- assertVisible: "Cuota 7/12"
+- assertVisible: "Abono a cuota 8/12"
+- runFlow:
+    when:
+      true: ${RECORD}
+    commands:
+      - stopRecording

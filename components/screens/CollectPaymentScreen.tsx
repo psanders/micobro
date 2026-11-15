@@ -795,6 +795,7 @@ export function CollectPaymentScreen({ loanId }: { loanId: string }) {
                       <Text style={styles.customInputLabel}>RD$</Text>
                       <TextInput
                         ref={customInputRef}
+                        testID="custom-amount-input"
                         style={styles.customInput}
                         value={customAmountText}
                         onChangeText={setCustomAmountText}
