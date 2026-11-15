@@ -8,6 +8,7 @@
  */
 import { createRealRouteRepo } from "../lib/repo/real/routeRepo";
 import { routeDayFixture } from "../lib/repo/mock/routeFixtures";
+import { isExpiredVisit } from "../lib/route/routeFilters";
 import { customers, loans, payments } from "../lib/db/schema";
 import type { Database } from "../lib/db/client";
 
@@ -67,6 +68,8 @@ describe("route repo", () => {
     const overdue = routeDayFixture.visits.find((v) => v.id === "visit-1")!;
     expect(overdue.overdueDays).toBe(6);
     expect(overdue.hasMora).toBe(true);
+    // The demo route keeps one loan past its end date under "Vencidos"
+    expect(routeDayFixture.visits.filter(isExpiredVisit).map((v) => v.id)).toEqual(["visit-1"]);
 
     const done = routeDayFixture.visits.find((v) => v.status === "done")!;
     expect(done.paidAt).toBeInstanceOf(Date);

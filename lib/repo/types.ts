@@ -443,6 +443,14 @@ export interface RouteVisit {
   hasMora: boolean;
   status: RouteVisitStatus;
   overdueDays?: number;
+  /**
+   * Whole days from the start of the loan's end date
+   * (`loanEndDate(loan, paymentsBeforeToday)`, the receipt's "Vencimiento")
+   * to the start of today. Present only when that end date is before today
+   * (so always >= 1), whatever the visit's status; absent for open credit
+   * (no end date) and when the end date is today or later.
+   */
+  daysPastEnd?: number;
   paidAt?: Date;
   promiseNote?: string;
   installmentLabel?: string;

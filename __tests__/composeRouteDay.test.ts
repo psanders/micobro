@@ -425,4 +425,147 @@ describe("composeRouteDay", () => {
       expect(day.visits).toEqual([]);
     });
   });
+
+  // Issue #215: "Vencidos" means the loan is past its end date — the same
+  // `loanEndDate()` the receipt prints as "Vencimiento" — not "more than 5
+  // days late on the oldest cuota". `daysPastEnd` carries that count.
+  describe("days past the loan's end date", () => {
+    // Weekly 4-cuota loan disbursed 31 days ago: cuotas due 24, 17, 10 and 3
+    // days ago, so the loan ended 3 days ago. Cuota = RD$110.
+    function endedLoan(overrides: Partial<Loan> = {}): Loan {
+      return loan({ startDate: daysBeforeToday(31), ...overrides });
+    }
+
+    it("counts whole days since the end date on a loan past its last cuota", () => {
+      const day = composeRouteDay({
+        customers: [customer({})],
+        loans: [endedLoan()],
+        payments: [],
+        today: TODAY
+      });
+
+      expect(day.visits).toHaveLength(1);
+      expect(day.visits[0]).toMatchObject({ status: "overdue", overdueDays: 24, daysPastEnd: 3 });
+    });
+
+    it("counts from the start of the end date's day, whatever the loan's time of day", () => {
+      const start = daysBeforeToday(31);
+      start.setHours(15, 30, 0, 0);
+
+      const day = composeRouteDay({
+        customers: [customer({})],
+        loans: [endedLoan({ startDate: start })],
+        payments: [],
+        today: TODAY
+      });
+
+      expect(day.visits[0]!.daysPastEnd).toBe(3);
+    });
+
+    it("is not past its end date on the day the last cuota falls due", () => {
+      const threeCuotas = payment({
+        amountCents: 33000,
+        paidAt: daysBeforeToday(2),
+        createdAt: daysBeforeToday(2)
+      });
+
+      const day = composeRouteDay({
+        customers: [customer({})],
+        loans: [loan({ startDate: daysBeforeToday(28) })],
+        payments: [threeCuotas],
+        today: TODAY
+      });
+
+      expect(day.visits).toHaveLength(1);
+      expect(day.visits[0]).toMatchObject({ status: "pending", installmentLabel: "Cuota 4/4" });
+      expect(day.visits[0]!.daysPastEnd).toBeUndefined();
+    });
+
+    it("leaves a mid-term loan that is weeks late without days past end", () => {
+      // Monthly 12-cuota loan: first cuota about 20 days late, end date ~10 months out
+      const day = composeRouteDay({
+        customers: [customer({})],
+        loans: [loan({ frequency: "monthly", termCount: 12, startDate: daysBeforeToday(50) })],
+        payments: [],
+        today: TODAY
+      });
+
+      expect(day.visits).toHaveLength(1);
+      expect(day.visits[0]!.status).toBe("overdue");
+      expect(day.visits[0]!.overdueDays).toBeGreaterThan(5);
+      expect(day.visits[0]!.daysPastEnd).toBeUndefined();
+    });
+
+    it("never sets days past end on an open-credit loan", () => {
+      // Three weekly cycles in with no interest paid: the unpaid interest
+      // rolls into the cycle that falls due today.
+      const day = composeRouteDay({
+        customers: [customer({})],
+        loans: [
+          loan({
+            principalCents: 1000000,
+            interestRateBps: 500,
+            termCount: 0,
+            loanType: "open_credit",
+            startDate: daysBeforeToday(21)
+          })
+        ],
+        payments: [],
+        today: TODAY
+      });
+
+      expect(day.visits).toHaveLength(1);
+      expect(day.visits[0]!.daysPastEnd).toBeUndefined();
+    });
+
+    it("follows a Tradicional Plus end date that a paid penalty moved past today", () => {
+      // Quincenal (15-day cycles), 4 cycles from 64 days ago: originally
+      // ended 4 days ago. One penalty paid moves every unpaid cuota a cycle:
+      // it now ends in 11 days.
+      const plus = loan({
+        frequency: "biweekly",
+        startDate: daysBeforeToday(64),
+        termCount: 4,
+        graceDays: 3,
+        moraEnabled: false,
+        loanType: "term_plus",
+        penaltyCents: 30000
+      });
+      const penalty = payment({
+        amountCents: 30000,
+        tipo: "penalidad",
+        paidAt: daysBeforeToday(5),
+        createdAt: daysBeforeToday(5)
+      });
+
+      const withoutPenalty = composeRouteDay({
+        customers: [customer({})],
+        loans: [plus],
+        payments: [],
+        today: TODAY
+      });
+      const withPenalty = composeRouteDay({
+        customers: [customer({})],
+        loans: [plus],
+        payments: [penalty],
+        today: TODAY
+      });
+
+      expect(withoutPenalty.visits[0]!.daysPastEnd).toBe(4);
+      expect(withPenalty.visits).toHaveLength(1);
+      expect(withPenalty.visits[0]!.status).toBe("overdue");
+      expect(withPenalty.visits[0]!.daysPastEnd).toBeUndefined();
+    });
+
+    it("marks a loan past its end date done once collected today", () => {
+      const day = composeRouteDay({
+        customers: [customer({})],
+        loans: [endedLoan()],
+        payments: [payment({ amountCents: 11000, paidAt: TODAY })],
+        today: TODAY
+      });
+
+      expect(day.visits[0]).toMatchObject({ status: "done", daysPastEnd: 3 });
+    });
+  });
 });
