@@ -5,9 +5,9 @@
  * filter chips with live counts, and the visit list with overdue / done /
  * promise treatments.
  */
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { View, Text, ScrollView, ActivityIndicator, StyleSheet } from "react-native";
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouteRepo } from "../../lib/repo/RepoProvider";
 import { useAsync } from "../../lib/hooks/useAsync";
@@ -80,6 +80,14 @@ export function RouteScreen() {
   const insets = useSafeAreaInsets();
   const routeRepo = useRouteRepo();
   const route = useAsync(() => routeRepo.getToday(), []);
+  // The tab stays mounted, so reload on every focus — a cobro made from
+  // another screen must show up here without restarting the app.
+  const { reload: reloadRoute } = route;
+  useFocusEffect(
+    useCallback(() => {
+      reloadRoute();
+    }, [reloadRoute])
+  );
   const [filter, setFilter] = useState<RouteFilter>("all");
 
   const visits = route.data?.visits ?? [];

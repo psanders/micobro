@@ -59,6 +59,10 @@ function isSameDay(a: Date, b: Date): boolean {
   );
 }
 
+function latestPaidAt(paymentsToday: Payment[]): Date {
+  return paymentsToday.reduce((a, b) => (a.paidAt > b.paidAt ? a : b)).paidAt;
+}
+
 export interface ComposeRouteDayInput {
   customers: Customer[];
   loans: Loan[];
@@ -131,7 +135,34 @@ export function composeRouteDay({
       installmentLabel = `Cuota ${view.installmentsPaid + 1}/${view.installmentsTotal}`;
     }
 
-    if (dueDate > startOfToday) continue; // next payment isn't due yet
+    const collectedTodayCents = paymentsToday.reduce((sum, p) => sum + p.amountCents, 0);
+
+    if (dueDate > startOfToday) {
+      // Not due today. Skip it — unless the lender collected on it anyway
+      // (crédito abierto interest paid early or capital mid-cycle, a cuota
+      // paid ahead): that cobro still belongs in today's "Hechas". Its
+      // amount is what was collected, so it adds the same to the goal and
+      // to `collectedCents`, and its future due date sorts it last.
+      if (collectedTodayCents === 0) continue;
+
+      candidates.push({
+        visit: {
+          id: `route-${loan.id}`,
+          customerId: loan.customerId,
+          name: customer?.name ?? "Cliente",
+          business: null,
+          address: customer?.address ?? "",
+          avatarKey: null,
+          amountCents: collectedTodayCents,
+          hasMora: false,
+          status: "done",
+          paidAt: latestPaidAt(paymentsToday)
+        },
+        dueDate,
+        collectedTodayCents
+      });
+      continue;
+    }
 
     const isOverdue = dueDate < startOfToday;
     const overdueDays = isOverdue
@@ -148,8 +179,6 @@ export function composeRouteDay({
         ? Math.round((startOfToday.getTime() - startOfEnd.getTime()) / DAY_MS)
         : undefined;
 
-    const collectedTodayCents = paymentsToday.reduce((sum, p) => sum + p.amountCents, 0);
-
     const visit: RouteVisit = {
       id: `route-${loan.id}`,
       customerId: loan.customerId,
@@ -162,9 +191,7 @@ export function composeRouteDay({
       status: collectedTodayCents > 0 ? "done" : isOverdue ? "overdue" : "pending",
       ...(isOverdue ? { overdueDays } : {}),
       ...(daysPastEnd !== undefined ? { daysPastEnd } : {}),
-      ...(collectedTodayCents > 0
-        ? { paidAt: paymentsToday.reduce((a, b) => (a.paidAt > b.paidAt ? a : b)).paidAt }
-        : {}),
+      ...(collectedTodayCents > 0 ? { paidAt: latestPaidAt(paymentsToday) } : {}),
       ...(!isOverdue && collectedTodayCents === 0 ? { installmentLabel } : {})
     };
 
