@@ -19274,6 +19274,83 @@
                               }
                             },
                             {
+                              "type": "frame",
+                              "id": "gYW0F",
+                              "name": "Cobrado desglose",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 6,
+                              "padding": [
+                                0,
+                                0,
+                                0,
+                                12
+                              ],
+                              "stroke": {
+                                "fill": "$ui:ds.muted",
+                                "thickness": {
+                                  "left": 1
+                                },
+                                "align": "inside"
+                              },
+                              "children": [
+                                {
+                                  "type": "ref",
+                                  "id": "S2H7r",
+                                  "ref": "ui:F6nZP",
+                                  "name": "Capital cobrado",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "B917x1": {
+                                      "content": "Capital cobrado",
+                                      "fontSize": 13
+                                    },
+                                    "q368B": {
+                                      "content": "RD$46,500",
+                                      "fontSize": 13,
+                                      "fontWeight": "600"
+                                    }
+                                  }
+                                },
+                                {
+                                  "type": "ref",
+                                  "id": "MSuwJ",
+                                  "ref": "ui:F6nZP",
+                                  "name": "Interés cobrado",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "B917x1": {
+                                      "content": "Interés cobrado",
+                                      "fontSize": 13
+                                    },
+                                    "q368B": {
+                                      "content": "RD$9,800",
+                                      "fontSize": 13,
+                                      "fontWeight": "600"
+                                    }
+                                  }
+                                },
+                                {
+                                  "type": "ref",
+                                  "id": "Z7r3G",
+                                  "ref": "ui:F6nZP",
+                                  "name": "Mora y penalidades",
+                                  "width": "fill_container",
+                                  "descendants": {
+                                    "B917x1": {
+                                      "content": "Mora y penalidades",
+                                      "fontSize": 13
+                                    },
+                                    "q368B": {
+                                      "content": "RD$1,700",
+                                      "fontSize": 13,
+                                      "fontWeight": "600"
+                                    }
+                                  }
+                                }
+                              ]
+                            },
+                            {
                               "id": "crlE7",
                               "type": "ref",
                               "ref": "ui:F6nZP",
