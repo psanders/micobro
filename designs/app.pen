@@ -29483,7 +29483,7 @@
                   "name": "05b' Nuevo cliente — Foto del cliente (vacío)",
                   "clip": true,
                   "width": 390,
-                  "height": 980,
+                  "height": 844,
                   "fill": "#F4F8FF",
                   "layout": "vertical",
                   "children": [
@@ -29644,320 +29644,39 @@
                                 },
                                 {
                                   "type": "frame",
-                                  "id": "xd6El",
-                                  "name": "actions",
-                                  "width": "fill_container",
-                                  "layout": "vertical",
+                                  "id": "RMWXI",
+                                  "name": "btnEditar",
+                                  "fill": "$ui:brand.white",
+                                  "cornerRadius": 12,
+                                  "stroke": {
+                                    "fill": "$ui:brand.blue.primary",
+                                    "thickness": 1.5,
+                                    "align": "inside"
+                                  },
                                   "gap": 8,
+                                  "padding": [
+                                    10,
+                                    16
+                                  ],
+                                  "alignItems": "center",
                                   "children": [
                                     {
-                                      "type": "frame",
-                                      "id": "49BrL",
-                                      "name": "btnTomarFoto",
-                                      "width": "fill_container",
-                                      "fill": "$ui:brand.white",
-                                      "cornerRadius": 12,
-                                      "stroke": {
-                                        "fill": "$ui:brand.blue.primary",
-                                        "thickness": 1.5,
-                                        "align": "inside"
-                                      },
-                                      "gap": 8,
-                                      "padding": [
-                                        11,
-                                        14
-                                      ],
-                                      "alignItems": "center",
-                                      "children": [
-                                        {
-                                          "type": "icon",
-                                          "id": "VPWXc",
-                                          "library": "lucide",
-                                          "icon": "camera",
-                                          "width": 18,
-                                          "height": 18,
-                                          "fill": "$ui:brand.blue.primary"
-                                        },
-                                        {
-                                          "type": "text",
-                                          "id": "UevXL",
-                                          "content": "Tomar foto",
-                                          "fill": "$ui:brand.blue.primary",
-                                          "fontFamily": "$ui:font-family",
-                                          "fontSize": 14,
-                                          "fontWeight": "700"
-                                        }
-                                      ]
+                                      "type": "icon",
+                                      "id": "4odCx",
+                                      "library": "lucide",
+                                      "icon": "pencil",
+                                      "width": 16,
+                                      "height": 16,
+                                      "fill": "$ui:brand.blue.primary"
                                     },
                                     {
-                                      "type": "frame",
-                                      "id": "bw55I",
-                                      "name": "btnGaleria",
-                                      "width": "fill_container",
-                                      "fill": "$ui:brand.white",
-                                      "cornerRadius": 12,
-                                      "stroke": {
-                                        "fill": "$ui:brand.blue.primary",
-                                        "thickness": 1.5,
-                                        "align": "inside"
-                                      },
-                                      "gap": 8,
-                                      "padding": [
-                                        11,
-                                        14
-                                      ],
-                                      "alignItems": "center",
-                                      "children": [
-                                        {
-                                          "type": "icon",
-                                          "id": "73EVY",
-                                          "library": "lucide",
-                                          "icon": "image",
-                                          "width": 18,
-                                          "height": 18,
-                                          "fill": "$ui:brand.blue.primary"
-                                        },
-                                        {
-                                          "type": "text",
-                                          "id": "FDmcv",
-                                          "content": "Elegir de la galería",
-                                          "fill": "$ui:brand.blue.primary",
-                                          "fontFamily": "$ui:font-family",
-                                          "fontSize": 14,
-                                          "fontWeight": "700"
-                                        }
-                                      ]
-                                    }
-                                  ]
-                                }
-                              ]
-                            },
-                            {
-                              "type": "text",
-                              "id": "U9T5H",
-                              "content": "O elige un avatar",
-                              "fill": "$ui:ds.muted",
-                              "fontFamily": "$ui:font-family",
-                              "fontSize": 12,
-                              "fontWeight": "600"
-                            },
-                            {
-                              "type": "frame",
-                              "id": "5H1S1",
-                              "name": "avatarGrid",
-                              "width": "fill_container",
-                              "layout": "vertical",
-                              "gap": 6,
-                              "children": [
-                                {
-                                  "type": "frame",
-                                  "id": "AzGHO",
-                                  "gap": 2,
-                                  "children": [
-                                    {
-                                      "type": "frame",
-                                      "id": "0SJ6Z",
-                                      "width": 56,
-                                      "height": 56,
-                                      "justifyContent": "center",
-                                      "alignItems": "center",
-                                      "children": [
-                                        {
-                                          "type": "frame",
-                                          "id": "pwAIO",
-                                          "width": 42,
-                                          "height": 42,
-                                          "cornerRadius": 21,
-                                          "fill": {
-                                            "type": "image",
-                                            "url": "assets/avatars/male1.png",
-                                            "mode": "cover"
-                                          }
-                                        }
-                                      ]
-                                    },
-                                    {
-                                      "type": "frame",
-                                      "id": "eLYZ0",
-                                      "width": 56,
-                                      "height": 56,
-                                      "justifyContent": "center",
-                                      "alignItems": "center",
-                                      "children": [
-                                        {
-                                          "type": "frame",
-                                          "id": "KT4tB",
-                                          "width": 42,
-                                          "height": 42,
-                                          "cornerRadius": 21,
-                                          "fill": {
-                                            "type": "image",
-                                            "url": "assets/avatars/female2.png",
-                                            "mode": "cover"
-                                          }
-                                        }
-                                      ]
-                                    },
-                                    {
-                                      "type": "frame",
-                                      "id": "nGEHH",
-                                      "width": 56,
-                                      "height": 56,
-                                      "justifyContent": "center",
-                                      "alignItems": "center",
-                                      "children": [
-                                        {
-                                          "type": "frame",
-                                          "id": "hbzyX",
-                                          "width": 42,
-                                          "height": 42,
-                                          "cornerRadius": 21,
-                                          "fill": {
-                                            "type": "image",
-                                            "url": "assets/avatars/female1.png",
-                                            "mode": "cover"
-                                          }
-                                        }
-                                      ]
-                                    },
-                                    {
-                                      "type": "frame",
-                                      "id": "Jbu3F",
-                                      "width": 56,
-                                      "height": 56,
-                                      "justifyContent": "center",
-                                      "alignItems": "center",
-                                      "children": [
-                                        {
-                                          "type": "frame",
-                                          "id": "tGHSv",
-                                          "width": 42,
-                                          "height": 42,
-                                          "cornerRadius": 21,
-                                          "fill": {
-                                            "type": "image",
-                                            "url": "assets/avatars/male2.png",
-                                            "mode": "cover"
-                                          }
-                                        }
-                                      ]
-                                    },
-                                    {
-                                      "type": "frame",
-                                      "id": "QkrfO",
-                                      "width": 56,
-                                      "height": 56,
-                                      "justifyContent": "center",
-                                      "alignItems": "center",
-                                      "children": [
-                                        {
-                                          "type": "frame",
-                                          "id": "uWeHh",
-                                          "width": 42,
-                                          "height": 42,
-                                          "cornerRadius": 21,
-                                          "fill": {
-                                            "type": "image",
-                                            "url": "assets/avatars/male3.png",
-                                            "mode": "cover"
-                                          }
-                                        }
-                                      ]
-                                    },
-                                    {
-                                      "type": "frame",
-                                      "id": "ypUHU",
-                                      "width": 56,
-                                      "height": 56,
-                                      "justifyContent": "center",
-                                      "alignItems": "center",
-                                      "children": [
-                                        {
-                                          "type": "frame",
-                                          "id": "NEtmp",
-                                          "width": 42,
-                                          "height": 42,
-                                          "cornerRadius": 21,
-                                          "fill": {
-                                            "type": "image",
-                                            "url": "assets/avatars/male4.png",
-                                            "mode": "cover"
-                                          }
-                                        }
-                                      ]
-                                    }
-                                  ]
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "cj4TD",
-                                  "gap": 2,
-                                  "children": [
-                                    {
-                                      "type": "frame",
-                                      "id": "ACPQH",
-                                      "width": 56,
-                                      "height": 56,
-                                      "justifyContent": "center",
-                                      "alignItems": "center",
-                                      "children": [
-                                        {
-                                          "type": "frame",
-                                          "id": "ySNtx",
-                                          "width": 42,
-                                          "height": 42,
-                                          "cornerRadius": 21,
-                                          "fill": {
-                                            "type": "image",
-                                            "url": "assets/avatars/male5.png",
-                                            "mode": "cover"
-                                          }
-                                        }
-                                      ]
-                                    },
-                                    {
-                                      "type": "frame",
-                                      "id": "Fbu3Y",
-                                      "width": 56,
-                                      "height": 56,
-                                      "justifyContent": "center",
-                                      "alignItems": "center",
-                                      "children": [
-                                        {
-                                          "type": "frame",
-                                          "id": "DdNkQ",
-                                          "width": 42,
-                                          "height": 42,
-                                          "cornerRadius": 21,
-                                          "fill": {
-                                            "type": "image",
-                                            "url": "assets/avatars/male6.png",
-                                            "mode": "cover"
-                                          }
-                                        }
-                                      ]
-                                    },
-                                    {
-                                      "type": "frame",
-                                      "id": "kRvDv",
-                                      "width": 56,
-                                      "height": 56,
-                                      "justifyContent": "center",
-                                      "alignItems": "center",
-                                      "children": [
-                                        {
-                                          "type": "frame",
-                                          "id": "teZii",
-                                          "width": 42,
-                                          "height": 42,
-                                          "cornerRadius": 21,
-                                          "fill": {
-                                            "type": "image",
-                                            "url": "assets/avatars/male7.png",
-                                            "mode": "cover"
-                                          }
-                                        }
-                                      ]
+                                      "type": "text",
+                                      "id": "s3RxP",
+                                      "content": "Editar",
+                                      "fill": "$ui:brand.blue.primary",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "700"
                                     }
                                   ]
                                 }
@@ -29996,11 +29715,964 @@
                 },
                 {
                   "type": "frame",
-                  "id": "0hfz1",
-                  "name": "05b'' Foto del cliente — estados del campo",
+                  "id": "gkwHH",
+                  "name": "05c Foto del cliente — menú Editar",
                   "clip": true,
                   "width": 390,
-                  "height": 980,
+                  "height": 844,
+                  "fill": "#F4F8FF",
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "ref",
+                      "id": "QtILZ",
+                      "ref": "ui:g8L0O",
+                      "width": "fill_container"
+                    },
+                    {
+                      "type": "ref",
+                      "id": "lFjLu",
+                      "ref": "ui:AFMnH",
+                      "width": "fill_container",
+                      "descendants": {
+                        "ui:XlCal": {
+                          "content": "Nuevo cliente"
+                        },
+                        "ui:OJ3eJ": {
+                          "content": "Datos del cliente"
+                        },
+                        "ui:zF54G": {
+                          "enabled": false
+                        }
+                      }
+                    },
+                    {
+                      "type": "frame",
+                      "id": "bFKJY",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "layout": "vertical",
+                      "gap": 16,
+                      "padding": [
+                        8,
+                        20
+                      ],
+                      "children": [
+                        {
+                          "type": "ref",
+                          "id": "lbDlh",
+                          "ref": "ui:XHaAT",
+                          "width": "fill_container",
+                          "descendants": {
+                            "ui:flbLp": {
+                              "content": "Nombre completo"
+                            },
+                            "ui:lPkAM": {
+                              "icon": "user"
+                            },
+                            "ui:iaYYl": {
+                              "content": "María Rosa Peralta",
+                              "fill": "$ui:brand.ink"
+                            }
+                          }
+                        },
+                        {
+                          "type": "ref",
+                          "id": "FtZI1",
+                          "ref": "ui:XHaAT",
+                          "width": "fill_container",
+                          "descendants": {
+                            "ui:flbLp": {
+                              "content": "Teléfono"
+                            },
+                            "ui:lPkAM": {
+                              "icon": "phone"
+                            },
+                            "ui:iaYYl": {
+                              "content": "809-251-2222",
+                              "fill": "$ui:brand.ink"
+                            }
+                          }
+                        },
+                        {
+                          "type": "frame",
+                          "id": "6o3i5",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 10,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "HMwgm",
+                              "fill": "$ui:brand.ink",
+                              "content": "Foto del cliente (opcional)",
+                              "fontFamily": "$ui:font-family",
+                              "fontSize": 13,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "Zy7kL",
+                              "gap": 14,
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "CrPGz",
+                                  "width": 72,
+                                  "height": 72,
+                                  "cornerRadius": 36,
+                                  "fill": "$ui:brand.mist",
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "RF7Xn",
+                                      "content": "MR",
+                                      "fill": "$ui:brand.blue.deep",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 24,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "aX2t7",
+                                  "fill": "$ui:brand.white",
+                                  "cornerRadius": 12,
+                                  "stroke": {
+                                    "fill": "$ui:brand.blue.primary",
+                                    "thickness": 1.5,
+                                    "align": "inside"
+                                  },
+                                  "gap": 8,
+                                  "padding": [
+                                    10,
+                                    16
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "aXMp5",
+                                      "library": "lucide",
+                                      "icon": "pencil",
+                                      "width": 16,
+                                      "height": 16,
+                                      "fill": "$ui:brand.blue.primary"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "5n6o2",
+                                      "content": "Editar",
+                                      "fill": "$ui:brand.blue.primary",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "700"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "rectangle",
+                      "id": "9wTU6",
+                      "name": "backdrop",
+                      "layoutPosition": "absolute",
+                      "x": 0,
+                      "y": 0,
+                      "width": 390,
+                      "height": 844,
+                      "fill": "#14254A66"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "EgZmK",
+                      "name": "optionsSheet",
+                      "layoutPosition": "absolute",
+                      "x": 0,
+                      "y": 470,
+                      "width": 390,
+                      "fill": "$ui:brand.white",
+                      "cornerRadius": [
+                        20,
+                        20,
+                        0,
+                        0
+                      ],
+                      "layout": "vertical",
+                      "gap": 6,
+                      "padding": [
+                        10,
+                        20,
+                        30,
+                        20
+                      ],
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "caNUM",
+                          "width": "fill_container",
+                          "padding": [
+                            0,
+                            0,
+                            8,
+                            0
+                          ],
+                          "justifyContent": "center",
+                          "children": [
+                            {
+                              "type": "rectangle",
+                              "id": "BeocS",
+                              "cornerRadius": 2,
+                              "fill": "#D3DFF4",
+                              "width": 36,
+                              "height": 4
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "9sO2C",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 2,
+                          "padding": [
+                            0,
+                            0,
+                            10,
+                            0
+                          ],
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "Ba3fC",
+                              "fill": "$ui:brand.ink",
+                              "content": "Foto del cliente",
+                              "fontFamily": "$ui:font-family",
+                              "fontSize": 16,
+                              "fontWeight": "700"
+                            },
+                            {
+                              "type": "text",
+                              "id": "G3a61",
+                              "fill": "$ui:ds.muted",
+                              "content": "María Rosa Peralta",
+                              "fontFamily": "$ui:font-family",
+                              "fontSize": 12,
+                              "fontWeight": "500"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "qbgkb",
+                          "name": "optCamara",
+                          "width": "fill_container",
+                          "stroke": {
+                            "fill": "$ui:ds.border",
+                            "thickness": {
+                              "top": 1
+                            },
+                            "align": "inside"
+                          },
+                          "gap": 12,
+                          "padding": [
+                            12,
+                            0
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "UmFqb",
+                              "width": 40,
+                              "height": 40,
+                              "fill": "$ui:brand.mist",
+                              "cornerRadius": 12,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "TXUPS",
+                                  "library": "lucide",
+                                  "icon": "camera",
+                                  "width": 18,
+                                  "height": 18,
+                                  "fill": "$ui:brand.blue.deep"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "KDHkI",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 2,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "YOcHC",
+                                  "fill": "$ui:brand.ink",
+                                  "content": "Tomar foto",
+                                  "fontFamily": "$ui:font-family",
+                                  "fontSize": 15,
+                                  "fontWeight": "700"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "JGABX",
+                                  "fill": "$ui:ds.muted",
+                                  "content": "Con la cámara del teléfono",
+                                  "fontFamily": "$ui:font-family",
+                                  "fontSize": 12,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "icon",
+                              "id": "ed7f8",
+                              "library": "lucide",
+                              "icon": "chevron-right",
+                              "width": 18,
+                              "height": 18,
+                              "fill": "#7888A8"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "N9UV0",
+                          "name": "optGaleria",
+                          "width": "fill_container",
+                          "stroke": {
+                            "fill": "$ui:ds.border",
+                            "thickness": {
+                              "top": 1
+                            },
+                            "align": "inside"
+                          },
+                          "gap": 12,
+                          "padding": [
+                            12,
+                            0
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "fxSVJ",
+                              "width": 40,
+                              "height": 40,
+                              "fill": "$ui:brand.mist",
+                              "cornerRadius": 12,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "Mog6n",
+                                  "library": "lucide",
+                                  "icon": "image",
+                                  "width": 18,
+                                  "height": 18,
+                                  "fill": "$ui:brand.blue.deep"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "jWdED",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 2,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "G8AhI",
+                                  "fill": "$ui:brand.ink",
+                                  "content": "Elegir de la galería",
+                                  "fontFamily": "$ui:font-family",
+                                  "fontSize": 15,
+                                  "fontWeight": "700"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "0ncji",
+                                  "fill": "$ui:ds.muted",
+                                  "content": "De las fotos del teléfono",
+                                  "fontFamily": "$ui:font-family",
+                                  "fontSize": 12,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "icon",
+                              "id": "0HteT",
+                              "library": "lucide",
+                              "icon": "chevron-right",
+                              "width": 18,
+                              "height": 18,
+                              "fill": "#7888A8"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "bTXjV",
+                          "name": "optAvatar",
+                          "width": "fill_container",
+                          "stroke": {
+                            "fill": "$ui:ds.border",
+                            "thickness": {
+                              "top": 1
+                            },
+                            "align": "inside"
+                          },
+                          "gap": 12,
+                          "padding": [
+                            12,
+                            0
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "9OOHB",
+                              "width": 40,
+                              "height": 40,
+                              "fill": "$ui:brand.mist",
+                              "cornerRadius": 12,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "TDT8q",
+                                  "library": "lucide",
+                                  "icon": "smile",
+                                  "width": 18,
+                                  "height": 18,
+                                  "fill": "$ui:brand.blue.deep"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "NSvnu",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 2,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "5L4gP",
+                                  "fill": "$ui:brand.ink",
+                                  "content": "Elegir un avatar",
+                                  "fontFamily": "$ui:font-family",
+                                  "fontSize": 15,
+                                  "fontWeight": "700"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "URXjo",
+                                  "fill": "$ui:ds.muted",
+                                  "content": "Uno de los dibujos de Micobro",
+                                  "fontFamily": "$ui:font-family",
+                                  "fontSize": 12,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "icon",
+                              "id": "ExVbr",
+                              "library": "lucide",
+                              "icon": "chevron-right",
+                              "width": 18,
+                              "height": 18,
+                              "fill": "#7888A8"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "OsxCL",
+                          "name": "optQuitar (solo con foto o avatar)",
+                          "width": "fill_container",
+                          "stroke": {
+                            "fill": "$ui:ds.border",
+                            "thickness": {
+                              "top": 1
+                            },
+                            "align": "inside"
+                          },
+                          "gap": 12,
+                          "padding": [
+                            12,
+                            0
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "SWb2V",
+                              "width": 40,
+                              "height": 40,
+                              "fill": "$ui:ds.amber.bg",
+                              "cornerRadius": 12,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "GbI5u",
+                                  "library": "lucide",
+                                  "icon": "x",
+                                  "width": 18,
+                                  "height": 18,
+                                  "fill": "$ui:ds.amber"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "7dqld",
+                              "width": "fill_container",
+                              "layout": "vertical",
+                              "gap": 2,
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "KtqRp",
+                                  "fill": "$ui:brand.ink",
+                                  "content": "Quitar",
+                                  "fontFamily": "$ui:font-family",
+                                  "fontSize": 15,
+                                  "fontWeight": "700"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "mh1xL",
+                                  "fill": "$ui:ds.muted",
+                                  "content": "Vuelve a mostrar las iniciales",
+                                  "fontFamily": "$ui:font-family",
+                                  "fontSize": 12,
+                                  "fontWeight": "500"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "icon",
+                              "id": "notoW",
+                              "library": "lucide",
+                              "icon": "chevron-right",
+                              "width": 18,
+                              "height": 18,
+                              "fill": "#7888A8"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "bL3YZ",
+                  "name": "05d Elige un avatar (hoja)",
+                  "clip": true,
+                  "width": 390,
+                  "height": 844,
+                  "fill": "#F4F8FF",
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "ref",
+                      "id": "l34rR",
+                      "ref": "ui:g8L0O",
+                      "width": "fill_container"
+                    },
+                    {
+                      "type": "ref",
+                      "id": "O8EaE",
+                      "ref": "ui:AFMnH",
+                      "width": "fill_container",
+                      "descendants": {
+                        "ui:XlCal": {
+                          "content": "Nuevo cliente"
+                        },
+                        "ui:OJ3eJ": {
+                          "content": "Datos del cliente"
+                        },
+                        "ui:zF54G": {
+                          "enabled": false
+                        }
+                      }
+                    },
+                    {
+                      "type": "frame",
+                      "id": "go732",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "layout": "vertical",
+                      "gap": 16,
+                      "padding": [
+                        8,
+                        20
+                      ],
+                      "children": [
+                        {
+                          "type": "ref",
+                          "id": "qYGJa",
+                          "ref": "ui:XHaAT",
+                          "width": "fill_container",
+                          "descendants": {
+                            "ui:flbLp": {
+                              "content": "Nombre completo"
+                            },
+                            "ui:lPkAM": {
+                              "icon": "user"
+                            },
+                            "ui:iaYYl": {
+                              "content": "María Rosa Peralta",
+                              "fill": "$ui:brand.ink"
+                            }
+                          }
+                        },
+                        {
+                          "type": "ref",
+                          "id": "Yq09L",
+                          "ref": "ui:XHaAT",
+                          "width": "fill_container",
+                          "descendants": {
+                            "ui:flbLp": {
+                              "content": "Teléfono"
+                            },
+                            "ui:lPkAM": {
+                              "icon": "phone"
+                            },
+                            "ui:iaYYl": {
+                              "content": "809-251-2222",
+                              "fill": "$ui:brand.ink"
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "type": "rectangle",
+                      "id": "OCoZP",
+                      "name": "backdrop",
+                      "layoutPosition": "absolute",
+                      "x": 0,
+                      "y": 0,
+                      "width": 390,
+                      "height": 844,
+                      "fill": "#14254A66"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "5mEI5",
+                      "name": "avatarSheet",
+                      "layoutPosition": "absolute",
+                      "x": 0,
+                      "y": 560,
+                      "width": 390,
+                      "fill": "$ui:brand.white",
+                      "cornerRadius": [
+                        20,
+                        20,
+                        0,
+                        0
+                      ],
+                      "layout": "vertical",
+                      "gap": 10,
+                      "padding": [
+                        10,
+                        20,
+                        34,
+                        20
+                      ],
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "WbYar",
+                          "width": "fill_container",
+                          "padding": [
+                            0,
+                            0,
+                            8,
+                            0
+                          ],
+                          "justifyContent": "center",
+                          "children": [
+                            {
+                              "type": "rectangle",
+                              "id": "FK2Pt",
+                              "cornerRadius": 2,
+                              "fill": "#D3DFF4",
+                              "width": 36,
+                              "height": 4
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "ePsml",
+                          "fill": "$ui:brand.ink",
+                          "content": "Elige un avatar",
+                          "fontFamily": "$ui:font-family",
+                          "fontSize": 16,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "IF0BS",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 6,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "OYkTe",
+                              "gap": 2,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "HDlJN",
+                                  "width": 56,
+                                  "height": 56,
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "gvrwK",
+                                      "width": 42,
+                                      "height": 42,
+                                      "cornerRadius": 21,
+                                      "fill": {
+                                        "type": "image",
+                                        "url": "assets/avatars/male1.png",
+                                        "mode": "cover"
+                                      }
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "TbfTZ",
+                                  "width": 56,
+                                  "height": 56,
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "dcV1J",
+                                      "width": 42,
+                                      "height": 42,
+                                      "cornerRadius": 21,
+                                      "fill": {
+                                        "type": "image",
+                                        "url": "assets/avatars/female2.png",
+                                        "mode": "cover"
+                                      }
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "FvUjz",
+                                  "width": 56,
+                                  "height": 56,
+                                  "cornerRadius": 28,
+                                  "stroke": {
+                                    "fill": "$ui:brand.blue.primary",
+                                    "thickness": 2,
+                                    "align": "inside"
+                                  },
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "yOtHS",
+                                      "width": 42,
+                                      "height": 42,
+                                      "cornerRadius": 21,
+                                      "fill": {
+                                        "type": "image",
+                                        "url": "assets/avatars/female1.png",
+                                        "mode": "cover"
+                                      }
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "eo5st",
+                                  "width": 56,
+                                  "height": 56,
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "SDZSD",
+                                      "width": 42,
+                                      "height": 42,
+                                      "cornerRadius": 21,
+                                      "fill": {
+                                        "type": "image",
+                                        "url": "assets/avatars/male2.png",
+                                        "mode": "cover"
+                                      }
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "8XbTy",
+                                  "width": 56,
+                                  "height": 56,
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "zNzSU",
+                                      "width": 42,
+                                      "height": 42,
+                                      "cornerRadius": 21,
+                                      "fill": {
+                                        "type": "image",
+                                        "url": "assets/avatars/male3.png",
+                                        "mode": "cover"
+                                      }
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "c96mJ",
+                                  "width": 56,
+                                  "height": 56,
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "DqgFP",
+                                      "width": 42,
+                                      "height": 42,
+                                      "cornerRadius": 21,
+                                      "fill": {
+                                        "type": "image",
+                                        "url": "assets/avatars/male4.png",
+                                        "mode": "cover"
+                                      }
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "PzSKL",
+                              "gap": 2,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "RYVMj",
+                                  "width": 56,
+                                  "height": 56,
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "5JKIB",
+                                      "width": 42,
+                                      "height": 42,
+                                      "cornerRadius": 21,
+                                      "fill": {
+                                        "type": "image",
+                                        "url": "assets/avatars/male5.png",
+                                        "mode": "cover"
+                                      }
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "5G3fv",
+                                  "width": 56,
+                                  "height": 56,
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "YVyaH",
+                                      "width": 42,
+                                      "height": 42,
+                                      "cornerRadius": 21,
+                                      "fill": {
+                                        "type": "image",
+                                        "url": "assets/avatars/male6.png",
+                                        "mode": "cover"
+                                      }
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "rD6UT",
+                                  "width": 56,
+                                  "height": 56,
+                                  "justifyContent": "center",
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "v947T",
+                                      "width": 42,
+                                      "height": 42,
+                                      "cornerRadius": 21,
+                                      "fill": {
+                                        "type": "image",
+                                        "url": "assets/avatars/male7.png",
+                                        "mode": "cover"
+                                      }
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "1ABj4",
+                  "name": "05b'' Foto del cliente — foto elegida / preparando",
+                  "clip": true,
+                  "width": 390,
+                  "height": 844,
                   "fill": "#F4F8FF",
                   "layout": "vertical",
                   "gap": 22,
@@ -30011,7 +30683,7 @@
                   "children": [
                     {
                       "type": "text",
-                      "id": "csCcv",
+                      "id": "YeIWi",
                       "content": "Foto elegida",
                       "fill": "$ui:ds.muted",
                       "fontFamily": "$ui:font-family",
@@ -30021,8 +30693,7 @@
                     },
                     {
                       "type": "frame",
-                      "id": "Db9YQ",
-                      "name": "state-foto",
+                      "id": "bPrqL",
                       "width": "fill_container",
                       "fill": "$ui:brand.white",
                       "cornerRadius": 16,
@@ -30032,7 +30703,7 @@
                       "children": [
                         {
                           "type": "text",
-                          "id": "oYZ9j",
+                          "id": "PfRb7",
                           "fill": "$ui:brand.ink",
                           "content": "Foto del cliente (opcional)",
                           "fontFamily": "$ui:font-family",
@@ -30041,15 +30712,13 @@
                         },
                         {
                           "type": "frame",
-                          "id": "ntdVY",
-                          "width": "fill_container",
+                          "id": "IVk6X",
                           "gap": 14,
                           "alignItems": "center",
                           "children": [
                             {
                               "type": "frame",
-                              "id": "NoMIc",
-                              "name": "preview (Foto elegida)",
+                              "id": "xPZbL",
                               "width": 72,
                               "height": 72,
                               "cornerRadius": 36,
@@ -30074,7 +30743,7 @@
                               "children": [
                                 {
                                   "type": "icon",
-                                  "id": "lAsNp",
+                                  "id": "tb5P4",
                                   "library": "lucide",
                                   "icon": "user-round",
                                   "width": 76,
@@ -30085,260 +30754,49 @@
                             },
                             {
                               "type": "frame",
-                              "id": "QtTZF",
-                              "width": "fill_container",
-                              "layout": "vertical",
+                              "id": "1XNWZ",
+                              "fill": "$ui:brand.white",
+                              "cornerRadius": 12,
+                              "stroke": {
+                                "fill": "$ui:brand.blue.primary",
+                                "thickness": 1.5,
+                                "align": "inside"
+                              },
                               "gap": 8,
-                              "children": [
-                                {
-                                  "type": "frame",
-                                  "id": "FltvI",
-                                  "width": "fill_container",
-                                  "cornerRadius": 12,
-                                  "stroke": {
-                                    "fill": "$ui:brand.blue.primary",
-                                    "thickness": 1.5,
-                                    "align": "inside"
-                                  },
-                                  "gap": 8,
-                                  "padding": [
-                                    11,
-                                    14
-                                  ],
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "icon",
-                                      "id": "vCsKs",
-                                      "library": "lucide",
-                                      "icon": "camera",
-                                      "width": 18,
-                                      "height": 18,
-                                      "fill": "$ui:brand.blue.primary"
-                                    },
-                                    {
-                                      "type": "text",
-                                      "id": "AmUcD",
-                                      "content": "Tomar foto",
-                                      "fill": "$ui:brand.blue.primary",
-                                      "fontFamily": "$ui:font-family",
-                                      "fontSize": 14,
-                                      "fontWeight": "700"
-                                    }
-                                  ]
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "XL027",
-                                  "width": "fill_container",
-                                  "cornerRadius": 12,
-                                  "stroke": {
-                                    "fill": "$ui:brand.blue.primary",
-                                    "thickness": 1.5,
-                                    "align": "inside"
-                                  },
-                                  "gap": 8,
-                                  "padding": [
-                                    11,
-                                    14
-                                  ],
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "icon",
-                                      "id": "H77Va",
-                                      "library": "lucide",
-                                      "icon": "image",
-                                      "width": 18,
-                                      "height": 18,
-                                      "fill": "$ui:brand.blue.primary"
-                                    },
-                                    {
-                                      "type": "text",
-                                      "id": "LHx24",
-                                      "content": "Elegir de la galería",
-                                      "fill": "$ui:brand.blue.primary",
-                                      "fontFamily": "$ui:font-family",
-                                      "fontSize": 14,
-                                      "fontWeight": "700"
-                                    }
-                                  ]
-                                }
-                              ]
-                            }
-                          ]
-                        },
-                        {
-                          "type": "text",
-                          "id": "zhRpW",
-                          "content": "O elige un avatar",
-                          "fill": "$ui:ds.muted",
-                          "fontFamily": "$ui:font-family",
-                          "fontSize": 12,
-                          "fontWeight": "600"
-                        },
-                        {
-                          "type": "frame",
-                          "id": "ECtdv",
-                          "gap": 2,
-                          "children": [
-                            {
-                              "type": "frame",
-                              "id": "EfY3g",
-                              "width": 56,
-                              "height": 56,
-                              "justifyContent": "center",
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "frame",
-                                  "id": "eQ78j",
-                                  "width": 42,
-                                  "height": 42,
-                                  "cornerRadius": 21,
-                                  "fill": {
-                                    "type": "image",
-                                    "url": "assets/avatars/male1.png",
-                                    "mode": "cover"
-                                  }
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "CRTTF",
-                              "width": 56,
-                              "height": 56,
-                              "justifyContent": "center",
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "frame",
-                                  "id": "FRVf8",
-                                  "width": 42,
-                                  "height": 42,
-                                  "cornerRadius": 21,
-                                  "fill": {
-                                    "type": "image",
-                                    "url": "assets/avatars/female2.png",
-                                    "mode": "cover"
-                                  }
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "rUqIa",
-                              "width": 56,
-                              "height": 56,
-                              "justifyContent": "center",
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "frame",
-                                  "id": "Z1qCo",
-                                  "width": 42,
-                                  "height": 42,
-                                  "cornerRadius": 21,
-                                  "fill": {
-                                    "type": "image",
-                                    "url": "assets/avatars/female1.png",
-                                    "mode": "cover"
-                                  }
-                                }
-                              ]
-                            },
-                            {
-                              "type": "text",
-                              "id": "WAKzZ",
-                              "content": "…",
-                              "fill": "$ui:ds.muted",
-                              "fontFamily": "$ui:font-family",
-                              "fontSize": 18,
-                              "fontWeight": "700"
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "type": "text",
-                      "id": "fXqHR",
-                      "content": "Preparando foto…",
-                      "fill": "$ui:ds.muted",
-                      "fontFamily": "$ui:font-family",
-                      "fontSize": 12,
-                      "fontWeight": "700",
-                      "letterSpacing": 0.6
-                    },
-                    {
-                      "type": "frame",
-                      "id": "8XZif",
-                      "name": "state-preparando",
-                      "width": "fill_container",
-                      "fill": "$ui:brand.white",
-                      "cornerRadius": 16,
-                      "layout": "vertical",
-                      "gap": 12,
-                      "padding": 16,
-                      "children": [
-                        {
-                          "type": "frame",
-                          "id": "gLYou",
-                          "width": "fill_container",
-                          "gap": 14,
-                          "alignItems": "center",
-                          "children": [
-                            {
-                              "type": "frame",
-                              "id": "GDdrB",
-                              "width": 72,
-                              "height": 72,
-                              "cornerRadius": 36,
-                              "fill": "$ui:brand.mist",
-                              "justifyContent": "center",
+                              "padding": [
+                                10,
+                                16
+                              ],
                               "alignItems": "center",
                               "children": [
                                 {
                                   "type": "icon",
-                                  "id": "SzdEW",
+                                  "id": "ayB0j",
                                   "library": "lucide",
-                                  "icon": "loader-circle",
-                                  "width": 28,
-                                  "height": 28,
+                                  "icon": "pencil",
+                                  "width": 16,
+                                  "height": 16,
                                   "fill": "$ui:brand.blue.primary"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "ptUOU",
+                                  "content": "Editar",
+                                  "fill": "$ui:brand.blue.primary",
+                                  "fontFamily": "$ui:font-family",
+                                  "fontSize": 14,
+                                  "fontWeight": "700"
                                 }
                               ]
-                            },
-                            {
-                              "type": "text",
-                              "id": "ISF8d",
-                              "content": "Preparando foto...",
-                              "fill": "$ui:brand.ink",
-                              "fontFamily": "$ui:font-family",
-                              "fontSize": 14,
-                              "fontWeight": "600"
                             }
                           ]
-                        },
-                        {
-                          "type": "ref",
-                          "id": "RJcPr",
-                          "ref": "ui:CeOUI",
-                          "width": "fill_container",
-                          "opacity": 0.4,
-                          "descendants": {
-                            "ui:hLf7V": {
-                              "content": "Guardar cliente"
-                            }
-                          }
                         }
                       ]
                     },
                     {
                       "type": "text",
-                      "id": "xNfFm",
-                      "content": "Avatar elegido sobre la foto",
+                      "id": "h2Wl0",
+                      "content": "Avatar elegido",
                       "fill": "$ui:ds.muted",
                       "fontFamily": "$ui:font-family",
                       "fontSize": 12,
@@ -30347,8 +30805,7 @@
                     },
                     {
                       "type": "frame",
-                      "id": "yib19",
-                      "name": "state-avatar",
+                      "id": "X25LL",
                       "width": "fill_container",
                       "fill": "$ui:brand.white",
                       "cornerRadius": 16,
@@ -30357,16 +30814,23 @@
                       "padding": 16,
                       "children": [
                         {
+                          "type": "text",
+                          "id": "TVicu",
+                          "fill": "$ui:brand.ink",
+                          "content": "Foto del cliente (opcional)",
+                          "fontFamily": "$ui:font-family",
+                          "fontSize": 13,
+                          "fontWeight": "600"
+                        },
+                        {
                           "type": "frame",
-                          "id": "SCZJB",
-                          "width": "fill_container",
+                          "id": "sUwxe",
                           "gap": 14,
                           "alignItems": "center",
                           "children": [
                             {
                               "type": "frame",
-                              "id": "gy0zB",
-                              "name": "preview (Avatar elegido)",
+                              "id": "2NKVg",
                               "width": 72,
                               "height": 72,
                               "cornerRadius": 36,
@@ -30378,185 +30842,114 @@
                             },
                             {
                               "type": "frame",
-                              "id": "TgNRp",
-                              "width": "fill_container",
-                              "layout": "vertical",
+                              "id": "DzLzR",
+                              "fill": "$ui:brand.white",
+                              "cornerRadius": 12,
+                              "stroke": {
+                                "fill": "$ui:brand.blue.primary",
+                                "thickness": 1.5,
+                                "align": "inside"
+                              },
                               "gap": 8,
+                              "padding": [
+                                10,
+                                16
+                              ],
+                              "alignItems": "center",
                               "children": [
                                 {
-                                  "type": "frame",
-                                  "id": "ixTOw",
-                                  "width": "fill_container",
-                                  "cornerRadius": 12,
-                                  "stroke": {
-                                    "fill": "$ui:brand.blue.primary",
-                                    "thickness": 1.5,
-                                    "align": "inside"
-                                  },
-                                  "gap": 8,
-                                  "padding": [
-                                    11,
-                                    14
-                                  ],
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "icon",
-                                      "id": "IrWGI",
-                                      "library": "lucide",
-                                      "icon": "camera",
-                                      "width": 18,
-                                      "height": 18,
-                                      "fill": "$ui:brand.blue.primary"
-                                    },
-                                    {
-                                      "type": "text",
-                                      "id": "iSo57",
-                                      "content": "Tomar foto",
-                                      "fill": "$ui:brand.blue.primary",
-                                      "fontFamily": "$ui:font-family",
-                                      "fontSize": 14,
-                                      "fontWeight": "700"
-                                    }
-                                  ]
+                                  "type": "icon",
+                                  "id": "LaFs6",
+                                  "library": "lucide",
+                                  "icon": "pencil",
+                                  "width": 16,
+                                  "height": 16,
+                                  "fill": "$ui:brand.blue.primary"
                                 },
                                 {
-                                  "type": "frame",
-                                  "id": "wnlrZ",
-                                  "width": "fill_container",
-                                  "cornerRadius": 12,
-                                  "stroke": {
-                                    "fill": "$ui:brand.blue.primary",
-                                    "thickness": 1.5,
-                                    "align": "inside"
-                                  },
-                                  "gap": 8,
-                                  "padding": [
-                                    11,
-                                    14
-                                  ],
-                                  "alignItems": "center",
-                                  "children": [
-                                    {
-                                      "type": "icon",
-                                      "id": "EaPX3",
-                                      "library": "lucide",
-                                      "icon": "image",
-                                      "width": 18,
-                                      "height": 18,
-                                      "fill": "$ui:brand.blue.primary"
-                                    },
-                                    {
-                                      "type": "text",
-                                      "id": "If52P",
-                                      "content": "Elegir de la galería",
-                                      "fill": "$ui:brand.blue.primary",
-                                      "fontFamily": "$ui:font-family",
-                                      "fontSize": 14,
-                                      "fontWeight": "700"
-                                    }
-                                  ]
+                                  "type": "text",
+                                  "id": "PYkS3",
+                                  "content": "Editar",
+                                  "fill": "$ui:brand.blue.primary",
+                                  "fontFamily": "$ui:font-family",
+                                  "fontSize": 14,
+                                  "fontWeight": "700"
                                 }
                               ]
                             }
                           ]
-                        },
-                        {
-                          "type": "text",
-                          "id": "LCUNq",
-                          "content": "O elige un avatar",
-                          "fill": "$ui:ds.muted",
-                          "fontFamily": "$ui:font-family",
-                          "fontSize": 12,
-                          "fontWeight": "600"
-                        },
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "xKNkk",
+                      "content": "Preparando foto…",
+                      "fill": "$ui:ds.muted",
+                      "fontFamily": "$ui:font-family",
+                      "fontSize": 12,
+                      "fontWeight": "700",
+                      "letterSpacing": 0.6
+                    },
+                    {
+                      "type": "frame",
+                      "id": "6SuiO",
+                      "width": "fill_container",
+                      "fill": "$ui:brand.white",
+                      "cornerRadius": 16,
+                      "layout": "vertical",
+                      "gap": 12,
+                      "padding": 16,
+                      "children": [
                         {
                           "type": "frame",
-                          "id": "H6kbC",
-                          "gap": 2,
+                          "id": "Qqs5y",
+                          "gap": 14,
+                          "alignItems": "center",
                           "children": [
                             {
                               "type": "frame",
-                              "id": "HTApA",
-                              "width": 56,
-                              "height": 56,
+                              "id": "zYAhe",
+                              "width": 72,
+                              "height": 72,
+                              "cornerRadius": 36,
+                              "fill": "$ui:brand.mist",
                               "justifyContent": "center",
                               "alignItems": "center",
                               "children": [
                                 {
-                                  "type": "frame",
-                                  "id": "oWcsE",
-                                  "width": 42,
-                                  "height": 42,
-                                  "cornerRadius": 21,
-                                  "fill": {
-                                    "type": "image",
-                                    "url": "assets/avatars/male1.png",
-                                    "mode": "cover"
-                                  }
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "1iQzv",
-                              "width": 56,
-                              "height": 56,
-                              "justifyContent": "center",
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "frame",
-                                  "id": "0PmaJ",
-                                  "width": 42,
-                                  "height": 42,
-                                  "cornerRadius": 21,
-                                  "fill": {
-                                    "type": "image",
-                                    "url": "assets/avatars/female2.png",
-                                    "mode": "cover"
-                                  }
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "mT1ul",
-                              "width": 56,
-                              "height": 56,
-                              "cornerRadius": 28,
-                              "stroke": {
-                                "fill": "$ui:brand.blue.primary",
-                                "thickness": 2,
-                                "align": "inside"
-                              },
-                              "justifyContent": "center",
-                              "alignItems": "center",
-                              "children": [
-                                {
-                                  "type": "frame",
-                                  "id": "zd0SR",
-                                  "width": 42,
-                                  "height": 42,
-                                  "cornerRadius": 21,
-                                  "fill": {
-                                    "type": "image",
-                                    "url": "assets/avatars/female1.png",
-                                    "mode": "cover"
-                                  }
+                                  "type": "icon",
+                                  "id": "T46xI",
+                                  "library": "lucide",
+                                  "icon": "loader-circle",
+                                  "width": 28,
+                                  "height": 28,
+                                  "fill": "$ui:brand.blue.primary"
                                 }
                               ]
                             },
                             {
                               "type": "text",
-                              "id": "pnfu4",
-                              "content": "…",
-                              "fill": "$ui:ds.muted",
+                              "id": "onVWc",
+                              "content": "Preparando foto...",
+                              "fill": "$ui:brand.ink",
                               "fontFamily": "$ui:font-family",
-                              "fontSize": 18,
-                              "fontWeight": "700"
+                              "fontSize": 14,
+                              "fontWeight": "600"
                             }
                           ]
+                        },
+                        {
+                          "type": "ref",
+                          "id": "5JBOe",
+                          "ref": "ui:CeOUI",
+                          "width": "fill_container",
+                          "opacity": 0.4,
+                          "descendants": {
+                            "ui:hLf7V": {
+                              "content": "Guardar cliente"
+                            }
+                          }
                         }
                       ]
                     }
@@ -30568,7 +30961,7 @@
                   "name": "05h Diálogos — Foto de perfil",
                   "clip": true,
                   "width": 390,
-                  "height": 980,
+                  "height": 844,
                   "fill": "#14254A99",
                   "layout": "vertical",
                   "gap": 22,
@@ -30718,7 +31111,7 @@
                   "name": "10b' Editar perfil — Tu foto",
                   "clip": true,
                   "width": 390,
-                  "height": 980,
+                  "height": 844,
                   "fill": "#F4F8FF",
                   "layout": "vertical",
                   "children": [
@@ -30824,316 +31217,39 @@
                                 },
                                 {
                                   "type": "frame",
-                                  "id": "2G1xE",
-                                  "width": "fill_container",
-                                  "layout": "vertical",
+                                  "id": "YBBFV",
+                                  "name": "btnEditar",
+                                  "fill": "$ui:brand.white",
+                                  "cornerRadius": 12,
+                                  "stroke": {
+                                    "fill": "$ui:brand.blue.primary",
+                                    "thickness": 1.5,
+                                    "align": "inside"
+                                  },
                                   "gap": 8,
+                                  "padding": [
+                                    10,
+                                    16
+                                  ],
+                                  "alignItems": "center",
                                   "children": [
                                     {
-                                      "type": "frame",
-                                      "id": "ArsWM",
-                                      "width": "fill_container",
-                                      "fill": "$ui:brand.white",
-                                      "cornerRadius": 12,
-                                      "stroke": {
-                                        "fill": "$ui:brand.blue.primary",
-                                        "thickness": 1.5,
-                                        "align": "inside"
-                                      },
-                                      "gap": 8,
-                                      "padding": [
-                                        11,
-                                        14
-                                      ],
-                                      "alignItems": "center",
-                                      "children": [
-                                        {
-                                          "type": "icon",
-                                          "id": "ZqYSS",
-                                          "library": "lucide",
-                                          "icon": "camera",
-                                          "width": 18,
-                                          "height": 18,
-                                          "fill": "$ui:brand.blue.primary"
-                                        },
-                                        {
-                                          "type": "text",
-                                          "id": "mUSl4",
-                                          "content": "Tomar foto",
-                                          "fill": "$ui:brand.blue.primary",
-                                          "fontFamily": "$ui:font-family",
-                                          "fontSize": 14,
-                                          "fontWeight": "700"
-                                        }
-                                      ]
+                                      "type": "icon",
+                                      "id": "PbNkl",
+                                      "library": "lucide",
+                                      "icon": "pencil",
+                                      "width": 16,
+                                      "height": 16,
+                                      "fill": "$ui:brand.blue.primary"
                                     },
                                     {
-                                      "type": "frame",
-                                      "id": "xV5ZO",
-                                      "width": "fill_container",
-                                      "fill": "$ui:brand.white",
-                                      "cornerRadius": 12,
-                                      "stroke": {
-                                        "fill": "$ui:brand.blue.primary",
-                                        "thickness": 1.5,
-                                        "align": "inside"
-                                      },
-                                      "gap": 8,
-                                      "padding": [
-                                        11,
-                                        14
-                                      ],
-                                      "alignItems": "center",
-                                      "children": [
-                                        {
-                                          "type": "icon",
-                                          "id": "9BVNO",
-                                          "library": "lucide",
-                                          "icon": "image",
-                                          "width": 18,
-                                          "height": 18,
-                                          "fill": "$ui:brand.blue.primary"
-                                        },
-                                        {
-                                          "type": "text",
-                                          "id": "a696l",
-                                          "content": "Elegir de la galería",
-                                          "fill": "$ui:brand.blue.primary",
-                                          "fontFamily": "$ui:font-family",
-                                          "fontSize": 14,
-                                          "fontWeight": "700"
-                                        }
-                                      ]
-                                    }
-                                  ]
-                                }
-                              ]
-                            },
-                            {
-                              "type": "text",
-                              "id": "6XSs3",
-                              "content": "O elige un avatar",
-                              "fill": "$ui:ds.muted",
-                              "fontFamily": "$ui:font-family",
-                              "fontSize": 12,
-                              "fontWeight": "600"
-                            },
-                            {
-                              "type": "frame",
-                              "id": "VA7j4",
-                              "width": "fill_container",
-                              "layout": "vertical",
-                              "gap": 6,
-                              "children": [
-                                {
-                                  "type": "frame",
-                                  "id": "5thN6",
-                                  "gap": 2,
-                                  "children": [
-                                    {
-                                      "type": "frame",
-                                      "id": "LaisT",
-                                      "width": 56,
-                                      "height": 56,
-                                      "justifyContent": "center",
-                                      "alignItems": "center",
-                                      "children": [
-                                        {
-                                          "type": "frame",
-                                          "id": "GhusU",
-                                          "width": 42,
-                                          "height": 42,
-                                          "cornerRadius": 21,
-                                          "fill": {
-                                            "type": "image",
-                                            "url": "assets/avatars/male1.png",
-                                            "mode": "cover"
-                                          }
-                                        }
-                                      ]
-                                    },
-                                    {
-                                      "type": "frame",
-                                      "id": "pNLJ0",
-                                      "width": 56,
-                                      "height": 56,
-                                      "justifyContent": "center",
-                                      "alignItems": "center",
-                                      "children": [
-                                        {
-                                          "type": "frame",
-                                          "id": "yJoNg",
-                                          "width": 42,
-                                          "height": 42,
-                                          "cornerRadius": 21,
-                                          "fill": {
-                                            "type": "image",
-                                            "url": "assets/avatars/female2.png",
-                                            "mode": "cover"
-                                          }
-                                        }
-                                      ]
-                                    },
-                                    {
-                                      "type": "frame",
-                                      "id": "IqOz2",
-                                      "width": 56,
-                                      "height": 56,
-                                      "justifyContent": "center",
-                                      "alignItems": "center",
-                                      "children": [
-                                        {
-                                          "type": "frame",
-                                          "id": "UB54j",
-                                          "width": 42,
-                                          "height": 42,
-                                          "cornerRadius": 21,
-                                          "fill": {
-                                            "type": "image",
-                                            "url": "assets/avatars/female1.png",
-                                            "mode": "cover"
-                                          }
-                                        }
-                                      ]
-                                    },
-                                    {
-                                      "type": "frame",
-                                      "id": "vo20B",
-                                      "width": 56,
-                                      "height": 56,
-                                      "justifyContent": "center",
-                                      "alignItems": "center",
-                                      "children": [
-                                        {
-                                          "type": "frame",
-                                          "id": "1h16J",
-                                          "width": 42,
-                                          "height": 42,
-                                          "cornerRadius": 21,
-                                          "fill": {
-                                            "type": "image",
-                                            "url": "assets/avatars/male2.png",
-                                            "mode": "cover"
-                                          }
-                                        }
-                                      ]
-                                    },
-                                    {
-                                      "type": "frame",
-                                      "id": "uRVgB",
-                                      "width": 56,
-                                      "height": 56,
-                                      "justifyContent": "center",
-                                      "alignItems": "center",
-                                      "children": [
-                                        {
-                                          "type": "frame",
-                                          "id": "WQVCh",
-                                          "width": 42,
-                                          "height": 42,
-                                          "cornerRadius": 21,
-                                          "fill": {
-                                            "type": "image",
-                                            "url": "assets/avatars/male3.png",
-                                            "mode": "cover"
-                                          }
-                                        }
-                                      ]
-                                    },
-                                    {
-                                      "type": "frame",
-                                      "id": "PnyNn",
-                                      "width": 56,
-                                      "height": 56,
-                                      "justifyContent": "center",
-                                      "alignItems": "center",
-                                      "children": [
-                                        {
-                                          "type": "frame",
-                                          "id": "LS9Ta",
-                                          "width": 42,
-                                          "height": 42,
-                                          "cornerRadius": 21,
-                                          "fill": {
-                                            "type": "image",
-                                            "url": "assets/avatars/male4.png",
-                                            "mode": "cover"
-                                          }
-                                        }
-                                      ]
-                                    }
-                                  ]
-                                },
-                                {
-                                  "type": "frame",
-                                  "id": "eCuXc",
-                                  "gap": 2,
-                                  "children": [
-                                    {
-                                      "type": "frame",
-                                      "id": "6tXyb",
-                                      "width": 56,
-                                      "height": 56,
-                                      "justifyContent": "center",
-                                      "alignItems": "center",
-                                      "children": [
-                                        {
-                                          "type": "frame",
-                                          "id": "QfYMC",
-                                          "width": 42,
-                                          "height": 42,
-                                          "cornerRadius": 21,
-                                          "fill": {
-                                            "type": "image",
-                                            "url": "assets/avatars/male5.png",
-                                            "mode": "cover"
-                                          }
-                                        }
-                                      ]
-                                    },
-                                    {
-                                      "type": "frame",
-                                      "id": "TusFY",
-                                      "width": 56,
-                                      "height": 56,
-                                      "justifyContent": "center",
-                                      "alignItems": "center",
-                                      "children": [
-                                        {
-                                          "type": "frame",
-                                          "id": "cpPe8",
-                                          "width": 42,
-                                          "height": 42,
-                                          "cornerRadius": 21,
-                                          "fill": {
-                                            "type": "image",
-                                            "url": "assets/avatars/male6.png",
-                                            "mode": "cover"
-                                          }
-                                        }
-                                      ]
-                                    },
-                                    {
-                                      "type": "frame",
-                                      "id": "5vaK1",
-                                      "width": 56,
-                                      "height": 56,
-                                      "justifyContent": "center",
-                                      "alignItems": "center",
-                                      "children": [
-                                        {
-                                          "type": "frame",
-                                          "id": "9z9OE",
-                                          "width": 42,
-                                          "height": 42,
-                                          "cornerRadius": 21,
-                                          "fill": {
-                                            "type": "image",
-                                            "url": "assets/avatars/male7.png",
-                                            "mode": "cover"
-                                          }
-                                        }
-                                      ]
+                                      "type": "text",
+                                      "id": "DkPLy",
+                                      "content": "Editar",
+                                      "fill": "$ui:brand.blue.primary",
+                                      "fontFamily": "$ui:font-family",
+                                      "fontSize": 14,
+                                      "fontWeight": "700"
                                     }
                                   ]
                                 }
