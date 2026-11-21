@@ -19,6 +19,7 @@ import {
   loanTermsFields,
   effectiveLoanType,
   ARCHIVED_LOAN_STATUS,
+  isArchivedLoan,
   type Loan,
   type LoanWithCustomer,
   type LoanDetail
@@ -41,7 +42,8 @@ import {
   loanEndDate,
   buildReceiptNumberIndex,
   canonicalReceiptNumbers,
-  cobroReceiptLines
+  cobroReceiptLines,
+  isLoanPaidOff
 } from "../../loans/loanViews";
 import {
   coverageByPaymentId,
@@ -243,12 +245,20 @@ export function createMockRepos(): Repos {
   const setMockLoanStatus = (id: string, from: "active" | "archived") => {
     const idx = findMockLoan(id);
     const current = loans[idx]!;
-    const isArchived = current.status === ARCHIVED_LOAN_STATUS;
+    const isArchived = isArchivedLoan(current);
     if (from === "active" && isArchived) throw new Error("Este préstamo ya está archivado.");
     if (from === "archived" && !isArchived) throw new Error("Este préstamo no está archivado.");
     const loan: Loan = {
       ...current,
-      status: from === "active" ? ARCHIVED_LOAN_STATUS : "active",
+      status:
+        from === "archived"
+          ? "active"
+          : isLoanPaidOff(
+                current,
+                payments.filter((p) => p.loanId === id)
+              )
+            ? "paid"
+            : ARCHIVED_LOAN_STATUS,
       updatedAt: new Date()
     };
     loans[idx] = loan;
@@ -408,7 +418,7 @@ export function createMockRepos(): Repos {
               : "al_dia",
           activeLoans,
           archivedLoans: customerLoans
-            .filter((l) => l.status === ARCHIVED_LOAN_STATUS)
+            .filter((l) => isArchivedLoan(l))
             .map((l) =>
               buildArchivedLoanSummary(
                 l,

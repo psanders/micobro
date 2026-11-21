@@ -47,6 +47,8 @@ export {
   loanIdSchema,
   loanTermsFields,
   ARCHIVED_LOAN_STATUS,
+  ARCHIVED_LOAN_STATUSES,
+  isArchivedLoan,
   loanFrequencies,
   loanStatuses,
   loanTypes,

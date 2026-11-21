@@ -46,7 +46,17 @@ Once at least one payment is recorded against a loan, its terms SHALL NOT be edi
 
 ### Requirement: Archive a loan
 
-Any loan that is not archived SHALL be archivable through "Archivar préstamo" after a confirmation. Archiving SHALL change the loan's status to archived without deleting it or any of its payments or visits. An archived loan SHALL NOT appear in Ruta, in Hoy's goal or upcoming visits, under "PRÉSTAMOS ACTIVOS", or in a customer's active-loan count.
+Any loan that is not archived SHALL be archivable through "Archivar préstamo" after a confirmation. Archiving SHALL change the loan's status to archived without deleting it or any of its payments or visits: to `paid` when its payments cover it (a closed crédito abierto, or a term loan with no balance left; mora and penalties don't count), otherwise to `cancelled`. Both read "Archivado" in the app, and restoring either returns the loan to active. An archived loan SHALL NOT appear in Ruta, in Hoy's goal or upcoming visits, under "PRÉSTAMOS ACTIVOS", or in a customer's active-loan count.
+
+#### Scenario: Archiving a paid-off loan records it as paid
+
+- **WHEN** a lender archives a loan whose payments cover its full balance
+- **THEN** its status becomes paid (not cancelled), it appears under the customer's Archivados, and the Sheet's Estado shows the paid status
+
+#### Scenario: Archiving a loan with a balance records it as cancelled
+
+- **WHEN** a lender archives a loan that still has a balance
+- **THEN** its status becomes cancelled
 
 #### Scenario: Archiving a mistaken loan
 

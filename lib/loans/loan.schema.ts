@@ -129,11 +129,20 @@ export const loanIdSchema = z.object({
 export type LoanIdInput = z.infer<typeof loanIdSchema>;
 
 /**
- * "Archivado" in the UI. Reuses the existing `cancelled` status rather than
- * a new one: every active-loan surface already filters on `active`, and the
- * Sheet's status column already accepts it.
+ * "Archivado" in the UI is either of two existing statuses, decided when the
+ * loan is archived (see archiveLoan.ts): `paid` when its payments cover it,
+ * `cancelled` otherwise. Every active-loan surface already filters on
+ * `active`, and the Sheet's status column already accepts both.
  */
+export const ARCHIVED_LOAN_STATUSES: readonly LoanStatus[] = ["paid", "cancelled"];
+
+/** The status of a loan archived before it was paid off. */
 export const ARCHIVED_LOAN_STATUS: LoanStatus = "cancelled";
+
+/** Whether the loan is archived ("Archivado"), paid off or not. */
+export function isArchivedLoan(loan: Pick<Loan, "status">): boolean {
+  return ARCHIVED_LOAN_STATUSES.includes(loan.status);
+}
 
 /**
  * The stored loan fields derived from validated terms — shared by

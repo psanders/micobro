@@ -47,6 +47,15 @@ function makeDbStub(...reads: unknown[][]) {
 }
 
 describe("createRestoreLoan", () => {
+  it("restores a loan archived as paid back to active", async () => {
+    const db = makeDbStub([{ ...existingLoan, status: "paid" }]);
+
+    const result = await createRestoreLoan({ db })({ id: "loan-1" });
+
+    expect(result.status).toBe("active");
+    expect(db.set).toHaveBeenCalledWith(expect.objectContaining({ status: "active" }));
+  });
+
   it("moves the loan from cancelled to active and enqueues a full-row update mutation", async () => {
     // Arrange
     const db = makeDbStub([{ ...existingLoan, status: "cancelled" }]);

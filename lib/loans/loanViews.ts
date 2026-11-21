@@ -21,11 +21,11 @@ import {
 } from "./cuotaCoverage";
 import type { CuotaCoverage } from "./cuotaCoverage";
 import { cuotaCents, lastCuotaCents, totalInterestCents, totalRepayCents } from "./loanMath";
-import { effectiveLoanType, ARCHIVED_LOAN_STATUS } from "./loan.schema";
+import { effectiveLoanType, isArchivedLoan } from "./loan.schema";
 import type { Loan, LoanFrequency } from "./loan.schema";
 import type { Customer } from "../customers/customer.schema";
 import type { Payment } from "../payments/payment.schema";
-import { openCreditReceiptBreakdown } from "./openCredit";
+import { openCreditReceiptBreakdown, openCreditState } from "./openCredit";
 import { addFrequencyInterval } from "./frequency";
 import { isMoraPayment, isPenaltyPayment, isPrincipalPayment } from "../payments/paymentNotes";
 import {
@@ -122,6 +122,29 @@ export function installmentDueDate(loan: Loan, number: number): Date {
  * without building the whole schedule. A Tradicional Plus loan's end date
  * moves with every penalty, so it needs the loan's `payments`.
  */
+/**
+ * Whether the loan's payments cover it: a closed crédito abierto, or a term
+ * loan (Tradicional or Plus) with no balance left. Mora and penalties don't
+ * pay the balance, so they never count. The same rule Préstamo Detalle uses
+ * to offer archiving without "Crear préstamo corregido"; decides `paid` vs
+ * `cancelled` when a loan is archived.
+ */
+export function isLoanPaidOff(loan: Loan, payments: Payment[], today = new Date()): boolean {
+  if (effectiveLoanType(loan) === "open_credit") {
+    return openCreditState(loan, payments, today).isClosed;
+  }
+  const view = buildLoanDetailView({
+    loan,
+    customerName: "",
+    business: null,
+    payments,
+    moraCents: 0,
+    moraDays: 0,
+    today
+  });
+  return view.balanceCents === 0;
+}
+
 export function loanEndDate(loan: Loan, payments: Payment[] = []): Date | null {
   const type = effectiveLoanType(loan);
   if (type === "open_credit" || loan.termCount <= 0) return null;
@@ -281,7 +304,7 @@ export function buildLoanDetailView({
     status: loan.status,
     paymentCount: payments.length,
     collectedCents: payments.reduce((sum, payment) => sum + payment.amountCents, 0),
-    archivedAt: loan.status === ARCHIVED_LOAN_STATUS ? loan.updatedAt : null,
+    archivedAt: isArchivedLoan(loan) ? loan.updatedAt : null,
     // Callers building an open-credit view override this after the fact
     // (buildLoanDetailView's cuota/schedule math is term-only) — see
     // getLoanDetailView.ts / repo/mock/index.ts's viewOf.

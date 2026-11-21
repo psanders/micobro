@@ -13,7 +13,7 @@ import {
 } from "../loans/loanViews";
 import { isMoraPayment, isPenaltyPayment } from "../payments/paymentNotes";
 import { computeLoanMora, loanMoraPolicy } from "../loans/mora";
-import { effectiveLoanType, ARCHIVED_LOAN_STATUS } from "../loans/loan.schema";
+import { effectiveLoanType, isArchivedLoan } from "../loans/loan.schema";
 import { openCreditState } from "../loans/openCredit";
 import { formatCurrency } from "../utils/money";
 import { visitDescription } from "../visits/visitDescription";
@@ -67,7 +67,7 @@ export function createGetCustomerDetail({ db }: GetCustomerDetailDeps) {
       // mora entirely for this loan type — see change 55).
       const ocState = isOpenCredit ? openCreditState(loan, loanPayments, new Date()) : null;
 
-      if (loan.status === ARCHIVED_LOAN_STATUS) {
+      if (isArchivedLoan(loan)) {
         archivedLoans.push(buildArchivedLoanSummary(loan, loanPayments));
       }
 
