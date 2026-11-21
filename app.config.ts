@@ -110,7 +110,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       "android.permission.POST_NOTIFICATIONS",
       "android.permission.BLUETOOTH_CONNECT",
       "android.permission.BLUETOOTH_SCAN"
-    ]
+    ],
+    // Expo's prebuild template adds the "draw over other apps" permission for
+    // the dev menu overlay. The shipped app never draws overlays and Play
+    // reviews it as a sensitive permission, so keep it out of the manifest.
+    blockedPermissions: ["android.permission.SYSTEM_ALERT_WINDOW"]
   },
   plugins: [
     "expo-router",
