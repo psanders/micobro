@@ -98,13 +98,23 @@ Data is **not processed ephemerally** (it persists in the user's Drive) and is
 
 ## Permissions
 
-| Permission                                                  | Why (paste where asked)                                                                                                                                                                       |
-| ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `BLUETOOTH_SCAN`, `BLUETOOTH_CONNECT`                       | Print payment receipts on a 58 mm Bluetooth thermal printer. Declared `neverForLocation`; never used to infer location.                                                                       |
-| `RECORD_AUDIO`                                              | Only for the optional in-app "Enviar feedback" recorder, which records the screen with narration after the user explicitly consents on a dedicated screen.                                    |
-| `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_MEDIA_PROJECTION` | Same feedback recorder: Android requires a media-projection foreground service while the user's own screen recording is in progress. Starts only from the user's tap, stops when they finish. |
-| `POST_NOTIFICATIONS`                                        | The ongoing notification Android requires while that recording runs.                                                                                                                          |
-| `INTERNET`                                                  | Optional backup to the user's own Google Sheet.                                                                                                                                               |
+| Permission                                                                               | Why (paste where asked)                                                                                                                                                                       |
+| ---------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `BLUETOOTH_SCAN`, `BLUETOOTH_CONNECT`                                                    | Print payment receipts on a 58 mm Bluetooth thermal printer. Declared `neverForLocation`; never used to infer location.                                                                       |
+| `RECORD_AUDIO`                                                                           | Only for the optional in-app "Enviar feedback" recorder, which records the screen with narration after the user explicitly consents on a dedicated screen.                                    |
+| `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_MEDIA_PROJECTION`                              | Same feedback recorder: Android requires a media-projection foreground service while the user's own screen recording is in progress. Starts only from the user's tap, stops when they finish. |
+| `POST_NOTIFICATIONS`                                                                     | The ongoing notification Android requires while that recording runs.                                                                                                                          |
+| `INTERNET`                                                                               | Optional backup to the user's own Google Sheet.                                                                                                                                               |
+| `CAMERA`                                                                                 | Only when the lender taps to take a profile photo of a customer or of themselves. Choosing from the gallery uses the system photo picker, so the app holds no photo/media read permission.    |
+| `ACCESS_FINE_LOCATION`, `ACCESS_COARSE_LOCATION` (Android ≤ 11 only, `maxSdkVersion` 30) | Android 11 and older require location permission to scan for Bluetooth devices; requested only when looking for the receipt printer. The app never reads the device's location.               |
+
+Checked against the merged manifest of the v0.23.0 AAB (2026-11-21). Library-added
+entries that need no declaration: `ACCESS_NETWORK_STATE`, `ACCESS_WIFI_STATE`,
+`VIBRATE`, `USE_BIOMETRIC`/`USE_FINGERPRINT` (secure storage of the PIN),
+`READ_/WRITE_EXTERNAL_STORAGE` (capped at old Android versions), and
+`DUMP` (AndroidX profile installer). `SYSTEM_ALERT_WINDOW` is blocked in
+`app.config.ts`. None of these is a "sensitive permission" with its own Play
+declaration form; the only one is the media-projection foreground service below.
 
 **Foreground service declaration (media projection)** — Play asks for a
 description and a **short video** of the feature in use:
@@ -142,5 +152,7 @@ Play asks for a link: upload it unlisted to YouTube (or share it from Drive) and
 - First AAB: upload by hand to **Internal testing** (Play requires the first one manually).
 - Every upload after that: **Actions → Submit to stores** (`.github/workflows/submit.yml`),
   platform `android`, once the `GOOGLE_SERVICE_ACCOUNT_KEY` repo secret is set.
-- New personal accounts: **Closed testing with ≥ 12–20 testers for 14 days**
-  before production access can be requested.
+- New personal accounts: **Closed testing with ≥ 12 testers opted in for 14
+  continuous days** before production access can be requested. Recruit ~15 so
+  drop-outs don't reset the clock; each needs a Google account added to the
+  closed-test list, and must install from the opt-in link.
