@@ -19,6 +19,18 @@ import { getSheetId } from "./config";
 import { ensureClientesLayout } from "./clientesLayout";
 import { ensurePenaltyHeader } from "./prestamosLayout";
 import { ensurePagosLayout } from "./pagosLayout";
+import { ensureSheetSpanishValues } from "./sheetValuesLayout";
+import {
+  FREQUENCY_CODES,
+  LOAN_STATUS_CODES,
+  LOAN_TYPE_CODES,
+  PAYMENT_METHOD_CODES,
+  VISIT_OUTCOME_CODES,
+  toSheetCode
+} from "./sheetValues";
+import type { LoanFrequency, LoanStatus, LoanType } from "../loans/loan.schema";
+import type { PaymentMethod } from "../payments/payment.schema";
+import type { VisitOutcome } from "../visits/visit.schema";
 import { isPaymentKind, legacyPaymentKind } from "../payments/paymentNotes";
 import { CUSTOMER_PHOTO_ENTITY } from "../customers/customerPhotoWrites";
 import { createQueueCedulaResend } from "./queueCedulaResend";
@@ -77,15 +89,15 @@ function loanRowValues(payload: Record<string, unknown>): (string | number | nul
     payload.principalCents as number,
     payload.interestRateBps as number,
     payload.termCount as number,
-    payload.frequency as string,
+    toSheetCode(FREQUENCY_CODES, payload.frequency as LoanFrequency),
     payload.startDate as string,
-    payload.status as string,
+    toSheetCode(LOAN_STATUS_CODES, payload.status as LoanStatus),
     (payload.notes as string) ?? "",
     (payload.graceDays as number | null) ?? "",
     payload.moraEnabled == null ? "" : payload.moraEnabled ? "TRUE" : "FALSE",
     (payload.moraRateBps as number | null) ?? "",
     payload.skipSundays == null ? "" : payload.skipSundays ? "TRUE" : "FALSE",
-    (payload.loanType as string | null) ?? "",
+    toSheetCode(LOAN_TYPE_CODES, payload.loanType as LoanType | null) ?? "",
     payload.createdAt as string,
     payload.updatedAt as string,
     // Appended after Actualizado (not next to Tipo) so Sheets made before
@@ -106,7 +118,7 @@ function paymentRowValues(payload: Record<string, unknown>): (string | number | 
     payload.loanId as string,
     payload.amountCents as number,
     payload.paidAt as string,
-    (payload.method as string) ?? "",
+    toSheetCode(PAYMENT_METHOD_CODES, payload.method as PaymentMethod | null) ?? "",
     legacy ? "" : (notes ?? ""),
     payload.createdAt as string,
     tipo
@@ -119,7 +131,7 @@ function visitRowValues(payload: Record<string, unknown>): (string | number | nu
     payload.id as string,
     payload.customerId as string,
     (payload.loanId as string) ?? "",
-    payload.outcome as string,
+    toSheetCode(VISIT_OUTCOME_CODES, payload.outcome as VisitOutcome),
     (payload.promiseDate as string) ?? "",
     (payload.promiseAmountCents as number) ?? "",
     (payload.note as string) ?? "",
@@ -266,6 +278,8 @@ export async function pushPendingMutations(
   const paymentsReady = await ensurePagosLayout(db, sheetId);
   // Labels the appended Penalidad column on older Sheets; rows don't wait on it.
   await ensurePenaltyHeader(db, sheetId);
+  // Moves existing rows' English enum cells to Spanish codes, once; rows don't wait on it.
+  await ensureSheetSpanishValues(db, sheetId);
 
   // "failed" rows below the retry cap must stay eligible, or a single
   // transient failure (e.g. a push attempted while offline) makes that

@@ -29,6 +29,10 @@ jest.mock("../lib/sync/prestamosLayout", () => ({
   ensurePenaltyHeader: jest.fn().mockResolvedValue(undefined)
 }));
 
+jest.mock("../lib/sync/sheetValuesLayout", () => ({
+  ensureSheetSpanishValues: jest.fn().mockResolvedValue(undefined)
+}));
+
 const mockQueueCedulaResend = jest.fn().mockResolvedValue(0);
 jest.mock("../lib/sync/queueCedulaResend", () => ({
   createQueueCedulaResend: () => mockQueueCedulaResend
@@ -36,6 +40,7 @@ jest.mock("../lib/sync/queueCedulaResend", () => ({
 
 import { pushPendingMutations } from "../lib/sync/push";
 import { ensureClientesLayout } from "../lib/sync/clientesLayout";
+import { ensureSheetSpanishValues } from "../lib/sync/sheetValuesLayout";
 import { appendRow, updateRow, readRange, deleteRows } from "../lib/sync/sheetsClient";
 import { customers, cashCloses, pendingMutations } from "../lib/db/schema";
 import type { Database } from "../lib/db/client";
@@ -129,6 +134,14 @@ describe("pushPendingMutations", () => {
     readRangeMock.mockReset().mockResolvedValue([]);
     ensureClientesLayoutMock.mockReset().mockResolvedValue(true);
     mockQueueCedulaResend.mockClear();
+  });
+
+  it("moves the Sheet's existing values to Spanish before pushing", async () => {
+    const db = makeDbStub([]);
+
+    await pushPendingMutations(db);
+
+    expect(ensureSheetSpanishValues).toHaveBeenCalledWith(db, "sheet-1");
   });
 
   it("writes the customer's cédula formatted, right after the name", async () => {
@@ -351,9 +364,9 @@ describe("pushPendingMutations", () => {
       500000,
       1000,
       12,
-      "weekly",
+      "semanal",
       "2026-01-01T00:00:00.000Z",
-      "active",
+      "activo",
       "",
       "",
       "",
@@ -552,7 +565,7 @@ describe("pushPendingMutations", () => {
     expect(appendRowMock).toHaveBeenCalledWith(
       "sheet-1",
       "Préstamos!A:Q",
-      expect.arrayContaining(["open_credit"])
+      expect.arrayContaining(["credito_abierto"])
     );
   });
 
@@ -603,7 +616,7 @@ describe("pushPendingMutations", () => {
 
     // Assert — penalty is appended after Actualizado
     const values = appendRowMock.mock.calls[0][2] as unknown[];
-    expect(values[values.length - 4]).toBe("term_plus");
+    expect(values[values.length - 4]).toBe("tradicional_plus");
     expect(values[values.length - 1]).toBe(30000);
   });
 
@@ -686,7 +699,7 @@ describe("pushPendingMutations", () => {
       "visit-1",
       "customer-1",
       "loan-1",
-      "promise",
+      "promesa",
       "",
       "",
       "",

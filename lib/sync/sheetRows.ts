@@ -13,11 +13,16 @@
  * for that sync.
  */
 import { normalizeCedula } from "../utils/cedula";
-import { loanFrequencies, loanStatuses, loanTypes } from "../loans/loan.schema";
-import { paymentMethods } from "../payments/payment.schema";
+import {
+  FREQUENCY_CODES,
+  LOAN_STATUS_CODES,
+  LOAN_TYPE_CODES,
+  PAYMENT_METHOD_CODES,
+  VISIT_OUTCOME_CODES,
+  fromSheetCode
+} from "./sheetValues";
 import { isPaymentKind } from "../payments/paymentNotes";
 import type { PaymentKind } from "../payments/payment.schema";
-import { visitOutcomes } from "../visits/visit.schema";
 import type { customers, loans, payments, visits } from "../db/schema";
 import type { PulledEntity } from "./syncedTables";
 
@@ -100,11 +105,13 @@ function bool(value: string, label: string): boolean | null {
   throw new RowError(`${label} debe ser TRUE o FALSE`);
 }
 
-function oneOf<T extends string>(value: string, allowed: readonly T[], label: string): T {
-  if (!(allowed as readonly string[]).includes(value)) {
+// An enum cell: its Spanish code or the English value (see sheetValues.ts).
+function oneOf<T extends string>(value: string, codes: Record<T, string>, label: string): T {
+  const internal = fromSheetCode(codes, value);
+  if (internal === null) {
     throw new RowError(`"${value}" no es un valor válido para ${label}`);
   }
-  return value as T;
+  return internal;
 }
 
 function optional(value: string): string | null {
@@ -133,15 +140,15 @@ function loanFromRow(row: string[]): SheetLoan {
     principalCents: requiredInteger(cell(row, 2), "el capital"),
     interestRateBps: requiredInteger(cell(row, 3), "el interés"),
     termCount: requiredInteger(cell(row, 4), "las cuotas"),
-    frequency: oneOf(required(cell(row, 5), "la frecuencia"), loanFrequencies, "la frecuencia"),
+    frequency: oneOf(required(cell(row, 5), "la frecuencia"), FREQUENCY_CODES, "la frecuencia"),
     startDate: requiredDate(cell(row, 6), "el inicio"),
-    status: oneOf(cell(row, 7) || "active", loanStatuses, "el estado"),
+    status: oneOf(cell(row, 7) || "active", LOAN_STATUS_CODES, "el estado"),
     notes: optional(cell(row, 8)),
     graceDays: integer(cell(row, 9), "El período de gracia"),
     moraEnabled: bool(cell(row, 10), "Mora activa"),
     moraRateBps: integer(cell(row, 11), "La mora"),
     skipSundays: bool(cell(row, 12), "Salta domingos"),
-    loanType: loanType ? oneOf(loanType, loanTypes, "el tipo") : null,
+    loanType: loanType ? oneOf(loanType, LOAN_TYPE_CODES, "el tipo") : null,
     createdAt: date(cell(row, 14), "Creado"),
     updatedAt: date(cell(row, 15), "Actualizado"),
     penaltyCents: integer(cell(row, 16), "La penalidad")
@@ -160,7 +167,7 @@ function paymentFromRow(row: string[]): SheetPayment {
     loanId: required(cell(row, 1), "el préstamo"),
     amountCents: requiredInteger(cell(row, 2), "el monto"),
     paidAt: requiredDate(cell(row, 3), "la fecha de pago"),
-    method: method ? oneOf(method, paymentMethods, "el método") : null,
+    method: method ? oneOf(method, PAYMENT_METHOD_CODES, "el método") : null,
     notes: optional(cell(row, 5)),
     createdAt: date(cell(row, 6), "Creado"),
     tipo: tipo ? (tipo as PaymentKind) : null
@@ -173,7 +180,7 @@ function visitFromRow(row: string[]): SheetVisit {
     id: cell(row, 0),
     customerId: required(cell(row, 1), "el cliente"),
     loanId: optional(cell(row, 2)),
-    outcome: oneOf(required(cell(row, 3), "el resultado"), visitOutcomes, "el resultado"),
+    outcome: oneOf(required(cell(row, 3), "el resultado"), VISIT_OUTCOME_CODES, "el resultado"),
     promiseDate: date(cell(row, 4), "La fecha promesa"),
     promiseAmountCents: integer(cell(row, 5), "El monto promesa"),
     note: optional(cell(row, 6)),

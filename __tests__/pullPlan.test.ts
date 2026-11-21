@@ -190,6 +190,67 @@ describe("buildPullPlan — edits", () => {
     ]);
   });
 
+  // Rows written before the Spanish codes (or by an older app) still hold
+  // English enum values until sheetValuesLayout.ts rewrites them, so a Sheet
+  // can mix both. Neither form may read as an edit.
+  it("sees no edits in a Sheet that mixes English and Spanish enum values", () => {
+    // Arrange
+    const world = {
+      customers: [customer("c1")],
+      loans: [
+        loan("l1", "c1"),
+        loan("l2", "c1", { frequency: "biweekly", loanType: "term_plus", penaltyCents: 30000 }),
+        loan("l3", "c1", { loanType: "open_credit", status: "cancelled" })
+      ],
+      payments: [payment("p1", "l1"), payment("p2", "l2", { method: "transfer" })],
+      visits: [visit("v1", "c1", "l1"), visit("v2", "c1", null, { outcome: "refused" })]
+    };
+    const english = (rows: string[][], swaps: Record<number, Record<string, string>>) =>
+      rows.map((row, r) => (r === 0 ? row : row.map((cell, c) => swaps[c]?.[cell] ?? cell)));
+    const sheet = input(world).tabs;
+    // Row 2 of each tab back to English; the rest stay as push writes them.
+    const firstOnly = (rows: string[][], swaps: Record<number, Record<string, string>>) => [
+      ...english(rows.slice(0, 2), swaps),
+      ...rows.slice(2)
+    ];
+
+    // Act
+    const plan = buildPullPlan(
+      input(world, {
+        sheet: {
+          loan: firstOnly(sheet.loan!, {
+            5: { semanal: "weekly" },
+            7: { activo: "active" }
+          }),
+          payment: firstOnly(sheet.payment!, { 4: { efectivo: "cash" } }),
+          visit: firstOnly(sheet.visit!, { 3: { sin_contacto: "no_contact" } })
+        }
+      })
+    );
+
+    // Assert
+    expect(sheet.loan![1]![5]).toBe("semanal"); // push really writes Spanish
+    expect(plan.problems).toEqual([]);
+    expect(plan.updates).toEqual([]);
+    expect(plan.inserts).toEqual([]);
+    expect(plan.deletions).toEqual([]);
+  });
+
+  it("applies an enum the lender changed in the Sheet using the Spanish code", () => {
+    // Arrange
+    const local = loan("l1", "c1");
+    const edited = tab("loan", [local]);
+    edited[1]![5] = "mensual";
+
+    // Act
+    const plan = buildPullPlan(
+      input({ customers: [customer("c1")], loans: [local] }, { sheet: { loan: edited } })
+    );
+
+    // Assert
+    expect(plan.updates).toEqual([{ entity: "loan", id: "l1", changes: { frequency: "monthly" } }]);
+  });
+
   it("applies a payment amount corrected in the Sheet", () => {
     // Arrange
     const world = {

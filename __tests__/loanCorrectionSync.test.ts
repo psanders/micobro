@@ -143,6 +143,6 @@ describe("loan corrections sync to the Sheet", () => {
     expect(id).toBe("loan-1");
     expect(principal).toBe("800000");
     expect(termCount).toBe("8");
-    expect(status).toBe("cancelled");
+    expect(status).toBe("cancelado");
   });
 });
