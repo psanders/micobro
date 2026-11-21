@@ -158,7 +158,7 @@ export function RouteScreen() {
             : "Ninguna visita coincide con este filtro."}
         </Text>
       ) : (
-        <ScrollView contentContainerStyle={styles.list}>
+        <ScrollView style={styles.listScroll} contentContainerStyle={styles.list}>
           {filtered.map((visit) => {
             const p = visitPresentation(visit);
             return (
@@ -190,9 +190,12 @@ const styles = StyleSheet.create({
   header: { paddingHorizontal: 20, paddingVertical: 14 },
   title: { fontSize: 20, fontFamily: fonts.bold, color: colors.brandDeep },
   subtitle: { fontSize: 12, fontFamily: fonts.medium, color: colors.slate, marginTop: 2 },
-  chipsScroll: { flexGrow: 0 },
+  // The list asks for its full content height; without flexShrink: 0 the
+  // layout squeezes this row too and clips the chips on long routes.
+  chipsScroll: { flexGrow: 0, flexShrink: 0 },
   chips: { gap: 8, paddingHorizontal: 20, paddingVertical: 6 },
   loader: { marginTop: 40 },
+  listScroll: { flex: 1 },
   list: { gap: 10, paddingHorizontal: 20, paddingTop: 12, paddingBottom: 24 },
   empty: {
     fontSize: 13,
