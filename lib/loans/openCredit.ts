@@ -155,6 +155,13 @@ export interface OpenCreditState {
    * closed; equals `interestDueCents` when nothing was ever added.
    */
   catchUpCents: number;
+  /**
+   * The due date of the oldest missed cycle whose interest is still in the
+   * balance as intereses sumados, or null when nothing added is unpaid.
+   * When the client pays some of it off, this stays at the first missed
+   * cycle until all of it is cleared.
+   */
+  behindSinceDate: Date | null;
   /** True once a payment has brought the balance to zero (or below). */
   isClosed: boolean;
   /**
@@ -182,6 +189,7 @@ export function openCreditState(
   const todayDay = startOfDay(today).getTime();
   let balance = loan.principalCents;
   let capitalized = 0;
+  let behindSinceDate: Date | null = null;
   const cycles: OpenCreditCycle[] = [];
 
   for (let index = 1; ; index++) {
@@ -252,6 +260,11 @@ export function openCreditState(
     // balance closes the loan on this cycle.
     if (balance <= 0) status = "paid";
 
+    // Track when the intereses sumados started: the first cycle that added
+    // interest while none was outstanding, reset once they're all paid off.
+    if (capitalized <= 0) behindSinceDate = null;
+    else if (capitalizedThisCycle > 0 && behindSinceDate === null) behindSinceDate = end;
+
     cycles.push({
       index,
       start,
@@ -312,6 +325,7 @@ export function openCreditState(
     balanceCents: balance,
     nextGraceEndDate: addDays(startOfDay(nextDueDate), graceDays),
     catchUpCents: isClosed ? 0 : capitalized + currentCycleOutstanding,
+    behindSinceDate: isClosed || capitalized <= 0 ? null : behindSinceDate,
     principalBalanceCents: balance - capitalized,
     capitalizedInterestCents: capitalized,
     interestDueCents,

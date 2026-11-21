@@ -112,8 +112,13 @@ export function composeRouteDay({
       const state = openCreditState(loan, paymentsBeforeToday, today);
       if (state.isClosed) continue; // capital paid off as of before today
 
-      dueDate = startOfDay(state.nextDueDate);
-      amountCents = state.interestDueCents;
+      // Interest a missed cycle added to the balance is still owed: the loan
+      // stays overdue from that cycle's due date until it's paid off, even
+      // though the engine has moved on to a cycle that falls due later.
+      dueDate = startOfDay(state.behindSinceDate ?? state.nextDueDate);
+      // Overdue asks for what it takes to be current ("Para ponerse al
+      // día"); on time, just the cycle's interest.
+      amountCents = dueDate < startOfToday ? state.catchUpCents : state.interestDueCents;
       installmentLabel = "Interés del ciclo";
     } else {
       const mora = computeLoanMora(loan, paymentsBeforeToday, today, loanMoraPolicy(loan));

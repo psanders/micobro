@@ -49,7 +49,12 @@ export interface OpenCreditPayOptionsView {
   defaultOption: OpenCreditPayOption | null;
 }
 
-export function resolveOpenCreditPayOptions(state: OpenCreditState): OpenCreditPayOptionsView {
+export function resolveOpenCreditPayOptions(
+  state: Pick<
+    OpenCreditState,
+    "cycles" | "isClosed" | "interestDueCents" | "capitalizedInterestCents" | "catchUpCents"
+  >
+): OpenCreditPayOptionsView {
   const currentCycle = state.cycles.length > 0 ? state.cycles[state.cycles.length - 1]! : null;
 
   // A closed loan owes nothing: every option is off and there is nothing to

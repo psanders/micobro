@@ -54,6 +54,21 @@ installments rather than always returning an empty day:
 - **Status**: a visit is `done` when any payment has been recorded against
   its loan today (its detail line shows the latest such payment's time);
   otherwise it is `overdue` (past due date) or `pending` (due today).
+- **Crédito abierto behind on interest**: a crédito abierto loan with
+  intereses sumados (a missed cycle's interest added to the balance) is
+  overdue from the oldest missed cycle's due date until they are paid off,
+  so it is visited every day in between, not only when its next cycle
+  falls due. Its amount is "Para ponerse al día" (the current cycle's
+  unpaid interest plus the intereses sumados). It is never past its end
+  date (Vencidos), since crédito abierto has none.
+
+#### Scenario: Crédito abierto behind on interest
+
+- **WHEN** a crédito abierto loan's cycle interest of RD$500 went unpaid
+  past its due date 3 days ago and was added to the balance, and the next
+  cycle's RD$525 falls due in 4 days
+- **THEN** Ruta lists the customer under Atrasadas, 3 days late, with
+  RD$1,025, and the loan is not under "Próximas visitas"
 
 #### Scenario: Done visit treatment
 

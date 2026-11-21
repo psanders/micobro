@@ -397,3 +397,39 @@ describe("openCreditState — month-end monthly loan cycles (issue #110)", () =>
     }
   });
 });
+
+describe("openCreditState — behindSinceDate", () => {
+  const daysAgo = (n: number) => new Date(TODAY.getTime() - n * DAY_MS);
+
+  it("is null while every closed cycle's interest was paid", () => {
+    const state = openCreditState(baseLoan({ startDate: startedCyclesAgo(0) }), [], TODAY);
+    expect(state.behindSinceDate).toBeNull();
+  });
+
+  it("is the oldest missed cycle's due date while its interest is still added", () => {
+    // Cycles 1 and 2 both closed unpaid: they fell due 8 days and 1 day ago.
+    const state = openCreditState(baseLoan({ startDate: startedCyclesAgo(2) }), [], TODAY);
+    expect(state.capitalizedInterestCents).toBeGreaterThan(0);
+    expect(state.behindSinceDate!.toDateString()).toBe(daysAgo(8).toDateString());
+  });
+
+  it("clears once the intereses sumados are paid off, and restarts on the next miss", () => {
+    // Cycle 1 (due 15 days ago) missed: RD$500 added. Cycle 2 paid its RD$525
+    // interest plus the RD$500, then cycle 3 (due yesterday) was missed.
+    const catchUp = payment(102500, daysAgo(10));
+
+    const caughtUp = openCreditState(
+      baseLoan({ startDate: startedCyclesAgo(3) }),
+      [catchUp],
+      daysAgo(5)
+    );
+    expect(caughtUp.behindSinceDate).toBeNull();
+
+    const missedAgain = openCreditState(
+      baseLoan({ startDate: startedCyclesAgo(3) }),
+      [catchUp],
+      TODAY
+    );
+    expect(missedAgain.behindSinceDate!.toDateString()).toBe(daysAgo(1).toDateString());
+  });
+});
