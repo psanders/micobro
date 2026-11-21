@@ -1,7 +1,7 @@
 {
   "configVersion": 0,
   "apple": {
-    "version": "0.21.1",
+    "version": "0.24.0",
     "copyright": "2026 Mikro, S.R.L.",
     "release": {
       "automaticRelease": true
@@ -26,7 +26,7 @@
           "credito",
           "deudas"
         ],
-        "releaseNotes": "Nuevo: Tradicional Plus, el préstamo quincenal con penalidad fija. Si el cliente no puede pagar la cuota, paga la penalidad y la cuota se corre una quincena.\n\nAdemás: los cambios que hagas en tu hoja de Google (incluso borrar filas) ahora regresan a la app, la cédula del cliente se guarda en la hoja, y las cifras de Mi cartera ahora cuadran.",
+        "releaseNotes": "Nuevo: ponle foto de perfil a tus clientes y a ti; la foto se guarda también en tu hoja de Google. En Mi cartera y en los reportes, lo cobrado ahora se divide en capital, interés y mora.\n\nAdemás: en los préstamos Tradicional cada pago muestra qué cuotas cubre; la ruta pone cada préstamo en el grupo correcto (Atrasadas, Vencidos y Hechas) y los filtros ya no se cortan; y un préstamo saldado se archiva como pagado, no como cancelado.",
         "promoText": "Lleva tus préstamos al día, aunque no haya señal. Nuevo: Tradicional Plus, el préstamo quincenal con penalidad fija cuando el cliente no puede pagar la cuota.",
         "marketingUrl": "https://micobro.app",
         "supportUrl": "https://docs.micobro.app",
@@ -51,7 +51,7 @@
           "credito",
           "deudas"
         ],
-        "releaseNotes": "Nuevo: Tradicional Plus, el préstamo quincenal con penalidad fija. Si el cliente no puede pagar la cuota, paga la penalidad y la cuota se corre una quincena.\n\nAdemás: los cambios que hagas en tu hoja de Google (incluso borrar filas) ahora regresan a la app, la cédula del cliente se guarda en la hoja, y las cifras de Mi cartera ahora cuadran.",
+        "releaseNotes": "Nuevo: ponle foto de perfil a tus clientes y a ti; la foto se guarda también en tu hoja de Google. En Mi cartera y en los reportes, lo cobrado ahora se divide en capital, interés y mora.\n\nAdemás: en los préstamos Tradicional cada pago muestra qué cuotas cubre; la ruta pone cada préstamo en el grupo correcto (Atrasadas, Vencidos y Hechas) y los filtros ya no se cortan; y un préstamo saldado se archiva como pagado, no como cancelado.",
         "promoText": "Lleva tus préstamos al día, aunque no haya señal. Nuevo: Tradicional Plus, el préstamo quincenal con penalidad fija cuando el cliente no puede pagar la cuota.",
         "marketingUrl": "https://micobro.app",
         "supportUrl": "https://docs.micobro.app",
