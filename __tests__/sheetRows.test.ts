@@ -254,12 +254,89 @@ describe("parseSheetRow — rows typed by the owner", () => {
     ["payment", ["p1", "l1", "100", "ayer", "", "", ""], "la fecha de pago no es una fecha válida"],
     [
       "loan",
-      ["l1", "c1", "1", "1", "1", "semanal", created, "", "", "", "", "", "", "", "", ""],
-      '"semanal" no es un valor válido para la frecuencia'
+      ["l1", "c1", "1", "1", "1", "cada semana", created, "", "", "", "", "", "", "", "", ""],
+      '"cada semana" no es un valor válido para la frecuencia'
     ],
     ["visit", ["v1", "c1", "", "", "", "", "", ""], "falta el resultado"]
   ] as const)("reports a %s row with a bad value", (entity, row, reason) => {
     expect(parseSheetRow(entity, [...row])).toEqual({ ok: false, reason });
+  });
+
+  it("writes enum cells as Spanish codes", () => {
+    const loanRow = ROW_MAPPERS.loan({
+      id: "l1",
+      customerId: "c1",
+      principalCents: 1,
+      interestRateBps: 1,
+      termCount: 1,
+      frequency: "biweekly",
+      startDate: created,
+      status: "cancelled",
+      loanType: "open_credit",
+      createdAt: created,
+      updatedAt: updated
+    });
+    expect([loanRow[5], loanRow[7], loanRow[13]]).toEqual([
+      "quincenal",
+      "cancelado",
+      "credito_abierto"
+    ]);
+    expect(ROW_MAPPERS.payment({ id: "p1", loanId: "l1", method: "transfer" })[4]).toBe(
+      "transferencia"
+    );
+    expect(ROW_MAPPERS.visit({ id: "v1", customerId: "c1", outcome: "no_contact" })[3]).toBe(
+      "sin_contacto"
+    );
+  });
+
+  it.each([
+    ["semanal", "activo", "tradicional_plus"],
+    ["weekly", "active", "term_plus"],
+    [" Semanal ", "ACTIVO", "Tradicional_Plus"]
+  ])("reads loan enums written as %s / %s / %s", (frequency, status, loanType) => {
+    const row = asSheetRow([
+      "l1",
+      "c1",
+      1,
+      1,
+      1,
+      frequency,
+      created,
+      status,
+      "",
+      "",
+      "",
+      "",
+      "",
+      loanType,
+      created,
+      updated
+    ]);
+
+    expect(parseSheetRow("loan", row)).toMatchObject({
+      ok: true,
+      record: { frequency: "weekly", status: "active", loanType: "term_plus" }
+    });
+  });
+
+  it.each([
+    ["efectivo", "cash"],
+    ["cash", "cash"],
+    ["Transferencia", "transfer"]
+  ])("reads payment method %s", (cell, method) => {
+    expect(
+      parseSheetRow("payment", asSheetRow(["p1", "l1", 100, created, cell, "", created, "cuota"]))
+    ).toMatchObject({ ok: true, record: { method } });
+  });
+
+  it.each([
+    ["se_nego", "refused"],
+    ["sin_contacto", "no_contact"],
+    ["reschedule", "reschedule"]
+  ])("reads visit outcome %s", (cell, outcome) => {
+    expect(
+      parseSheetRow("visit", asSheetRow(["v1", "c1", "", cell, "", "", "", created]))
+    ).toMatchObject({ ok: true, record: { outcome } });
   });
 
   it("treats a row of empty cells as blank", () => {

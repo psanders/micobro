@@ -80,3 +80,29 @@ A mutation that fails to push SHALL remain eligible for future push attempts unt
 
 - **WHEN** a queued mutation has failed enough times to exceed the retry cap
 - **THEN** it stops being retried automatically but is shown to the lender in a distinct "necesita atención" count rather than vanishing from view
+
+### Requirement: Enum cells are written as Spanish codes
+
+Push SHALL write the Sheet's enum cells as machine-readable Spanish codes
+(lowercase, no accents, snake_case) while the app keeps its English values
+internally: Préstamos Frecuencia (diario, semanal, quincenal, mensual),
+Estado (activo, saldado, cancelado, incobrable) and Tipo (tradicional,
+tradicional_plus, credito_abierto; empty for a loan with no explicit type),
+Pagos Método (efectivo, transferencia) and Visitas Resultado (promesa,
+sin_contacto, se_nego, reagendar). Pull SHALL accept either the Spanish code
+or the English value, ignoring case and surrounding spaces. Push SHALL
+rewrite existing English cells to their codes once per Sheet, touching only
+cells that hold exactly an English value under the expected header, and
+SHALL retry on a later push if that rewrite fails or a header doesn't match.
+
+#### Scenario: Existing English rows move to Spanish once
+
+- **WHEN** a lender's Sheet has a loan row with Frecuencia "weekly" and the
+  app pushes after updating
+- **THEN** that cell reads "semanal", the loan still reads back as weekly,
+  and later pushes don't rewrite the Sheet again
+
+#### Scenario: A Sheet that mixes both forms
+
+- **WHEN** some rows hold English values and others Spanish codes
+- **THEN** pull reads every row without problems and sees no edits
