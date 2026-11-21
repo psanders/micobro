@@ -5,6 +5,7 @@ import * as Crypto from "expo-crypto";
 import { eq } from "drizzle-orm";
 import { loans, payments, pendingMutations } from "../db/schema";
 import type { Loan } from "./loan.schema";
+import type { Payment } from "../payments/payment.schema";
 import type { Database } from "../db/client";
 
 export async function findLoan(db: Database, id: string): Promise<Loan> {
@@ -14,6 +15,10 @@ export async function findLoan(db: Database, id: string): Promise<Loan> {
     throw new Error("No encontramos este préstamo.");
   }
   return loan;
+}
+
+export async function findLoanPayments(db: Database, loanId: string): Promise<Payment[]> {
+  return (await db.select().from(payments).where(eq(payments.loanId, loanId))) as Payment[];
 }
 
 export async function countLoanPayments(db: Database, loanId: string): Promise<number> {

@@ -187,6 +187,23 @@ describe("createGetCustomerDetail", () => {
       });
     });
 
+    it("lists a loan archived as paid under archivedLoans too", async () => {
+      // Arrange
+      const paid = loanRow({ id: "loan-2", status: "paid", updatedAt: daysAgo(1) });
+      const db = makeDbStub({
+        customers: [baseCustomerRow],
+        loans: [paid],
+        paymentsPerLoan: [[paymentRow({ id: "p9", loanId: "loan-2" })]]
+      });
+
+      // Act
+      const result = await createGetCustomerDetail({ db })({ id: "customer-1" });
+
+      // Assert
+      expect(result?.activeLoans).toEqual([]);
+      expect(result?.archivedLoans.map((l) => l.loanId)).toEqual(["loan-2"]);
+    });
+
     it("keeps an archived loan's payments in the recent activity", async () => {
       // Arrange
       const archived = loanRow({ status: "cancelled" });

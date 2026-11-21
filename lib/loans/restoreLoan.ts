@@ -2,7 +2,7 @@
  * Copyright (C) 2026 by Pedro Sanders. MIT License.
  */
 import { withErrorHandlingAndValidation } from "../utils/withErrorHandlingAndValidation";
-import { loanIdSchema, ARCHIVED_LOAN_STATUS, type LoanIdInput, type Loan } from "./loan.schema";
+import { loanIdSchema, isArchivedLoan, type LoanIdInput, type Loan } from "./loan.schema";
 import { findLoan, saveLoanUpdate } from "./loanMutations";
 import { logger } from "../logger";
 import type { Database } from "../db/client";
@@ -17,7 +17,7 @@ export function createRestoreLoan({ db }: RestoreLoanDeps) {
     logger.verbose("restoring loan", { id });
 
     const current = await findLoan(db, id);
-    if (current.status !== ARCHIVED_LOAN_STATUS) {
+    if (!isArchivedLoan(current)) {
       throw new Error("Este préstamo no está archivado.");
     }
 

@@ -2,8 +2,10 @@
  * Copyright (C) 2026 by Pedro Sanders. MIT License.
  */
 import { withErrorHandlingAndValidation } from "../utils/withErrorHandlingAndValidation";
-import { loanIdSchema, ARCHIVED_LOAN_STATUS, type LoanIdInput, type Loan } from "./loan.schema";
-import { findLoan, saveLoanUpdate } from "./loanMutations";
+import { loanIdSchema, ARCHIVED_LOAN_STATUS, isArchivedLoan } from "./loan.schema";
+import type { LoanIdInput, Loan } from "./loan.schema";
+import { findLoan, findLoanPayments, saveLoanUpdate } from "./loanMutations";
+import { isLoanPaidOff } from "./loanViews";
 import { logger } from "../logger";
 import type { Database } from "../db/client";
 
@@ -22,16 +24,20 @@ export function createArchiveLoan({ db }: ArchiveLoanDeps) {
     logger.verbose("archiving loan", { id });
 
     const current = await findLoan(db, id);
-    if (current.status === ARCHIVED_LOAN_STATUS) {
+    if (isArchivedLoan(current)) {
       throw new Error("Este préstamo ya está archivado.");
     }
 
+    // A loan its payments cover is archived as paid ("saldado" in the
+    // Sheet); anything else as cancelled.
+    const payments = await findLoanPayments(db, id);
+    const status = isLoanPaidOff(current, payments) ? "paid" : ARCHIVED_LOAN_STATUS;
     const loan = await saveLoanUpdate(db, {
       ...current,
-      status: ARCHIVED_LOAN_STATUS,
+      status,
       updatedAt: new Date()
     });
-    logger.verbose("loan archived", { id });
+    logger.verbose("loan archived", { id, status });
     return loan;
   };
 

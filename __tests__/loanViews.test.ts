@@ -787,6 +787,19 @@ describe("loan correction fields (loan-edit-archive)", () => {
     expect(view.installmentsPaid).toBe(3);
   });
 
+  it("dates a loan archived as paid by its last update too", () => {
+    const archivedAt = daysAgo(2);
+    const view = buildLoanDetailView({
+      loan: { ...loan, status: "paid", updatedAt: archivedAt },
+      customerName: "José Núñez",
+      business: null,
+      payments: threePaid,
+      today
+    });
+
+    expect(view.archivedAt).toBe(archivedAt);
+  });
+
   it("summarizes an archived loan for Cliente Detalle's ARCHIVADOS", () => {
     const archivedAt = daysAgo(2);
     const summary = buildArchivedLoanSummary(
