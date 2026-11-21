@@ -63,6 +63,7 @@ export function composeUpcomingCustomers({
     if (effectiveLoanType(loan) === "open_credit") {
       const state = openCreditState(loan, loanPayments, today);
       if (state.isClosed) continue; // capital paid off
+      if (state.behindSinceDate) continue; // behind: on today's route as atrasada instead
 
       nextDueDate = state.nextDueDate;
       amountCents = state.interestDueCents;

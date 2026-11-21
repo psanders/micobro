@@ -424,6 +424,94 @@ describe("composeRouteDay", () => {
 
       expect(day.visits).toEqual([]);
     });
+
+    // A missed cycle's interest is added to the balance once its grace ends
+    // and the engine moves on to a cycle that falls due later. The loan is
+    // still behind, so it stays on the route as atrasada every day until
+    // the client catches up, not only on its next due date.
+    describe("behind on interest", () => {
+      // No grace: cycle 1 fell due 3 days ago, unpaid, and was added to the
+      // balance; cycle 2 (RD$525 on RD$10,500) falls due in 4 days.
+      const behind = () => openCreditLoan({ startDate: daysBeforeToday(10), graceDays: 0 });
+
+      it("lists the loan as overdue between due dates", () => {
+        const day = composeRouteDay({
+          customers: [customer({})],
+          loans: [behind()],
+          payments: [],
+          today: TODAY
+        });
+
+        expect(day.visits).toHaveLength(1);
+        expect(day.visits[0]).toMatchObject({ status: "overdue", overdueDays: 3 });
+        expect(day.visits[0]!.daysPastEnd).toBeUndefined();
+        expect(day.visits[0]!.installmentLabel).toBeUndefined();
+        expect(day.upcomingCustomers).toEqual([]);
+      });
+
+      it("asks for the catch-up amount: intereses sumados plus the current interest", () => {
+        const day = composeRouteDay({
+          customers: [customer({})],
+          loans: [behind()],
+          payments: [],
+          today: TODAY
+        });
+
+        expect(day.visits[0]!.amountCents).toBe(50000 + 52500);
+        expect(day.goalCents).toBe(102500);
+      });
+
+      it("counts days late from the oldest missed due date", () => {
+        // Three weekly cycles with the default grace: cycles 1 and 2 were
+        // added to the balance, cycle 3 falls due today.
+        const day = composeRouteDay({
+          customers: [customer({})],
+          loans: [openCreditLoan({ startDate: daysBeforeToday(21) })],
+          payments: [],
+          today: TODAY
+        });
+
+        expect(day.visits).toHaveLength(1);
+        expect(day.visits[0]).toMatchObject({ status: "overdue", overdueDays: 14 });
+      });
+
+      it("drops off the route once the client catches up", () => {
+        const payments = [
+          payment({
+            id: "p-oc-catch-up",
+            loanId: "loan-oc",
+            amountCents: 102500, // cycle 2's RD$525 interest + the RD$500 added
+            paidAt: daysBeforeToday(1)
+          })
+        ];
+
+        const day = composeRouteDay({
+          customers: [customer({})],
+          loans: [behind()],
+          payments,
+          today: TODAY
+        });
+
+        expect(day.visits).toEqual([]);
+      });
+
+      it("marks the visit done when the client pays today", () => {
+        const payments = [
+          payment({ id: "p-oc-today", loanId: "loan-oc", amountCents: 102500, paidAt: TODAY })
+        ];
+
+        const day = composeRouteDay({
+          customers: [customer({})],
+          loans: [behind()],
+          payments,
+          today: TODAY
+        });
+
+        expect(day.visits).toHaveLength(1);
+        expect(day.visits[0]!.status).toBe("done");
+        expect(day.collectedCents).toBe(102500);
+      });
+    });
   });
 
   // Issue #215: "Vencidos" means the loan is past its end date — the same
